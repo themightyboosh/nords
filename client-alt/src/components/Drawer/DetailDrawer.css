@@ -59,12 +59,21 @@
 .nards-drawer__type-badge {
   display: flex;
   align-items: center;
-  gap: var(--nards-space-xs);
+  gap: var(--nards-space-sm);
   font-size: var(--nards-font-size-xs);
   font-weight: var(--nards-font-weight-semibold);
   color: var(--nards-color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: var(--nards-letter-spacing-wide);
+}
+
+.nards-drawer__type-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--nards-radius-sm);
 }
 
 .nards-drawer__close {

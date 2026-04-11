@@ -1,15 +1,19 @@
 import React from 'react';
+import { Hexagon, Sparkles, Settings, Activity } from 'lucide-react';
+import ThemeSwitcher from '../ThemeSwitcher/ThemeSwitcher';
 import './ViewportHeader.css';
 
-const ViewportHeader: React.FC = () => {
+interface ViewportHeaderProps {
+  currentTheme: string;
+  onThemeChange: (theme: string) => void;
+}
+
+const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeChange }) => {
   return (
     <header className="nards-viewport-header nards-glass">
       <div className="nards-viewport-header__left">
         <div className="nards-viewport-header__logo">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M10 1L18.66 6V14L10 19L1.34 14V6L10 1Z" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.9"/>
-            <circle cx="10" cy="10" r="3" fill="var(--nards-color-accent)" opacity="0.8"/>
-          </svg>
+          <Hexagon size={16} strokeWidth={1.8} />
           <span className="nards-viewport-header__wordmark">nards</span>
         </div>
         <div className="nards-viewport-header__divider" />
@@ -23,33 +27,25 @@ const ViewportHeader: React.FC = () => {
       </div>
 
       <div className="nards-viewport-header__right">
-        <button className="nards-viewport-header__action-btn nards-viewport-header__action-btn--gravity">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M8 1v14M1 8h14M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.6"/>
-          </svg>
+        <button className="nards-viewport-header__action-btn">
+          <Sparkles size={12} />
           Summarize
         </button>
 
         <div className="nards-viewport-header__activity">
-          <span className="nards-viewport-header__activity-pulse" />
+          <Activity size={12} />
           <span className="nards-viewport-header__activity-count">3</span>
         </div>
 
         <div className="nards-viewport-header__avatars">
-          <div className="nards-viewport-header__avatar" style={{ backgroundColor: '#4da6ff' }}>D</div>
-          <div className="nards-viewport-header__avatar" style={{ backgroundColor: '#34d399' }}>S</div>
-          <div className="nards-viewport-header__avatar nards-viewport-header__avatar--ai" style={{ backgroundColor: '#a78bfa' }}>
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0a1 1 0 011 1v2.07A6.003 6.003 0 0113.93 8H16a1 1 0 110 2h-2.07A6.003 6.003 0 019 14.93V16a1 1 0 11-2 0v-1.07A6.003 6.003 0 012.07 10H0a1 1 0 110-2h2.07A6.003 6.003 0 017 3.07V1a1 1 0 011-1zm0 5a3 3 0 100 6 3 3 0 000-6z"/>
-            </svg>
-          </div>
+          <div className="nards-viewport-header__avatar" style={{ backgroundColor: '#2563eb' }}>D</div>
+          <div className="nards-viewport-header__avatar" style={{ backgroundColor: '#059669' }}>S</div>
         </div>
 
+        <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />
+
         <button className="nards-viewport-header__icon-btn" aria-label="Settings">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/>
-            <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-          </svg>
+          <Settings size={15} strokeWidth={1.6} />
         </button>
       </div>
     </header>

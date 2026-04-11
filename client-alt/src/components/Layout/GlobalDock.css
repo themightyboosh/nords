@@ -1,12 +1,26 @@
+/* ═══════════════════════════════════════════════ */
+/* GLOBAL DOCK + FLYOUT PANELS                     */
+/* ═══════════════════════════════════════════════ */
+
+/* ── Scrim ── */
+.nards-flyout-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+
+/* ── Dock Container ── */
 .nards-dock-wrapper {
   position: absolute;
   bottom: var(--nards-space-lg);
   left: 0;
   right: 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   z-index: 100;
   pointer-events: none;
+  gap: var(--nards-space-sm);
 }
 
 .nards-global-dock {
@@ -17,7 +31,6 @@
   padding: 0 var(--nards-space-sm);
   box-shadow: var(--nards-shadow-lg);
   pointer-events: auto;
-  gap: 0;
 }
 
 .nards-dock__section {
@@ -70,16 +83,215 @@
   background: var(--nards-color-accent);
 }
 
-.nards-dock__icon {
-  flex-shrink: 0;
-}
-
 .nards-dock__label {
   font-family: var(--nards-font-primary);
-  font-size: 0.5625rem; /* 9px — deliberately tiny, subservient to icons */
+  font-size: 0.5625rem;
   font-weight: var(--nards-font-weight-medium);
   letter-spacing: var(--nards-letter-spacing-wide);
   text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════ */
+/* FLYOUT PANEL                                    */
+/* ═══════════════════════════════════════════════ */
+
+.nards-flyout {
+  position: absolute;
+  bottom: calc(var(--nards-dock-height) + var(--nards-space-sm));
+  width: 280px;
+  max-height: 360px;
+  border-radius: var(--nards-radius-lg);
+  box-shadow: var(--nards-shadow-lg);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  /* Animation */
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nards-flyout.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* ── Header ── */
+.nards-flyout__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nards-space-md) var(--nards-space-lg);
+  border-bottom: 1px solid var(--nards-color-border-subtle);
+  flex-shrink: 0;
+}
+
+.nards-flyout__title {
+  font-size: var(--nards-font-size-sm);
+  font-weight: var(--nards-font-weight-semibold);
+  color: var(--nards-color-text-primary);
+}
+
+.nards-flyout__count {
+  font-size: var(--nards-font-size-xs);
+  font-weight: var(--nards-font-weight-medium);
+  color: var(--nards-color-text-disabled);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── List ── */
+.nards-flyout__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--nards-space-xs) 0;
+}
+
+/* ── Row ── */
+.nards-flyout__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nards-space-sm) var(--nards-space-lg);
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.nards-flyout__row:hover {
+  background: var(--nards-color-bg-hover);
+}
+
+.nards-flyout__row.is-current {
+  background: var(--nards-color-accent-dim);
+}
+
+.nards-flyout__row-left {
+  display: flex;
+  align-items: center;
+  gap: var(--nards-space-sm);
+  min-width: 0;
+}
+
+.nards-flyout__type-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--nards-radius-sm);
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* The SVG inside needs to be white against the colored bg */
+.nards-flyout__type-icon svg {
+  color: var(--nards-color-bg-surface) !important;
+}
+
+.nards-flyout__line-swatch {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.nards-flyout__row-name {
+  font-size: var(--nards-font-size-sm);
+  font-weight: var(--nards-font-weight-medium);
+  color: var(--nards-color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nards-flyout__row-count {
+  font-size: var(--nards-font-size-xs);
+  font-weight: var(--nards-font-weight-normal);
+  color: var(--nards-color-text-disabled);
+  font-variant-numeric: tabular-nums;
+}
+
+.nards-flyout__row-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Toggle Buttons ── */
+.nards-flyout__visibility-btn,
+.nards-flyout__physics-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--nards-color-text-disabled);
+  border-radius: var(--nards-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nards-flyout__visibility-btn:hover,
+.nards-flyout__physics-btn:hover {
+  color: var(--nards-color-text-secondary);
+  background: var(--nards-color-bg-hover);
+}
+
+.nards-flyout__visibility-btn.is-visible {
+  color: var(--nards-color-text-secondary);
+}
+
+.nards-flyout__physics-btn.is-active {
+  color: var(--nards-color-accent);
+}
+
+.nards-flyout__chevron {
+  color: var(--nards-color-text-disabled);
+}
+
+/* ── Snapshot-specific ── */
+.nards-flyout__snapshot-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--nards-color-text-disabled);
+  flex-shrink: 0;
+}
+
+.nards-flyout__snapshot-dot.is-live {
+  background: var(--nards-color-success);
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
+}
+
+.nards-flyout__snapshot-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.nards-flyout__snapshot-date {
+  font-size: var(--nards-font-size-xs);
+  color: var(--nards-color-text-disabled);
+}
+
+/* ── Footer ── */
+.nards-flyout__footer {
+  padding: var(--nards-space-sm) var(--nards-space-lg);
+  border-top: 1px solid var(--nards-color-border-subtle);
+  flex-shrink: 0;
+}
+
+.nards-flyout__footer-hint {
+  font-size: var(--nards-font-size-xs);
+  color: var(--nards-color-text-disabled);
+  display: flex;
+  align-items: center;
+  gap: var(--nards-space-xs);
 }
 
 /* ── Mobile ── */
@@ -93,5 +305,9 @@
   .nards-dock__item {
     width: 44px;
     height: 40px;
+  }
+  .nards-flyout {
+    width: calc(100vw - var(--nards-space-lg) * 2);
+    max-height: 50vh;
   }
 }

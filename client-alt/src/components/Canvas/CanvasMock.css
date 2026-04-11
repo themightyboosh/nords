@@ -14,7 +14,7 @@
   cursor: grabbing;
 }
 
-/* ── Dot Grid Background ── */
+/* ── Dot Grid ── */
 .nards-canvas__grid {
   position: absolute;
   inset: 0;
@@ -36,11 +36,29 @@
   pointer-events: none;
 }
 
-.nards-tether__label {
+/* Active tethers: solid, visible, with arrows */
+.nards-tether--active {
+  stroke-width: 0.22;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+/* Ghost tethers: very faint, thinner, NO dashes.
+   Distinct from active via opacity + desaturation only.
+   Dashes are reserved for "Pending/Proposed" states. */
+.nards-tether--ghost {
+  stroke-width: 0.12;
+  opacity: 0.15;
+  filter: saturate(0.3);
+}
+
+/* Label pills on active tethers */
+.nards-tether__label-text {
   font-family: var(--nards-font-primary);
-  font-size: 0.22px; /* Scaled to SVG viewBox */
-  fill: var(--nards-color-text-tertiary);
+  font-size: 0.18px;
   font-weight: 500;
+  fill: var(--nards-color-text-secondary);
+  letter-spacing: 0.005px;
 }
 
 /* ── Nard Nodes ── */
@@ -48,14 +66,12 @@
   position: absolute;
   transform: translate(-50%, -50%);
   z-index: 12;
-
   width: 200px;
   background: var(--nards-color-bg-surface);
   border: 1px solid var(--nards-color-border-default);
   border-radius: var(--nards-radius-lg);
   padding: var(--nards-space-md) var(--nards-space-lg);
   box-shadow: var(--nards-shadow-sm);
-
   cursor: pointer;
   user-select: none;
   transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
@@ -64,7 +80,6 @@
 .nards-node:hover {
   box-shadow: var(--nards-shadow-md);
   border-color: var(--nards-color-border-strong);
-  /* Subtle lift */
   transform: translate(-50%, -50%) translateY(-2px);
 }
 
@@ -82,18 +97,15 @@
   margin-bottom: var(--nards-space-xs);
 }
 
-.nards-node__type-indicator {
-  font-size: 0.5rem;
-  color: var(--nards-color-accent);
-  line-height: 1;
-}
-
-.nards-node--person .nards-node__type-indicator {
-  color: var(--nards-color-success);
-}
-
-.nards-node--artifact .nards-node__type-indicator {
-  color: var(--nards-color-warning);
+/* Colored icon badge — the user-chosen type icon + color */
+.nards-node__type-badge {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--nards-radius-sm);
+  flex-shrink: 0;
 }
 
 .nards-node__type-label {
@@ -110,7 +122,6 @@
   color: var(--nards-color-text-primary);
   line-height: var(--nards-line-height-tight);
   margin-bottom: var(--nards-space-sm);
-  /* Two-line truncation per PRD */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -136,8 +147,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--nards-color-bg-hover);
-  color: var(--nards-color-text-tertiary);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,8 +160,5 @@
   .nards-node {
     width: 160px;
     padding: var(--nards-space-sm) var(--nards-space-md);
-  }
-  .nards-node__title {
-    font-size: var(--nards-font-size-xs);
   }
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Sun, Moon } from 'lucide-react';
 import './ThemeSwitcher.css';
 
 interface ThemeSwitcherProps {
@@ -7,27 +8,23 @@ interface ThemeSwitcherProps {
 }
 
 const themes = [
-  { id: 'obsidian', label: 'Obsidian', subtitle: 'Inter · Dark Monochrome' },
-  { id: 'nebula', label: 'Nebula', subtitle: 'Space Grotesk · Violet HUD' },
-  { id: 'vapor', label: 'Vapor', subtitle: 'Inter · Warm Light' },
+  { id: 'obsidian', label: 'Dark' },
+  { id: 'obsidian-light', label: 'Light' },
 ];
 
 const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ currentTheme, onThemeChange }) => {
+  const isDark = currentTheme === 'obsidian';
+
   return (
     <div className="nards-theme-switcher">
-      <span className="nards-theme-switcher__label">Variant</span>
-      <div className="nards-theme-switcher__options">
-        {themes.map((t) => (
-          <button
-            key={t.id}
-            className={`nards-theme-switcher__option ${currentTheme === t.id ? 'is-active' : ''}`}
-            onClick={() => onThemeChange(t.id)}
-            title={t.subtitle}
-          >
-            <span className="nards-theme-switcher__option-name">{t.label}</span>
-          </button>
-        ))}
-      </div>
+      <button
+        className="nards-theme-switcher__toggle"
+        onClick={() => onThemeChange(isDark ? 'obsidian-light' : 'obsidian')}
+        aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+        title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      >
+        {isDark ? <Sun size={14} /> : <Moon size={14} />}
+      </button>
     </div>
   );
 };

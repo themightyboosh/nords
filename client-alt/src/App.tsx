@@ -3,7 +3,6 @@ import ViewportHeader from './components/Layout/ViewportHeader';
 import GlobalDock from './components/Layout/GlobalDock';
 import DetailDrawer from './components/Drawer/DetailDrawer';
 import CanvasMock from './components/Canvas/CanvasMock';
-import ThemeSwitcher from './components/ThemeSwitcher/ThemeSwitcher';
 
 function App() {
   const [theme, setTheme] = useState('obsidian');
@@ -28,14 +27,11 @@ function App() {
 
   return (
     <div className="nards-app-container">
-      {/* Theme comparison bar */}
-      <ThemeSwitcher currentTheme={theme} onThemeChange={setTheme} />
-
       {/* Canvas background */}
       <CanvasMock onNardClick={handleNardClick} selectedNard={selectedNard} />
 
       {/* Floating overlays */}
-      <ViewportHeader />
+      <ViewportHeader currentTheme={theme} onThemeChange={setTheme} />
       <GlobalDock activeView={activeView} onViewChange={setActiveView} />
 
       {/* Detail Drawer */}
