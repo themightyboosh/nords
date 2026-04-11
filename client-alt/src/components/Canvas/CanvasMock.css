@@ -14,16 +14,25 @@
   cursor: grabbing;
 }
 
-/* ── Dot Grid ── */
+/* ── Dot Grid — visible in both light and dark ── */
 .nards-canvas__grid {
   position: absolute;
   inset: 0;
   background-image: radial-gradient(
-    var(--nards-color-border-subtle) 1px,
-    transparent 1px
+    circle,
+    var(--nards-color-text-disabled) 0.8px,
+    transparent 0.8px
   );
-  background-size: 24px 24px;
-  opacity: 0.6;
+  background-size: 32px 32px;
+  opacity: 0.35;
+}
+
+/* ── Zoomable Content Wrapper ── */
+.nards-canvas__content {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
 }
 
 /* ── SVG Tether Layer ── */
@@ -40,19 +49,16 @@
 .nards-tether--active {
   stroke-width: 0.22;
   opacity: 0.75;
-  transition: opacity 0.2s ease;
 }
 
-/* Ghost tethers: very faint, thinner, NO dashes.
-   Distinct from active via opacity + desaturation only.
-   Dashes are reserved for "Pending/Proposed" states. */
+/* Ghost tethers: desaturated, very faint, NO dashes */
 .nards-tether--ghost {
   stroke-width: 0.12;
   opacity: 0.15;
   filter: saturate(0.3);
 }
 
-/* Label pills on active tethers */
+/* Label pills */
 .nards-tether__label-text {
   font-family: var(--nards-font-primary);
   font-size: 0.18px;
@@ -61,7 +67,10 @@
   letter-spacing: 0.005px;
 }
 
-/* ── Nard Nodes ── */
+/* ═══════════════════════════════════════════════ */
+/* NARD NODES                                      */
+/* ═══════════════════════════════════════════════ */
+
 .nards-node {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -89,7 +98,6 @@
   z-index: 13;
 }
 
-/* ── Node Internals ── */
 .nards-node__header {
   display: flex;
   align-items: center;
@@ -97,7 +105,6 @@
   margin-bottom: var(--nards-space-xs);
 }
 
-/* Colored icon badge — the user-chosen type icon + color */
 .nards-node__type-badge {
   width: 18px;
   height: 18px;
@@ -155,10 +162,128 @@
   font-weight: var(--nards-font-weight-bold);
 }
 
+/* ═══════════════════════════════════════════════ */
+/* ANCHORED STICKY NOTES                           */
+/* ═══════════════════════════════════════════════ */
+
+.nards-sticky-note {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 14;
+  width: 160px;
+  padding: var(--nards-space-sm) var(--nards-space-md);
+  background: color-mix(in srgb, var(--nards-color-warning) 10%, var(--nards-color-bg-surface));
+  border: 1px solid color-mix(in srgb, var(--nards-color-warning) 20%, var(--nards-color-border-default));
+  border-radius: var(--nards-radius-md);
+  box-shadow: var(--nards-shadow-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--nards-space-xs);
+  cursor: pointer;
+  user-select: none;
+}
+
+.nards-sticky-note__connector {
+  position: absolute;
+  bottom: -12px;
+  left: 20px;
+  width: 1px;
+  height: 12px;
+  border-left: 1px dotted var(--nards-color-text-disabled);
+}
+
+.nards-sticky-note--line .nards-sticky-note__connector {
+  top: -12px;
+  bottom: auto;
+  left: 20px;
+}
+
+.nards-sticky-note__icon {
+  color: var(--nards-color-warning);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.nards-sticky-note__text {
+  font-size: var(--nards-font-size-xs);
+  font-weight: var(--nards-font-weight-normal);
+  color: var(--nards-color-text-secondary);
+  line-height: var(--nards-line-height-normal);
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════ */
+/* ZOOM CONTROLS                                   */
+/* ═══════════════════════════════════════════════ */
+
+.nards-zoom-controls {
+  position: absolute;
+  bottom: var(--nards-space-lg);
+  right: var(--nards-space-lg);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 36px;
+  border-radius: var(--nards-radius-lg);
+  box-shadow: var(--nards-shadow-md);
+  overflow: hidden;
+}
+
+.nards-zoom-controls__btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--nards-color-text-tertiary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nards-zoom-controls__btn:hover {
+  color: var(--nards-color-text-primary);
+  background: var(--nards-color-bg-hover);
+}
+
+.nards-zoom-controls__level {
+  font-family: var(--nards-font-mono);
+  font-size: var(--nards-font-size-xs);
+  font-weight: var(--nards-font-weight-medium);
+  color: var(--nards-color-text-secondary);
+  background: transparent;
+  border: none;
+  padding: 0 var(--nards-space-sm);
+  cursor: pointer;
+  min-width: 44px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.15s ease;
+}
+
+.nards-zoom-controls__level:hover {
+  color: var(--nards-color-accent);
+}
+
+.nards-zoom-controls__separator {
+  width: 1px;
+  height: 20px;
+  background: var(--nards-color-border-default);
+}
+
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .nards-node {
     width: 160px;
     padding: var(--nards-space-sm) var(--nards-space-md);
+  }
+  .nards-sticky-note {
+    width: 120px;
+  }
+  .nards-zoom-controls {
+    bottom: calc(var(--nards-dock-height) + var(--nards-space-xl));
+    right: var(--nards-space-sm);
   }
 }

@@ -40,12 +40,26 @@ When 2+ Nards are selected (via lasso or shift-click), a **Group Action Toolbar*
 * **HSL Constrained Locking:** Custom colors restrict Lightness/Saturation bands (pastel/dark mode matching) to remain strictly accessible. User controls Hue primarily.
 * **Auto-Contrasting Text:** Changing a Nard to a deep/dark hue triggers the contrast-checking algorithm (WCAG standards), intelligently flipping Font and Icon colors to pure white automatically.
 
-### 1.8 Canvas Annotations
+### 1.8 Canvas Annotations (Anchored Sticky Notes)
 Not everything on the canvas should be a formal graph node. Sometimes a user needs to leave a note for themselves or their team.
-* **Canvas Notes:** Lightweight, translucent sticky-note elements that float on the canvas. They are completely disconnected from the physics engine, ignored by AI topology tools, and excluded from Snapshot data comparisons.
-* **Use Cases:** "Don't reorganize this cluster until Thursday", "Sarah — review this section", or temporary brainstorm scratchpads.
+* **Anchored Notes:** Lightweight, translucent sticky-note elements that **must anchor to either a Nard or a Line** (not free-floating). They are excluded from Snapshot data comparisons and ignored by AI topology tools.
+* **Visibility Inheritance:** An anchored note inherits the visibility state of its parent. If the parent Nard Type is hidden via the Nard Palette, all notes anchored to those Nards disappear. If the parent Line Type is toggled invisible, notes anchored to those Lines disappear. This prevents orphaned, context-free notes cluttering the canvas.
+* **Visual Treatment:** Notes render as small translucent cards with a subtle visual tether (thin dotted connector) to their anchor point. They do not participate in physics calculations.
+* **Use Cases:** "Don't reorganize this cluster until Thursday" (anchored to an Elastic Zone's primary Nard), "Sarah — review this relationship" (anchored to a specific Line), or temporary decision rationale scratchpads.
 
-### 1.9 Touch Interface & Responsive Gestures
+### 1.9 Zoom & Pan Controls
+The canvas supports standard pan and zoom interactions with explicit UI affordances.
+* **Zoom Range:** The viewport supports zoom levels from 25% (Macro topology view) to 200% (detail inspection). Default is 100%.
+* **Zoom UI Widget:** A persistent, minimal zoom control widget anchored to the bottom-right of the canvas. Contains:
+  * *Zoom-In (+) / Zoom-Out (-) buttons:* Discrete 10% step increments.
+  * *Current Zoom Level Display:* A clickable percentage label (e.g. "100%") that resets to 100% on click.
+  * *Fit-to-View button:* Auto-zooms and pans to fit all visible Nards within the viewport.
+* **Keyboard / Trackpad:**
+  * *Scroll wheel / trackpad pinch:* Continuous zoom toward cursor position.
+  * *Cmd+0:* Reset to 100%. *Cmd+= / Cmd+-:* Step zoom.
+* **Pan:** Click-and-drag on empty canvas space, or use middle-mouse-button drag. Two-finger drag on trackpad.
+
+### 1.10 Touch Interface & Responsive Gestures
 The platform avoids desktop-first compromises to support tablets and mobile interactions flawlessly.
 * **Resolution of "Hover":** Touchscreens use Single-Tap to replace Hover states (Triggering Focus & Isolate). Tapping empty canvas clears focus. Double-Tap triggers the Detail Drawer/Radial menu equivalent.
 * **Touch-Sized Hit Targets:** Connector nodes scale to 44x44pt (Apple HIG standard minimum) upon Focus selection.
