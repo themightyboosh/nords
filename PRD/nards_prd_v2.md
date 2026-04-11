@@ -107,9 +107,10 @@ Because a Line's primary data payload is its spatial distance, additional metada
 ### 4.4 The Semantic Stepper (Qualitative Translation)
 This is the core translation layer between the system's physics engine and the user's mental model. It solves the cognitive gap between continuous spatial mathematics and qualitative human reasoning by translating the 0.0 to 1.0 distance scale into discrete meanings.
 
-* **Mechanism:** The user defines a spectrum of qualitative text labels (steps) in the Line Library. The system mathematically maps these steps evenly across the 0.0 to 1.0 physical distance scale.
+* **Mechanism:** The user defines a spectrum of qualitative text labels (steps) in the Line Library. By default, the system maps these steps evenly across the 0.0 to 1.0 physical distance scale.
   * *Example 1 (2 Steps):* "Blocker" (0.0 to 0.49) <-> "Independent" (0.50 to 1.0).
   * *Example 2 (3 Steps):* "Loves" (0.0 to 0.33) <-> "Tolerates" (0.34 to 0.66) <-> "Hates" (0.67 to 1.0).
+* **Custom Breakpoints:** Because qualitative concepts are rarely evenly distributed (e.g., "Critical" might only span 0.0-0.1, while "Normal" spans 0.1-0.9), the Stepper supports user-adjustable breakpoints. In the Line Library, the label dividers render as draggable slider handles, allowing the user to weight each label's range precisely.
 
 * **Bi-Directional UI Sync:**
   * **Visual Dragging (Graph to Data):** If a user drags two Nards further apart, the system calculates the new math value (e.g., 0.85) and automatically updates the Tether's visible UI label to the corresponding step (e.g., "Hates").
@@ -118,8 +119,8 @@ This is the core translation layer between the system's physics engine and the u
 ### 4.5 The Core Spatial-Data Paradigm (Distance = Data)
 In the Nards ecosystem, there is no separation between visual proximity and relationship data. Physical distance *is* the data.
 
-* **Normalization Scale:** All line values (relationships) are dynamically normalized on a scale from 0.0 (touching/minimum distance) to 1.0 (furthest existing node pair on the canvas).
-* **Dynamic Updating:** The system enforces continuous dynamic updates. If a user physically drags a Nard, the underlying 0.0 to 1.0 value of all its connected lines recalculates in real-time based on its new visual position relative to the rest of the canvas. "Dragging meaning" on the scale immediately updates the database.
+* **Per-Line-Type Normalization:** Each Line Type maintains its own independent 0.0 to 1.0 scale, normalized against the min/max distance of nodes connected by *that specific Line Type*. This prevents an outlier on a "Priority" line from silently warping the scale of unrelated "Assignment" lines. When a new extreme distance is introduced that significantly recalibrates a scale, the system surfaces a subtle toast notification (e.g., *"The 'Blocker' scale has shifted — 4 existing values were affected"*) to keep the user aware.
+* **Dynamic Updating:** The system enforces continuous dynamic updates. If a user physically drags a Nard, the underlying 0.0 to 1.0 value of all its connected lines recalculates in real-time based on its new visual position relative to other nodes sharing that Line Type. "Dragging meaning" on the scale immediately updates the database.
 
 Each line type defines its own spatial semantics independently. 
 * **Distance meaning:** e.g., "reports-to -> distance = autonomy"
@@ -165,15 +166,23 @@ Because active Tethers push and pull Nards naturally, traditional static boundin
 * **Concept:** An Elastic Zone is a colored, translucent bounding area (Convex Hull) explicitly tethered to a group of Nards.
 * **Dynamic Morphing:** When the physics engine recalculates and Nards move, the Elastic Zone stretches, shrinks, and morphs to continuously wrap its assigned Nards, providing a geographical anchor (e.g., "Marketing Dept") irrespective of graphical topology.
 
-### 5.5 The Matrix / Kanban Bridge
-Users require a structured, linear workflow to mass-update spatial data. The Matrix View bridges the physics-based graph with a column/row display.
-* **Quantization (Bucketing):** The system collapses the continuous 0.0 to 1.0 scale into discrete, customizable buckets (e.g., 0.0-0.33 = "To Do", 0.34-0.66 = "Doing", 0.67-1.0 = "Done").
+### 5.5 The Spatial Pivot Table (Matrix / Kanban Bridge)
+Users require a structured way to view and mass-update spatial data. Rather than a rigid Kanban board, the Matrix View acts as a **Spatial Pivot Table** — a fluid, composable grid driven by the user's own relationship types.
+
+* **The Dual-Axis Model:** The Matrix View presents two axis slots at the top of the screen:
+  * **Column Axis (X):** The user drags any Line Type here. Its Semantic Stepper labels become column headers (e.g., Progress: "To Do" | "Doing" | "Done").
+  * **Row Axis (Y) — Optional:** The user drags a second Line Type here. Its Stepper labels become swimlane row headers (e.g., Priority: "Critical" | "Normal" | "Low").
+* **Single-Axis Mode (Classic Kanban):** With only the Column axis populated, the view operates as a standard Kanban board. Nards snap into columns by their quantized Stepper value.
+* **Dual-Axis Mode (The True Matrix):** With both axes populated, each cell represents the intersection of two qualitative states. Nards land in the cell matching both their Column and Row line values simultaneously. A 3-step Progress line × 3-step Priority line yields a 3×3 grid. Users instantly see: *"We have 5 Critical items still in To Do."*
+* **Pivoting:** The user can swap axes, or drag a completely different Line Type onto either slot at any time. The Reveal plays — Nards animate from one grid configuration to another. This creates an infinitely recomposable dashboard.
+* **Cell Density Heatmap:** At Meso and Macro zoom levels, cells display density-based background heat coloring (darker = more Nards). Empty cells become visible opportunities. Overloaded cells are instant risk indicators.
 * **Bi-directional Sync:**
-  * **Graph to Matrix:** Nards automatically snap into columns/swimlanes based on their current line values.
-  * **Matrix to Graph:** Dragging a Nard to a new column assigns it the median value of that bucket (e.g., 0.50). When returning to Graph View, the physics engine physically repositions the Nard to reflect this newly written value.
+  * **Graph to Matrix:** Nards automatically sort into cells based on their current line values for the selected axes.
+  * **Matrix to Graph:** Dragging a Nard to a new cell assigns it the median value of that cell's bucket on each axis. Returning to Graph View triggers the physics engine to reposition the Nard accordingly.
 
 ### 5.6 Spatial Transitions & Tweening (The "Wow" Moment)
-When a user switches how they view data (e.g., toggling a Tether's physics activity or shifting from Graph to Matrix View), the shift must be comprehensible.
+When a user switches how they view data (e.g., toggling a Tether's physics activity, pivoting the Matrix axes, or shifting from Graph to Matrix View), the shift must be comprehensible.
+* **Transition Preview ("The Shimmer"):** Before committing a major layout change (e.g. toggling a Line Type's Activity state), the system briefly renders translucent silhouettes of where Nards will land in their new equilibrium. The user sees the ghost of the future layout, then confirms. This prevents the panic of *"Did I just destroy my board?"*
 * **Animated State Changes:** No instant "hard cuts". 
 * **The Tweening Mechanic ("The Reveal"):** The UI utilizes a 1.0 to 1.5-second easing animation. Users physically watch the Nards untangle, glide across the canvas using spring physics, and snap into a new geometric equilibrium. This preserves the spatial mental model without disorienting the user.
 ## 6. Project Admin, Templates & Onboarding
@@ -239,9 +248,9 @@ The UI explicitly minimizes persistent sidebars to keep 95% of space aimed at th
 * **The Viewport Header:** A minimalist top-left floating element showing Project Name and Snapshot state. Top-right houses Multiplayer avatars and Settings.
 
 ### 7.2 Tactile Interaction Design
-* **Double-Click Radial Menu (Quick Spawn):** Double-clicking empty canvas summons a temporary, circular context menu to quickly spawn a default Nard or text block without reaching for the dock.
+* **Double-Click Radial Menu (Quick Spawn):** Double-clicking empty canvas summons a temporary, circular context menu. The wedges display the user's most recently used Nard Types (e.g., "Task", "Bug", "Character"), with a "More..." wedge that opens the full Nard Palette. This makes the radial menu a true accelerator rather than a single-button shortcut.
 * **Hover-Focus (Graph Isolation):** Hovering over a Nard dims all non-connected Nards to 20% opacity, highlighting the active local graph path brightly.
-* **The Detail Drawer:** Double-clicking a Nard opens a right-side "Detail Drawer" (resembling Trello or Notion side-peeks) for editing Markdown description and fields, keeping the canvas visible on the left.
+* **The Detail Drawer:** Double-clicking a Nard opens a right-side "Detail Drawer" (resembling Trello or Notion side-peeks) for editing Markdown description and fields, keeping the canvas visible on the left. The Drawer contains tabs for: **Properties** (metadata fields), **Connections** (list of all Tethers with inline Stepper controls), and **Comments** (threaded conversation with @mention support).
 
 ### 7.3 Establishing Tethers (Drawing Lines)
 Two distinct, purely mouse-driven interactions accommodate different cognitive models:
@@ -253,15 +262,28 @@ Card density relies strictly on "Collapsed" vs "Expanded" models to keep massive
 * **Collapsed State (Canvas Default):** Soft 40 character Title limit (truncated w/ ellipsis). Description truncated to two lines text maximum. Metadata pill limit capped at 3 tags minimum.
 * **Expanded State:** The Detail Drawer reveals the full, un-truncated markdown string and the entirety of Metadata fields inside a standard form UI.
 
-### 7.5 Line Interaction & Graph Readability
+### 7.5 Multi-Select & Bulk Actions
+When 2+ Nards are selected (via lasso or shift-click), a **Group Action Toolbar** appears above the selection:
+* **Bulk Property Edit:** Change a shared metadata field (e.g., Status, Assignee) across all selected Nards simultaneously.
+* **Rigid Group Drag:** Move the entire selection as a locked formation, preserving internal distances between selected Nards while the physics engine recalculates their external Tethers.
+* **Bulk Connect:** Draw a single Tether from the group to a target Nard; the system creates individual lines from each selected Nard to the target.
+* **Bulk Delete:** Remove all selected Nards and their associated Tethers.
+
+### 7.6 Line Interaction & Graph Readability
 * **Line Directionality Toggle:** Clicking any active line displays a floating micro-toolbar allowing the user to tap an Arrow icon, cycling A -> B, A <- B, A <-> B or none.
+* **Line Label Positioning:** Semantic Stepper labels (e.g., "Blocks", "Loves") anchor at the midpoint of the line inside a small background pill. Labels auto-hide if the line is shorter than a minimum pixel threshold to prevent clutter in tight clusters.
 * **Line Intersections (Hops/Bridges):** Background/foreground optical parsing is preserved by giving overlapping lines "Line Hops" (a semi-circular visual jump or stroke-gap/halo) when routing so lines don't appear conjoined.
 
-### 7.6 Accessible Color Strategy
+### 7.7 Accessible Color Strategy
 * **HSL Constrained Locking:** Custom colors restrict Lightness/Saturation bands (pastel/dark mode matching) to remain strictly accessible. User controls Hue primarily.
 * **Auto-Contrasting Text:** Changing a Nard to a deep/dark hue triggers the contrast-checking algorithm (WCAG standards), intelligently flipping Font and Icon colors to pure white automatically.
 
-### 7.7 Touch Interface & Responsive Gestures
+### 7.8 Canvas Annotations
+Not everything on the canvas should be a formal graph node. Sometimes a user needs to leave a note for themselves or their team.
+* **Canvas Notes:** Lightweight, translucent sticky-note elements that float on the canvas. They are completely disconnected from the physics engine, ignored by AI topology tools, and excluded from Snapshot data comparisons.
+* **Use Cases:** "Don't reorganize this cluster until Thursday", "Sarah — review this section", or temporary brainstorm scratchpads that the user intends to convert into real Nards later.
+
+### 7.9 Touch Interface & Responsive Gestures
 The platform avoids desktop-first compromises to support tablets and mobile interactions flawlessly.
 * **Resolution of "Hover":** Touchscreens use Single-Tap to replace Hover states (Triggering Focus & Isolate). Tapping empty canvas clears focus. Double-Tap triggers the Detail Drawer/Radial menu equivalent.
 * **Touch-Sized Hit Targets:** Connector nodes scale to 44x44pt (Apple HIG standard minimum) upon Focus selection.
@@ -324,6 +346,11 @@ AI agents act as multiplayer co-creators.
 
 ### 8.7 Nard DNA (Portable Context URLs)
 Every nard has a unique URL. For an AI tool handling the URL via MCP, it dumps a massive context-bomb payload including the single Nard details, the 1st degree neighborhood arrays, spatial distances, and textual connection descriptions immediately to the local chat stream. It acts as the ultimate viral loop wrapper for PMs dropping knowledge bits into IDEs.
+
+### 8.8 The Gravity Summary (Always-On AI Insight)
+A single button in the Viewport Header — **"Summarize This View"** — takes the current visible canvas state (respecting active Lens filters and zoom level) and generates a natural-language paragraph via MCP:
+* *Example output:* "This project has 47 active tasks. 12 are blocked. The Marketing cluster has drifted 40% further from Engineering since last week's snapshot. 3 initiatives are orphaned."
+* This is the feature that sells Nards to a C-suite viewer who opens a shared View-Only link and needs instant comprehension without learning the tool.
 ## 9. Data Model, Snapshots, & History
 
 ### 9.1 Data Format Architecture
@@ -344,7 +371,13 @@ To prevent generating corrupted snapshots when users modify schemas globally (e.
 Snapshots function natively as a presentation and storytelling medium.
 * **Management:** Explicit saves, named tagging, and deletions available along the visual timeline.
 * **The Playback Mechanic:** Clicking 'Play' on the timeline triggers an automated sequence through the chronological history.
-* **Interpolated Tweening (Time Scrubber):** As the player cycles from Snapshot A to B, the shift is not a hard frame cut. The physics engine implements the standard 1.5-second easing transition (pulling the Nards morphologically), simulating an evolving project timeline or animated pitch deck. 
+* **Interpolated Tweening (Time Scrubber):** As the player cycles from Snapshot A to B, the shift is not a hard frame cut. The physics engine implements the standard 1.5-second easing transition (pulling the Nards morphologically), simulating an evolving project timeline or animated pitch deck.
+
+### 9.5 Snapshot Diffing
+The Temporal Player shows *evolution*, but users also need *comparison*.
+* **Split-Screen Diff Mode:** The user selects two Snapshots and the canvas renders them side-by-side with synchronized pan and zoom.
+* **Overlay Diff Mode:** A single canvas overlays both Snapshots with color-coded annotations: **Green** = Nard added since Snapshot A. **Red** = Nard removed. **Amber** = Nard whose spatial position shifted beyond a configurable threshold.
+* **Delta Summary:** A sidebar panel lists all changes in plain text (e.g., *"'API Integration' moved from 0.2 to 0.8 on the Blocker scale"*), providing a scannable changelog between two points in time.
 ## 10. Real-Time Multiplayer & Permissions
 
 ### 10.1 Real-Time Multiplayer & Conflict Resolution
@@ -364,6 +397,18 @@ Click on a teammate's avatar to see the graph weighted by their contributions. N
 * **Public View-Only Links:** Secure, public URLs for any Project or specific Snapshot. No account required.
 * **Interactive View-Only Mode:** View-Only restricts mutation but completely embraces exploration. Viewers are blocked from spawning nodes, altering metadata, and dragging Nards. However, they can fully pan, zoom, expand metadata cards, cycle the Temporal Player, and toggle Lenses locally to trigger the physics engine solely for their own device UI.
 * **The AI / MCP Wedge:** View-Only links possess native hooks for MCP routing. External viewers can securely grant their Personal AI Agent read-only access to summarize and inspect the workspace securely via the shared link.
+
+### 10.4 Comments & Threaded Conversations
+Comments live inside the Detail Drawer under the **Comments** tab.
+* **Per-Nard Threads:** Each Nard has its own threaded conversation. Users and AI agents can post comments, @mention teammates, and attach inline references to other Nards or Snapshots.
+* **Per-Line Comments:** Clicking a Tether and selecting "Comment" from the micro-toolbar opens a lightweight popover thread anchored to that specific relationship. This allows discussions about the nature or status of a connection without cluttering the Nard's own thread.
+* **Notification Routing:** @mentions generate in-app notifications and optional email/Slack webhook alerts.
+
+### 10.5 Activity Feed (Canvas Heartbeat)
+In multiplayer sessions, changes happening off-screen are invisible. The Viewport Header displays a subtle **Activity Pulse** indicator.
+* **Passive State:** A small dot that gently pulses when teammates make changes outside the current viewport (e.g., *"3 changes by Sarah in the last 2 minutes"*).
+* **Click-to-Fly:** Clicking the pulse opens a compact activity log. Each entry is clickable, triggering a Camera Fly-To to the affected Nard or region.
+* **AI Activity Distinction:** Changes made by AI agents are visually tagged with a bot icon in the feed, distinguishing autonomous mutations from human edits.
 ## 11. Roadmap Phases
 
 ### Phase 1: Foundation + Wow
@@ -382,12 +427,16 @@ Core product with the three signature features defining Nards' identity capabili
 * MCP Server with token-based access scaling (Full AI human-parity API logic)
 * AI Consumer Mode (Graph Analysis, Gap Detection)
 * Tension Detection (AI flags spatial contradictions)
-* The Matrix / Kanban Bridge logic implementation
+* The Spatial Pivot Table (Matrix / Kanban Bridge)
 * Semantic Zoom scaling
 * Heat View (thermal intensity overlay mapping hubs)
 * The Temporal Player (Smooth playback histories)
+* Snapshot Diffing (Split-screen and overlay comparison modes)
 * Perspective Mode
+* The Gravity Summary (Always-on AI view summarization)
 * Template Marketplace capabilities (Admin publish)
+* **Webhook & Event Bus:** Emit events on Nard creation, Tether changes, Snapshot saves, etc., enabling Slack notifications, Jira sync, and custom integrations alongside MCP.
+* **Migration Importers:** Dedicated Trello and Notion importers that map columns to Semantic Stepper values and boards to projects, dramatically reducing onboarding friction for switchers.
 
 ### Phase 3: Expansion + Growth
 * AI Author Mode (AI spawning and suggesting spatial setups natively requiring approval)
@@ -397,6 +446,7 @@ Core product with the three signature features defining Nards' identity capabili
 * **Flatten to Doc Export:** Exporting the spatial layout into a beautifully formatted, linear, readable PDF or Notion-style document for executive consumption.
 * **Canvas Merge:** Combine two isolated projects natively, detecting overlaps, and resolving duplicates securely.
 * **The Pitch (One-Click Story Mode):** Select a path through the graph; Nards generates a slide-by-slide presentation where transitions map physically to the camera following the path.
+* **Workspace Folders:** Lightweight organizational grouping above the project level for enterprise teams managing dozens of projects.
 * 3D Canvas toggle (WebGL/Three.js integration utilizing billboarding labels). 
 * Advanced Algorithms (Centrality plotting, Critical Paths)
 * Enterprise SSO & Audit logs
@@ -421,10 +471,12 @@ Core product with the three signature features defining Nards' identity capabili
 * Nards per project (Building true graphs vs 3-node toys)
 * Lines per Nard ratio (Connecting items vs isolated card drops)
 * View switches / Lens toggles per session (Engaging with 'The Reveal' animations)
-* Matrix/Kanban view bridging usage
+* Matrix pivot axis swaps per session (Engaging with the Spatial Pivot Table)
+* Snapshot Diff usage (Are users comparing states?)
 * Return rate (7-day traction)
 * MCP Token authentication metrics (AI integration adoption)
 * Nard DNA link sharing frequencies
+* Gravity Summary invocations (Are viewers engaging with AI insights?)
 
 ### Qualitative
 * First-session "Aha" moment when the user drags a Nard and sees math data change.
