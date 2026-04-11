@@ -19,6 +19,16 @@ Trello assumes your work belongs in a line. Nards assumes it belongs in a networ
 
 **Defensibility:** Per-line-type spatial semantics, MCP-native AI integration, and the animated view transition system ("The Reveal") create a product experience that cannot be replicated by adding features to a drawing tool or a kanban board.
 
+### 1.2 Glossary & Key Terms
+* **Nard:** The fundamental visual node representing an entity (task, person, idea, etc.).
+* **Tether (Line):** A relationship connecting two Nards, whose physical length translates to a 0.0-1.0 data value.
+* **Semantic Stepper:** The user-defined text labels (e.g., "Blocker" to "Independent") that map to the 0.0-1.0 distance scale.
+* **Snapshot:** An immutable, time-stamped keyframe saving the exact state of the entire project graph.
+* **Lens (View):** A specific way to visualize the data, such as the Spatial Canvas or the Matrix View.
+* **The Reveal:** The fluid physics-based animation that plays when data or views change, letting users track where nodes move.
+* **Matrix View (Spatial Pivot Table):** A dual-axis layout combining line types into columns and swimlanes.
+* **Elastic Zone (Grouping):** A dynamically morphing boundary drawn around a group of Nards to denote a loose geographic area.
+
 ---
 
 ## 2. Target User
@@ -73,8 +83,8 @@ The "Nard-Builder" allows users and AI agents to configure custom schemas for di
 * **Name:** String identifier.
 * **Description:** Rich text field with full Markdown support (critical for AI readability and generation).
 
-**Optional Data Primitives:** 
-Users can attach the following fields to any Nard template:
+**Optional Data Primitives (Adding Metadata):** 
+Familiar to any Notion power user, individuals can enrich Nards via the Detail Drawer. By clicking "+ Add Property" on a Nard or tweaking its template globally via the Nard-Builder, users can attach:
 * **Select / Dropdown:** Single choice for mutually exclusive states (e.g., Status, Priority).
 * **Multi-Select (Tags):** For overlapping categorizations (e.g., Themes, Sprint Labels).
 * **Number / Metric:** Accepts integers, decimals, or formatted currencies (e.g., Budget, Story Points).
@@ -91,7 +101,7 @@ Users can attach the following fields to any Nard template:
 Lines connect nards and represent the nature of their relationship. Line types are user-defined schemas managed by Admins. They define the vocabulary of relationships available in a workspace.
 
 #### Line Metadata Options (Tether Schema)
-Because a Line's primary data payload is its spatial distance, additional metadata remains lightweight to prevent canvas clutter.
+Because a Line's primary data payload is its spatial distance, additional metadata remains lightweight to prevent canvas clutter. As with Nards, users can attach custom properties via the "+ Add Property" interface in the Line's Detail Drawer.
 
 **Core Properties:**
 * **Name / Label:** Semantic meaning (e.g., "Depends On").
@@ -164,7 +174,8 @@ To handle 10 to 5,000 Nards while remaining responsive, the core rendering engin
 ### 5.4 Elastic Zones (Dynamic Clustering)
 Because active Tethers push and pull Nards naturally, traditional static bounding boxes break (Nards would escape them).
 * **Concept:** An Elastic Zone is a colored, translucent bounding area (Convex Hull) explicitly tethered to a group of Nards.
-* **Dynamic Morphing:** When the physics engine recalculates and Nards move, the Elastic Zone stretches, shrinks, and morphs to continuously wrap its assigned Nards, providing a geographical anchor (e.g., "Marketing Dept") irrespective of graphical topology.
+* **Dynamic Morphing:** When the physics engine recalculates and Nards move, the Elastic Zone stretches, shrinks, and morphs to continuously wrap its assigned Nards.
+* **Context Generation:** To encourage AI and human understanding, Elastic Zones accept a rich-text Description field and an explicit Name. Grouping Nards isn't just visual; users can explain *why* this cluster exists (e.g., "Marketing Dept: Q3 Initiatives"), providing high-level regional context to the MCP agent without cluttering individual Nard descriptions.
 
 ### 5.5 The Spatial Pivot Table (Matrix / Kanban Bridge)
 Users require a structured way to view and mass-update spatial data. Rather than a rigid Kanban board, the Matrix View acts as a **Spatial Pivot Table** — a fluid, composable grid driven by the user's own relationship types.
