@@ -1,0 +1,87 @@
+/* client/src/components/Layout/GlobalDock.css */
+.nards-dock-container {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: none; /* Let clicks pass through empty areas to canvas */
+}
+
+.nards-global-dock {
+  height: var(--nards-dock-height);
+  border-radius: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-shadow: var(--nards-shadow-dock);
+  pointer-events: auto; /* Enable clicks on the dock itself */
+}
+
+.nards-dock-section {
+  display: flex;
+  gap: 8px;
+}
+
+.nards-dock-divider {
+  width: 1px;
+  height: 32px;
+  background-color: var(--nards-border-color);
+  margin: 0 16px;
+}
+
+.nards-dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--nards-text-secondary);
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nards-dock-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--nards-text-primary);
+}
+
+.nards-dock-item.active {
+  color: var(--nards-color-accent);
+}
+
+.nards-dock-item .icon {
+  font-size: 1.4rem;
+  margin-bottom: 2px;
+}
+
+.nards-dock-item .label {
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nards-dock-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Mobile Responsiveness Strategy: Move from bottom to side or shrink */
+@media (max-width: 768px) {
+  .nards-dock-container {
+    bottom: 16px;
+  }
+  .nards-dock-item .label {
+    display: none; /* Hide text on small screens */
+  }
+  .nards-dock-item {
+    width: 48px;
+    height: 48px;
+  }
+}

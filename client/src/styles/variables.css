@@ -1,0 +1,49 @@
+/* client/src/styles/variables.css */
+:root {
+  /* Colors - Light Mode Default */
+  --nards-bg-canvas: #f4f5f7;
+  --nards-bg-surface: #ffffff;
+  --nards-bg-dock: rgba(255, 255, 255, 0.95);
+  --nards-text-primary: #172b4d;
+  --nards-text-secondary: #5e6c84;
+  --nards-border-color: #dfe1e6;
+  
+  /* Palette Colors for Graph */
+  --nards-color-tether-active: #0052cc;
+  --nards-color-tether-ghost: rgba(9, 30, 66, 0.13);
+  --nards-color-nard-default: #ffffff;
+  --nards-color-accent: #0065ff;
+  
+  /* Shadow & Depth */
+  --nards-shadow-dock: 0 8px 32px rgba(9, 30, 66, 0.15);
+  --nards-shadow-card: 0 1px 4px rgba(9, 30, 66, 0.25);
+  
+  /* Dimensions */
+  --nards-header-height: 56px;
+  --nards-dock-height: 64px;
+  --nards-drawer-width: 400px;
+  --nards-palette-width: 280px;
+  
+  /* Typography */
+  --nards-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Colors - Dark Mode */
+    --nards-bg-canvas: #1d2125;
+    --nards-bg-surface: #22272b;
+    --nards-bg-dock: rgba(34, 39, 43, 0.95);
+    --nards-text-primary: #b6c2cf;
+    --nards-text-secondary: #8c9bab;
+    --nards-border-color: #38414a;
+    
+    --nards-color-tether-active: #579dff;
+    --nards-color-tether-ghost: rgba(166, 197, 226, 0.16);
+    --nards-color-nard-default: #22272b;
+    --nards-color-accent: #579dff;
+    
+    --nards-shadow-dock: 0 8px 32px rgba(3, 4, 4, 0.5);
+    --nards-shadow-card: 0 1px 4px rgba(3, 4, 4, 0.8);
+  }
+}

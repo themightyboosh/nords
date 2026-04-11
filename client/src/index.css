@@ -1,0 +1,36 @@
+@import './styles/variables.css';
+
+/* Global Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* For canvas dragging mechanics */
+  font-family: var(--nards-font-family);
+  background-color: var(--nards-bg-canvas);
+  color: var(--nards-text-primary);
+  /* Prevent bounce effect on mac trackpads when scrolling canvas */
+  overscroll-behavior: none; 
+}
+
+/* Nards App Container */
+.nards-app-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Smooth glassmorphism utility */
+.nards-glass {
+  background: var(--nards-bg-dock);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--nards-border-color);
+}
