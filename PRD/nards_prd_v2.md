@@ -29,7 +29,11 @@ Trello assumes your work belongs in a line. Nards assumes it belongs in a networ
 * **Matrix View (Spatial Pivot Table):** A dual-axis layout combining line types into columns and swimlanes.
 * **Elastic Zone (Grouping):** A dynamically morphing boundary drawn around a group of Nards to denote a loose geographic area.
 
----
+### 1.3 Constitutional Invariants (AI Anti-Drift Architecture)
+To prevent drift during implementation or when utilizing external LLM agents, these rules are unbending invariants of the system architecture:
+* **INVARIANT 1 (Distance is Truth):** The Nard's geometric distance is the single source of truth. The UI Semantic Stepper text label is a calculated mathematical projection of that distance, never the underlying stored value.
+* **INVARIANT 2 (Absolute vs. Relative):** A Nard's relative position is governed by the active force-directed physics engine. However, its absolute resting X/Y coordinates must be explicitly saved per Snapshot, ensuring nodes don't lose their place if the physics simulation is entirely toggled off.
+* **INVARIANT 3 (Format Exclusivity):** The MCP server's Dual-Payload protocol (Mermaid topology + JSON parameters) is the one and only permitted bridge between the spatial graph database and an LLM context window. Any feature attempting to "read the graph" must consume this exact payload structure.---
 
 ## 2. Target User
 
@@ -129,7 +133,7 @@ This is the core translation layer between the system's physics engine and the u
 ### 4.5 The Core Spatial-Data Paradigm (Distance = Data)
 In the Nards ecosystem, there is no separation between visual proximity and relationship data. Physical distance *is* the data.
 
-* **Per-Line-Type Normalization:** Each Line Type maintains its own independent 0.0 to 1.0 scale, normalized against the min/max distance of nodes connected by *that specific Line Type*. This prevents an outlier on a "Priority" line from silently warping the scale of unrelated "Assignment" lines. When a new extreme distance is introduced that significantly recalibrates a scale, the system surfaces a subtle toast notification (e.g., *"The 'Blocker' scale has shifted — 4 existing values were affected"*) to keep the user aware.
+* **Per-Line-Type Normalization:** Each Line Type maintains its own independent 0.0 to 1.0 scale. To solve "infinite canvas stretching", the 1.0 maximum distance is bound to a hard system variable (e.g., 2,500 physical pixels at 100% zoom). If users drag linked nodes beyond 2,500 pixels, the line is visually stretched but the semantic distance peaks at 1.0. This prevents an outlier on a single line from squashing all other values to 0.01. When a new extreme distance is introduced that significantly recalibrates a local scale, the system surfaces a subtle toast notification (e.g., *"The 'Blocker' scale has shifted — 4 existing values were affected"*) to keep the user aware.
 * **Dynamic Updating:** The system enforces continuous dynamic updates. If a user physically drags a Nard, the underlying 0.0 to 1.0 value of all its connected lines recalculates in real-time based on its new visual position relative to other nodes sharing that Line Type. "Dragging meaning" on the scale immediately updates the database.
 
 Each line type defines its own spatial semantics independently. 
@@ -157,9 +161,13 @@ The full spatial physics graph (2D at launch, 3D in Phase 2).
 ### 5.2 The Palettes (Visibility, Activity & Cross-Highlighting)
 The Canvas View acts as the primary interaction lens, managed by the Project Palettes. Users must view context without it interfering with the physics engine.
 * **Nard Type Toggles:** The Nard Palette features a Visibility Toggle (Eye icon) for each Nard Type. Hiding a type instantly removes all corresponding Nards from the canvas to reduce noise.
-* **Line Type Toggles:** The Connections Palette controls all Line Types via two independent toggles:
-  * **Visibility Toggle (Eye icon):** Turns the rendering on/off.
-  * **Activity Toggle (Magnet/Physics icon):** Determines if the line participates in the data-driven physics engine ("Visible + Active" = spring physics active; "Visible + Inactive" = ghost line with zero gravity).
+* **Line Type Toggles:** The Connections Palette controls all Line Types via two independent UI toggles:
+  * **Visibility Toggle (Eye icon/Checkbox):** Turns the rendering on/off. Multiple Line Types can be visible simultaneously.
+  * **Activity Toggle (Magnet/Physics icon/Checkbox):** Determines if the line participates in the force-directed physics engine.
+* **The Overlapping Vector Paradox (Spatial Locking):** Activating more than one Line Type simultaneously creates physical conflicts (e.g. Line A wants nodes 10px apart, Line B wants them 500px apart). The physics engine manages this smoothly by pulling the nodes to an averaged visual equilibrium.
+  * **Read-Only / Lock State:** However, *Distance = Data*. To prevent the system from overwriting the user's explicit values when finding this averaged visual equilibrium, the graph enters a "Spatially Locked" state whenever >1 Line Type is Active.
+  * Users can *view* the overlap, but if they try to drag a Nard, it snaps back like a rubber band connected to a wall. A lock icon anchors to the user's cursor.
+  * **Data Mutation:** Only when a *single* Line Type is Active is the lock removed, allowing manual object dragging to rewrite the semantic distance value into the database.
 * **Cross-Highlighting:** 
   * *Selecting a Nard* on the canvas instantly illuminates its connected Line Types within the Connections Palette.
   * *Selecting a Line Type* in the palette instantly highlights all Nards currently connected by that line type across the canvas, dimming the rest.
@@ -282,6 +290,7 @@ When 2+ Nards are selected (via lasso or shift-click), a **Group Action Toolbar*
 
 ### 7.6 Line Interaction & Graph Readability
 * **Line Directionality Toggle:** Clicking any active line displays a floating micro-toolbar allowing the user to tap an Arrow icon, cycling A -> B, A <- B, A <-> B or none.
+* **Line Spreading (Ribboning):** When two Nards share multiple distinct line types between them (e.g. "Depends On" AND "Assigned To" are both visible), the lines do not stack invisibly on top of each other. They bow outward sequentially like a ribbon cable, ensuring all parallel relationships remain mutually visible and selectable.
 * **Line Label Positioning:** Semantic Stepper labels (e.g., "Blocks", "Loves") anchor at the midpoint of the line inside a small background pill. Labels auto-hide if the line is shorter than a minimum pixel threshold to prevent clutter in tight clusters.
 * **Line Intersections (Hops/Bridges):** Background/foreground optical parsing is preserved by giving overlapping lines "Line Hops" (a semi-circular visual jump or stroke-gap/halo) when routing so lines don't appear conjoined.
 
