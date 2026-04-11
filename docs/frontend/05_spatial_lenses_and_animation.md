@@ -1,0 +1,57 @@
+# Nards: Spatial Lenses & Animation
+
+The underlying data is always the graph. Views (Lenses) are distinct visual frameworks filtering that data.
+
+## 1. The Canvas View (Default)
+The full spatial physics graph (2D at launch, 3D in Phase 2).
+* Pan, zoom, select, drag behaviors
+* Nards rendered with size and position based on core data
+* Lines rendered with type styling, direction arrows, and distance
+* Ghost Lines: Faint background connections for non-active line types
+
+## 2. The Palettes (Visibility, Activity & Cross-Highlighting)
+The Canvas View acts as the primary interaction lens, managed by the Project Palettes. Users must view context without it interfering with the physics engine.
+* **Nard Type Toggles:** The Nard Palette features a Visibility Toggle (Eye icon) for each Nard Type. Hiding a type instantly removes all corresponding Nards from the canvas to reduce noise.
+* **Line Type Toggles:** The Connections Palette controls all Line Types via two independent UI toggles:
+  * **Visibility Toggle (Eye icon/Checkbox):** Turns the rendering on/off. Multiple Line Types can be visible simultaneously.
+  * **Activity Toggle (Magnet/Physics icon/Checkbox):** Determines if the line participates in the force-directed physics engine.
+* **The Overlapping Vector Paradox (Spatial Locking):** Activating more than one Line Type simultaneously creates physical conflicts (e.g. Line A wants nodes 10px apart, Line B wants them 500px apart). The physics engine manages this smoothly by pulling the nodes to an averaged visual equilibrium.
+  * **Read-Only / Lock State:** However, *Distance = Data*. To prevent the system from overwriting the user's explicit values when finding this averaged visual equilibrium, the graph enters a "Spatially Locked" state whenever >1 Line Type is Active.
+  * Users can *view* the overlap, but if they try to drag a Nard, it snaps back like a rubber band connected to a wall. A lock icon anchors to the user's cursor.
+  * **Data Mutation:** Only when a *single* Line Type is Active is the lock removed, allowing manual object dragging to rewrite the semantic distance value into the database.
+* **Cross-Highlighting:** 
+  * *Selecting a Nard* on the canvas instantly illuminates its connected Line Types within the Connections Palette.
+  * *Selecting a Line Type* in the palette instantly highlights all Nards currently connected by that line type across the canvas, dimming the rest.
+
+## 3. Semantic Zooming & Scale Management
+To handle 10 to 5,000 Nards while remaining responsive, the core rendering engine defines anatomical rendering based on the viewport scale.
+* **Micro Scale (100% - 75% Zoom):** Full Nard anatomy. Titles, Descriptions, and Metadata Pills are visible. Tethers display arrows and Semantic Stepper labels.
+* **Meso Scale (74% - 25% Zoom):** Descriptions and Metadata Pills fade out. Nards shrink to only showing Title and Icon. Tether labels drop, leaving only colored lines and arrows.
+* **Macro Scale (< 25% Zoom):** Structural topology. Text completely removed. Nards are color-coded dots. Tethers are un-labeled hairlines tracing physical clusters.
+* **Global Spotlight Search (`CMD+K`):** At Macro scale where text is absent, discoverability relies on `CMD+K`. Querying a Nard triggers an instant Auto-Pan and Zoom (Camera Fly-To), centering the target Nard and applying a focus aura.
+
+## 4. Elastic Zones (Dynamic Clustering)
+Because active Tethers push and pull Nards naturally, traditional static bounding boxes break (Nards would escape them).
+* **Concept:** An Elastic Zone is a colored, translucent bounding area (Convex Hull) explicitly tethered to a group of Nards.
+* **Dynamic Morphing:** When the physics engine recalculates and Nards move, the Elastic Zone stretches, shrinks, and morphs to continuously wrap its assigned Nards.
+* **Context Generation:** To encourage AI and human understanding, Elastic Zones accept a rich-text Description field and an explicit Name. Grouping Nards isn't just visual; users can explain *why* this cluster exists, providing high-level regional context to the MCP agent without cluttering individual Nard descriptions.
+
+## 5. The Spatial Pivot Table (Matrix / Kanban Bridge)
+Users require a structured way to view and mass-update spatial data. Rather than a rigid Kanban board, the Matrix View acts as a **Spatial Pivot Table** — a fluid, composable grid driven by the user's own relationship types.
+
+* **The Dual-Axis Model:** The Matrix View presents two axis slots at the top of the screen:
+  * **Column Axis (X):** The user drags any Line Type here. Its Semantic Stepper labels become column headers (e.g., Progress: "To Do" | "Doing" | "Done").
+  * **Row Axis (Y) — Optional:** The user drags a second Line Type here. Its Stepper labels become swimlane row headers (e.g., Priority: "Critical" | "Normal" | "Low").
+* **Single-Axis Mode (Classic Kanban):** With only the Column axis populated, the view operates as a standard Kanban board. Nards snap into columns by their quantized Stepper value.
+* **Dual-Axis Mode (The True Matrix):** With both axes populated, each cell represents the intersection of two qualitative states. Nards land in the cell matching both their Column and Row line values simultaneously. A 3-step Progress line × 3-step Priority line yields a 3×3 grid. Users instantly see: *"We have 5 Critical items still in To Do."*
+* **Pivoting:** The user can swap axes, or drag a completely different Line Type onto either slot at any time. The Reveal plays — Nards animate from one grid configuration to another. This creates an infinitely recomposable dashboard.
+* **Cell Density Heatmap:** At Meso and Macro zoom levels, cells display density-based background heat coloring (darker = more Nards). Empty cells become visible opportunities. Overloaded cells are instant risk indicators.
+* **Bi-directional Sync:**
+  * **Graph to Matrix:** Nards automatically sort into cells based on their current line values for the selected axes.
+  * **Matrix to Graph:** Dragging a Nard to a new cell assigns it the median value of that cell's bucket on each axis. Returning to Graph View triggers the physics engine to reposition the Nard accordingly.
+
+## 6. Spatial Transitions & Tweening (The "Wow" Moment)
+When a user switches how they view data (e.g., toggling a Tether's physics activity, pivoting the Matrix axes, or shifting from Graph to Matrix View), the shift must be comprehensible.
+* **Transition Preview ("The Shimmer"):** Before committing a major layout change (e.g. toggling a Line Type's Activity state), the system briefly renders translucent silhouettes of where Nards will land in their new equilibrium. The user sees the ghost of the future layout, then confirms. This prevents the panic of *"Did I just destroy my board?"*
+* **Animated State Changes:** No instant "hard cuts". 
+* **The Tweening Mechanic ("The Reveal"):** The UI utilizes a 1.0 to 1.5-second easing animation. Users physically watch the Nards untangle, glide across the canvas using spring physics, and snap into a new geometric equilibrium. This preserves the spatial mental model without disorienting the user.
