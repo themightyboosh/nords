@@ -126,9 +126,12 @@ Each line type defines its own spatial semantics independently.
 * **Direction meaning:** e.g., "influences -> above = positive influence, below = negative influence"
 
 ### 4.6 Conflict Resolution & The Physics Engine
-* **The Geometric Challenge:** Because Nards exist in 2D space with many-to-many relationships, physical distance will naturally encounter geometric constraints (e.g., if Node A is close to B, and B is close to C, Node A cannot physically be placed at maximum distance from C without moving B).
+* **The Geometric Challenge:** Because Nards exist in 2D space with many-to-many relationships, physical distance will naturally encounter geometric constraints.
 * **The Force-Directed Solution:** The canvas operates on a continuous physics simulation (force-directed graph). Lines act as springs holding the 0.0 to 1.0 tension.
-* **Auto-Equilibrium:** If a user forces a Nard into a position that mathematically conflicts with its other active lines, the system calculates the equilibrium. The connected Nards will visually "pull" or "relax" to balance the tension, instantly updating their respective data values to match the new physical reality.
+* **Auto-Equilibrium:** If a user forces a Nard into a position that mathematically conflicts with its other active lines, the system calculates the equilibrium. Connected Nards will "pull" or "relax" to balance the tension.
+* **Z-Index Collision Avoidance:** In dense clusters, localized repulsion fields prevent Nards from achieving 100% overlap. Z-index is dynamically sorted by the Nard's structural "Size" property, ensuring larger, context-heavy nodes are not buried under smaller nodes.
+* **The Fluid Undo (`CMD+Z`):** If a user drags a Nard, triggering systemic equilibrium changes, pressing Undo does not instantly teleport Nards back. The physics engine fluidly rewinds the displacement animation to prevent jarring the user's spatial mental model.
+* **Zero-Gravity:** If a Nard has no connections, or its only active lines are toggled to invisible/inactive, it is unmoored. It will simply float in its absolute resting X/Y coordinates rather than snapping to an edge.
 ## 5. Application Views & Navigation
 
 The underlying data is always the graph. Views (Lenses) are distinct visual frameworks filtering that data.
@@ -140,19 +143,22 @@ The full spatial physics graph (2D at launch, 3D in Phase 2).
 * Lines rendered with type styling, direction arrows, and distance
 * Ghost Lines: Faint background connections for non-active line types
 
-### 5.2 The Connections Palette (Visibility vs. Activity)
-The Canvas View acts as the primary interaction lens, managed by the Connections Palette. Users must view relationship context without everything interfering with the physics engine. The Palette controls all Line Types via two independent toggles:
-* **Visibility Toggle (Eye icon):** Turns the rendering on/off.
-* **Activity Toggle (Magnet/Physics icon):** Determines if the line participates in the data-driven physics engine.
-  * **Visible + Active:** Acts as a spring. Normalized position takes over, and dragging alters 0.0 - 1.0 distance values.
-  * **Visible + Inactive:** Line appears as a "ghost" or dashed connection. Exerts zero physical gravity. Moving connected Nards will *not* alter values.
-  * **Hidden:** Neither seen nor calculated.
+### 5.2 The Palettes (Visibility, Activity & Cross-Highlighting)
+The Canvas View acts as the primary interaction lens, managed by the Project Palettes. Users must view context without it interfering with the physics engine.
+* **Nard Type Toggles:** The Nard Palette features a Visibility Toggle (Eye icon) for each Nard Type. Hiding a type instantly removes all corresponding Nards from the canvas to reduce noise.
+* **Line Type Toggles:** The Connections Palette controls all Line Types via two independent toggles:
+  * **Visibility Toggle (Eye icon):** Turns the rendering on/off.
+  * **Activity Toggle (Magnet/Physics icon):** Determines if the line participates in the data-driven physics engine ("Visible + Active" = spring physics active; "Visible + Inactive" = ghost line with zero gravity).
+* **Cross-Highlighting:** 
+  * *Selecting a Nard* on the canvas instantly illuminates its connected Line Types within the Connections Palette.
+  * *Selecting a Line Type* in the palette instantly highlights all Nards currently connected by that line type across the canvas, dimming the rest.
 
 ### 5.3 Semantic Zooming & Scale Management
 To handle 10 to 5,000 Nards while remaining responsive, the core rendering engine defines anatomical rendering based on the viewport scale.
 * **Micro Scale (100% - 75% Zoom):** Full Nard anatomy. Titles, Descriptions (truncated to 2 lines), and Metadata Pills are visible. Tethers display arrows and Semantic Stepper labels.
 * **Meso Scale (74% - 25% Zoom):** Descriptions and Metadata Pills fade out. Nards shrink to only showing Title and Icon. Tether labels drop, leaving only colored lines and arrows.
 * **Macro Scale (< 25% Zoom):** Structural topology. Text completely removed. Nards are color-coded dots. Tethers are un-labeled hairlines tracing physical clusters.
+* **Global Spotlight Search (`CMD+K`):** At Macro scale where text is absent, discoverability relies on `CMD+K`. Querying a Nard triggers an instant Auto-Pan and Zoom (Camera Fly-To), centering the target Nard and applying a focus aura.
 
 ### 5.4 Elastic Zones (Dynamic Clustering)
 Because active Tethers push and pull Nards naturally, traditional static bounding boxes break (Nards would escape them).
@@ -291,7 +297,7 @@ Static payload resources:
 * `nards://[workspace]/templates` (Global Schemas)
 * `nards://[project]/snapshots/[id]` (Historical keyframes)
 #### The Semantic Dictionary (Step Zero Resource):
-Before accessing topology, the AI pulls `nards://[project]/semantic_dictionary`. This resource acts as the "Rulebook" containing Project Meta, Nard Lexicon, and Tether definitions (The exact math-to-text semantic stepper rules). The AI deduces the specific qualitative meaning of the workspace *before* walking the data.
+Before accessing topology, the AI pulls `nards://[project]/semantic_dictionary`. This resource acts as the "Rulebook" containing Project Meta, Nard Lexicon, and Tether definitions. The AI deduces the specific qualitative meaning of the workspace *before* walking the data. If the user invokes a "Blank Canvas", the AI operates gracefully on minimal context (Project Name, Description, and any active user-selected prefabs) without forcing heavy rigid deductions.
 #### Progressive Traversal Tooling:
 * `get_macro_topology(args)`: The "Map". Returns highly compressed Mermaid diagram.
 * `read_nard_detail(args)`: The "Magnifying Glass". Full markdown and specific fields for a node.
@@ -386,6 +392,9 @@ Core product with the three signature features defining Nards' identity capabili
 ### Phase 3: Expansion + Growth
 * AI Author Mode (AI spawning and suggesting spatial setups natively requiring approval)
 * The Gravity Well (Optional physics mode for discovery-driven exploratory layouts)
+* **Wormholes (Cross-Project Tension):** Establish tethers across active projects. If Marketing drags a dependent deadline outward on their screen, the Engineering team watches the edge of their canvas stretch as the Marketing team exerts gravitational pull from another dimension.
+* **Sandbox Branching:** Forking a Snapshot to play out "What-If" scenarios (e.g. destroying 30 Nards to watch the physics react) without affecting the Live State.
+* **Flatten to Doc Export:** Exporting the spatial layout into a beautifully formatted, linear, readable PDF or Notion-style document for executive consumption.
 * **Canvas Merge:** Combine two isolated projects natively, detecting overlaps, and resolving duplicates securely.
 * **The Pitch (One-Click Story Mode):** Select a path through the graph; Nards generates a slide-by-slide presentation where transitions map physically to the camera following the path.
 * 3D Canvas toggle (WebGL/Three.js integration utilizing billboarding labels). 
