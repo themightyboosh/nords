@@ -1,0 +1,103 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ * VARIANT B — "NEBULA"
+ * ═══════════════════════════════════════════════════════════
+ * Font: Space Grotesk (300–700 weights)
+ * Personality: Linear meets Vercel meets a sci-fi HUD.
+ *   Deep indigo-black with violet/cyan gradient accents.
+ *   Geometric, slightly futuristic. Glow effects on interactive
+ *   elements. Feels like piloting a spacecraft dashboard.
+ */
+
+[data-theme="nebula"] {
+  /* ── Typography ── */
+  --nards-font-primary: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nards-font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  --nards-font-weight-thin: 300;
+  --nards-font-weight-normal: 400;
+  --nards-font-weight-medium: 500;
+  --nards-font-weight-semibold: 600;
+  --nards-font-weight-bold: 700;
+  --nards-font-weight-black: 700;
+
+  --nards-font-size-xs: 0.6875rem;
+  --nards-font-size-sm: 0.75rem;
+  --nards-font-size-body: 0.8125rem;
+  --nards-font-size-md: 0.875rem;
+  --nards-font-size-lg: 1.0625rem;
+  --nards-font-size-xl: 1.375rem;
+  --nards-font-size-2xl: 1.75rem;
+
+  --nards-line-height-tight: 1.15;
+  --nards-line-height-normal: 1.45;
+  --nards-line-height-relaxed: 1.6;
+
+  --nards-letter-spacing-tight: -0.025em;
+  --nards-letter-spacing-normal: -0.01em;
+  --nards-letter-spacing-wide: 0.08em;
+
+  /* ── Surfaces ── */
+  --nards-color-bg-deep: #08090e;
+  --nards-color-bg-canvas: #0c0e16;
+  --nards-color-bg-surface: #12141f;
+  --nards-color-bg-elevated: #1a1c2b;
+  --nards-color-bg-hover: #222438;
+
+  /* ── Borders ── */
+  --nards-color-border-subtle: rgba(139, 92, 246, 0.08);
+  --nards-color-border-default: rgba(139, 92, 246, 0.15);
+  --nards-color-border-strong: rgba(139, 92, 246, 0.25);
+
+  /* ── Text ── */
+  --nards-color-text-primary: #e2e4f0;
+  --nards-color-text-secondary: #8b8fa8;
+  --nards-color-text-tertiary: #565a72;
+  --nards-color-text-disabled: #3a3d52;
+
+  /* ── Accent (violet → cyan gradient endpoints) ── */
+  --nards-color-accent: #a78bfa;
+  --nards-color-accent-dim: rgba(167, 139, 250, 0.12);
+  --nards-color-accent-hover: #c4b5fd;
+  --nards-color-accent-secondary: #22d3ee;
+
+  /* ── Semantic ── */
+  --nards-color-success: #34d399;
+  --nards-color-warning: #fde68a;
+  --nards-color-danger: #fb7185;
+  --nards-color-info: #67e8f9;
+
+  /* ── Tethers ── */
+  --nards-color-tether-active: #a78bfa;
+  --nards-color-tether-ghost: rgba(167, 139, 250, 0.12);
+
+  /* ── Shadows ── */
+  --nards-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --nards-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --nards-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.7);
+  --nards-shadow-glow: 0 0 24px rgba(167, 139, 250, 0.2), 0 0 48px rgba(34, 211, 238, 0.08);
+
+  /* ── Radius — slightly rounder, more organic ── */
+  --nards-radius-sm: 6px;
+  --nards-radius-md: 8px;
+  --nards-radius-lg: 12px;
+  --nards-radius-xl: 20px;
+  --nards-radius-pill: 100px;
+
+  /* ── Spacing ── */
+  --nards-space-xs: 4px;
+  --nards-space-sm: 8px;
+  --nards-space-md: 12px;
+  --nards-space-lg: 16px;
+  --nards-space-xl: 24px;
+  --nards-space-2xl: 36px;
+
+  /* ── Layout ── */
+  --nards-header-height: 52px;
+  --nards-dock-height: 56px;
+  --nards-drawer-width: 400px;
+
+  /* ── Glass ── */
+  --nards-glass-bg: rgba(12, 14, 22, 0.8);
+  --nards-glass-blur: 20px;
+}

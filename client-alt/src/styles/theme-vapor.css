@@ -1,0 +1,104 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ * VARIANT C — "VAPOR"
+ * ═══════════════════════════════════════════════════════════
+ * Font: Inter (100–900 weights, Italic available)
+ * Personality: Notion meets Linear's light mode meets Arc Browser.
+ *   Warm off-white with muted stone grays. Paper-texture warmth.
+ *   Subtle shadows that feel dimensional but never heavy. Accent
+ *   is a warm amber/copper. Feels editorial, human, considered.
+ *   This is the "design studio" variant for creative PMs.
+ */
+
+[data-theme="vapor"] {
+  /* ── Typography ── */
+  --nards-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nards-font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  --nards-font-weight-thin: 300;
+  --nards-font-weight-normal: 400;
+  --nards-font-weight-medium: 500;
+  --nards-font-weight-semibold: 600;
+  --nards-font-weight-bold: 700;
+  --nards-font-weight-black: 800;
+
+  --nards-font-size-xs: 0.6875rem;
+  --nards-font-size-sm: 0.75rem;
+  --nards-font-size-body: 0.8125rem;
+  --nards-font-size-md: 0.9375rem;
+  --nards-font-size-lg: 1.0625rem;
+  --nards-font-size-xl: 1.375rem;
+  --nards-font-size-2xl: 1.75rem;
+
+  --nards-line-height-tight: 1.2;
+  --nards-line-height-normal: 1.55;
+  --nards-line-height-relaxed: 1.7;
+
+  --nards-letter-spacing-tight: -0.02em;
+  --nards-letter-spacing-normal: -0.006em;
+  --nards-letter-spacing-wide: 0.05em;
+
+  /* ── Surfaces (warm off-whites, paper) ── */
+  --nards-color-bg-deep: #f5f3ef;
+  --nards-color-bg-canvas: #faf8f4;
+  --nards-color-bg-surface: #ffffff;
+  --nards-color-bg-elevated: #ffffff;
+  --nards-color-bg-hover: #f0ede7;
+
+  /* ── Borders ── */
+  --nards-color-border-subtle: rgba(0, 0, 0, 0.04);
+  --nards-color-border-default: rgba(0, 0, 0, 0.08);
+  --nards-color-border-strong: rgba(0, 0, 0, 0.14);
+
+  /* ── Text ── */
+  --nards-color-text-primary: #1a1a1a;
+  --nards-color-text-secondary: #6b6b6b;
+  --nards-color-text-tertiary: #999999;
+  --nards-color-text-disabled: #c4c4c4;
+
+  /* ── Accent (warm copper/amber) ── */
+  --nards-color-accent: #c2733e;
+  --nards-color-accent-dim: rgba(194, 115, 62, 0.08);
+  --nards-color-accent-hover: #d4884f;
+  --nards-color-accent-secondary: #7c5e3c;
+
+  /* ── Semantic ── */
+  --nards-color-success: #3d9970;
+  --nards-color-warning: #e8a838;
+  --nards-color-danger: #d35f5f;
+  --nards-color-info: #5b8fd9;
+
+  /* ── Tethers ── */
+  --nards-color-tether-active: #c2733e;
+  --nards-color-tether-ghost: rgba(194, 115, 62, 0.12);
+
+  /* ── Shadows (soft, warm, dimensional) ── */
+  --nards-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --nards-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
+  --nards-shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.06);
+  --nards-shadow-glow: 0 0 0 1px rgba(194, 115, 62, 0.2);
+
+  /* ── Radius — rounded, approachable ── */
+  --nards-radius-sm: 6px;
+  --nards-radius-md: 8px;
+  --nards-radius-lg: 12px;
+  --nards-radius-xl: 16px;
+  --nards-radius-pill: 100px;
+
+  /* ── Spacing ── */
+  --nards-space-xs: 4px;
+  --nards-space-sm: 8px;
+  --nards-space-md: 12px;
+  --nards-space-lg: 16px;
+  --nards-space-xl: 24px;
+  --nards-space-2xl: 32px;
+
+  /* ── Layout ── */
+  --nards-header-height: 52px;
+  --nards-dock-height: 56px;
+  --nards-drawer-width: 400px;
+
+  /* ── Glass ── */
+  --nards-glass-bg: rgba(255, 255, 255, 0.82);
+  --nards-glass-blur: 14px;
+}

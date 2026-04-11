@@ -1,0 +1,80 @@
+@import './styles/theme-obsidian.css';
+@import './styles/theme-nebula.css';
+@import './styles/theme-vapor.css';
+
+/* ═══════════════════════════════════════════════════════ */
+/* GLOBAL RESET & BASE                                     */
+/* ═══════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--nards-font-primary);
+  font-size: var(--nards-font-size-body);
+  font-weight: var(--nards-font-weight-normal);
+  line-height: var(--nards-line-height-normal);
+  letter-spacing: var(--nards-letter-spacing-normal);
+  color: var(--nards-color-text-primary);
+  background-color: var(--nards-color-bg-canvas);
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* SHARED COMPONENT STYLES                                 */
+/* ═══════════════════════════════════════════════════════ */
+
+/* ── Glass Surface ── */
+.nards-glass {
+  background: var(--nards-glass-bg);
+  backdrop-filter: blur(var(--nards-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nards-glass-blur));
+  border: 1px solid var(--nards-color-border-default);
+}
+
+/* ── App Container ── */
+.nards-app-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Focus Ring (Accessibility) ── */
+:focus-visible {
+  outline: 2px solid var(--nards-color-accent);
+  outline-offset: 2px;
+}
+
+/* ── Scrollbar (Dark Themes) ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--nards-color-border-default);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nards-color-border-strong);
+}
+
+/* ── Selection ── */
+::selection {
+  background: var(--nards-color-accent-dim);
+  color: var(--nards-color-text-primary);
+}
