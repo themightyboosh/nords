@@ -58,13 +58,35 @@
   filter: saturate(0.3);
 }
 
-/* Label pills */
-.nards-tether__label-text {
+/* ── HTML Tether Labels (positioned absolutely, NOT inside SVG) ── */
+.nards-tether-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 11;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--nards-color-bg-surface);
+  border: 1px solid var(--nards-color-border-default);
+  border-radius: var(--nards-radius-sm);
+  padding: 2px 6px;
+  white-space: nowrap;
+  box-shadow: var(--nards-shadow-sm);
+  pointer-events: none;
+}
+
+.nards-tether-label__type {
   font-family: var(--nards-font-primary);
-  font-size: 0.18px;
-  font-weight: 500;
-  fill: var(--nards-color-text-secondary);
-  letter-spacing: 0.005px;
+  font-size: 10px;
+  font-weight: var(--nards-font-weight-semibold);
+  letter-spacing: 0.02em;
+}
+
+.nards-tether-label__value {
+  font-family: var(--nards-font-mono);
+  font-size: 10px;
+  font-weight: var(--nards-font-weight-medium);
+  color: var(--nards-color-text-tertiary);
 }
 
 /* ═══════════════════════════════════════════════ */
