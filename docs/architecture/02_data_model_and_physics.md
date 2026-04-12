@@ -69,6 +69,7 @@ This is the core translation layer between the system's physics engine and the u
 ### 1.5 The Core Spatial-Data Paradigm (Distance = Data)
 In the Nords ecosystem, there is no separation between visual proximity and relationship data. Physical distance *is* the data.
 
+* **Euclidean Purity First:** Any edge-routing algorithmic logic that attempts to route *around* other nodes (e.g. A* Pathfinding) is fundamentally an anti-pattern. Artificial length added to dodge visual obstacles obscures the mathematical reality of the node relationship. Lines must be pure representations of distance (direct geometric paths or simple Quad-Bézier arcs for ribboning).
 * **Per-Line-Type Normalization:** Each Line Type maintains its own independent 0.0 to 1.0 scale. To solve "infinite canvas stretching", the 1.0 maximum distance is bound to a hard system variable (e.g., 2,500 physical pixels at 100% zoom). If users drag linked nodes beyond 2,500 pixels, the line is visually stretched but the semantic distance peaks at 1.0. This prevents an outlier on a single line from squashing all other values. 
 * **Dynamic Updating:** The system enforces continuous dynamic updates. If a user physically drags a Nord, the underlying 0.0 to 1.0 value of all its connected lines recalculates in real-time. "Dragging meaning" on the scale immediately updates the database.
 

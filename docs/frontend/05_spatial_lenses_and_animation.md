@@ -4,9 +4,10 @@ The underlying data is always the graph. Views (Lenses) are distinct visual fram
 
 ## 1. The Canvas Lens (Default)
 The full spatial physics graph (2D at launch, 3D in Phase 2). Activated via the **Canvas** button in the Dock's 3-way Lens Toggle.
-* Pan, zoom, select, drag behaviors
+* Pan, zoom, select, drag behaviors powered by **React Flow** under the hood.
 * Nords rendered with type-specific accent colors, properties, and size-driven widths
-* Connections rendered with type styling, direction arrows, angle-matched labels in colored pills, and ribbon spreading for parallel connections
+* Connections rendered with type styling, direction arrows, angle-matched labels in colored pills, and ribbon spreading for parallel connections.
+* **Pure Edge Rendering:** All edges are rendered using custom React Flow Edge components utilizing direct rectangle-border intersection math and Quadratic Béziers. Default React Flow pathfinding is disabled to preserve pure Euclidean distance visualization.
 * Ghost Connections: Faint background connections for non-active connection types (8% opacity)
 * **Dock Tools:** Display ▾ (unified visibility toggles for Nord Types + Connection Types), Comments, Snapshot, Add ▾ (creation grid + Manage Types)
 * **Visibility Cascade:** See §1.12 in UI doc — hidden nord types with visible connections render as ghosts at 20% opacity

@@ -1,0 +1,14 @@
+{
+  "name": "nords-scripts",
+  "version": "1.0.0",
+  "description": "Standalone scripts for Nords API integrations.",
+  "type": "module",
+  "main": "notion_sync.js",
+  "dependencies": {
+    "@notionhq/client": "^2.2.14",
+    "dotenv": "^16.4.5"
+  },
+  "scripts": {
+    "sync:notion": "node notion_sync.js"
+  }
+}

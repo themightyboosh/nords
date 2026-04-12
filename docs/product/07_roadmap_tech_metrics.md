@@ -6,7 +6,7 @@
 Core product with the three signature features defining Nords' identity capabilities (2D only, no AI features natively drawing layout).
 * Canvas (2D)
 * Nords with full content (markdown, fields, attachments, comments)
-* Lines with schemas, directional arrows, styles
+* Lines with schemas, directional arrows, styles (Custom React Flow Quadratic Bézier edges with explicit distance anchoring)
 * Spatial Semantic Paradigm (Size global, distance/direction mapped via Semantic Stage)
 * Real-time multiplayer (shared canvas, Granular soft-locking)
 * Immutable Snapshots & History scrubbing
@@ -54,7 +54,7 @@ Core product with the three signature features defining Nords' identity capabili
   * *Production:* `nords.monumental.ax`
   * *Staging:* `nord-stage.monumental.ax`
 * **Database (Relational/Spatial Storage):** Postgres natively handling graph/relational patterns.
-* **Rendering:** 2D canvas at launch (WebGL or Canvas2D with force-directed graph rendering libraries). 
+* **Rendering:** React Flow driving the 2D spatial canvas node architecture, with heavily customized pure SVG Edge computations explicitly bypassing default routing logic.
 * **Performance:** Must handle 200+ active Nords per workspace rendered natively using Semantic Zoom boundaries.
 * **Animation Engine:** Spring-physics & Easing engines dedicated for The Reveal and Temporal Player transitions.
 
