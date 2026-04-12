@@ -42,11 +42,16 @@ When 2+ Nards are selected (via lasso or shift-click), a **Group Action Toolbar*
 
 ### 1.8 Canvas Annotations (Sticky Notes)
 Not everything on the canvas should be a formal graph node. Sometimes a user needs to leave a note for themselves or their team.
-* **Anchored Notes:** Lightweight, translucent sticky-note elements that **may anchor to either a Nard or a Line**. They are excluded from Snapshot data comparisons and ignored by AI topology tools.
-* **Visibility Inheritance:** An anchored note inherits the visibility state of its parent. If the parent Nard Type is hidden via the Nard Palette, all notes anchored to those Nards disappear. If the parent Line Type is toggled invisible, notes anchored to those Lines disappear.
-* **Unanchored Notes:** Notes that are not anchored to any entity are displayed as a horizontal row of cards pinned to the top of the viewport (outside the zoomable canvas). These notes persist across zoom levels and act as a global scratchpad. They do not participate in physics or spatial layout.
-* **Visual Treatment:** Anchored notes render with a subtle dotted connector to their anchor point. Unanchored notes sit in a fixed row at the top. All notes are zoom-independent (they do not scale with the canvas). They do not participate in physics calculations.
-* **Use Cases:** "Don't reorganize this cluster until Thursday" (anchored to an Elastic Zone's primary Nard), "Sarah — review this relationship" (anchored to a specific Line), general project reminders (unanchored, pinned to top).
+* **Anchored Notes:** Lightweight annotation elements that **may anchor to either a Nard or a Line**. They are excluded from Snapshot data comparisons and ignored by AI topology tools.
+* **Visibility Inheritance:** An anchored note inherits the visibility state of its parent. If the parent Nard Type is hidden, all notes anchored to those Nards disappear. If the parent Line Type is toggled invisible, notes anchored to those Lines disappear.
+* **Unanchored Notes:** Notes that are not anchored to any entity are displayed as a horizontal row of compact indicators pinned to the top of the viewport (outside the zoomable canvas). These can be **drag-anchored** to any Nard or Line by dragging them onto the target — they then become anchored and move to the canvas.
+* **Level of Detail (LOD):**
+  * *Default zoom (≤130%):* Notes render as a small icon-only indicator (sticky note icon). No text is shown.
+  * *High zoom (>130%):* Notes expand to show a single-line text preview (first ~40 characters, truncated).
+  * *Maximum zoom (>170%):* Notes expand fully, showing the complete note content.
+* **Markdown Editing:** Clicking a note (at any zoom level) opens an inline markdown editor. Notes support basic markdown: bold, italic, links, and lists. The editor dismisses on blur or Escape.
+* **Visual Treatment:** Anchored notes render with a subtle dotted connector to their anchor point. All notes are zoom-independent (they do not scale with the canvas). The icon indicator uses the note's accent color.
+* **Use Cases:** "Don't reorganize this cluster until Thursday" (anchored to a Nard), "Sarah — review this relationship" (anchored to a Line), general project reminders (unanchored, pinned to top).
 
 ### 1.9 Drag Distance Info Panel
 When a user drags a Nard while exactly **one** Line Type is active (physics-participating), a transient info panel appears near the drag handle showing the live distance values.

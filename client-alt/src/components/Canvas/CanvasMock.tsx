@@ -80,6 +80,10 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
   const resetZoom = () => setZoom(100);
   const inverseScale = 100 / zoom;
 
+  // LOD thresholds for sticky notes
+  const showPreview = zoom > 130;
+  const showFull = zoom > 170;
+
   const getNardPos = (id: string) => {
     const n = NARDS.find(n => n.id === id);
     return n ? { x: n.x, y: n.y } : { x: 0, y: 0 };
@@ -102,12 +106,11 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
   return (
     <div className="nards-canvas">
 
-      {/* ═══ Unanchored notes — fixed row at top ═══ */}
+      {/* ═══ Unanchored notes — icon badges at top, drag to anchor ═══ */}
       <div className="nards-unanchored-notes">
         {UNANCHORED_NOTES.map((note, i) => (
-          <div key={i} className="nards-unanchored-note">
-            <StickyNote size={10} className="nards-unanchored-note__icon" />
-            <span className="nards-unanchored-note__text">{note}</span>
+          <div key={i} className="nards-unanchored-note" title={note} draggable>
+            <StickyNote size={12} className="nards-unanchored-note__icon" />
           </div>
         ))}
       </div>
@@ -232,19 +235,24 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
                   </div>
                 )}
               </div>
-              {/* Anchored sticky — counter-scaled */}
+              {/* Anchored sticky — icon-only, text reveals at high zoom */}
               {nard.note && (
                 <div
-                  className="nards-sticky-note"
+                  className={`nards-sticky-note ${showPreview ? 'has-preview' : ''} ${showFull ? 'has-full' : ''}`}
                   style={{
-                    left: `${nard.x + 8}%`,
-                    top: `${nard.y - 8}%`,
+                    left: `${nard.x + 6}%`,
+                    top: `${nard.y - 6}%`,
                     transform: `translate(-50%, -50%) scale(${inverseScale})`,
                   }}
+                  title={!showPreview ? nard.note : undefined}
                 >
                   <div className="nards-sticky-note__connector" />
-                  <StickyNote size={10} className="nards-sticky-note__icon" />
-                  <span className="nards-sticky-note__text">{nard.note}</span>
+                  <StickyNote size={12} className="nards-sticky-note__icon" />
+                  {showPreview && (
+                    <span className="nards-sticky-note__text">
+                      {showFull ? nard.note : nard.note.slice(0, 40) + (nard.note.length > 40 ? '…' : '')}
+                    </span>
+                  )}
                 </div>
               )}
             </React.Fragment>
