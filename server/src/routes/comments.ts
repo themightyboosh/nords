@@ -4,7 +4,43 @@ import type { Comment } from '../types/entities.js';
 
 export const commentsRouter = Router();
 
-// GET /api/projects/:id/comments — List comments, optionally filtered
+/**
+ * @openapi
+ * /api/projects/{id}/comments:
+ *   get:
+ *     tags: [Comments]
+ *     summary: List comments for a project
+ *     description: Returns comments optionally filtered by target type and target ID. Comments are sorted chronologically ascending for thread rendering.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *       - in: query
+ *         name: target_type
+ *         schema:
+ *           type: string
+ *           enum: [nord, connection, general]
+ *         description: Filter by target type
+ *       - in: query
+ *         name: target_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by specific target entity
+ *     responses:
+ *       200:
+ *         description: Array of comments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Comment'
+ */
 commentsRouter.get('/projects/:id/comments', async (req: Request, res: Response) => {
   try {
     const { target_type, target_id } = req.query;
@@ -27,7 +63,39 @@ commentsRouter.get('/projects/:id/comments', async (req: Request, res: Response)
   }
 });
 
-// POST /api/projects/:id/comments — Create comment or reply
+/**
+ * @openapi
+ * /api/projects/{id}/comments:
+ *   post:
+ *     tags: [Comments]
+ *     summary: Create a comment or reply
+ *     description: |
+ *       Creates a comment on a nord, connection, or at the project level (general).
+ *       Set `parent_comment_id` to create a threaded reply to an existing comment.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateCommentRequest'
+ *     responses:
+ *       201:
+ *         description: Comment created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Missing body
+ */
 commentsRouter.post('/projects/:id/comments', async (req: Request, res: Response) => {
   try {
     const { target_type, target_id, parent_comment_id, body, author_id } = req.body;
@@ -46,7 +114,39 @@ commentsRouter.post('/projects/:id/comments', async (req: Request, res: Response
   }
 });
 
-// PUT /api/comments/:id — Update or resolve comment
+/**
+ * @openapi
+ * /api/comments/{id}:
+ *   put:
+ *     tags: [Comments]
+ *     summary: Update or resolve a comment
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               body:
+ *                 type: string
+ *               resolved:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Updated comment
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       404:
+ *         description: Comment not found
+ */
 commentsRouter.put('/comments/:id', async (req: Request, res: Response) => {
   try {
     const setClauses: string[] = [];
@@ -83,7 +183,25 @@ commentsRouter.put('/comments/:id', async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/comments/:id — Soft-delete comment
+/**
+ * @openapi
+ * /api/comments/{id}:
+ *   delete:
+ *     tags: [Comments]
+ *     summary: Soft-delete a comment
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Comment deleted
+ *       404:
+ *         description: Comment not found
+ */
 commentsRouter.delete('/comments/:id', async (req: Request, res: Response) => {
   try {
     const result = await queryOne<{ id: string }>(

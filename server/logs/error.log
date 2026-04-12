@@ -1,0 +1,43 @@
+14:56:43.080 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "77dc5572-6e5a-4026-978c-13f7f80192edINSERT01"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:25:21) {"service":"nords-server","text":"\n    INSERT INTO projects (org_id, name, description, icon, created_by)\n    VALUES ($1, $2, $3, $4, $5)\n    RETURNING *\n","duration":154,"error":"invalid input syntax for type uuid: \"77dc5572-6e5a-4026-978c-13f7f80192edINSERT01\""}
+14:57:06.628 [31merror[39m: Unhandled error
+SyntaxError: Bad control character in string literal in JSON at position 48 (line 1 column 49)
+    at JSON.parse (<anonymous>)
+    at parse (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/body-parser/lib/types/json.js:72:19)
+    at /Users/danielcrowder/Desktop/Projects/nords/server/node_modules/body-parser/lib/read.js:162:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at invokeCallback (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/raw-body/index.js:238:16)
+    at done (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:519:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {"service":"nords-server","error":"Bad control character in string literal in JSON at position 48 (line 1 column 49)"}
+14:57:06.663 [31merror[39m: Unhandled error
+SyntaxError: Bad control character in string literal in JSON at position 48 (line 1 column 49)
+    at JSON.parse (<anonymous>)
+    at parse (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/body-parser/lib/types/json.js:72:19)
+    at /Users/danielcrowder/Desktop/Projects/nords/server/node_modules/body-parser/lib/read.js:162:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at invokeCallback (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/raw-body/index.js:238:16)
+    at done (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:519:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {"service":"nords-server","error":"Bad control character in string literal in JSON at position 48 (line 1 column 49)"}
+14:57:06.697 [31merror[39m: Unhandled error
+SyntaxError: Bad control character in string literal in JSON at position 48 (line 1 column 49)
+    at JSON.parse (<anonymous>)
+    at parse (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/body-parser/lib/types/json.js:72:19)
+    at /Users/danielcrowder/Desktop/Projects/nords/server/node_modules/body-parser/lib/read.js:162:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at invokeCallback (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/raw-body/index.js:238:16)
+    at done (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:519:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {"service":"nords-server","error":"Bad control character in string literal in JSON at position 48 (line 1 column 49)"}

@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
 import logger from './lib/logger.js';
+import { swaggerSpec } from './swagger.js';
 import { projectsRouter } from './routes/projects.js';
 import { graphRouter } from './routes/graph.js';
 import { snapshotsRouter } from './routes/snapshots.js';
@@ -15,6 +17,17 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json({ limit: '5mb' }));
+
+// ── Swagger UI ──
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Nords API Documentation',
+}));
+
+// ── Raw OpenAPI JSON spec ──
+app.get('/api-docs.json', (_req, res) => {
+  res.json(swaggerSpec);
+});
 
 // ── Health Check ──
 app.get('/health', (_req, res) => {
@@ -36,6 +49,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 // ── Start ──
 app.listen(PORT, () => {
   logger.info(`Nords API listening on port ${PORT}`);
+  logger.info(`Swagger UI available at http://localhost:${PORT}/api-docs`);
 });
 
 export default app;

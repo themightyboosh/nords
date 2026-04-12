@@ -5,11 +5,32 @@ import * as connectionsRepo from '../repositories/connections.js';
 
 export const graphRouter = Router();
 
-// ─────────────────────────────────────────────────────────
-// GET /api/projects/:id/graph
-// The single most important endpoint. Calls fn_load_project_graph()
-// to return the entire graph payload in one database round trip.
-// ─────────────────────────────────────────────────────────
+/**
+ * @openapi
+ * /api/projects/{id}/graph:
+ *   get:
+ *     tags: [Graph]
+ *     summary: Load entire project graph
+ *     description: |
+ *       Calls `fn_load_project_graph()` — a PostgreSQL stored procedure that assembles
+ *       all nords, connections, nord types, and connection types into a single JSON
+ *       payload entirely inside database memory. Returns the full graph in one network round trip.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *     responses:
+ *       200:
+ *         description: Complete graph payload
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectGraph'
+ */
 graphRouter.get('/projects/:id/graph', async (req: Request, res: Response) => {
   try {
     const result = await queryOne<{ fn_load_project_graph: Record<string, unknown> }>(
@@ -26,10 +47,34 @@ graphRouter.get('/projects/:id/graph', async (req: Request, res: Response) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────
-// NORDS CRUD
-// ─────────────────────────────────────────────────────────
-
+/**
+ * @openapi
+ * /api/projects/{id}/nords:
+ *   post:
+ *     tags: [Nords]
+ *     summary: Create a nord
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateNordRequest'
+ *     responses:
+ *       201:
+ *         description: Nord created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Nord'
+ */
 graphRouter.post('/projects/:id/nords', async (req: Request, res: Response) => {
   try {
     const nord = await nordsRepo.create({
@@ -49,6 +94,35 @@ graphRouter.post('/projects/:id/nords', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/nords/{id}:
+ *   put:
+ *     tags: [Nords]
+ *     summary: Update a nord
+ *     description: Update title, description, properties, position, or scale. The `updated_at` trigger fires automatically.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateNordRequest'
+ *     responses:
+ *       200:
+ *         description: Updated nord
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Nord'
+ *       404:
+ *         description: Nord not found
+ */
 graphRouter.put('/nords/:id', async (req: Request, res: Response) => {
   try {
     const nord = await nordsRepo.update(req.params.id, req.body);
@@ -62,6 +136,26 @@ graphRouter.put('/nords/:id', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/nords/{id}:
+ *   delete:
+ *     tags: [Nords]
+ *     summary: Soft-delete a nord
+ *     description: Sets `deleted_at` on the nord. Triggers `trg_cascade_soft_delete_connections` which automatically soft-deletes all connections referencing this nord.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Nord deleted (connections cascade soft-deleted)
+ *       404:
+ *         description: Nord not found
+ */
 graphRouter.delete('/nords/:id', async (req: Request, res: Response) => {
   try {
     const deleted = await nordsRepo.softDelete(req.params.id);
@@ -75,10 +169,35 @@ graphRouter.delete('/nords/:id', async (req: Request, res: Response) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────
-// CONNECTIONS CRUD
-// ─────────────────────────────────────────────────────────
-
+/**
+ * @openapi
+ * /api/projects/{id}/connections:
+ *   post:
+ *     tags: [Connections]
+ *     summary: Create a connection between two nords
+ *     description: Creates an edge linking a source nord to a target nord. Distance values are constrained to 0.0–1.0 by CHECK constraints. Duplicate type+source+target combinations are rejected by a unique constraint.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateConnectionRequest'
+ *     responses:
+ *       201:
+ *         description: Connection created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Connection'
+ */
 graphRouter.post('/projects/:id/connections', async (req: Request, res: Response) => {
   try {
     const connection = await connectionsRepo.create({
@@ -97,6 +216,51 @@ graphRouter.post('/projects/:id/connections', async (req: Request, res: Response
   }
 });
 
+/**
+ * @openapi
+ * /api/connections/{id}:
+ *   put:
+ *     tags: [Connections]
+ *     summary: Update a connection
+ *     description: Update direction, distance values, or properties of an existing connection.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               direction:
+ *                 type: string
+ *                 enum: [forward, reverse, none]
+ *               distance_x:
+ *                 type: number
+ *                 format: float
+ *                 minimum: 0
+ *                 maximum: 1
+ *               distance_y:
+ *                 type: number
+ *                 format: float
+ *                 minimum: 0
+ *                 maximum: 1
+ *               properties:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Updated connection
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Connection'
+ *       404:
+ *         description: Connection not found
+ */
 graphRouter.put('/connections/:id', async (req: Request, res: Response) => {
   try {
     const connection = await connectionsRepo.update(req.params.id, req.body);
@@ -110,6 +274,25 @@ graphRouter.put('/connections/:id', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/connections/{id}:
+ *   delete:
+ *     tags: [Connections]
+ *     summary: Soft-delete a connection
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Connection deleted
+ *       404:
+ *         description: Connection not found
+ */
 graphRouter.delete('/connections/:id', async (req: Request, res: Response) => {
   try {
     const deleted = await connectionsRepo.softDelete(req.params.id);
@@ -123,13 +306,45 @@ graphRouter.delete('/connections/:id', async (req: Request, res: Response) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────
-// BATCH POSITION UPDATE (Drag-and-drop optimization)
-// ─────────────────────────────────────────────────────────
-
+/**
+ * @openapi
+ * /api/projects/{id}/positions:
+ *   put:
+ *     tags: [Graph]
+ *     summary: Batch update nord positions
+ *     description: |
+ *       Calls `fn_batch_update_positions()` — a PostgreSQL stored procedure that updates
+ *       N nords' positions in a single SQL statement. Used after drag-and-drop or
+ *       force-directed physics settle operations.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/BatchPositionUpdate'
+ *     responses:
+ *       200:
+ *         description: Number of nords updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 updated:
+ *                   type: integer
+ *                   example: 12
+ */
 graphRouter.put('/projects/:id/positions', async (req: Request, res: Response) => {
   try {
-    const { updates } = req.body; // [{id, x, y}, ...]
+    const { updates } = req.body;
     if (!Array.isArray(updates) || updates.length === 0) {
       res.status(400).json({ error: 'updates array is required' });
       return;

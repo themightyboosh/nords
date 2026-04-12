@@ -3,10 +3,25 @@ import * as projectsRepo from '../repositories/projects.js';
 
 export const projectsRouter = Router();
 
-// GET /api/projects — List all projects for user
+/**
+ * @openapi
+ * /api/projects:
+ *   get:
+ *     tags: [Projects]
+ *     summary: List all projects
+ *     description: Returns all active (non-deleted) projects. Will be filtered by user's org membership once auth middleware is wired.
+ *     responses:
+ *       200:
+ *         description: Array of projects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Project'
+ */
 projectsRouter.get('/projects', async (_req: Request, res: Response) => {
   try {
-    // TODO: Filter by user's org membership once auth middleware is wired
     const projects = await projectsRepo.findAll();
     res.json(projects);
   } catch (err) {
@@ -14,7 +29,32 @@ projectsRouter.get('/projects', async (_req: Request, res: Response) => {
   }
 });
 
-// POST /api/projects — Create a new project
+/**
+ * @openapi
+ * /api/projects:
+ *   post:
+ *     tags: [Projects]
+ *     summary: Create a new project
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateProjectRequest'
+ *     responses:
+ *       201:
+ *         description: Project created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Project'
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 projectsRouter.post('/projects', async (req: Request, res: Response) => {
   try {
     const { org_id, name, description, icon } = req.body;
@@ -29,7 +69,33 @@ projectsRouter.post('/projects', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/projects/:id — Get project details
+/**
+ * @openapi
+ * /api/projects/{id}:
+ *   get:
+ *     tags: [Projects]
+ *     summary: Get project by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Project details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Project'
+ *       404:
+ *         description: Project not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 projectsRouter.get('/projects/:id', async (req: Request, res: Response) => {
   try {
     const project = await projectsRepo.findById(req.params.id);
@@ -43,7 +109,41 @@ projectsRouter.get('/projects/:id', async (req: Request, res: Response) => {
   }
 });
 
-// PUT /api/projects/:id — Update project
+/**
+ * @openapi
+ * /api/projects/{id}:
+ *   put:
+ *     tags: [Projects]
+ *     summary: Update a project
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               icon:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Updated project
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Project'
+ *       404:
+ *         description: Project not found
+ */
 projectsRouter.put('/projects/:id', async (req: Request, res: Response) => {
   try {
     const project = await projectsRepo.update(req.params.id, req.body);
@@ -57,7 +157,25 @@ projectsRouter.put('/projects/:id', async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/projects/:id — Soft-delete project
+/**
+ * @openapi
+ * /api/projects/{id}:
+ *   delete:
+ *     tags: [Projects]
+ *     summary: Soft-delete a project
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Project deleted
+ *       404:
+ *         description: Project not found
+ */
 projectsRouter.delete('/projects/:id', async (req: Request, res: Response) => {
   try {
     const deleted = await projectsRepo.softDelete(req.params.id);
