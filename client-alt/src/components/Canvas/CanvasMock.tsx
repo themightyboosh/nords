@@ -50,6 +50,13 @@ const TETHERS: TetherData[] = [
   { from: 'n6', to: 'n2', type: 'Depends', color: '#fbbf24', value: 0.65, label: 'Strong Dep.', ghost: true },
 ];
 
+/* ── Unanchored notes — pinned to top of viewport ── */
+const UNANCHORED_NOTES = [
+  'Sprint 4 retro scheduled for Fri',
+  'Waiting on design review from Sandra',
+  'MCP endpoint schema TBD',
+];
+
 interface CanvasMockProps {
   onNardClick: (id: string) => void;
   selectedNard: string | null;
@@ -78,7 +85,6 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
     return n ? { x: n.x, y: n.y } : { x: 0, y: 0 };
   };
 
-  // Pre-compute tether label positions (in %)
   const tetherLabels = TETHERS.filter(t => !t.ghost).map((t) => {
     const from = getNardPos(t.from);
     const to = getNardPos(t.to);
@@ -95,19 +101,41 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
 
   return (
     <div className="nards-canvas">
-      {/* Grid: dots + every 10th = light grid lines */}
-      <div className="nards-canvas__grid" />
-      <div className="nards-canvas__grid-lines" />
 
+      {/* ═══ Unanchored notes — fixed row at top ═══ */}
+      <div className="nards-unanchored-notes">
+        {UNANCHORED_NOTES.map((note, i) => (
+          <div key={i} className="nards-unanchored-note">
+            <StickyNote size={10} className="nards-unanchored-note__icon" />
+            <span className="nards-unanchored-note__text">{note}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ═══ Zoomable content (grid + tethers + nodes) ═══ */}
       <div
         className="nards-canvas__content"
         style={{ transform: `scale(${zoom / 100})` }}
       >
-        {/* SVG tether lines */}
+        {/* Grid scales with canvas */}
+        <div className="nards-canvas__grid" />
+        <div className="nards-canvas__grid-lines" />
+
+        {/* SVG tether lines with directional arrows */}
         <svg className="nards-canvas__tethers" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
-            <marker id="arrow-active" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-              <path d="M0,0 L8,3 L0,6" fill="var(--nards-color-accent)" opacity="0.7" />
+            {/* Per-color arrow markers for directionality */}
+            <marker id="arrow-blue" markerWidth="4" markerHeight="3" refX="3.5" refY="1.5" orient="auto">
+              <path d="M0,0 L4,1.5 L0,3Z" fill="#4da6ff" />
+            </marker>
+            <marker id="arrow-green" markerWidth="4" markerHeight="3" refX="3.5" refY="1.5" orient="auto">
+              <path d="M0,0 L4,1.5 L0,3Z" fill="#34d399" />
+            </marker>
+            <marker id="arrow-amber" markerWidth="4" markerHeight="3" refX="3.5" refY="1.5" orient="auto">
+              <path d="M0,0 L4,1.5 L0,3Z" fill="#fbbf24" />
+            </marker>
+            <marker id="arrow-violet" markerWidth="4" markerHeight="3" refX="3.5" refY="1.5" orient="auto">
+              <path d="M0,0 L4,1.5 L0,3Z" fill="#a78bfa" />
             </marker>
           </defs>
           {TETHERS.map((t, i) => {
@@ -126,6 +154,13 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
             const pathD = offset === 0
               ? `M ${from.x} ${from.y} L ${to.x} ${to.y}`
               : `M ${from.x} ${from.y} Q ${cpX} ${cpY} ${to.x} ${to.y}`;
+
+            // Pick arrow marker by color
+            const arrowId = t.color === '#4da6ff' ? 'arrow-blue'
+              : t.color === '#34d399' ? 'arrow-green'
+              : t.color === '#fbbf24' ? 'arrow-amber'
+              : 'arrow-violet';
+
             return (
               <path
                 key={i}
@@ -133,13 +168,13 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
                 className={t.ghost ? 'nards-tether--ghost' : 'nards-tether--active'}
                 stroke={t.color}
                 fill="none"
-                markerEnd={!t.ghost ? "url(#arrow-active)" : undefined}
+                markerEnd={!t.ghost ? `url(#${arrowId})` : undefined}
               />
             );
           })}
         </svg>
 
-        {/* Line labels — counter-scale so they stay fixed size during zoom */}
+        {/* Line labels — counter-scaled for zoom independence */}
         {tetherLabels.map((label, i) => (
           <div
             key={`label-${i}`}
@@ -197,10 +232,15 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
                   </div>
                 )}
               </div>
+              {/* Anchored sticky — counter-scaled */}
               {nard.note && (
                 <div
                   className="nards-sticky-note"
-                  style={{ left: `${nard.x + 8}%`, top: `${nard.y - 8}%` }}
+                  style={{
+                    left: `${nard.x + 8}%`,
+                    top: `${nard.y - 8}%`,
+                    transform: `translate(-50%, -50%) scale(${inverseScale})`,
+                  }}
                 >
                   <div className="nards-sticky-note__connector" />
                   <StickyNote size={10} className="nards-sticky-note__icon" />

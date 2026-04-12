@@ -14,7 +14,62 @@
   cursor: grabbing;
 }
 
-/* ── Dot Grid (every 32px) ── */
+/* ═══════════════════════════════════════════════ */
+/* UNANCHORED NOTES — fixed row at top             */
+/* ═══════════════════════════════════════════════ */
+
+.nards-unanchored-notes {
+  position: absolute;
+  top: calc(var(--nards-header-height) + var(--nards-space-md));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  gap: var(--nards-space-sm);
+  pointer-events: auto;
+}
+
+.nards-unanchored-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--nards-space-xs);
+  padding: var(--nards-space-sm) var(--nards-space-md);
+  background: color-mix(in srgb, var(--nards-color-warning) 8%, var(--nards-glass-bg));
+  backdrop-filter: blur(var(--nards-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nards-glass-blur));
+  border: 1px solid color-mix(in srgb, var(--nards-color-warning) 15%, var(--nards-color-border-default));
+  border-radius: var(--nards-radius-md);
+  box-shadow: var(--nards-shadow-sm);
+  max-width: 200px;
+  cursor: pointer;
+}
+
+.nards-unanchored-note__icon {
+  color: var(--nards-color-warning);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.nards-unanchored-note__text {
+  font-size: var(--nards-font-size-xs);
+  font-weight: var(--nards-font-weight-normal);
+  color: var(--nards-color-text-secondary);
+  line-height: var(--nards-line-height-normal);
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════ */
+/* ZOOMABLE CONTENT — grid + tethers + nodes       */
+/* ═══════════════════════════════════════════════ */
+
+.nards-canvas__content {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+}
+
+/* Dot Grid — scales with canvas */
 .nards-canvas__grid {
   position: absolute;
   inset: 0;
@@ -27,7 +82,7 @@
   opacity: 0.3;
 }
 
-/* ── Major Grid Lines (every 10th dot = 320px) ── */
+/* Major Grid Lines — every 10th dot, scales with canvas */
 .nards-canvas__grid-lines {
   position: absolute;
   inset: 0;
@@ -36,14 +91,6 @@
     linear-gradient(to bottom, var(--nards-color-border-default) 1px, transparent 1px);
   background-size: 320px 320px;
   opacity: 0.4;
-}
-
-/* ── Zoomable Content Wrapper ── */
-.nards-canvas__content {
-  position: absolute;
-  inset: 0;
-  transform-origin: center center;
-  transition: transform 0.2s ease;
 }
 
 /* ── SVG Tether Layer ── */
@@ -67,10 +114,9 @@
   filter: saturate(0.3);
 }
 
-/* ── HTML Tether Labels (positioned inside zoomable, counter-scaled) ── */
+/* ── Line Labels — zoom-independent ── */
 .nards-tether-label {
   position: absolute;
-  /* transform set inline: translate(-50%, -50%) scale(inverseScale) */
   z-index: 15;
   display: inline-flex;
   align-items: center;
@@ -108,8 +154,6 @@
   transform: translate(-50%, -50%);
   z-index: 12;
   width: 200px;
-  /* background set inline via color-mix(typeColor 10%, bg-surface) */
-  /* border set inline via color-mix(typeColor 20%, border-default) */
   border-width: 1px;
   border-style: solid;
   border-radius: var(--nards-radius-lg);
@@ -138,14 +182,11 @@
   margin-bottom: var(--nards-space-xs);
 }
 
-/* Icon is now rendered directly in typeColor — no badge box */
-
 .nards-node__type-label {
   font-size: var(--nards-font-size-xs);
   font-weight: var(--nards-font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: var(--nards-letter-spacing-wide);
-  /* color set inline via typeColor */
 }
 
 .nards-node__title {
@@ -188,12 +229,12 @@
 }
 
 /* ═══════════════════════════════════════════════ */
-/* ANCHORED STICKY NOTES                           */
+/* ANCHORED STICKY NOTES — zoom-independent        */
 /* ═══════════════════════════════════════════════ */
 
 .nards-sticky-note {
   position: absolute;
-  transform: translate(-50%, -50%);
+  /* transform set inline: translate(-50%, -50%) scale(inverseScale) */
   z-index: 14;
   width: 160px;
   padding: var(--nards-space-sm) var(--nards-space-md);
@@ -206,6 +247,7 @@
   gap: var(--nards-space-xs);
   cursor: pointer;
   user-select: none;
+  transform-origin: center center;
 }
 
 .nards-sticky-note__connector {
@@ -303,5 +345,12 @@
   .nards-zoom-controls {
     bottom: calc(var(--nards-dock-height) + var(--nards-space-xl));
     right: var(--nards-space-sm);
+  }
+  .nards-unanchored-notes {
+    flex-wrap: wrap;
+    max-width: calc(100vw - var(--nards-space-lg) * 2);
+  }
+  .nards-unanchored-note {
+    max-width: 150px;
   }
 }

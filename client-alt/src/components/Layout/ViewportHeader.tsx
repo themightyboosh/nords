@@ -1,5 +1,6 @@
 import React from 'react';
-import { Hexagon, Sparkles, Settings, Activity } from 'lucide-react';
+import { Sparkles, Settings, Activity } from 'lucide-react';
+import NardsLogo from '../NardsLogo';
 import ThemeSwitcher from '../ThemeSwitcher/ThemeSwitcher';
 import './ViewportHeader.css';
 
@@ -13,7 +14,7 @@ const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeCh
     <header className="nards-viewport-header nards-glass">
       <div className="nards-viewport-header__left">
         <div className="nards-viewport-header__logo">
-          <Hexagon size={16} strokeWidth={1.8} />
+          <NardsLogo size={16} />
           <span className="nards-viewport-header__wordmark">nards</span>
         </div>
         <div className="nards-viewport-header__divider" />
