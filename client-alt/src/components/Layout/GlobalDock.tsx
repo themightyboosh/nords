@@ -1,123 +1,134 @@
 import React, { useState } from 'react';
 import {
-  Waypoints, LayoutGrid, Square, Minus, Clock,
-  Eye, EyeOff, Magnet, ChevronRight,
-  Zap, Bug, User, FileText, Target, Lightbulb, StickyNote
+  Square, Minus as LineIcon, ArrowLeftRight, StickyNote, Plus,
+  Eye, EyeOff, ChevronDown,
+  Bug, User, FileText, Target, Lightbulb, Layers, AlertTriangle,
 } from 'lucide-react';
+import Spectrum from '../Spectrum/Spectrum';
 import './GlobalDock.css';
+
+/* ── Type registries ── */
+const NARD_TYPES = [
+  { name: 'Task', icon: Square, color: '#4da6ff', count: 4, visible: true },
+  { name: 'Bug', icon: Bug, color: '#f87171', count: 1, visible: true },
+  { name: 'Person', icon: User, color: '#34d399', count: 1, visible: true },
+  { name: 'Artifact', icon: FileText, color: '#fbbf24', count: 1, visible: true },
+  { name: 'Milestone', icon: Target, color: '#a78bfa', count: 1, visible: true },
+  { name: 'Idea', icon: Lightbulb, color: '#fb923c', count: 1, visible: true },
+  { name: 'Epic', icon: Layers, color: '#f472b6', count: 1, visible: true },
+  { name: 'Risk', icon: AlertTriangle, color: '#ef4444', count: 1, visible: false },
+];
+
+const LINE_TYPES = [
+  { name: 'Blocks', color: '#4da6ff', count: 5, visible: true },
+  { name: 'Depends', color: '#fbbf24', count: 4, visible: true },
+  { name: 'Relates', color: '#a78bfa', count: 4, visible: false },
+  { name: 'Assigned', color: '#34d399', count: 2, visible: true },
+];
 
 interface GlobalDockProps {
   activeView: string;
   onViewChange: (view: string) => void;
 }
 
-/* ── Mock data for flyout panels ── */
-const NARD_TYPES = [
-  { name: 'Task', icon: Square, color: '#4da6ff', count: 24 },
-  { name: 'Bug', icon: Bug, color: '#f87171', count: 8 },
-  { name: 'Person', icon: User, color: '#34d399', count: 6 },
-  { name: 'Artifact', icon: FileText, color: '#fbbf24', count: 12 },
-  { name: 'Milestone', icon: Target, color: '#a78bfa', count: 3 },
-  { name: 'Idea', icon: Lightbulb, color: '#fb923c', count: 5 },
-];
-
-const LINE_TYPES = [
-  { name: 'Blocks', color: '#4da6ff', visible: true, active: true, count: 18 },
-  { name: 'Assigned To', color: '#34d399', visible: true, active: false, count: 14 },
-  { name: 'Depends On', color: '#fbbf24', visible: false, active: false, count: 9 },
-  { name: 'Relates To', color: '#a78bfa', visible: false, active: false, count: 6 },
-];
-
-const SNAPSHOTS = [
-  { name: 'Sprint 4 Kickoff', date: 'Apr 7, 2026', isCurrent: false },
-  { name: 'Mid-Sprint Review', date: 'Apr 9, 2026', isCurrent: false },
-  { name: 'Live State', date: 'Now', isCurrent: true },
-];
-
-const GlobalDock: React.FC<GlobalDockProps> = ({ activeView, onViewChange }) => {
+const GlobalDock: React.FC<GlobalDockProps> = ({ }) => {
   const [openPanel, setOpenPanel] = useState<string | null>(null);
+  const [activeRelationship, setActiveRelationship] = useState('Blocks');
 
   const togglePanel = (panel: string) => {
     setOpenPanel(openPanel === panel ? null : panel);
   };
 
+  const activeLineType = LINE_TYPES.find(l => l.name === activeRelationship);
+
   return (
     <>
-      {/* Scrim to dismiss flyout */}
       {openPanel && <div className="nards-flyout-scrim" onClick={() => setOpenPanel(null)} />}
 
       <div className="nards-dock-wrapper">
         <nav className="nards-global-dock nards-glass">
 
-          {/* Lens Selector */}
-          <div className="nards-dock__section">
-            <button
-              className={`nards-dock__item ${activeView === 'canvas' ? 'is-active' : ''}`}
-              onClick={() => { onViewChange('canvas'); setOpenPanel(null); }}
-            >
-              <Waypoints size={18} strokeWidth={1.6} />
-              <span className="nards-dock__label">Canvas</span>
-            </button>
-            <button
-              className={`nards-dock__item ${activeView === 'matrix' ? 'is-active' : ''}`}
-              onClick={() => { onViewChange('matrix'); setOpenPanel(null); }}
-            >
-              <LayoutGrid size={18} strokeWidth={1.6} />
-              <span className="nards-dock__label">Matrix</span>
-            </button>
-          </div>
-
-          <div className="nards-dock__separator" />
-
-          {/* Palette Triggers */}
+          {/* Nards dropdown */}
           <div className="nards-dock__section">
             <button
               className={`nards-dock__item ${openPanel === 'nards' ? 'is-active' : ''}`}
               onClick={() => togglePanel('nards')}
             >
-              <Square size={18} strokeWidth={1.6} />
+              <Square size={16} strokeWidth={1.6} />
               <span className="nards-dock__label">Nards</span>
-            </button>
-            <button
-              className={`nards-dock__item ${openPanel === 'lines' ? 'is-active' : ''}`}
-              onClick={() => togglePanel('lines')}
-            >
-              <Minus size={18} strokeWidth={1.6} />
-              <span className="nards-dock__label">Lines</span>
+              <ChevronDown size={10} className="nards-dock__chevron" />
             </button>
           </div>
 
           <div className="nards-dock__separator" />
 
-          {/* Sticky Note Tool */}
+          {/* Lines dropdown */}
+          <div className="nards-dock__section">
+            <button
+              className={`nards-dock__item ${openPanel === 'lines' ? 'is-active' : ''}`}
+              onClick={() => togglePanel('lines')}
+            >
+              <LineIcon size={16} strokeWidth={1.6} />
+              <span className="nards-dock__label">Lines</span>
+              <ChevronDown size={10} className="nards-dock__chevron" />
+            </button>
+          </div>
+
+          <div className="nards-dock__separator" />
+
+          {/* Relationship dropdown */}
+          <div className="nards-dock__section">
+            <button
+              className={`nards-dock__item nards-dock__item--relationship ${openPanel === 'relationship' ? 'is-active' : ''}`}
+              onClick={() => togglePanel('relationship')}
+            >
+              <ArrowLeftRight size={16} strokeWidth={1.6} />
+              <span className="nards-dock__label">
+                {activeRelationship}
+              </span>
+              {activeLineType && (
+                <span
+                  className="nards-dock__rel-swatch"
+                  style={{ backgroundColor: activeLineType.color }}
+                />
+              )}
+              <ChevronDown size={10} className="nards-dock__chevron" />
+            </button>
+          </div>
+
+          <div className="nards-dock__separator" />
+
+          {/* Sticky drag-source */}
           <div className="nards-dock__section">
             <button
               className="nards-dock__item nards-dock__item--drag"
               draggable
               title="Drag to add a sticky note"
             >
-              <StickyNote size={18} strokeWidth={1.6} fill="var(--nards-color-warning)" />
-              <span className="nards-dock__label">Note</span>
+              <StickyNote size={16} strokeWidth={1.6} fill="var(--nards-color-warning)" />
+              <span className="nards-dock__label">Sticky</span>
             </button>
           </div>
 
           <div className="nards-dock__separator" />
 
-          {/* Timeline */}
+          {/* New dropdown */}
           <div className="nards-dock__section">
             <button
-              className={`nards-dock__item ${openPanel === 'timeline' ? 'is-active' : ''}`}
-              onClick={() => togglePanel('timeline')}
+              className={`nards-dock__item nards-dock__item--accent ${openPanel === 'new' ? 'is-active' : ''}`}
+              onClick={() => togglePanel('new')}
             >
-              <Clock size={18} strokeWidth={1.6} />
-              <span className="nards-dock__label">Timeline</span>
+              <Plus size={16} strokeWidth={2} />
+              <span className="nards-dock__label">New</span>
+              <ChevronDown size={10} className="nards-dock__chevron" />
             </button>
           </div>
+
         </nav>
 
         {/* ═══════════ FLYOUT PANELS ═══════════ */}
 
-        {/* Nard Types Flyout */}
+        {/* Nard Types — show/hide + drag to create */}
         <div className={`nards-flyout nards-glass ${openPanel === 'nards' ? 'is-open' : ''}`}>
           <div className="nards-flyout__header">
             <h3 className="nards-flyout__title">Nard Types</h3>
@@ -125,7 +136,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({ activeView, onViewChange }) => 
           </div>
           <div className="nards-flyout__list">
             {NARD_TYPES.map((type) => (
-              <div key={type.name} className="nards-flyout__row">
+              <div key={type.name} className="nards-flyout__row" draggable title={`Drag to create ${type.name}`}>
                 <div className="nards-flyout__row-left">
                   <span className="nards-flyout__type-icon" style={{ color: type.color }}>
                     <type.icon size={14} strokeWidth={2} />
@@ -133,18 +144,18 @@ const GlobalDock: React.FC<GlobalDockProps> = ({ activeView, onViewChange }) => 
                   <span className="nards-flyout__row-name">{type.name}</span>
                   <span className="nards-flyout__row-count">{type.count}</span>
                 </div>
-                <div className="nards-flyout__row-actions">
-                  <button className="nards-flyout__visibility-btn is-visible" title="Toggle visibility">
-                    <Eye size={13} strokeWidth={1.6} />
-                  </button>
-                  <ChevronRight size={12} className="nards-flyout__chevron" />
-                </div>
+                <button
+                  className={`nards-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`}
+                  title="Toggle visibility"
+                >
+                  {type.visible ? <Eye size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
+                </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Line Types Flyout */}
+        {/* Line Types — show/hide */}
         <div className={`nards-flyout nards-glass ${openPanel === 'lines' ? 'is-open' : ''}`}>
           <div className="nards-flyout__header">
             <h3 className="nards-flyout__title">Line Types</h3>
@@ -158,49 +169,83 @@ const GlobalDock: React.FC<GlobalDockProps> = ({ activeView, onViewChange }) => 
                   <span className="nards-flyout__row-name">{type.name}</span>
                   <span className="nards-flyout__row-count">{type.count}</span>
                 </div>
-                <div className="nards-flyout__row-actions">
-                  <button
-                    className={`nards-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`}
-                    title="Toggle visibility"
-                  >
-                    {type.visible ? <Eye size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
-                  </button>
-                  <button
-                    className={`nards-flyout__physics-btn ${type.active ? 'is-active' : ''}`}
-                    title={type.active ? 'Active (physics on)' : 'Inactive (ghost)'}
-                  >
-                    <Magnet size={13} strokeWidth={1.6} />
-                  </button>
+                <button
+                  className={`nards-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`}
+                  title="Toggle visibility"
+                >
+                  {type.visible ? <Eye size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Relationship — active line selector + spectrum */}
+        <div className={`nards-flyout nards-glass ${openPanel === 'relationship' ? 'is-open' : ''}`}>
+          <div className="nards-flyout__header">
+            <h3 className="nards-flyout__title">Active Relationship</h3>
+          </div>
+          <div className="nards-flyout__list">
+            {LINE_TYPES.map((type) => (
+              <div
+                key={type.name}
+                className={`nards-flyout__row nards-flyout__row--selectable ${activeRelationship === type.name ? 'is-active' : ''}`}
+                onClick={() => setActiveRelationship(type.name)}
+              >
+                <div className="nards-flyout__row-left">
+                  <span className="nards-flyout__line-swatch" style={{ background: type.color }} />
+                  <span className="nards-flyout__row-name">{type.name}</span>
                 </div>
+                {activeRelationship === type.name && (
+                  <div className="nards-flyout__row-spectrum">
+                    <Spectrum value={0.65} color={type.color} width={52} />
+                  </div>
+                )}
               </div>
             ))}
           </div>
           <div className="nards-flyout__footer">
             <span className="nards-flyout__footer-hint">
-              <Magnet size={10} /> Only 1 active line type allows spatial editing
+              <ArrowLeftRight size={10} />
+              Spatial distance = {activeRelationship.toLowerCase()} strength
             </span>
           </div>
         </div>
 
-        {/* Timeline Flyout */}
-        <div className={`nards-flyout nards-glass ${openPanel === 'timeline' ? 'is-open' : ''}`}>
+        {/* New — create Nard or Line */}
+        <div className={`nards-flyout nards-glass ${openPanel === 'new' ? 'is-open' : ''}`}>
           <div className="nards-flyout__header">
-            <h3 className="nards-flyout__title">Timeline</h3>
-            <span className="nards-flyout__count">{SNAPSHOTS.length} snapshots</span>
+            <h3 className="nards-flyout__title">Create New</h3>
           </div>
           <div className="nards-flyout__list">
-            {SNAPSHOTS.map((snap, i) => (
-              <div key={i} className={`nards-flyout__row ${snap.isCurrent ? 'is-current' : ''}`}>
-                <div className="nards-flyout__row-left">
-                  <span className={`nards-flyout__snapshot-dot ${snap.isCurrent ? 'is-live' : ''}`} />
-                  <div className="nards-flyout__snapshot-info">
-                    <span className="nards-flyout__row-name">{snap.name}</span>
-                    <span className="nards-flyout__snapshot-date">{snap.date}</span>
-                  </div>
-                </div>
-                <ChevronRight size={12} className="nards-flyout__chevron" />
+            <div className="nards-flyout__create-section">
+              <h4 className="nards-flyout__create-label">Nard</h4>
+              <div className="nards-flyout__create-grid">
+                {NARD_TYPES.map((type) => (
+                  <button key={type.name} className="nards-flyout__create-btn" title={`Create ${type.name}`}>
+                    <type.icon size={18} strokeWidth={1.8} color={type.color} />
+                    <span>{type.name}</span>
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
+            <div className="nards-flyout__create-divider" />
+            <div className="nards-flyout__create-section">
+              <h4 className="nards-flyout__create-label">Line</h4>
+              <div className="nards-flyout__create-grid">
+                {LINE_TYPES.map((type) => (
+                  <button key={type.name} className="nards-flyout__create-btn" title={`Create ${type.name} line`}>
+                    <span className="nards-flyout__line-swatch--lg" style={{ background: type.color }} />
+                    <span>{type.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="nards-flyout__footer">
+            <span className="nards-flyout__footer-hint">
+              Select type, then configure properties
+            </span>
           </div>
         </div>
 
