@@ -2,27 +2,57 @@
  * ProjectDashboard.tsx — Workspace Switcher / Project List
  *
  * The "front door" of Nords — shown before entering a project.
- * Uses mock data for Sprint 3; wired to API in a future sprint.
+ * Now loads real projects from the Express API.
  */
 
+import { useState, useEffect } from 'react';
 import {
   FolderKanban, Plus, Users, MoreHorizontal,
   Layers, Star, BookOpen
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../../api/client';
 import NordsLogo from '../NordsLogo';
 import './ProjectDashboard.css';
 
-const PROJECTS = [
-  { id: 'p1', name: 'Product Launch Q3', icon: '🚀', nordCount: 42, connectionCount: 86, lastModified: '2 min ago', members: 4, starred: true, description: 'End-to-end planning for the Q3 product release cycle.' },
-  { id: 'p2', name: 'Architecture Review', icon: '🏗️', nordCount: 28, connectionCount: 51, lastModified: '1 hour ago', members: 3, starred: true, description: 'System architecture audit and migration planning.' },
-  { id: 'p3', name: 'Design System v2', icon: '🎨', nordCount: 15, connectionCount: 22, lastModified: '3 days ago', members: 2, starred: false, description: 'Component library refresh and token standardization.' },
-  { id: 'p4', name: 'Competitive Analysis', icon: '📊', nordCount: 67, connectionCount: 134, lastModified: '1 week ago', members: 5, starred: false, description: 'Market landscape mapping and feature gap analysis.' },
-  { id: 'p5', name: 'Onboarding Flow', icon: '👋', nordCount: 8, connectionCount: 12, lastModified: '2 weeks ago', members: 2, starred: false, description: 'New user experience and activation funnel design.' },
+interface Project {
+  id: string;
+  name: string;
+  icon: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Mock fallback while API loads or if API is unavailable
+const MOCK_PROJECTS: Project[] = [
+  { id: 'mock-1', name: 'Product Launch Q3', icon: '🚀', description: 'End-to-end planning for the Q3 product release cycle.', created_at: '', updated_at: '2 min ago' },
+  { id: 'mock-2', name: 'Architecture Review', icon: '🏗️', description: 'System architecture audit and migration planning.', created_at: '', updated_at: '1 hour ago' },
 ];
 
 export default function ProjectDashboard() {
   const navigate = useNavigate();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const data = await api.get<Project[]>('/api/projects');
+        setProjects(data);
+      } catch (err) {
+        console.error('Failed to load projects:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load');
+        setProjects(MOCK_PROJECTS); // Graceful fallback
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProjects();
+  }, []);
+
+  const displayProjects = projects.length > 0 ? projects : MOCK_PROJECTS;
 
   return (
     <div className="nords-dashboard" data-testid="project-dashboard" data-theme="obsidian">
@@ -35,12 +65,12 @@ export default function ProjectDashboard() {
           <button className="nords-dashboard__nav-item is-active">
             <FolderKanban size={14} strokeWidth={1.5} />
             All Projects
-            <span className="nords-dashboard__nav-count">{PROJECTS.length}</span>
+            <span className="nords-dashboard__nav-count">{displayProjects.length}</span>
           </button>
           <button className="nords-dashboard__nav-item">
             <Star size={14} strokeWidth={1.5} />
             Starred
-            <span className="nords-dashboard__nav-count">{PROJECTS.filter(p => p.starred).length}</span>
+            <span className="nords-dashboard__nav-count">0</span>
           </button>
         </nav>
 
@@ -68,8 +98,15 @@ export default function ProjectDashboard() {
           <h1 className="nords-dashboard__title">All Projects</h1>
         </div>
 
+        {loading && (
+          <div className="nords-dashboard__loading">
+            <div className="nords-canvas-loading__spinner" />
+            <span>Loading projects…</span>
+          </div>
+        )}
+
         <div className="nords-dashboard__grid">
-          {PROJECTS.map(project => (
+          {displayProjects.map(project => (
             <div
               key={project.id}
               className="nords-dashboard__card"
@@ -77,26 +114,23 @@ export default function ProjectDashboard() {
               data-testid={`project-card-${project.id}`}
             >
               <div className="nords-dashboard__card-header">
-                <span className="nords-dashboard__card-icon">{project.icon}</span>
+                <span className="nords-dashboard__card-icon">{project.icon || '📁'}</span>
                 <div className="nords-dashboard__card-header-right">
-                  {project.starred && <Star size={12} strokeWidth={2} className="nords-dashboard__star" />}
                   <button className="nords-dashboard__card-menu">
                     <MoreHorizontal size={14} strokeWidth={1.5} />
                   </button>
                 </div>
               </div>
               <h3 className="nords-dashboard__card-name">{project.name}</h3>
-              <p className="nords-dashboard__card-desc">{project.description}</p>
+              <p className="nords-dashboard__card-desc">{project.description || 'No description'}</p>
               <div className="nords-dashboard__card-footer">
                 <span className="nords-dashboard__card-stat">
                   <Layers size={11} strokeWidth={1.5} />
-                  {project.nordCount} nords
+                  project
                 </span>
-                <span className="nords-dashboard__card-stat">
-                  <Users size={11} strokeWidth={1.5} />
-                  {project.members}
+                <span className="nords-dashboard__card-time">
+                  {project.updated_at ? new Date(project.updated_at).toLocaleDateString() : ''}
                 </span>
-                <span className="nords-dashboard__card-time">{project.lastModified}</span>
               </div>
             </div>
           ))}

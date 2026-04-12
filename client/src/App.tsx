@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useParams } from 'react-router-dom';
 import '@xyflow/react/dist/style.css';
 import { ReactFlowProvider } from '@xyflow/react';
 import { AuthProvider } from './context/AuthContext';
@@ -22,6 +22,7 @@ import ForgotPasswordScreen from './components/Auth/ForgotPasswordScreen';
  * This is the main spatial workspace layout.
  */
 function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string, onThemeChange: (theme: string) => void }) {
+  const { id: projectId } = useParams<{ id: string }>();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedNord, setSelectedNord] = useState<string | null>(null);
 
@@ -45,7 +46,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
           />
           <GlobalDock />
           <ZoomControls />
-          <CanvasEngine onNordClick={handleNordClick} selectedNord={selectedNord} />
+          <CanvasEngine onNordClick={handleNordClick} selectedNord={selectedNord} projectId={projectId} />
           <DetailDrawer isOpen={isDrawerOpen} onClose={closeDrawer} nordId={selectedNord} />
         </div>
       </LensProvider>

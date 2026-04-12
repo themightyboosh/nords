@@ -677,3 +677,51 @@
   height: 16px;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--nords-color-accent) 25%, transparent);
 }
+
+/* ═══════════════════════════════════════════════ */
+/* LOADING & ERROR STATES                          */
+/* ═══════════════════════════════════════════════ */
+
+.nords-canvas-loading,
+.nords-canvas-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nords-space-md);
+  color: var(--nords-color-text-tertiary);
+  font-family: var(--nords-font-sans);
+  font-size: var(--nords-font-size-sm);
+}
+
+.nords-canvas-loading__spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--nords-color-border-subtle);
+  border-top-color: var(--nords-color-accent);
+  border-radius: 50%;
+  animation: nords-spin 0.6s linear infinite;
+}
+
+@keyframes nords-spin {
+  to { transform: rotate(360deg); }
+}
+
+.nords-canvas-error button {
+  padding: var(--nords-space-xs) var(--nords-space-lg);
+  background: var(--nords-color-accent);
+  color: white;
+  border: none;
+  border-radius: var(--nords-radius-md);
+  font-family: var(--nords-font-sans);
+  font-size: var(--nords-font-size-xs);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.nords-canvas-error button:hover {
+  filter: brightness(1.15);
+}
+
