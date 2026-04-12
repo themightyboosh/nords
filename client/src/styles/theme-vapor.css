@@ -1,0 +1,104 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ * VARIANT C — "VAPOR"
+ * ═══════════════════════════════════════════════════════════
+ * Font: Inter (100–900 weights, Italic available)
+ * Personality: Notion meets Linear's light mode meets Arc Browser.
+ *   Warm off-white with muted stone grays. Paper-texture warmth.
+ *   Subtle shadows that feel dimensional but never heavy. Accent
+ *   is a warm amber/copper. Feels editorial, human, considered.
+ *   This is the "design studio" variant for creative PMs.
+ */
+
+[data-theme="vapor"] {
+  /* ── Typography ── */
+  --nords-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nords-font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  --nords-font-weight-thin: 300;
+  --nords-font-weight-normal: 400;
+  --nords-font-weight-medium: 500;
+  --nords-font-weight-semibold: 600;
+  --nords-font-weight-bold: 700;
+  --nords-font-weight-black: 800;
+
+  --nords-font-size-xs: 0.6875rem;
+  --nords-font-size-sm: 0.75rem;
+  --nords-font-size-body: 0.8125rem;
+  --nords-font-size-md: 0.9375rem;
+  --nords-font-size-lg: 1.0625rem;
+  --nords-font-size-xl: 1.375rem;
+  --nords-font-size-2xl: 1.75rem;
+
+  --nords-line-height-tight: 1.2;
+  --nords-line-height-normal: 1.55;
+  --nords-line-height-relaxed: 1.7;
+
+  --nords-letter-spacing-tight: -0.02em;
+  --nords-letter-spacing-normal: -0.006em;
+  --nords-letter-spacing-wide: 0.05em;
+
+  /* ── Surfaces (warm off-whites, paper) ── */
+  --nords-color-bg-deep: #f5f3ef;
+  --nords-color-bg-canvas: #faf8f4;
+  --nords-color-bg-surface: #ffffff;
+  --nords-color-bg-elevated: #ffffff;
+  --nords-color-bg-hover: #f0ede7;
+
+  /* ── Borders ── */
+  --nords-color-border-subtle: rgba(0, 0, 0, 0.04);
+  --nords-color-border-default: rgba(0, 0, 0, 0.08);
+  --nords-color-border-strong: rgba(0, 0, 0, 0.14);
+
+  /* ── Text ── */
+  --nords-color-text-primary: #1a1a1a;
+  --nords-color-text-secondary: #6b6b6b;
+  --nords-color-text-tertiary: #999999;
+  --nords-color-text-disabled: #c4c4c4;
+
+  /* ── Accent (warm copper/amber) ── */
+  --nords-color-accent: #c2733e;
+  --nords-color-accent-dim: rgba(194, 115, 62, 0.08);
+  --nords-color-accent-hover: #d4884f;
+  --nords-color-accent-secondary: #7c5e3c;
+
+  /* ── Semantic ── */
+  --nords-color-success: #3d9970;
+  --nords-color-warning: #e8a838;
+  --nords-color-danger: #d35f5f;
+  --nords-color-info: #5b8fd9;
+
+  /* ── Connections ── */
+  --nords-color-connection-active: #c2733e;
+  --nords-color-connection-ghost: rgba(194, 115, 62, 0.12);
+
+  /* ── Shadows (soft, warm, dimensional) ── */
+  --nords-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --nords-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
+  --nords-shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.06);
+  --nords-shadow-glow: 0 0 0 1px rgba(194, 115, 62, 0.2);
+
+  /* ── Radius — rounded, approachable ── */
+  --nords-radius-sm: 6px;
+  --nords-radius-md: 8px;
+  --nords-radius-lg: 12px;
+  --nords-radius-xl: 16px;
+  --nords-radius-pill: 100px;
+
+  /* ── Spacing ── */
+  --nords-space-xs: 4px;
+  --nords-space-sm: 8px;
+  --nords-space-md: 12px;
+  --nords-space-lg: 16px;
+  --nords-space-xl: 24px;
+  --nords-space-2xl: 32px;
+
+  /* ── Layout ── */
+  --nords-header-height: 52px;
+  --nords-dock-height: 56px;
+  --nords-drawer-width: 400px;
+
+  /* ── Glass ── */
+  --nords-glass-bg: rgba(255, 255, 255, 0.82);
+  --nords-glass-blur: 14px;
+}

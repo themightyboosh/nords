@@ -1,0 +1,105 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ * VARIANT A — "OBSIDIAN"
+ * ═══════════════════════════════════════════════════════════
+ * Font: Inter (100–900 weights)
+ * Personality: Palantir Foundry meets Bloomberg Terminal.
+ *   Surgical, monochromatic, information-dense. Dark charcoal
+ *   with ice-blue accents. Type-forward hierarchy using weight
+ *   contrast instead of color. Feels like command infrastructure.
+ */
+
+[data-theme="obsidian"] {
+  /* ── Typography ── */
+  --nords-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nords-font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  --nords-font-weight-thin: 300;
+  --nords-font-weight-normal: 400;
+  --nords-font-weight-medium: 500;
+  --nords-font-weight-semibold: 600;
+  --nords-font-weight-bold: 700;
+  --nords-font-weight-black: 800;
+
+  --nords-font-size-xs: 0.6875rem;   /* 11px */
+  --nords-font-size-sm: 0.75rem;     /* 12px */
+  --nords-font-size-body: 0.8125rem; /* 13px — dense default */
+  --nords-font-size-md: 0.875rem;    /* 14px */
+  --nords-font-size-lg: 1rem;        /* 16px */
+  --nords-font-size-xl: 1.25rem;     /* 20px */
+  --nords-font-size-2xl: 1.5rem;     /* 24px */
+
+  --nords-line-height-tight: 1.2;
+  --nords-line-height-normal: 1.5;
+  --nords-line-height-relaxed: 1.65;
+
+  --nords-letter-spacing-tight: -0.02em;
+  --nords-letter-spacing-normal: 0;
+  --nords-letter-spacing-wide: 0.06em;
+
+  /* ── Surfaces ── */
+  --nords-color-bg-deep: #0d0f12;
+  --nords-color-bg-canvas: #13161b;
+  --nords-color-bg-surface: #1a1e25;
+  --nords-color-bg-elevated: #21262e;
+  --nords-color-bg-hover: #282e38;
+
+  /* ── Borders ── */
+  --nords-color-border-subtle: rgba(255, 255, 255, 0.06);
+  --nords-color-border-default: rgba(255, 255, 255, 0.10);
+  --nords-color-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* ── Text ── */
+  --nords-color-text-primary: #e8eaed;
+  --nords-color-text-secondary: #9aa0ab;
+  --nords-color-text-tertiary: #5f6671;
+  --nords-color-text-disabled: #3d434d;
+
+  /* ── Accent (ice blue) ── */
+  --nords-color-accent: #4da6ff;
+  --nords-color-accent-dim: rgba(77, 166, 255, 0.12);
+  --nords-color-accent-hover: #6bb5ff;
+
+  /* ── Semantic ── */
+  --nords-color-success: #34d399;
+  --nords-color-warning: #fbbf24;
+  --nords-color-danger: #f87171;
+  --nords-color-info: #60a5fa;
+
+  /* ── Label on Color ── */
+  --nords-color-label-on-color: #111317;
+
+  /* ── Connections ── */
+  --nords-color-connection-active: #4da6ff;
+  --nords-color-connection-ghost: rgba(77, 166, 255, 0.15);
+
+  /* ── Shadows ── */
+  --nords-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --nords-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --nords-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --nords-shadow-glow: 0 0 20px rgba(77, 166, 255, 0.15);
+
+  /* ── Radius ── */
+  --nords-radius-sm: 4px;
+  --nords-radius-md: 6px;
+  --nords-radius-lg: 10px;
+  --nords-radius-xl: 16px;
+  --nords-radius-pill: 100px;
+
+  /* ── Spacing ── */
+  --nords-space-xs: 4px;
+  --nords-space-sm: 8px;
+  --nords-space-md: 12px;
+  --nords-space-lg: 16px;
+  --nords-space-xl: 24px;
+  --nords-space-2xl: 32px;
+
+  /* ── Layout ── */
+  --nords-header-height: 48px;
+  --nords-dock-height: 52px;
+  --nords-drawer-width: 380px;
+
+  /* ── Glass ── */
+  --nords-glass-bg: rgba(19, 22, 27, 0.85);
+  --nords-glass-blur: 16px;
+}

@@ -1,36 +1,81 @@
-@import './styles/variables.css';
+@import './styles/theme-obsidian.css';
+@import './styles/theme-obsidian-light.css';
+@import './styles/theme-nebula.css';
+@import './styles/theme-vapor.css';
 
-/* Global Reset & Base */
+/* ═══════════════════════════════════════════════════════ */
+/* GLOBAL RESET & BASE                                     */
+/* ═══════════════════════════════════════════════════════ */
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden; /* For canvas dragging mechanics */
-  font-family: var(--nards-font-family);
-  background-color: var(--nards-bg-canvas);
-  color: var(--nards-text-primary);
-  /* Prevent bounce effect on mac trackpads when scrolling canvas */
-  overscroll-behavior: none; 
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Nards App Container */
-.nards-app-container {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
+body {
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-body);
+  font-weight: var(--nords-font-weight-normal);
+  line-height: var(--nords-line-height-normal);
+  letter-spacing: var(--nords-letter-spacing-normal);
+  color: var(--nords-color-text-primary);
+  background-color: var(--nords-color-bg-canvas);
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* SHARED COMPONENT STYLES                                 */
+/* ═══════════════════════════════════════════════════════ */
+
+/* ── Glass Surface ── */
+.nords-glass {
+  background: var(--nords-glass-bg);
+  backdrop-filter: blur(var(--nords-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nords-glass-blur));
+  border: 1px solid var(--nords-color-border-default);
+}
+
+/* ── App Container ── */
+.nords-app-container {
   position: relative;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
-/* Smooth glassmorphism utility */
-.nards-glass {
-  background: var(--nards-bg-dock);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--nards-border-color);
+/* ── Focus Ring (Accessibility) ── */
+:focus-visible {
+  outline: 2px solid var(--nords-color-accent);
+  outline-offset: 2px;
+}
+
+/* ── Scrollbar (Dark Themes) ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--nords-color-border-default);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nords-color-border-strong);
+}
+
+/* ── Selection ── */
+::selection {
+  background: var(--nords-color-accent-dim);
+  color: var(--nords-color-text-primary);
 }

@@ -1,0 +1,103 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ * VARIANT B — "NEBULA"
+ * ═══════════════════════════════════════════════════════════
+ * Font: Space Grotesk (300–700 weights)
+ * Personality: Linear meets Vercel meets a sci-fi HUD.
+ *   Deep indigo-black with violet/cyan gradient accents.
+ *   Geometric, slightly futuristic. Glow effects on interactive
+ *   elements. Feels like piloting a spacecraft dashboard.
+ */
+
+[data-theme="nebula"] {
+  /* ── Typography ── */
+  --nords-font-primary: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nords-font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  --nords-font-weight-thin: 300;
+  --nords-font-weight-normal: 400;
+  --nords-font-weight-medium: 500;
+  --nords-font-weight-semibold: 600;
+  --nords-font-weight-bold: 700;
+  --nords-font-weight-black: 700;
+
+  --nords-font-size-xs: 0.6875rem;
+  --nords-font-size-sm: 0.75rem;
+  --nords-font-size-body: 0.8125rem;
+  --nords-font-size-md: 0.875rem;
+  --nords-font-size-lg: 1.0625rem;
+  --nords-font-size-xl: 1.375rem;
+  --nords-font-size-2xl: 1.75rem;
+
+  --nords-line-height-tight: 1.15;
+  --nords-line-height-normal: 1.45;
+  --nords-line-height-relaxed: 1.6;
+
+  --nords-letter-spacing-tight: -0.025em;
+  --nords-letter-spacing-normal: -0.01em;
+  --nords-letter-spacing-wide: 0.08em;
+
+  /* ── Surfaces ── */
+  --nords-color-bg-deep: #08090e;
+  --nords-color-bg-canvas: #0c0e16;
+  --nords-color-bg-surface: #12141f;
+  --nords-color-bg-elevated: #1a1c2b;
+  --nords-color-bg-hover: #222438;
+
+  /* ── Borders ── */
+  --nords-color-border-subtle: rgba(139, 92, 246, 0.08);
+  --nords-color-border-default: rgba(139, 92, 246, 0.15);
+  --nords-color-border-strong: rgba(139, 92, 246, 0.25);
+
+  /* ── Text ── */
+  --nords-color-text-primary: #e2e4f0;
+  --nords-color-text-secondary: #8b8fa8;
+  --nords-color-text-tertiary: #565a72;
+  --nords-color-text-disabled: #3a3d52;
+
+  /* ── Accent (violet → cyan gradient endpoints) ── */
+  --nords-color-accent: #a78bfa;
+  --nords-color-accent-dim: rgba(167, 139, 250, 0.12);
+  --nords-color-accent-hover: #c4b5fd;
+  --nords-color-accent-secondary: #22d3ee;
+
+  /* ── Semantic ── */
+  --nords-color-success: #34d399;
+  --nords-color-warning: #fde68a;
+  --nords-color-danger: #fb7185;
+  --nords-color-info: #67e8f9;
+
+  /* ── Connections ── */
+  --nords-color-connection-active: #a78bfa;
+  --nords-color-connection-ghost: rgba(167, 139, 250, 0.12);
+
+  /* ── Shadows ── */
+  --nords-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --nords-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --nords-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.7);
+  --nords-shadow-glow: 0 0 24px rgba(167, 139, 250, 0.2), 0 0 48px rgba(34, 211, 238, 0.08);
+
+  /* ── Radius — slightly rounder, more organic ── */
+  --nords-radius-sm: 6px;
+  --nords-radius-md: 8px;
+  --nords-radius-lg: 12px;
+  --nords-radius-xl: 20px;
+  --nords-radius-pill: 100px;
+
+  /* ── Spacing ── */
+  --nords-space-xs: 4px;
+  --nords-space-sm: 8px;
+  --nords-space-md: 12px;
+  --nords-space-lg: 16px;
+  --nords-space-xl: 24px;
+  --nords-space-2xl: 36px;
+
+  /* ── Layout ── */
+  --nords-header-height: 52px;
+  --nords-dock-height: 56px;
+  --nords-drawer-width: 400px;
+
+  /* ── Glass ── */
+  --nords-glass-bg: rgba(12, 14, 22, 0.8);
+  --nords-glass-blur: 20px;
+}
