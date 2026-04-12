@@ -29,6 +29,8 @@ import ProjectSettings from './components/ProjectSettings/ProjectSettings';
 import EmptyState from './components/EmptyState/EmptyState';
 import SearchPalette from './components/SearchPalette/SearchPalette';
 import ProjectDashboard from './components/ProjectDashboard/ProjectDashboard';
+import AuthScreen from './components/Auth/AuthScreen';
+import type { AuthMode } from './components/Auth/AuthScreen';
 
 /** The three lens modes available in the dock's 3-way toggle */
 export type LensMode = 'canvas' | 'link' | 'matrix';
@@ -55,6 +57,8 @@ function App() {
   const [showSearch, setShowSearch] = useState(false);
   /** Project dashboard / workspace switcher */
   const [showDashboard, setShowDashboard] = useState(false);
+  /** Auth screen mode: null = hidden, 'login' | 'signup' | 'settings' */
+  const [authMode, setAuthMode] = useState<AuthMode | null>(null);
 
   // Apply theme to <html> so CSS custom properties cascade to body and all children
   React.useEffect(() => {
@@ -112,6 +116,7 @@ function App() {
         currentTheme={theme}
         onThemeChange={setTheme}
         onOpenSettings={() => setShowSettings(true)}
+        onOpenUserSettings={() => setAuthMode('settings')}
       />
       <GlobalDock
         lens={lens}
@@ -148,6 +153,18 @@ function App() {
         <EmptyState
           onAddNord={() => setShowEmpty(false)}
           onManageTypes={() => { setShowEmpty(false); setShowManageTypes(true); }}
+        />
+      )}
+
+      {/* ─── Layer 8: Auth Screens (login / signup / user settings) ─── */}
+      {authMode && (
+        <AuthScreen
+          mode={authMode}
+          onClose={() => setAuthMode(null)}
+          onAuthenticated={() => setAuthMode(null)}
+          onSwitchMode={setAuthMode}
+          currentTheme={theme}
+          onThemeChange={setTheme}
         />
       )}
     </div>

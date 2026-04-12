@@ -30,9 +30,10 @@ interface ViewportHeaderProps {
   currentTheme: string;
   onThemeChange: (theme: string) => void;
   onOpenSettings?: () => void;
+  onOpenUserSettings?: () => void;
 }
 
-const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeChange, onOpenSettings }) => {
+const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeChange, onOpenSettings, onOpenUserSettings }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -85,7 +86,7 @@ const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeCh
           <Settings size={15} strokeWidth={1.6} />
         </button>
 
-        <button className="nords-viewport-header__user-btn" title="Daniel Crowder — Account">
+        <button className="nords-viewport-header__user-btn" title="Daniel Crowder — Account" onClick={onOpenUserSettings}>
           <div className="nords-viewport-header__avatar nords-viewport-header__avatar--self" style={{ backgroundColor: '#2563eb' }}>D</div>
           <ChevronDown size={10} />
         </button>
@@ -118,7 +119,7 @@ const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeCh
           <Settings size={14} strokeWidth={1.6} />
           <span>Project Settings</span>
         </button>
-        <button className="nords-viewport-header__mobile-menu-item">
+        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenUserSettings?.(); setMobileMenuOpen(false); }}>
           <User size={14} strokeWidth={1.6} />
           <span>Account</span>
         </button>
