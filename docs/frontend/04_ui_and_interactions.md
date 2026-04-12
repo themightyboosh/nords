@@ -42,16 +42,12 @@ When 2+ Nards are selected (via lasso or shift-click), a **Group Action Toolbar*
 
 ### 1.8 Canvas Annotations (Sticky Notes)
 Not everything on the canvas should be a formal graph node. Sometimes a user needs to leave a note for themselves or their team.
-* **Anchored Notes:** Lightweight annotation elements that **may anchor to either a Nard or a Line**. They are excluded from Snapshot data comparisons and ignored by AI topology tools.
+* **Anchored Notes:** Lightweight annotation indicators that **may anchor to either a Nard or a Line**. They are excluded from Snapshot data comparisons and ignored by AI topology tools.
 * **Visibility Inheritance:** An anchored note inherits the visibility state of its parent. If the parent Nard Type is hidden, all notes anchored to those Nards disappear. If the parent Line Type is toggled invisible, notes anchored to those Lines disappear.
-* **Unanchored Notes:** Notes that are not anchored to any entity are displayed as a horizontal row of compact indicators pinned to the top of the viewport (outside the zoomable canvas). These can be **drag-anchored** to any Nard or Line by dragging them onto the target — they then become anchored and move to the canvas.
-* **Level of Detail (LOD):**
-  * *Default zoom (≤130%):* Notes render as a small icon-only indicator (sticky note icon). No text is shown.
-  * *High zoom (>130%):* Notes expand to show a single-line text preview (first ~40 characters, truncated).
-  * *Maximum zoom (>170%):* Notes expand fully, showing the complete note content.
-* **Markdown Editing:** Clicking a note (at any zoom level) opens an inline markdown editor. Notes support basic markdown: bold, italic, links, and lists. The editor dismisses on blur or Escape.
-* **Visual Treatment:** Anchored notes render with a subtle dotted connector to their anchor point. All notes are zoom-independent (they do not scale with the canvas). The icon indicator uses the note's accent color.
-* **Use Cases:** "Don't reorganize this cluster until Thursday" (anchored to a Nard), "Sarah — review this relationship" (anchored to a Line), general project reminders (unanchored, pinned to top).
+* **Unanchored Notes:** Notes not anchored to any entity are displayed as a horizontal row of icon indicators flowing left-to-right at the top of the viewport. These can be **drag-anchored** to any Nard or Line by dragging them onto the target.
+* **Visual Treatment:** Notes are **always rendered as a small icon-only indicator** (24×24px sticky note icon) on the canvas — no text is ever shown inline. They are zoom-independent (fixed size regardless of zoom level) and positioned relative to their anchor. The icon uses the note's accent color with a dotted connector to the anchor point.
+* **Click to Expand/Edit:** Clicking any note (anchored or unanchored) opens an inline markdown editor popover. Notes support basic markdown: bold, italic, links, and lists. The editor dismisses on blur or Escape.
+* **Use Cases:** "Don't reorganize this cluster until Thursday" (anchored to a Nard), "Sarah — review this relationship" (anchored to a Line), general project reminders (unanchored, top row).
 
 ### 1.9 Drag Distance Info Panel
 When a user drags a Nard while exactly **one** Line Type is active (physics-participating), a transient info panel appears near the drag handle showing the live distance values.

@@ -15,14 +15,13 @@
 }
 
 /* ═══════════════════════════════════════════════ */
-/* UNANCHORED NOTES — compact icon badges at top   */
+/* UNANCHORED NOTES — icon badges, top-left flow   */
 /* ═══════════════════════════════════════════════ */
 
 .nards-unanchored-notes {
   position: absolute;
   top: calc(var(--nards-header-height) + var(--nards-space-md));
-  left: 50%;
-  transform: translateX(-50%);
+  left: var(--nards-space-lg);
   z-index: 50;
   display: flex;
   gap: var(--nards-space-xs);
@@ -229,10 +228,9 @@
 }
 
 /* ═══════════════════════════════════════════════ */
-/* ANCHORED STICKY NOTES — LOD icon indicators     */
+/* ANCHORED STICKY NOTES — icon-only indicators    */
 /* ═══════════════════════════════════════════════ */
 
-/* Default: compact icon-only indicator */
 .nards-sticky-note {
   position: absolute;
   z-index: 14;
@@ -248,22 +246,12 @@
   cursor: pointer;
   user-select: none;
   transform-origin: center center;
-  transition: width 0.2s ease, height 0.2s ease, padding 0.2s ease;
-  overflow: hidden;
+  color: var(--nards-color-warning);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
-/* Preview mode (zoom >130%): expand to show truncated text */
-.nards-sticky-note.has-preview {
-  width: auto;
-  height: auto;
-  max-width: 160px;
-  padding: var(--nards-space-xs) var(--nards-space-sm);
-  gap: var(--nards-space-xs);
-}
-
-/* Full mode (zoom >170%): no max-width truncation */
-.nards-sticky-note.has-full {
-  max-width: 200px;
+.nards-sticky-note:hover {
+  box-shadow: var(--nards-shadow-md);
 }
 
 .nards-sticky-note__connector {
@@ -273,30 +261,6 @@
   width: 1px;
   height: 10px;
   border-left: 1px dotted var(--nards-color-text-disabled);
-}
-
-.nards-sticky-note.has-preview .nards-sticky-note__connector {
-  left: 16px;
-}
-
-.nards-sticky-note__icon {
-  color: var(--nards-color-warning);
-  flex-shrink: 0;
-}
-
-.nards-sticky-note__text {
-  font-size: var(--nards-font-size-xs);
-  font-weight: var(--nards-font-weight-normal);
-  color: var(--nards-color-text-secondary);
-  line-height: var(--nards-line-height-normal);
-  font-style: italic;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.nards-sticky-note.has-full .nards-sticky-note__text {
-  white-space: normal;
 }
 
 /* ═══════════════════════════════════════════════ */
