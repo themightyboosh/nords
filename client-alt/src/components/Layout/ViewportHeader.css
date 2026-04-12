@@ -1,18 +1,24 @@
+/* ═══════════════════════════════════════════════ */
+/* VIEWPORT HEADER — Full-width top bar             */
+/* ═══════════════════════════════════════════════ */
+
 .nards-viewport-header {
   position: absolute;
-  bottom: calc(var(--nards-dock-height) + var(--nards-space-xl) + var(--nards-space-lg));
-  left: var(--nards-space-lg);
+  top: 0;
+  left: 0;
+  right: 0;
   height: var(--nards-header-height);
-  border-radius: var(--nards-radius-lg);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--nards-space-md) 0 var(--nards-space-lg);
+  padding: 0 var(--nards-space-lg);
   z-index: 100;
-  box-shadow: var(--nards-shadow-md);
-  gap: var(--nards-space-lg);
+  box-shadow: var(--nards-shadow-sm);
+  border-bottom: 1px solid var(--nards-color-border-subtle);
+  border-radius: 0;
 }
 
+/* ── Left: Logo + Project ── */
 .nards-viewport-header__left {
   display: flex;
   align-items: center;
@@ -41,13 +47,33 @@
   flex-shrink: 0;
 }
 
+.nards-viewport-header__project-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--nards-space-sm);
+  background: transparent;
+  border: none;
+  color: var(--nards-color-text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--nards-radius-md);
+  transition: all 0.15s ease;
+}
+
+.nards-viewport-header__project-btn:hover {
+  background: var(--nards-color-bg-hover);
+  color: var(--nards-color-text-primary);
+}
+
 .nards-viewport-header__project {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   min-width: 0;
 }
 
 .nards-viewport-header__project-name {
+  font-family: var(--nards-font-primary);
   font-size: var(--nards-font-size-sm);
   font-weight: var(--nards-font-weight-semibold);
   color: var(--nards-color-text-primary);
@@ -60,6 +86,7 @@
   display: flex;
   align-items: center;
   gap: var(--nards-space-xs);
+  font-family: var(--nards-font-primary);
   font-size: var(--nards-font-size-xs);
   color: var(--nards-color-text-tertiary);
   font-weight: var(--nards-font-weight-medium);
@@ -78,12 +105,15 @@
   50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(52, 211, 153, 0); }
 }
 
-/* Right side */
-.nards-viewport-header__right {
+.nards-viewport-header__project-chevron {
+  color: var(--nards-color-text-disabled);
+}
+
+/* ── Center: Actions ── */
+.nards-viewport-header__center {
   display: flex;
   align-items: center;
   gap: var(--nards-space-sm);
-  flex-shrink: 0;
 }
 
 .nards-viewport-header__action-btn {
@@ -96,7 +126,7 @@
   color: var(--nards-color-text-secondary);
   background: transparent;
   border: 1px solid var(--nards-color-border-subtle);
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: var(--nards-radius-pill);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -109,22 +139,69 @@
   background: var(--nards-color-bg-hover);
 }
 
+/* ── Right: Activity + Avatars + User ── */
+.nards-viewport-header__right {
+  display: flex;
+  align-items: center;
+  gap: var(--nards-space-sm);
+  flex-shrink: 0;
+}
+
+.nards-viewport-header__icon-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--nards-color-text-tertiary);
+  border-radius: var(--nards-radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.nards-viewport-header__icon-btn:hover {
+  color: var(--nards-color-text-secondary);
+  background: var(--nards-color-bg-hover);
+}
+
+.nards-viewport-header__notification-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 12px;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--nards-color-danger);
+  color: white;
+  font-size: 7px;
+  font-weight: var(--nards-font-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  line-height: 1;
+}
+
 .nards-viewport-header__activity {
   display: flex;
   align-items: center;
   gap: 4px;
   cursor: pointer;
+  color: var(--nards-color-text-tertiary);
+  padding: 4px;
+  border-radius: var(--nards-radius-sm);
+  transition: color 0.15s ease;
 }
 
-.nards-viewport-header__activity-pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--nards-color-accent);
-  animation: nards-pulse 2.5s infinite;
+.nards-viewport-header__activity:hover {
+  color: var(--nards-color-text-secondary);
 }
 
 .nards-viewport-header__activity-count {
+  font-family: var(--nards-font-mono);
   font-size: var(--nards-font-size-xs);
   font-weight: var(--nards-font-weight-semibold);
   color: var(--nards-color-text-tertiary);
@@ -155,41 +232,49 @@
   margin-left: 0;
 }
 
-.nards-viewport-header__avatar--ai {
-  font-size: 0;
+.nards-viewport-header__avatar--self {
+  margin-left: 0;
 }
 
-/* Settings Icon */
-.nards-viewport-header__icon-btn {
-  width: 30px;
-  height: 30px;
+/* User menu button */
+.nards-viewport-header__user-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
   background: transparent;
   border: none;
-  color: var(--nards-color-text-tertiary);
-  border-radius: var(--nards-radius-md);
   cursor: pointer;
+  padding: 2px 4px 2px 0;
+  border-radius: var(--nards-radius-md);
+  color: var(--nards-color-text-disabled);
   transition: all 0.15s ease;
 }
 
-.nards-viewport-header__icon-btn:hover {
+.nards-viewport-header__user-btn:hover {
   color: var(--nards-color-text-secondary);
   background: var(--nards-color-bg-hover);
+}
+
+.nards-viewport-header__user-btn .nards-viewport-header__avatar {
+  border: none;
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
 }
 
 /* ── Responsive ── */
 @media (max-width: 640px) {
   .nards-viewport-header {
-    left: var(--nards-space-sm);
-    right: var(--nards-space-sm);
-    padding: 0 var(--nards-space-sm) 0 var(--nards-space-md);
+    padding: 0 var(--nards-space-sm);
   }
-  .nards-viewport-header__action-btn--gravity {
+  .nards-viewport-header__center {
     display: none;
   }
   .nards-viewport-header__project-name {
     max-width: 120px;
+  }
+  .nards-viewport-header__activity,
+  .nards-viewport-header__avatars {
+    display: none;
   }
 }

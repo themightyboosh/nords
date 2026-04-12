@@ -118,7 +118,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
 
               <div className="nards-dock__section">
                 <button className="nards-dock__item nards-dock__item--drag" draggable title="Drag to add a sticky">
-                  <StickyNote size={15} strokeWidth={1.6} fill="var(--nards-color-warning)" />
+                  <StickyNote size={15} strokeWidth={1.6} />
                   <span className="nards-dock__label">Sticky</span>
                 </button>
               </div>
@@ -181,7 +181,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
 
               <div className="nards-dock__section">
                 <button className="nards-dock__item nards-dock__item--drag" draggable title="Drag to add a sticky">
-                  <StickyNote size={15} strokeWidth={1.6} fill="var(--nards-color-warning)" />
+                  <StickyNote size={15} strokeWidth={1.6} />
                   <span className="nards-dock__label">Sticky</span>
                 </button>
               </div>
@@ -218,7 +218,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
 
               <div className="nards-dock__section">
                 <button className="nards-dock__item nards-dock__item--drag" draggable title="Drag to add a sticky">
-                  <StickyNote size={15} strokeWidth={1.6} fill="var(--nards-color-warning)" />
+                  <StickyNote size={15} strokeWidth={1.6} />
                   <span className="nards-dock__label">Sticky</span>
                 </button>
               </div>

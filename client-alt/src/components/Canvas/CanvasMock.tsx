@@ -487,14 +487,14 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
                 </div>
               </div>
 
-              {/* Anchored stickies — top-right of nard */}
+              {/* Anchored stickies — outside top-right of nard */}
               {nard.stickyCount > 0 && !isGhosted && (
                 <div
                   className="nards-sticky"
                   style={{
-                    left: `${nard.x + 7}%`,
-                    top: `${nard.y - 5}%`,
-                    transform: `translate(-50%, -50%) scale(${inverseScale})`,
+                    left: `calc(${nard.x}% + ${(200 * (0.75 + nard.size * 1.25)) / 2 + 8}px)`,
+                    top: `calc(${nard.y}% - 28px)`,
+                    transform: `scale(${inverseScale})`,
                   }}
                   title={`${nard.stickyCount} sticky note${nard.stickyCount > 1 ? 's' : ''}`}
                 >
