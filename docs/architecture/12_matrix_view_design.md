@@ -1,263 +1,119 @@
-# Nords Matrix View — Design Document
+# Nords Matrix View — Deep Design Document
 
-## What Is the Matrix?
+## 1. What Is the Matrix? (The Spatial Projection Paradigm)
 
-The Matrix is Nords' structured "Kanban-meets-pivot-table" lens. It takes the free-form spatial canvas and projects it into a **two-dimensional grid** where:
+Traditional project management tools treat Kanban boards as the ultimate source of truth: a task *is* in "To Do", and moving it changes its status property. 
 
-- **Columns** = discrete stages along a connection type's **X-distance** (0.0 → 1.0)
-- **Rows (Swimlanes)** = discrete stages along a connection type's **Y-distance** (0.0 → 1.0)
-- **Cards** = individual nords placed into cells based on their connection distances
+Nords flips this paradigm. In Nords, the **spatial canvas and its continuous distances (0.0 → 1.0) are the source of truth.** The Matrix is merely a lens—a discrete, mathematical *projection* of that continuous space into a two-dimensional grid. It is the "Kanban-meets-pivot-table" view.
 
-The core invariant is preserved: **position encodes meaning.** The Matrix doesn't create new data — it quantizes existing continuous distance values into discrete buckets.
+- **Columns (X-Axis)** = discrete ranges of a connection's **X-distance** (e.g., 0.0 → 0.33 = "To Do").
+- **Rows/Swimlanes (Y-Axis)** = discrete ranges of a connection's **Y-distance**.
+- **Cards** = individual Nords projected into cells based on their connection topology.
 
----
-
-## How Columns Are Derived
-
-### Source: Connection Type → X Stage Labels
-
-Every connection type can define `x_stage_labels` — an ordered array of strings that partition the 0.0–1.0 X-distance axis into equal buckets.
-
-```
-Connection Type: "Blocks"
-x_stage_labels: ["To Do", "In Progress", "Done"]
-
-0.0          0.33         0.66          1.0
- ├────────────┼────────────┼────────────┤
- │   To Do    │ In Progress│    Done    │
- bucket 0      bucket 1      bucket 2
-```
-
-### Mapping Algorithm: `distanceToBucket()`
-
-```typescript
-function distanceToBucket(value: number, numLabels: number): number {
-  if (numLabels <= 0) return 0;
-  const bucketWidth = 1.0 / numLabels;
-  const bucket = Math.floor(value / bucketWidth);
-  return Math.min(bucket, numLabels - 1); // clamp edge case: value === 1.0
-}
-
-// distanceToBucket(0.00, 3) → 0 ("To Do")
-// distanceToBucket(0.50, 3) → 1 ("In Progress")
-// distanceToBucket(0.99, 3) → 2 ("Done")
-// distanceToBucket(1.00, 3) → 2 ("Done")  ← clamped
-```
-
-### What the User Sees
-
-| To Do (0) | In Progress (1) | Done (2) |
-|-----------|-----------------|----------|
-| Card A ← distance_x: 0.15 | Card B ← distance_x: 0.50 | Card C ← distance_x: 0.88 |
+By decoupling the *presentation* (Matrix) from the *data model* (Spatial Graph), Nords allows for infinitely flexible pivot tables that adapt to the relationships between nodes, not just their hardcoded properties.
 
 ---
 
-## How Swimlanes Are Derived
+## 2. Advanced Derivation: The Anatomy of a Cell
 
-### Source: Connection Type → Y Stage Labels
+### Static Boundaries vs. Fuzzy Boundaries
+In standard Kanban, a card belongs to one column definitively. Because Nords operates on a continuous 0.0-1.0 distance scale, a connection might have `distance_x: 0.333`, placing it exactly on the boundary between bucket 0 and bucket 1.
 
-Same mechanism, orthogonal axis. If the connection type defines `y_stage_labels`, those become horizontal swimlane rows.
+**Innovation—Liminal States:** The Matrix will visually represent uncertainty or transition. Cards that sit within 5% of a bucket boundary will subtly bleed over the visual cell divider, or exhibit a "liminal glow," indicating they are in a state of transition between stages.
 
-```
-Connection Type: "Blocks"
-y_stage_labels: ["Low", "Medium", "High"]
-```
+### Target-Centric Matrices (The Dependency View)
+Instead of static connection stage labels driving both axes, the Matrix can dynamically pivot based on **Graph Topology**. 
 
-### The Grid
-
-```
-             │   To Do    │ In Progress │    Done    │
-─────────────┼────────────┼─────────────┼────────────┤
-   Low       │            │  [Card B]   │            │
-─────────────┼────────────┼─────────────┼────────────┤
-   Medium    │  [Card A]  │             │  [Card C]  │
-─────────────┼────────────┼─────────────┼────────────┤
-   High      │            │             │            │
-─────────────┴────────────┴─────────────┴────────────┘
-```
-
-### Fallback: No Y-Axis = Flat Kanban
-
-If no `y_stage_labels` are defined (or the user hasn't selected a Y-axis), the Matrix operates in **single-row Kanban mode** — just columns, no swimlanes. This is the default, simplest view.
+Instead of `Rows = Y-Stage Labels`, Nords can configure `Rows = Target Nords`. 
+- **Example:** You select the "Blocks" connection type. The X-axis becomes the distance buckets (Immediate, Near, Far). The Y-axis (rows) becomes the actual **Epic Nords** that are being blocked.
+- **Result:** A dynamic topological matrix showing exactly which micro-tasks are blocking which macro-epics, sorted by spatial severity.
 
 ---
 
-## Viewing Multiple Nord Types
+## 3. Semantic Zooming: Macro, Meso, and Micro Matrices
 
-### The Problem
-A project can have many Nord types (Task, Person, Service, Bug...). Not all types participate in every connection type. Showing everything creates noise.
+The Matrix is not a flat web element; it inherits the zooming capabilities of the Canvas.
 
-### The Solution: Active Connection Type + Type Filter
+### Macro Scale (Heatmap Topology)
+At high zoom out levels, individual cards fade away. The Matrix transforms into a **Data Density Heatmap**. Cells dynamically tint their background HSL lightness relative to the count of nodes inside them. This instantly communicates workflow bottlenecks (e.g., a dark red "QA" column means the pipeline is clogged).
 
-1. **User selects a Connection Type** (e.g., "Blocks") from a dropdown in the Matrix header
-2. The Matrix shows **only nords that have at least one connection of that type**
-3. An optional **Type Filter** toggle lets the user show/hide specific Nord types within the active view
-4. Nords with **no connections** of the active type go into an **"Unconnected"** overflow column on the far right
+### Meso Scale (Traditional Kanban)
+The standard zoom level. Cards render with:
+- **Type accent color** as a left border stripe.
+- **Lucide Icon** indicating the Nord Type.
+- **Title and Visible Properties** defined by the Nord's schema.
+Cards are sorted within the cell initially by `updated_at` (newest on top).
 
-### Card Appearance per Type
-
-Each card displays:
-- **Type accent color** as a left-border stripe
-- **Type icon** (Lucide) in the card header
-- **Title** (always visible)
-- **First 2–3 visible properties** defined in the Nord type's `visible_properties` setting (as defined in Manage Types)
-
-Different Nord types are visually distinguishable by their accent color and icon, even when mixed in the same cell.
+### Micro Scale (The Intra-Cell Canvas)
+**Innovation—Force-Directed Packing:** In Jira or Trello, a column with 50 cards becomes an unmanageable vertical scrollbox. In the Nords Matrix, zooming *into* a specific cell expands it into a bounded micro-canvas. Instead of a vertical list, the cards utilize **d3-force boundary collision packing**, organically clustering as circles/small cards within the cell's physical boundaries. This preserves the "spatial" DNA even inside structured views.
 
 ---
 
-## What Happens When a Card Is Moved
+## 4. Drag-to-Reassign: Bi-directional Spatial Sync
 
-### Column-to-Column Drag (X-axis)
+When a card is dragged from one column to another, it is making a profound change to the graph's spatial physics.
 
-When a card is dragged from one column to another, its underlying `distance_x` value is updated to the **median** of the target bucket:
-
+### The Algorithm: `bucketToMedianDistance()`
 ```typescript
 function bucketToMedianDistance(bucketIndex: number, numLabels: number): number {
   const bucketWidth = 1.0 / numLabels;
   return (bucketIndex * bucketWidth) + (bucketWidth / 2);
 }
-
-// bucketToMedianDistance(0, 3) → 0.167 (middle of "To Do")
-// bucketToMedianDistance(1, 3) → 0.500 (middle of "In Progress")
-// bucketToMedianDistance(2, 3) → 0.833 (middle of "Done")
 ```
+Dragging a card to a new column updates the underlying connection's `distance_x` to the median of the target bucket. (e.g., dropping in Bucket 1 of 3 sets distance to `0.500`).
 
-**This is a real data mutation.** The connection's `distance_x` is updated via `PUT /api/connections/:id`. When the user switches back to Canvas view, the physics engine repositions the nord based on this new distance — the card will have moved.
-
-### Swimlane-to-Swimlane Drag (Y-axis)
-
-Same mechanism on the Y-axis. Dragging a card from "Low" to "High" updates `distance_y` to the median of the "High" bucket.
-
-### Within-Cell Sort Order
-
-Cards within the same cell are sorted by:
-1. **Updated timestamp** (most recently modified on top)
-2. Optionally, a **sort property** the user selects from a dropdown (e.g., sort by "Priority" or "Due Date")
-
-Drag-and-drop within a cell only changes visual order — it does **not** alter any distance values. If we want persistent sort order within cells, we would add a `matrix_sort_order INT` column to nords in a future sprint. For now, timestamp-based is sufficient.
+### The Reveal Animation (Epic 12 Integration)
+This is a real database mutation. Because Matrix and Canvas share a unified spatial engine, switching back from Matrix to Canvas Lens triggers **The Reveal**. The physics engine reads the updated distance values, and the user watches the nodes physically fly across the Canvas to resolve the new spring-force equilibrium dictated by their Kanban move.
 
 ---
 
-## What Gets Selected (Matrix Header Controls)
+## 5. View Configurations & AI Capabilities
 
-The Matrix header bar provides these controls:
+### Saved Matrix Views
+Matrix configurations are saved persistently, allowing teams to create bespoke dashboards for different ceremonies:
+- *View A:* "Sprint Board" (X: Blocks distance, Y: Priority distance).
+- *View B:* "Team Capacity" (X: Assigned To [Category string pivot], Y: Lifecycle status).
 
-| Control | What It Does | Data Source |
-|---------|-------------|-------------|
-| **Connection Type Dropdown** | Selects which connection type drives the grid | `GET /api/projects/:id/graph` → `connection_types[]` |
-| **X-Axis Label** | Shows current X-axis stage labels as column headers | `connection_types[selected].x_stage_labels` |
-| **Y-Axis Toggle** | Enables/disables swimlanes | `connection_types[selected].y_stage_labels` |
-| **Type Filter** | Show/hide specific Nord types | `nord_types[]` (multi-select checkboxes) |
-| **Sort By** | Property to sort cards within cells | Properties from the `properties_schema` of visible Nord types |
-| **Save View** | Saves the current configuration | New `matrix_views` table or localStorage |
+### Epic 15 Innovation: AI-Driven Dynamic Bucketing
+If a user views a connection type in the Matrix that possesses **no defined stage labels**, the Matrix invokes the AI Agent to perform **K-Means Clustering** on the 1D or 2D distance arrays. The AI automatically discovers natural spatial clusters in the graph, auto-generates semantic column headers based on node properties inside those clusters, and instantiates a dynamic Kanban board on the fly.
 
 ---
 
-## View Persistence (Saved Views)
+## 6. Competitive Differentiation Summary
 
-Matrix configurations should be savable and remembered. A saved view stores:
+| Product | Approach | The Nords Advantage |
+|---------|----------|---------------------|
+| **Notion** | Group by discrete Select properties | **Topology over Typology.** We map distances and relationships, not isolated enum states. |
+| **Linear** | Fixed "Status" workflows | **Domain-Agnostic Axes.** Any relationship type (Blocks, Belongs To, Influences) can be pivoted into a 2D axis. |
+| **Miro** | Free-form spatial, manual grids | **Bidirectional Physics.** Matrix is procedurally generated from Canvas math. Moving a Kanban card actually mathematically repositions the sticky note on the canvas. |
 
-```typescript
-interface MatrixView {
-  id: string;
-  project_id: string;
-  name: string;                           // "Sprint Board", "Team Capacity"
-  connection_type_id: string;             // Which connection type drives the grid
-  y_axis_enabled: boolean;                // Whether swimlanes are on
-  visible_nord_type_ids: string[];        // Which Nord types are shown
-  sort_property: string | null;           // Property key for within-cell sorting
-  sort_direction: 'asc' | 'desc';
-  created_by: string;
-  created_at: string;
-}
-```
+## 7. Data Flow Summary
 
-**For MVP:** Store in `localStorage` per project. Keyed as `nords_matrix_views_{projectId}`.
-
-**For V2:** New `matrix_views` table in PostgreSQL, synced across devices.
-
-The last-used view is remembered and auto-loaded when the user switches to Matrix lens.
-
----
-
-## Design Inspiration & Differentiation
-
-### What Others Do
-
-| Product | Approach | Our Advantage |
-|---------|----------|---------------|
-| **Notion Board** | Group by any Select property, sub-group by another | We use continuous 0.0–1.0 distances, not just discrete enum values. Moving a card actually changes its spatial position on the canvas. |
-| **Linear Board** | Fixed Status column, swimlanes by assignee/project | We support arbitrary connection types as axes — not just "Status." Any relationship becomes a Kanban dimension. |
-| **Jira Board** | Columns from workflow statuses, swimlanes from JQL | We don't have fixed workflows. Each connection type defines its own stage progression, making the system domain-agnostic. |
-| **Airtable Kanban** | Group by Single Select field | Our stages are driven by connection distances, not standalone fields. Moving a card changes a relationship, not just a property. |
-
-### What Makes Nords Unique
-
-The Matrix is not just a Kanban board — it's a **spatial pivot table**:
-
-1. **The grid is derived from relationships, not properties.** A card's column isn't determined by its own "Status" field — it's determined by its *distance* from another card along a specific connection type.
-
-2. **Two semantic axes from one connection type.** A single "Blocks" connection can drive both columns (X stages: lifecycle) and rows (Y stages: priority), creating a true 2D data space.
-
-3. **Bidirectional sync with the canvas.** Moving a card in the Matrix physically moves it on the Canvas. The Matrix isn't a separate view — it's a different *projection* of the same spatial data.
-
-4. **Drop-down properties render in cards.** If a Nord type has Select properties (e.g., "Priority: High/Medium/Low"), those render as colored badges on the Matrix card, giving additional context without needing a separate swimlane.
-
----
-
-## Data Flow Summary
-
-```
+```text
 ┌──────────────────────────────────────────────────────────────────┐
 │                        Matrix Lens                               │
 │                                                                  │
-│  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐     │
-│  │ Connection    │     │ x_stage_     │     │ y_stage_     │     │
-│  │ Type Selector │────▶│ labels       │────▶│ labels       │     │
-│  └──────────────┘     │ → Columns    │     │ → Swimlanes  │     │
-│                        └──────────────┘     └──────────────┘     │
-│                              │                     │              │
-│                              ▼                     ▼              │
+│  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐      │
+│  │ Connection   │     │ x_stage_     │     │ y_stage_     │      │
+│  │ Type Selector│────▶│ labels       │────▶│ labels (or   │      │
+│  └──────────────┘     │              │     │ Target Nords)│      │
+│                       └──────────────┘     └──────────────┘      │
+│                              │                     │             │
+│                              ▼                     ▼             │
 │  ┌─────────────────────────────────────────────────────────────┐ │
 │  │  For each Nord with a connection of the active type:        │ │
+│  │  cell_x = distanceToBucket(connection.distance_x, numX)     │ │
+│  │  cell_y = distanceToBucket(connection.distance_y, numY)     │ │
 │  │                                                             │ │
-│  │  column = distanceToBucket(connection.distance_x, numX)     │ │
-│  │  row    = distanceToBucket(connection.distance_y, numY)     │ │
-│  │                                                             │ │
-│  │  Place card at cell [row, column]                           │ │
+│  │  Liminal check: if distance % bucketWidth < 0.05 → Glow     │ │
+│  │  Place card at cell [cell_y, cell_x] with d3 intra-packing  │ │
 │  └─────────────────────────────────────────────────────────────┘ │
-│                              │                                    │
-│                              ▼                                    │
+│                              │                                   │
+│                              ▼                                   │
 │  ┌─────────────────────────────────────────────────────────────┐ │
-│  │  On drag card from cell [r1,c1] to [r2,c2]:                │ │
-│  │                                                             │ │
-│  │  connection.distance_x = bucketToMedianDistance(c2, numX)   │ │
-│  │  connection.distance_y = bucketToMedianDistance(r2, numY)   │ │
-│  │                                                             │ │
+│  │  On drag card from cell [r1,c1] to [r2,c2]:                 │ │
+│  │  conn.distance_x = bucketToMedianDistance(c2, numX)         │ │
 │  │  PUT /api/connections/:id { distance_x, distance_y }        │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-│                              │                                    │
-│                              ▼                                    │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │  Switch to Canvas Lens:                                     │ │
-│  │  Physics engine reads updated distances → repositions nords │ │
-│  │  The Reveal animation plays as cards fly to new positions   │ │
 │  └─────────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────┘
 ```
-
----
-
-## Edge Cases & Rules
-
-| Scenario | Behavior |
-|----------|----------|
-| **Nord has no connections of active type** | Placed in "Unconnected" overflow column (rightmost) |
-| **Nord has multiple connections of same type** | Uses the connection with the lowest `distance_x` (closest/first relationship) |
-| **Connection type has no X stages** | Matrix cannot render — show prompt: "Add stage labels to this connection type" |
-| **Connection type has X but no Y stages** | Flat Kanban (single row, multiple columns) |
-| **Empty cell** | Render with subtle dashed border, accepts drops |
-| **Card dragged to "Unconnected"** | Soft-deletes the connection (removes the relationship) |
-| **Card dragged FROM "Unconnected" to a cell** | Creates a new connection with median distance of target bucket |
-| **Nord type filter hides all types** | Show empty state: "No Nord types selected" |
