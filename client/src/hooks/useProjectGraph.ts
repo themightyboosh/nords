@@ -1,0 +1,111 @@
+/**
+ * useProjectGraph — Loads the entire project graph in one call.
+ *
+ * This hook calls GET /api/projects/:id/graph, which executes
+ * fn_load_project_graph() on the database — returning all nords,
+ * connections, nord types, and connection types in a single
+ * network round trip.
+ */
+
+import { useState, useEffect, useCallback } from 'react';
+import { api } from '../api/client';
+
+// ── Types (mirrored from server/src/types/entities.ts) ──
+
+export interface PropertySchema {
+  name: string;
+  type: string;
+  config?: Record<string, unknown>;
+}
+
+export interface NordType {
+  id: string;
+  project_id: string;
+  name: string;
+  icon: string | null;
+  accent_color: string | null;
+  properties_schema: PropertySchema[];
+  scale_property: string | null;
+  sort_order: number;
+}
+
+export interface Nord {
+  id: string;
+  project_id: string;
+  type_id: string;
+  title: string;
+  description: string | null;
+  properties: Record<string, unknown>;
+  position_x: number;
+  position_y: number;
+  scale: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConnectionType {
+  id: string;
+  project_id: string;
+  name: string;
+  accent_color: string | null;
+  stroke_style: string;
+  default_direction: string;
+  x_stage_labels: string[];
+  y_stage_labels: string[];
+  properties_schema: PropertySchema[];
+  sort_order: number;
+}
+
+export interface Connection {
+  id: string;
+  project_id: string;
+  type_id: string;
+  source_nord_id: string;
+  target_nord_id: string;
+  direction: 'forward' | 'reverse' | 'none';
+  distance_x: number;
+  distance_y: number;
+  properties: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface ProjectGraph {
+  nord_types: NordType[];
+  nords: Nord[];
+  connection_types: ConnectionType[];
+  connections: Connection[];
+}
+
+interface UseProjectGraphResult {
+  graph: ProjectGraph | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+export function useProjectGraph(projectId: string | null): UseProjectGraphResult {
+  const [graph, setGraph] = useState<ProjectGraph | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refetch = useCallback(async () => {
+    if (!projectId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.get<ProjectGraph>(`/api/projects/${projectId}/graph`);
+      setGraph(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load graph');
+    } finally {
+      setLoading(false);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { graph, loading, error, refetch };
+}
