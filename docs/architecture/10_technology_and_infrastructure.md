@@ -100,3 +100,29 @@ graph TD
     API <--> |Cache/PubSub| Redis
     API <--> |Persistent Save| DB
 ```
+
+---
+
+## 5. Non-Functional Requirements (NFRs)
+
+The Nords engine is subject to strict operational and performance thresholds to preserve the tactile "instant response" illusion of the physics canvas.
+
+### 5.1 Performance & Responsiveness
+* **Framerate Minimums:** The spatial canvas (React Flow) must sustain **60fps** during active panning, zooming, and isolated node dragging.
+* **Canvas Density Ceiling:** The engine must fluidly render up to **5,000 Nodes** and their respective connections in a single workspace. This is achieved via strict Semantic Zoom thresholds (culling DOM elements at macro scales).
+* **Network Latency (Multiplayer):** Yjs WebSocket CRDT synchronizations must broadcast and reconcile peer operational transforms within **50ms** p95 latency.
+
+### 5.2 Scalability
+* **Stateless API Tiers:** The Cloud Run environment must horizontally scale from 0 to N without degrading cross-client synchronization. All state must be reliably offloaded to Cloud Memorystore (Redis) Pub/Sub channels to bridge horizontal containers.
+* **Database Concurrency:** Cloud SQL must remain abstracted behind robust connection pooling (handled within the Node API tier) to prevent connection exhaustion during traffic spikes.
+
+### 5.3 Security & Compliance
+* **Data in Transit:** All traffic (HTTPS / WSS) is encrypted via TLS 1.3.
+* **Data at Rest:** All Postgres payloads stored in Google Cloud SQL rely on default Google storage-layer encryption (AES-256).
+* **Session Management:** Auth tokens are provisioned via Firebase. Access tokens have a maximum lifespan of 1 hour, requiring silent refresh cycles linked to verified active sessions. 
+* **Graph Access Constraints:** The backend must explicitly validate a user's Member Role against the target Workspace ID before resolving any WebSocket connection attempt or REST API query.
+
+### 5.4 Availability & Reliability
+* **Uptime Tiering:** The production infrastructure maps to a **99.9%** availability SLA.
+* **Database Failover/Backups:** The production Cloud SQL instance relies on High Availability (HA) configurations with automated daily rolling backups and Point-In-Time-Recovery (PITR) enabled.
+* **Snapshot Resilience:** Operational keyframes (Snapshots) are immutable. Deletions or schema modifications to Live graphs never cascade destructively into historical Snapshots.

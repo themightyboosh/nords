@@ -18,8 +18,16 @@ To prevent user confusion, templates are strictly divided:
 Entity and Connection schemas are not siloed within individual projects, guaranteeing cross-organization consistency.
 * **Workspace-Level Libraries:** The "Nord-Builder" and "Line Library" exist globally.
 * **Project Application:** Inside a project, users access a "Nord Palette" and "Connections Palette" filtering in down the global templates. Updating a template globally propagates the schema changes across all affiliated projects.
+* **Promote to Template (Cherry-Picking):** Global Admins have the ability to cherry-pick *any* existing live project and elevate it to a system-wide Template. By clicking "Save as System Template" from a project's settings, the system strips out the raw operational data (or caches it as explicitly marked Sample Data), extracts the specific blend of Component Templates and Lens Settings, and publishes the resulting framework into the Global Template Library for all subsequent users.
 
-## 4. Standard Template Library (Go-To-Market Workflows)
+## 4. Administration & User Management
+A centralized **Global Admin Console** provides strict control over workspace access, security, and member roles.
+
+* **User Provisioning (Manual Invites):** While self-serve registration exists, Global Admins can bypass this by explicitly pushing manual email invitations to provision secure seats.
+* **Role Promotion:** The system requires an explicit operational hierarchy. Standard users must be manually promoted to the Global Admin role by an existing Admin. Admins control the global Component Templates, workspace billing, and global visibility rules.
+* **Deactivation & Reassignment:** Admins can deactivate operational accounts and reassign their orphaned Nords/Connections to an active team member without destroying historical Snapshots.
+
+## 5. Standard Template Library (Go-To-Market Workflows)
 Four initial Go-To-Market templates demonstrate the engine's versatility, answering the "blank canvas" problem.
 
 ### Template 1: Strategic Alignment (OKRs)
