@@ -11,6 +11,7 @@
   align-items: center;
   justify-content: center;
   background: var(--nords-color-bg-canvas);
+  color: var(--nords-color-text-primary);
   overflow-y: auto;
 }
 

@@ -6,6 +6,7 @@
   z-index: 10000;
   display: flex;
   background: var(--nords-color-bg-canvas);
+  color: var(--nords-color-text-primary);
   animation: dashboard-fade-in 0.2s ease-out;
 }
 
