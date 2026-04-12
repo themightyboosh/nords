@@ -233,9 +233,6 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
 
               <div className="nords-dock__separator" />
 
-
-              <div className="nords-dock__separator" />
-
               <div className="nords-dock__section">
                 <button
                   className={`nords-dock__item ${openPanel === 'comments' ? 'is-active' : ''}`}

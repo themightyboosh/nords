@@ -242,7 +242,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ isOpen, onClose, nordId, li
                 <h3 className="nords-drawer__section-title">Description</h3>
                 <MarkdownEditor
                   value={`Evaluate potential physics libraries for the force-directed graph engine. Primary candidates:\n\n- **d3-force** — Battle-tested, massive community, flexible simulation\n- **react-force-graph** — React wrapper around d3-force with WebGL renderer\n- **matter.js** — Full rigid-body physics (overkill?)\n\nKey criteria: spring tension accuracy for the 0.0→1.0 semantic scale, performance at 200+ nodes, and compatibility with "The Reveal" tweening.`}
-                  maxHeight={200}
+                  fillContainer
                   placeholder="Add a description (markdown supported)..."
                 />
               </div>

@@ -160,9 +160,18 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--nords-space-lg);
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── Properties ── */
+.nords-drawer__properties {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .nords-property {
   display: flex;
   align-items: center;
@@ -397,6 +406,10 @@
   margin-top: var(--nords-space-xl);
   padding-top: var(--nords-space-lg);
   border-top: 1px solid var(--nords-color-border-subtle);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .nords-drawer__section-title {

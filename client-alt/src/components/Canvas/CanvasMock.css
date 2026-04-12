@@ -59,7 +59,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 13;  /* ABOVE .nords-node (12) so arrows render at card edges */
+  z-index: 5;  /* BELOW .nords-node (12) — lines pass behind opaque cards */
   pointer-events: none;
 }
 
@@ -92,6 +92,40 @@
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--nords-color-label-on-color);
+}
+
+/* ── Directional Chevron Labels ──
+ *
+ * Direction is conveyed by the label shape instead of line arrowheads:
+ *   - 'to'   → right-pointing chevron (rectangle + right triangle)
+ *   - 'from' → left-pointing chevron (left triangle + rectangle)
+ *   - 'none' → plain rounded rectangle (default)
+ *
+ * Uses CSS clip-path polygon for the chevron shape.
+ * The label rotates to match the line angle, so "right" always
+ * points toward the target node along the line direction.
+ */
+.nords-connection-label--arrow-right {
+  clip-path: polygon(0% 0%, 82% 0%, 100% 50%, 82% 100%, 0% 100%);
+  padding-right: 10px;
+  border-radius: 3px 0 0 3px;
+}
+
+.nords-connection-label--arrow-left {
+  clip-path: polygon(18% 0%, 100% 0%, 100% 100%, 18% 100%, 0% 50%);
+  padding-left: 10px;
+  border-radius: 0 3px 3px 0;
+}
+
+/* ── Label Glow — mode-specific contrast halo ── */
+.nords-connection-label {
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))
+          drop-shadow(0 0 8px rgba(0, 0, 0, 0.3));
+}
+
+[data-theme="obsidian-light"] .nords-connection-label {
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))
+          drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
 }
 
 /* ═══════════════════════════════════════════════ */
@@ -378,11 +412,19 @@
 /* LINK MODE — ghosted elements                    */
 /* ═══════════════════════════════════════════════ */
 
+/* ── Ghosted cards ──
+ * In Link mode, unrelated nords are visually de-emphasized.
+ * CRITICAL: We must NOT use `opacity` on the card container because
+ * lines run behind cards (z-index trick). If the card becomes transparent
+ * via opacity, lines would show through, breaking the illusion.
+ *
+ * Instead, we dim via brightness + saturation filters, which affect
+ * visual appearance without changing alpha compositing.
+ */
 .nords-node--ghosted {
-  opacity: 0.2;
-  filter: saturate(0.2);
+  filter: brightness(0.35) saturate(0.15);
   pointer-events: none;
-  transition: opacity 0.4s ease, filter 0.4s ease;
+  transition: filter 0.4s ease;
 }
 
 .nords-connection--context {

@@ -271,7 +271,7 @@ function getRibbonOffset(connection: ConnectionData, allConnections: ConnectionD
   if (siblings.length <= 1) return 0;
 
   const myIndex = siblings.indexOf(connection);
-  const spread = 1.2; // Perpendicular distance between parallel lines (in SVG units)
+  const spread = 2.8; // Perpendicular distance between parallel lines (in SVG units) — increased for better separation
   const totalWidth = (siblings.length - 1) * spread;
   return (myIndex * spread) - (totalWidth / 2);
 }
@@ -291,46 +291,7 @@ function getConnectedNordIds(lineType: string): Set<string> {
   return ids;
 }
 
-/**
- * Get the card dimensions for a nord (in viewBox units).
- * The SVG viewBox is 0-100, but card widths are in px.
- * We approximate the card rect in viewBox units using a conversion factor.
- * Container width ≈ 1400px → 100 viewBox units → 1 unit ≈ 14px.
- */
-function getCardRect(id: string): { cx: number; cy: number; hw: number; hh: number } {
-  const nord = NORDS.find(n => n.id === id);
-  if (!nord) return { cx: 0, cy: 0, hw: 5, hh: 4 };
-  const pxToVB = 100 / 1400; // approximate conversion
-  const cardWidthPx = 200 * (0.75 + nord.size * 1.25);
-  const cardHeightPx = 110; // approximate rendered height
-  return {
-    cx: nord.x,
-    cy: nord.y,
-    hw: (cardWidthPx / 2) * pxToVB, // half-width in viewBox units
-    hh: (cardHeightPx / 2) * pxToVB, // half-height in viewBox units
-  };
-}
 
-/**
- * Clip a line endpoint to the edge of a card's bounding rectangle.
- * Given a ray from (cx, cy) toward (tx, ty), find where it exits the rect.
- * Returns the intersection point on the card edge — this is where the arrow appears.
- */
-function clipToCardEdge(
-  cx: number, cy: number, hw: number, hh: number,
-  tx: number, ty: number
-): { x: number; y: number } {
-  const dx = tx - cx;
-  const dy = ty - cy;
-  if (dx === 0 && dy === 0) return { x: cx, y: cy };
-
-  // Scale factors to reach each edge
-  const sx = dx !== 0 ? hw / Math.abs(dx) : Infinity;
-  const sy = dy !== 0 ? hh / Math.abs(dy) : Infinity;
-  const s = Math.min(sx, sy); // Whichever edge is hit first
-
-  return { x: cx + dx * s, y: cy + dy * s };
-}
 
 /* ═══════════════════════════════════════════════════════════════════ */
 /* COMPONENT                                                          */
@@ -434,10 +395,20 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
     const perpX = (-dy / len) * offset;
     const perpY = (dx / len) * offset;
 
-    // Angle of the line — corrected so text never renders upside-down
+    // Angle of the line — corrected so text never renders upside-down.
+    // Track whether we flipped — when flipped, the visual left/right sides
+    // of the label swap, so the chevron direction must invert.
     let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
-    if (angleDeg > 90) angleDeg -= 180;
-    if (angleDeg < -90) angleDeg += 180;
+    let flipped = false;
+    if (angleDeg > 90) { angleDeg -= 180; flipped = true; }
+    if (angleDeg < -90) { angleDeg += 180; flipped = true; }
+
+    // When the label angle is flipped, the chevron must also flip:
+    // 'to' (right-pointing) becomes 'from' (left-pointing) and vice versa.
+    let visualDirection = t.direction;
+    if (flipped && t.direction !== 'none') {
+      visualDirection = t.direction === 'to' ? 'from' : 'to';
+    }
 
     // Stagger labels along the line axis when multiple connections share a node pair
     const pairKey = [t.from, t.to].sort().join('-');
@@ -451,7 +422,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
     const midX = (from.x + to.x) / 2 + perpX + staggerX;
     const midY = (from.y + to.y) / 2 + perpY + staggerY;
 
-    return { x: midX, y: midY, type: t.type, color: t.color, angleDeg };
+    return { x: midX, y: midY, type: t.type, color: t.color, angleDeg, direction: visualDirection };
   });
 
   /* ═══════════════════════════════════════════════════════════════ */
@@ -558,59 +529,21 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
          * and straight lines when solo (offset === 0).
          */}
         <svg className="nords-canvas__connections" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {/* Arrow markers for each connection type color */}
-          <defs>
-            <marker id="arrow-blue" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
-              <path d="M0,0 L5,2 L0,4Z" fill="#4da6ff" />
-            </marker>
-            <marker id="arrow-green" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
-              <path d="M0,0 L5,2 L0,4Z" fill="#34d399" />
-            </marker>
-            <marker id="arrow-amber" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
-              <path d="M0,0 L5,2 L0,4Z" fill="#fbbf24" />
-            </marker>
-            <marker id="arrow-violet" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
-              <path d="M0,0 L5,2 L0,4Z" fill="#a78bfa" />
-            </marker>
-            <marker id="arrow-red" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
-              <path d="M0,0 L5,2 L0,4Z" fill="#f87171" />
-            </marker>
-            {/* Start markers — for 'from' direction (arrow at source end) */}
-            <marker id="arrow-blue-start" markerWidth="5" markerHeight="4" refX="0.5" refY="2" orient="auto-start-reverse">
-              <path d="M5,0 L0,2 L5,4Z" fill="#4da6ff" />
-            </marker>
-            <marker id="arrow-green-start" markerWidth="5" markerHeight="4" refX="0.5" refY="2" orient="auto-start-reverse">
-              <path d="M5,0 L0,2 L5,4Z" fill="#34d399" />
-            </marker>
-            <marker id="arrow-amber-start" markerWidth="5" markerHeight="4" refX="0.5" refY="2" orient="auto-start-reverse">
-              <path d="M5,0 L0,2 L5,4Z" fill="#fbbf24" />
-            </marker>
-            <marker id="arrow-violet-start" markerWidth="5" markerHeight="4" refX="0.5" refY="2" orient="auto-start-reverse">
-              <path d="M5,0 L0,2 L5,4Z" fill="#a78bfa" />
-            </marker>
-            <marker id="arrow-red-start" markerWidth="5" markerHeight="4" refX="0.5" refY="2" orient="auto-start-reverse">
-              <path d="M5,0 L0,2 L5,4Z" fill="#f87171" />
-            </marker>
-          </defs>
-
-          {/* Render each connection as an SVG path */}
+          {/* Render each connection as a simple center-to-center line.
+           * Lines render BEHIND opaque nord cards via z-index.
+           * No arrowheads — direction is shown by the label chevron shape.
+           */}
           {CONNECTIONS.map((t, i) => {
             const from = getNordPos(t.from);
             const to = getNordPos(t.to);
 
-            // Clip endpoints to card edges so arrows appear at the card lip
-            const fromRect = getCardRect(t.from);
-            const toRect = getCardRect(t.to);
-            const clippedFrom = clipToCardEdge(fromRect.cx, fromRect.cy, fromRect.hw, fromRect.hh, to.x, to.y);
-            const clippedTo = clipToCardEdge(toRect.cx, toRect.cy, toRect.hw, toRect.hh, from.x, from.y);
-
-            const midX = (clippedFrom.x + clippedTo.x) / 2;
-            const midY = (clippedFrom.y + clippedTo.y) / 2;
+            const midX = (from.x + to.x) / 2;
+            const midY = (from.y + to.y) / 2;
 
             // Ribbon offset — perpendicular displacement for parallel lines
             const offset = getRibbonOffset(t, CONNECTIONS);
-            const dx = clippedTo.x - clippedFrom.x;
-            const dy = clippedTo.y - clippedFrom.y;
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
             const len = Math.sqrt(dx * dx + dy * dy) || 1;
             const perpX = (-dy / len) * offset;
             const perpY = (dx / len) * offset;
@@ -619,19 +552,10 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
             const cpX = midX + perpX * 2;
             const cpY = midY + perpY * 2;
             const pathD = offset === 0
-              ? `M ${clippedFrom.x} ${clippedFrom.y} L ${clippedTo.x} ${clippedTo.y}`
-              : `M ${clippedFrom.x} ${clippedFrom.y} Q ${cpX} ${cpY} ${clippedTo.x} ${clippedTo.y}`;
-
-            // Map line color to arrow marker ID
-            const arrowId = t.color === '#4da6ff' ? 'arrow-blue'
-              : t.color === '#34d399' ? 'arrow-green'
-              : t.color === '#fbbf24' ? 'arrow-amber'
-              : t.color === '#f87171' ? 'arrow-red'
-              : 'arrow-violet';
+              ? `M ${from.x} ${from.y} L ${to.x} ${to.y}`
+              : `M ${from.x} ${from.y} Q ${cpX} ${cpY} ${to.x} ${to.y}`;
 
             // Determine connection rendering class based on mode
-            //   Canvas mode: active (full) vs ghost (ambient)
-            //   Link mode: active type = full, others = context ghost or hidden
             let connectionClass = t.ghost ? 'nords-connection--ghost' : 'nords-connection--active';
             if (lens === 'link') {
               if (t.type === activeLine) {
@@ -639,7 +563,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
               } else if (showContext) {
                 connectionClass = 'nords-connection--context';
               } else {
-                return null; // Completely hidden when context is off
+                return null;
               }
             }
 
@@ -654,14 +578,12 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
                   style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
                   onClick={(e) => { e.stopPropagation(); onLineClick?.(); }}
                 />
-                {/* Visible line with arrow markers */}
+                {/* Visible line — simple stroke, no arrowheads */}
                 <path
                   d={pathD}
                   className={connectionClass}
                   stroke={t.color}
                   fill="none"
-                  markerEnd={connectionClass === 'nords-connection--active' && t.direction === 'to' ? `url(#${arrowId})` : undefined}
-                  markerStart={connectionClass === 'nords-connection--active' && t.direction === 'from' ? `url(#${arrowId}-start)` : undefined}
                 />
               </g>
             );
@@ -676,22 +598,34 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
          *
          * @see docs/frontend/04_ui_and_interactions.md §1.6 Line Label Positioning
          */}
-        {connectionLabels.map((label, i) => (
-          <div
-            key={`label-${i}`}
-            className="nords-connection-label"
-            style={{
-              left: `${label.x}%`,
-              top: `${label.y}%`,
-              transform: `translate(-50%, -50%) rotate(${label.angleDeg}deg) scale(${inverseScale})`,
-              backgroundColor: label.color,
-            }}
-          >
-            <span className="nords-connection-label__type">
-              {label.type}
-            </span>
-          </div>
-        ))}
+        {connectionLabels.map((label, i) => {
+          // Determine label shape class based on connection direction:
+          //   'to'   → chevron pointing RIGHT (toward target)
+          //   'from' → chevron pointing LEFT (toward source)
+          //   'none' → plain rectangle (undirected)
+          const dirClass = label.direction === 'to'
+            ? 'nords-connection-label--arrow-right'
+            : label.direction === 'from'
+            ? 'nords-connection-label--arrow-left'
+            : '';
+
+          return (
+            <div
+              key={`label-${i}`}
+              className={`nords-connection-label ${dirClass}`}
+              style={{
+                left: `${label.x}%`,
+                top: `${label.y}%`,
+                transform: `translate(-50%, -50%) rotate(${label.angleDeg}deg) scale(${inverseScale})`,
+                backgroundColor: label.color,
+              }}
+            >
+              <span className="nords-connection-label__type">
+                {label.type}
+              </span>
+            </div>
+          );
+        })}
 
         {/* ── Nord Cards ──
          *
@@ -803,8 +737,12 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
                 <>
                   {(['top', 'bottom', 'left', 'right'] as const).map(pos => {
                     const cardW = 200 * (0.75 + nord.size * 1.25);
-                    // Estimated card height (type badge + title + 3 props + footer ≈ 90px)
-                    const cardH = 90;
+                    // Compute card height dynamically based on content:
+                    //   type badge row: 20px, title: 22px, each prop row: 17px,
+                    //   footer ("+N more"): 16px if overflow, padding: 24px
+                    const propCount = Math.min(nord.properties.length, 3);
+                    const hasOverflow = nord.properties.length > 3;
+                    const cardH = 20 + 22 + (propCount * 17) + (hasOverflow ? 16 : 0) + 24;
                     const offsets: Record<string, { left: string; top: string }> = {
                       top:    { left: `${nord.x}%`, top: `calc(${nord.y}% - ${cardH / 2 + 10}px)` },
                       bottom: { left: `${nord.x}%`, top: `calc(${nord.y}% + ${cardH / 2 + 10}px)` },

@@ -32,8 +32,10 @@ interface MarkdownEditorProps {
   onChange?: (value: string) => void;
   /** If true, starts in view mode. If false, starts in edit mode. */
   readOnly?: boolean;
-  /** Max height before scrolling (px). Default 300. */
+  /** Max height before scrolling (px). Default 300. Ignored when fillContainer is true. */
   maxHeight?: number;
+  /** If true, the editor expands to fill available parent height via flex:1 */
+  fillContainer?: boolean;
   /** Placeholder text for the editor textare */
   placeholder?: string;
 }
@@ -71,6 +73,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   onChange,
   readOnly = false,
   maxHeight = 300,
+  fillContainer = false,
   placeholder = 'Write markdown...',
 }) => {
   const [mode, setMode] = useState<'edit' | 'view'>(readOnly ? 'view' : 'edit');
@@ -93,8 +96,13 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     onChange?.(newValue);
   };
 
+  // When fillContainer is true, use flex:1 to fill parent; otherwise use maxHeight
+  const containerStyle: React.CSSProperties = fillContainer
+    ? { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }
+    : { maxHeight };
+
   return (
-    <div className="nords-md-editor" style={{ maxHeight }}>
+    <div className="nords-md-editor" style={containerStyle}>
       {/* Toolbar */}
       <div className="nords-md-editor__toolbar">
         <div className="nords-md-editor__tools">
