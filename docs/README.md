@@ -11,6 +11,7 @@ To prevent AI hallucination and token-dilution, the monolithic PRD has been deco
 * **[`03_mcp_and_ai_protocols.md`](./architecture/03_mcp_and_ai_protocols.md):** Defines exactly how AI agents use MCP tooling to read graphs (Semantic Dictionary, Dual-Payload formatting) and write back explicitly via distance values.
 * **[`08_property_types_reference.md`](./architecture/08_property_types_reference.md):** Complete property type reference for Nords and Connections. Documents all data types (Text, Number, Stage, Date, etc.), the dual-axis Distance model (X + Y), Scale encoding, and Matrix view row/column logic.
 * **[`09_edge_rendering_study.md`](./architecture/09_edge_rendering_study.md):** Research study analyzing line routing and edge rendering strategies. Covers anchor algorithms, Bézier vs. orthogonal paths, prior art (draw.io, Miro, React Flow), and a phased implementation recommendation using dynamic port selection with cubic Bézier curves.
+* **[`10_technology_and_infrastructure.md`](./architecture/10_technology_and_infrastructure.md):** Defines the production technology stack, hosting infrastructure, and environment topology. Codifies Google Cloud Platform mapping (Cloud Run, Cloud SQL), React Flow as the rendering engine, and Firebase Authentication usage.
 
 ## 🖥️ UI & Frontend
 *(Provide these to agents writing React components, CSS, and interactive state)*
