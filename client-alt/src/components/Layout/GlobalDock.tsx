@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Waypoints, LayoutGrid, Square, Minus, Clock,
   Eye, EyeOff, Magnet, ChevronRight,
-  Zap, Bug, User, FileText, Target, Lightbulb
+  Zap, Bug, User, FileText, Target, Lightbulb, StickyNote
 } from 'lucide-react';
 import './GlobalDock.css';
 
@@ -84,6 +84,20 @@ const GlobalDock: React.FC<GlobalDockProps> = ({ activeView, onViewChange }) => 
             >
               <Minus size={18} strokeWidth={1.6} />
               <span className="nards-dock__label">Lines</span>
+            </button>
+          </div>
+
+          <div className="nards-dock__separator" />
+
+          {/* Sticky Note Tool */}
+          <div className="nards-dock__section">
+            <button
+              className="nards-dock__item nards-dock__item--drag"
+              draggable
+              title="Drag to add a sticky note"
+            >
+              <StickyNote size={18} strokeWidth={1.6} fill="var(--nards-color-warning)" />
+              <span className="nards-dock__label">Note</span>
             </button>
           </div>
 

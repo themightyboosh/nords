@@ -91,6 +91,14 @@
   text-transform: uppercase;
 }
 
+.nards-dock__item--drag {
+  cursor: grab;
+}
+
+.nards-dock__item--drag:active {
+  cursor: grabbing;
+}
+
 /* ═══════════════════════════════════════════════ */
 /* FLYOUT PANEL                                    */
 /* ═══════════════════════════════════════════════ */

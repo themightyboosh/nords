@@ -123,7 +123,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
       <div className="nards-unanchored-notes">
         {UNANCHORED_NOTES.map((note, i) => (
           <div key={i} className="nards-unanchored-note" title={note} draggable>
-            <StickyNote size={12} />
+            <StickyNote size={24} fill="currentColor" strokeWidth={1} />
           </div>
         ))}
       </div>
@@ -190,7 +190,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
           })}
         </svg>
 
-        {/* Line labels — angle-matched, counter-scaled */}
+        {/* Line labels — boxed in line color, angle-matched */}
         {tetherLabels.map((label, i) => (
           <div
             key={`label-${i}`}
@@ -198,10 +198,11 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
             style={{
               left: `${label.x}%`,
               top: `${label.y}%`,
-              transform: `translate(-50%, -50%) scale(${inverseScale}) rotate(${label.angleDeg}deg)`,
+              transform: `translate(-50%, -50%) rotate(${label.angleDeg}deg) scale(${inverseScale})`,
+              backgroundColor: label.color,
             }}
           >
-            <span className="nards-tether-label__type" style={{ color: label.color }}>
+            <span className="nards-tether-label__type">
               {label.type}
             </span>
           </div>
@@ -259,7 +260,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
                   title={nard.note}
                 >
                   <div className="nards-sticky-note__connector" />
-                  <StickyNote size={12} />
+                  <StickyNote size={24} fill="currentColor" strokeWidth={1} />
                 </div>
               )}
             </React.Fragment>

@@ -29,8 +29,8 @@
 }
 
 .nards-unanchored-note {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,7 +38,7 @@
   border: none;
   cursor: grab;
   color: var(--nards-color-warning);
-  opacity: 0.7;
+  opacity: 0.8;
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
@@ -107,21 +107,25 @@
   filter: saturate(0.3);
 }
 
-/* ── Line Labels — bare text, angle-matched ── */
+/* ── Line Labels — boxed in line color, angle-matched ── */
 .nards-tether-label {
   position: absolute;
   z-index: 15;
   white-space: nowrap;
   pointer-events: none;
   transform-origin: center center;
+  /* backgroundColor set inline to line color */
+  border-radius: 3px;
+  padding: 1px 5px;
 }
 
 .nards-tether-label__type {
   font-family: var(--nards-font-primary);
-  font-size: 10px;
-  font-weight: var(--nards-font-weight-semibold);
-  letter-spacing: 0.02em;
-  opacity: 0.7;
+  font-size: 9px;
+  font-weight: var(--nards-font-weight-bold);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--nards-color-bg-base);
 }
 
 /* ═══════════════════════════════════════════════ */
@@ -214,8 +218,8 @@
 .nards-sticky-note {
   position: absolute;
   z-index: 14;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -225,7 +229,7 @@
   user-select: none;
   transform-origin: center center;
   color: var(--nards-color-warning);
-  opacity: 0.7;
+  opacity: 0.8;
   transition: opacity 0.15s ease;
 }
 
