@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Eye, Link2, LayoutGrid,
-  StickyNote, Plus, Pencil,
+  MessageSquare, Plus, Pencil,
   EyeIcon, EyeOff, ChevronDown, ArrowLeftRight, Ghost, Crosshair,
   Bug, User, FileText, Target, Lightbulb, Layers, AlertTriangle,
   Square, Minus as LineIcon, Settings2, Trash2,
@@ -11,7 +11,7 @@ import Spectrum from '../Spectrum/Spectrum';
 import './GlobalDock.css';
 
 /* ── Type registries ── */
-const NARD_TYPES = [
+const NORD_TYPES = [
   { name: 'Task', icon: Square, color: '#4da6ff', count: 4, visible: true },
   { name: 'Bug', icon: Bug, color: '#f87171', count: 1, visible: true },
   { name: 'Person', icon: User, color: '#34d399', count: 1, visible: true },
@@ -55,15 +55,15 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
 
   return (
     <>
-      {openPanel && <div className="nards-flyout-scrim" onClick={() => setOpenPanel(null)} />}
+      {openPanel && <div className="nords-flyout-scrim" onClick={() => setOpenPanel(null)} />}
 
-      <div className="nards-dock-wrapper">
-        <nav className="nards-global-dock nards-glass">
+      <div className="nords-dock-wrapper">
+        <nav className="nords-global-dock nords-glass">
 
           {/* ═══ Lens Toggle ═══ */}
-          <div className="nards-lens-toggle">
+          <div className="nords-lens-toggle">
             <button
-              className={`nards-lens-toggle__btn ${lens === 'canvas' ? 'is-active' : ''}`}
+              className={`nords-lens-toggle__btn ${lens === 'canvas' ? 'is-active' : ''}`}
               onClick={() => onLensChange('canvas')}
               title="Canvas — spatial graph view"
             >
@@ -71,7 +71,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
               <span>Canvas</span>
             </button>
             <button
-              className={`nards-lens-toggle__btn ${lens === 'link' ? 'is-active' : ''}`}
+              className={`nords-lens-toggle__btn ${lens === 'link' ? 'is-active' : ''}`}
               onClick={() => onLensChange('link')}
               title="Link — focused relationship editing"
             >
@@ -79,7 +79,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
               <span>Link</span>
             </button>
             <button
-              className={`nards-lens-toggle__btn ${lens === 'matrix' ? 'is-active' : ''}`}
+              className={`nords-lens-toggle__btn ${lens === 'matrix' ? 'is-active' : ''}`}
               onClick={() => onLensChange('matrix')}
               title="Matrix — spatial pivot table"
             >
@@ -88,41 +88,41 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
             </button>
           </div>
 
-          <div className="nards-dock__separator" />
+          <div className="nords-dock__separator" />
 
           {/* ═══ CANVAS TOOLS ═══ */}
           {lens === 'canvas' && (
             <>
-              <div className="nards-dock__section">
+              <div className="nords-dock__section">
                 <button
-                  className={`nards-dock__item ${openPanel === 'display' ? 'is-active' : ''}`}
+                  className={`nords-dock__item ${openPanel === 'display' ? 'is-active' : ''}`}
                   onClick={() => togglePanel('display')}
                 >
                   <Eye size={15} strokeWidth={1.6} />
-                  <span className="nards-dock__label">Display</span>
-                  <ChevronDown size={10} className="nards-dock__chevron" />
+                  <span className="nords-dock__label">Display</span>
+                  <ChevronDown size={10} className="nords-dock__chevron" />
                 </button>
               </div>
 
-              <div className="nards-dock__separator" />
+              <div className="nords-dock__separator" />
 
-              <div className="nards-dock__section">
-                <button className="nards-dock__item nards-dock__item--drag" draggable title="Drag to add a sticky">
-                  <StickyNote size={15} strokeWidth={1.6} />
-                  <span className="nards-dock__label">Sticky</span>
+              <div className="nords-dock__section">
+                <button className="nords-dock__item" title="View all comments">
+                  <MessageSquare size={15} strokeWidth={1.6} />
+                  <span className="nords-dock__label">Comments</span>
                 </button>
               </div>
 
-              <div className="nards-dock__separator" />
+              <div className="nords-dock__separator" />
 
-              <div className="nards-dock__section">
+              <div className="nords-dock__section">
                 <button
-                  className={`nards-dock__item nards-dock__item--accent ${openPanel === 'add' ? 'is-active' : ''}`}
+                  className={`nords-dock__item nords-dock__item--accent ${openPanel === 'add' ? 'is-active' : ''}`}
                   onClick={() => togglePanel('add')}
                 >
                   <Plus size={15} strokeWidth={2} />
-                  <span className="nards-dock__label">Add</span>
-                  <ChevronDown size={10} className="nards-dock__chevron" />
+                  <span className="nords-dock__label">Add</span>
+                  <ChevronDown size={10} className="nords-dock__chevron" />
                 </button>
               </div>
             </>
@@ -131,48 +131,48 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
           {/* ═══ LINK TOOLS ═══ */}
           {lens === 'link' && (
             <>
-              <div className="nards-dock__section">
+              <div className="nords-dock__section">
                 <button
-                  className={`nards-dock__item nards-dock__item--relationship ${openPanel === 'relationship' ? 'is-active' : ''}`}
+                  className={`nords-dock__item nords-dock__item--relationship ${openPanel === 'relationship' ? 'is-active' : ''}`}
                   onClick={() => togglePanel('relationship')}
                 >
                   <ArrowLeftRight size={15} strokeWidth={1.6} />
-                  <span className="nards-dock__label">{activeLine}</span>
+                  <span className="nords-dock__label">{activeLine}</span>
                   {activeConnectionType && (
-                    <span className="nards-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />
+                    <span className="nords-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />
                   )}
-                  <ChevronDown size={10} className="nards-dock__chevron" />
+                  <ChevronDown size={10} className="nords-dock__chevron" />
                 </button>
               </div>
 
-              <div className="nards-dock__separator" />
+              <div className="nords-dock__separator" />
 
-              <div className="nards-dock__section">
+              <div className="nords-dock__section">
                 <button
-                  className={`nards-dock__item ${showContext ? 'is-active' : ''}`}
+                  className={`nords-dock__item ${showContext ? 'is-active' : ''}`}
                   onClick={() => onShowContextChange(!showContext)}
-                  title={showContext ? 'Context ON — showing unconnected nards at 20%' : 'Context OFF — hiding unconnected nards'}
+                  title={showContext ? 'Context ON — showing unconnected nords at 20%' : 'Context OFF — hiding unconnected nords'}
                 >
                   <Ghost size={15} strokeWidth={1.6} />
-                  <span className="nards-dock__label">Context</span>
+                  <span className="nords-dock__label">Context</span>
                 </button>
               </div>
 
-              <div className="nards-dock__separator" />
+              <div className="nords-dock__separator" />
 
-              <div className="nards-dock__section">
-                <button className="nards-dock__item nards-dock__item--accent" title="Click source nard, then target nard to connect">
+              <div className="nords-dock__section">
+                <button className="nords-dock__item nords-dock__item--accent" title="Click source nard, then target nord to connect">
                   <Crosshair size={15} strokeWidth={1.6} />
-                  <span className="nards-dock__label">Connect</span>
+                  <span className="nords-dock__label">Connect</span>
                 </button>
               </div>
 
-              <div className="nards-dock__separator" />
+              <div className="nords-dock__separator" />
 
-              <div className="nards-dock__section">
-                <button className="nards-dock__item nards-dock__item--drag" draggable title="Drag to add a sticky">
-                  <StickyNote size={15} strokeWidth={1.6} />
-                  <span className="nards-dock__label">Sticky</span>
+              <div className="nords-dock__section">
+                <button className="nords-dock__item" title="View all comments">
+                  <MessageSquare size={15} strokeWidth={1.6} />
+                  <span className="nords-dock__label">Comments</span>
                 </button>
               </div>
             </>
@@ -181,48 +181,48 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
           {/* ═══ MATRIX TOOLS ═══ */}
           {lens === 'matrix' && (
             <>
-              <div className="nards-dock__section">
+              <div className="nords-dock__section">
                 <button
-                  className={`nards-dock__item ${openPanel === 'matrixCols' ? 'is-active' : ''}`}
+                  className={`nords-dock__item ${openPanel === 'matrixCols' ? 'is-active' : ''}`}
                   onClick={() => togglePanel('matrixCols')}
                 >
-                  <span className="nards-dock__label-prefix">Columns:</span>
-                  <span className="nards-dock__label nards-dock__label--value">{activeLine}</span>
+                  <span className="nords-dock__label-prefix">Columns:</span>
+                  <span className="nords-dock__label nords-dock__label--value">{activeLine}</span>
                   {activeConnectionType && (
-                    <span className="nards-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />
+                    <span className="nords-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />
                   )}
-                  <ChevronDown size={10} className="nards-dock__chevron" />
+                  <ChevronDown size={10} className="nords-dock__chevron" />
                 </button>
               </div>
 
-              <div className="nards-dock__separator" />
+              <div className="nords-dock__separator" />
 
-              <div className="nards-dock__section">
-                <button className="nards-dock__item" disabled title="Optional — select a Line Type for rows">
-                  <span className="nards-dock__label-prefix">Rows:</span>
-                  <span className="nards-dock__label nards-dock__label--empty">None</span>
+              <div className="nords-dock__section">
+                <button className="nords-dock__item" disabled title="Optional — select a Line Type for rows">
+                  <span className="nords-dock__label-prefix">Rows:</span>
+                  <span className="nords-dock__label nords-dock__label--empty">None</span>
                 </button>
               </div>
 
-              <div className="nards-dock__separator" />
+              <div className="nords-dock__separator" />
 
-              <div className="nards-dock__section">
-                <button className="nards-dock__item nards-dock__item--drag" draggable title="Drag to add a sticky">
-                  <StickyNote size={15} strokeWidth={1.6} />
-                  <span className="nards-dock__label">Sticky</span>
+              <div className="nords-dock__section">
+                <button className="nords-dock__item" title="View all comments">
+                  <MessageSquare size={15} strokeWidth={1.6} />
+                  <span className="nords-dock__label">Comments</span>
                 </button>
               </div>
 
-              <div className="nards-dock__separator" />
+              <div className="nords-dock__separator" />
 
-              <div className="nards-dock__section">
+              <div className="nords-dock__section">
                 <button
-                  className={`nards-dock__item nards-dock__item--accent ${openPanel === 'add' ? 'is-active' : ''}`}
+                  className={`nords-dock__item nords-dock__item--accent ${openPanel === 'add' ? 'is-active' : ''}`}
                   onClick={() => togglePanel('add')}
                 >
                   <Plus size={15} strokeWidth={2} />
-                  <span className="nards-dock__label">Add</span>
-                  <ChevronDown size={10} className="nards-dock__chevron" />
+                  <span className="nords-dock__label">Add</span>
+                  <ChevronDown size={10} className="nords-dock__chevron" />
                 </button>
               </div>
             </>
@@ -232,40 +232,40 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
 
         {/* ═══════════ FLYOUT PANELS ═══════════ */}
 
-        {/* Display — unified visibility for Nards + Lines */}
-        <div className={`nards-flyout nards-glass ${openPanel === 'display' ? 'is-open' : ''}`}>
-          <div className="nards-flyout__header">
-            <h3 className="nards-flyout__title">Display</h3>
-            <span className="nards-flyout__count">
-              {NARD_TYPES.reduce((a, b) => a + b.count, 0)} nards · {CONNECTION_TYPES.reduce((a, b) => a + b.count, 0)} connections
+        {/* Display — unified visibility for Nords + Lines */}
+        <div className={`nords-flyout nords-glass ${openPanel === 'display' ? 'is-open' : ''}`}>
+          <div className="nords-flyout__header">
+            <h3 className="nords-flyout__title">Display</h3>
+            <span className="nords-flyout__count">
+              {NORD_TYPES.reduce((a, b) => a + b.count, 0)} nords · {CONNECTION_TYPES.reduce((a, b) => a + b.count, 0)} connections
             </span>
           </div>
-          <div className="nards-flyout__list">
-            <div className="nards-flyout__section-label">Nard Types</div>
-            {NARD_TYPES.map((type) => (
-              <div key={type.name} className="nards-flyout__row" draggable title={`Drag to create ${type.name}`}>
-                <div className="nards-flyout__row-left">
-                  <span className="nards-flyout__type-icon" style={{ color: type.color }}>
+          <div className="nords-flyout__list">
+            <div className="nords-flyout__section-label">Nord Types</div>
+            {NORD_TYPES.map((type) => (
+              <div key={type.name} className="nords-flyout__row" draggable title={`Drag to create ${type.name}`}>
+                <div className="nords-flyout__row-left">
+                  <span className="nords-flyout__type-icon" style={{ color: type.color }}>
                     <type.icon size={14} strokeWidth={2} />
                   </span>
-                  <span className="nards-flyout__row-name">{type.name}</span>
-                  <span className="nards-flyout__row-count">{type.count}</span>
+                  <span className="nords-flyout__row-name">{type.name}</span>
+                  <span className="nords-flyout__row-count">{type.count}</span>
                 </div>
-                <button className={`nards-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`} title="Toggle visibility">
+                <button className={`nords-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`} title="Toggle visibility">
                   {type.visible ? <EyeIcon size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
                 </button>
               </div>
             ))}
-            <div className="nards-flyout__section-divider" />
-            <div className="nards-flyout__section-label">Connection Types</div>
+            <div className="nords-flyout__section-divider" />
+            <div className="nords-flyout__section-label">Connection Types</div>
             {CONNECTION_TYPES.map((type) => (
-              <div key={type.name} className="nards-flyout__row">
-                <div className="nards-flyout__row-left">
-                  <span className="nards-flyout__line-swatch" style={{ background: type.color }} />
-                  <span className="nards-flyout__row-name">{type.name}</span>
-                  <span className="nards-flyout__row-count">{type.count}</span>
+              <div key={type.name} className="nords-flyout__row">
+                <div className="nords-flyout__row-left">
+                  <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
+                  <span className="nords-flyout__row-name">{type.name}</span>
+                  <span className="nords-flyout__row-count">{type.count}</span>
                 </div>
-                <button className={`nards-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`} title="Toggle visibility">
+                <button className={`nords-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`} title="Toggle visibility">
                   {type.visible ? <EyeIcon size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
                 </button>
               </div>
@@ -274,31 +274,31 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
         </div>
 
         {/* Relationship Selector (Link mode) */}
-        <div className={`nards-flyout nards-glass ${openPanel === 'relationship' ? 'is-open' : ''}`}>
-          <div className="nards-flyout__header">
-            <h3 className="nards-flyout__title">Active Relationship</h3>
+        <div className={`nords-flyout nords-glass ${openPanel === 'relationship' ? 'is-open' : ''}`}>
+          <div className="nords-flyout__header">
+            <h3 className="nords-flyout__title">Active Relationship</h3>
           </div>
-          <div className="nards-flyout__list">
+          <div className="nords-flyout__list">
             {CONNECTION_TYPES.map((type) => (
               <div
                 key={type.name}
-                className={`nards-flyout__row nards-flyout__row--selectable ${activeLine === type.name ? 'is-active' : ''}`}
+                className={`nords-flyout__row nords-flyout__row--selectable ${activeLine === type.name ? 'is-active' : ''}`}
                 onClick={() => { onActiveLineChange(type.name); setOpenPanel(null); }}
               >
-                <div className="nards-flyout__row-left">
-                  <span className="nards-flyout__line-swatch" style={{ background: type.color }} />
-                  <span className="nards-flyout__row-name">{type.name}</span>
+                <div className="nords-flyout__row-left">
+                  <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
+                  <span className="nords-flyout__row-name">{type.name}</span>
                 </div>
                 {activeLine === type.name && (
-                  <div className="nards-flyout__row-spectrum">
+                  <div className="nords-flyout__row-spectrum">
                     <Spectrum value={0.65} color={type.color} width={52} />
                   </div>
                 )}
               </div>
             ))}
           </div>
-          <div className="nards-flyout__footer">
-            <span className="nards-flyout__footer-hint">
+          <div className="nords-flyout__footer">
+            <span className="nords-flyout__footer-hint">
               <ArrowLeftRight size={10} />
               Spatial distance = {activeLine.toLowerCase()} strength
             </span>
@@ -306,72 +306,72 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
         </div>
 
         {/* Matrix Column Selector */}
-        <div className={`nards-flyout nards-glass ${openPanel === 'matrixCols' ? 'is-open' : ''}`}>
-          <div className="nards-flyout__header">
-            <h3 className="nards-flyout__title">Column Axis</h3>
+        <div className={`nords-flyout nords-glass ${openPanel === 'matrixCols' ? 'is-open' : ''}`}>
+          <div className="nords-flyout__header">
+            <h3 className="nords-flyout__title">Column Axis</h3>
           </div>
-          <div className="nards-flyout__list">
+          <div className="nords-flyout__list">
             {CONNECTION_TYPES.map((type) => (
               <div
                 key={type.name}
-                className={`nards-flyout__row nards-flyout__row--selectable ${activeLine === type.name ? 'is-active' : ''}`}
+                className={`nords-flyout__row nords-flyout__row--selectable ${activeLine === type.name ? 'is-active' : ''}`}
                 onClick={() => { onActiveLineChange(type.name); setOpenPanel(null); }}
               >
-                <div className="nards-flyout__row-left">
-                  <span className="nards-flyout__line-swatch" style={{ background: type.color }} />
-                  <span className="nards-flyout__row-name">{type.name}</span>
-                  <span className="nards-flyout__row-count">{type.count}</span>
+                <div className="nords-flyout__row-left">
+                  <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
+                  <span className="nords-flyout__row-name">{type.name}</span>
+                  <span className="nords-flyout__row-count">{type.count}</span>
                 </div>
               </div>
             ))}
           </div>
-          <div className="nards-flyout__footer">
-            <span className="nards-flyout__footer-hint">
+          <div className="nords-flyout__footer">
+            <span className="nords-flyout__footer-hint">
               Stepper labels → column headers
             </span>
           </div>
         </div>
 
         {/* Add — create instances + manage types */}
-        <div className={`nards-flyout nards-glass ${openPanel === 'add' ? 'is-open' : ''}`}>
-          <div className="nards-flyout__header">
-            <h3 className="nards-flyout__title">Add</h3>
+        <div className={`nords-flyout nords-glass ${openPanel === 'add' ? 'is-open' : ''}`}>
+          <div className="nords-flyout__header">
+            <h3 className="nords-flyout__title">Add</h3>
           </div>
-          <div className="nards-flyout__list">
-            <div className="nards-flyout__create-section">
-              <h4 className="nards-flyout__create-label">Add Nard</h4>
-              <div className="nards-flyout__create-grid">
-                {NARD_TYPES.map((type) => (
-                  <button key={type.name} className="nards-flyout__create-btn" title={`Add a ${type.name}`}>
+          <div className="nords-flyout__list">
+            <div className="nords-flyout__create-section">
+              <h4 className="nords-flyout__create-label">Add Nard</h4>
+              <div className="nords-flyout__create-grid">
+                {NORD_TYPES.map((type) => (
+                  <button key={type.name} className="nords-flyout__create-btn" title={`Add a ${type.name}`}>
                     <type.icon size={16} strokeWidth={1.8} color={type.color} />
                     <span>{type.name}</span>
                   </button>
                 ))}
               </div>
             </div>
-            <div className="nards-flyout__create-divider" />
-            <div className="nards-flyout__create-section">
-              <h4 className="nards-flyout__create-label">Add Connection</h4>
-              <div className="nards-flyout__create-grid">
+            <div className="nords-flyout__create-divider" />
+            <div className="nords-flyout__create-section">
+              <h4 className="nords-flyout__create-label">Add Connection</h4>
+              <div className="nords-flyout__create-grid">
                 {CONNECTION_TYPES.map((type) => (
-                  <button key={type.name} className="nards-flyout__create-btn" title={`Add a ${type.name} connection`}>
-                    <span className="nards-flyout__line-swatch--lg" style={{ background: type.color }} />
+                  <button key={type.name} className="nords-flyout__create-btn" title={`Add a ${type.name} connection`}>
+                    <span className="nords-flyout__line-swatch--lg" style={{ background: type.color }} />
                     <span>{type.name}</span>
                   </button>
                 ))}
               </div>
             </div>
-            <div className="nards-flyout__create-divider" />
-            <div className="nards-flyout__create-section">
-              <h4 className="nards-flyout__create-label">Manage Types</h4>
-              <div className="nards-flyout__manage-actions">
-                <button className="nards-flyout__manage-btn" title="Add/remove properties, create new types" onClick={() => { onOpenManageTypes?.(); setOpenPanel(null); }}>
+            <div className="nords-flyout__create-divider" />
+            <div className="nords-flyout__create-section">
+              <h4 className="nords-flyout__create-label">Manage Types</h4>
+              <div className="nords-flyout__manage-actions">
+                <button className="nords-flyout__manage-btn" title="Add/remove properties, create new types" onClick={() => { onOpenManageTypes?.(); setOpenPanel(null); }}>
                   <Settings2 size={14} strokeWidth={1.6} />
                   <span>Manage Types</span>
                 </button>
               </div>
-              <p className="nards-flyout__manage-hint">
-                Add properties to types, create new types, or remove unused ones. Changes apply to all nards/connections of that type.
+              <p className="nords-flyout__manage-hint">
+                Add properties to types, create new types, or remove unused ones. Changes apply to all nords/connections of that type.
               </p>
             </div>
           </div>

@@ -1,4 +1,4 @@
-# Nards: Project Admin, Templates & Onboarding
+# Nords: Project Admin, Templates & Onboarding
 
 ## 1. Project Initialization Flow
 When initiating a new workspace, users progress through a strict creation flow to establish database parameters before reaching the live canvas.
@@ -10,7 +10,7 @@ When initiating a new workspace, users progress through a strict creation flow t
 
 ## 2. Template Hierarchy & Sample Data
 To prevent user confusion, templates are strictly divided:
-* **Component Templates (Nards & Lines):** Metadata schemas (e.g., "Standard Task"). They dictate color, shape, and data fields, but contain no user content.
+* **Component Templates (Nords & Lines):** Metadata schemas (e.g., "Standard Task"). They dictate color, shape, and data fields, but contain no user content.
 * **Project Templates:** A pre-packaged bundle of Component Templates and pre-configured Lens settings.
 * **Sample Data Injection:** Users can toggle "Load with Sample Data". The engine populates the canvas with a pre-built, fully tethered mock-graph so the user can immediately interact with the physics engine and see Lens transitions.
 

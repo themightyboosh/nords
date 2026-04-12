@@ -1,11 +1,11 @@
-# Nards: Roadmap, Tech Stack, & Metrics
+# Nords: Roadmap, Tech Stack, & Metrics
 
 ## 1. Roadmap Phases
 
 ### Phase 1: Foundation + Wow
-Core product with the three signature features defining Nards' identity capabilities (2D only, no AI features natively drawing layout).
+Core product with the three signature features defining Nords' identity capabilities (2D only, no AI features natively drawing layout).
 * Canvas (2D)
-* Nards with full content (markdown, fields, attachments, comments)
+* Nords with full content (markdown, fields, attachments, comments)
 * Lines with schemas, directional arrows, styles
 * Spatial Semantic Paradigm (Size global, distance/direction mapped via Semantic Stepper)
 * Real-time multiplayer (shared canvas, Granular soft-locking)
@@ -33,10 +33,10 @@ Core product with the three signature features defining Nards' identity capabili
 * AI Author Mode (AI spawning and suggesting spatial setups natively requiring approval)
 * The Gravity Well (Optional physics mode for discovery-driven exploratory layouts)
 * **Wormholes (Cross-Project Tension):** Establish tethers across active projects. If Marketing drags a dependent deadline outward on their screen, the Engineering team watches the edge of their canvas stretch as the Marketing team exerts gravitational pull from another dimension.
-* **Sandbox Branching:** Forking a Snapshot to play out "What-If" scenarios (e.g. destroying 30 Nards to watch the physics react) without affecting the Live State.
+* **Sandbox Branching:** Forking a Snapshot to play out "What-If" scenarios (e.g. destroying 30 Nords to watch the physics react) without affecting the Live State.
 * **Flatten to Doc Export:** Exporting the spatial layout into a beautifully formatted, linear, readable PDF or Notion-style document for executive consumption.
 * **Canvas Merge:** Combine two isolated projects natively, detecting overlaps, and resolving duplicates securely.
-* **The Pitch (One-Click Story Mode):** Select a path through the graph; Nards generates a slide-by-slide presentation where transitions map physically to the camera following the path.
+* **The Pitch (One-Click Story Mode):** Select a path through the graph; Nords generates a slide-by-slide presentation where transitions map physically to the camera following the path.
 * **Workspace Folders:** Lightweight organizational grouping above the project level for enterprise teams managing dozens of projects.
 * 3D Canvas toggle (WebGL/Three.js integration utilizing billboarding labels). 
 * Advanced Algorithms (Centrality plotting, Critical Paths)
@@ -49,12 +49,12 @@ Core product with the three signature features defining Nards' identity capabili
 * **Hosting:** Cloud-hosted SaaS with separate MCP routing servers.
 * **Database (Relational/Spatial Storage):** Postgres natively handling graph/relational patterns.
 * **Rendering:** 2D canvas at launch (WebGL or Canvas2D with force-directed graph rendering libraries). 
-* **Performance:** Must handle 200+ active Nards per workspace rendered natively using Semantic Zoom boundaries.
+* **Performance:** Must handle 200+ active Nords per workspace rendered natively using Semantic Zoom boundaries.
 * **Animation Engine:** Spring-physics & Easing engines dedicated for The Reveal and Temporal Player transitions.
 
 ## 3. Monetization Strategy
 * **Launch:** Free. No paywall. Focus purely on validation and concept adoption.
-* **Future Monetization Levers:** Nard count per workspace. The free tier carries a generous Nard limit (e.g. 50 nards). Paid tiers unlock 200+ bounds, advanced AI analyses models, administrative controls, custom workspace templates, The Pitch features, and increased MCP API rate limits.
+* **Future Monetization Levers:** Nard count per workspace. The free tier carries a generous Nard limit (e.g. 50 nords). Paid tiers unlock 200+ bounds, advanced AI analyses models, administrative controls, custom workspace templates, The Pitch features, and increased MCP API rate limits.
 
 ## 4. Success Metrics
 ### North Star Indicator
@@ -62,7 +62,7 @@ Core product with the three signature features defining Nards' identity capabili
 
 ### Quantitative
 * Projects created per user per month
-* Nards per project (Building true graphs vs 3-node toys)
+* Nords per project (Building true graphs vs 3-node toys)
 * Lines per Nard ratio (Connecting items vs isolated card drops)
 * View switches / Lens toggles per session (Engaging with 'The Reveal' animations)
 * Matrix pivot axis swaps per session (Engaging with the Spatial Pivot Table)
@@ -79,6 +79,6 @@ Core product with the three signature features defining Nards' identity capabili
 
 ## 5. Risk Mitigation
 * **Learning curve blocks adoption:** Countered by Progressive Onboarding, Templates with Sample Data, Ghost Lines, and The Reveal making concepts visceral.
-* **"200 nards is a toy" perception:** Countered by Semantic Zooming. Free tier caps at 50 to prove value before complexity strikes.
+* **"200 nords is a toy" perception:** Countered by Semantic Zooming. Free tier caps at 50 to prove value before complexity strikes.
 * **Performance issues via Animation/CRDTs:** Countered by limiting to 2D at launch, heavily resourcing the initial rendering optimization sprints, and aggressive line-hop limits.
-* **Miro features overlap:** Countered by the architectural moat; Miro is a drawing app, Nards is a mapped database with spatial APIs yielding logic that Miro lines mathematically cannot answer.
+* **Miro features overlap:** Countered by the architectural moat; Miro is a drawing app, Nords is a mapped database with spatial APIs yielding logic that Miro lines mathematically cannot answer.

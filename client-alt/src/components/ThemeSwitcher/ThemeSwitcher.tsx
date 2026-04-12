@@ -16,9 +16,9 @@ const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ currentTheme, onThemeChan
   const isDark = currentTheme === 'obsidian';
 
   return (
-    <div className="nards-theme-switcher">
+    <div className="nords-theme-switcher">
       <button
-        className="nards-theme-switcher__toggle"
+        className="nords-theme-switcher__toggle"
         onClick={() => onThemeChange(isDark ? 'obsidian-light' : 'obsidian')}
         aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
         title={`Switch to ${isDark ? 'light' : 'dark'} mode`}

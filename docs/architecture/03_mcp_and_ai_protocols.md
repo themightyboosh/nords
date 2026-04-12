@@ -1,30 +1,30 @@
-# Nards: Human-AI Collaboration via MCP
+# Nords: Human-AI Collaboration via MCP
 
 ## 1. AI as Consumer (Graph Analysis)
 AI reads the graph to provide insights. The AI can execute natural language queries (e.g., "Show me everything that influences the Q3 launch") by interpreting intent and routing via MCP. Capabilities include:
 * Graph Analysis, Cluster summarization, Status reporting, Path/Gap detection.
-* **Tension Detection:** AI analyzes the graph to flag contradictions — nards that have opposing spatial values across different line types (e.g. tight proximity on "Depends-On" but 0 proximity on "Communication").
+* **Tension Detection:** AI analyzes the graph to flag contradictions — nords that have opposing spatial values across different line types (e.g. tight proximity on "Depends-On" but 0 proximity on "Communication").
 
 ## 2. Model Context Protocol (MCP) & Permissions
 To enable seamless human-AI collaboration, the platform exposes its spatial database to external LLMs and agents via an MCP Server.
 * **Permission Parity:** AI agents possess the exact same operational permissions as standard human users. They can mutate the canvas, alter Nard schemas, and manage Snapshots based on their access token.
 
 ## 3. AI Spatial Translation (How the AI "Sees")
-Because external LLMs are text-based, the Nards engine cannot just dump x/y coordinates into context. It utilizes a highly optimized Dual-Payload translation. Every time the AI reads the canvas, it receives:
-* **The Semantic Layer (Mermaid.js):** The backend compiles active Nards and Tethers into a Mermaid string. This leverages the LLM's native training to grasp topology, dependencies, and flow instantly.
+Because external LLMs are text-based, the Nords engine cannot just dump x/y coordinates into context. It utilizes a highly optimized Dual-Payload translation. Every time the AI reads the canvas, it receives:
+* **The Semantic Layer (Mermaid.js):** The backend compiles active Nords and Tethers into a Mermaid string. This leverages the LLM's native training to grasp topology, dependencies, and flow instantly.
 * **The Spatial Layer (JSON):** A structured JSON array providing explicit schemas, Kanban matrix buckets, and the exact 0.0 to 1.0 normalized value of all active Tethers.
 
 ## 4. The AI Traversal Architecture (How the AI Walks)
 *Anthropic's MCP Golden Rule: Progressive Disclosure.* Avoid dumping infinite JSON into context.
 
-### 4.1 The Nards URI Scheme (Resources):
+### 4.1 The Nords URI Scheme (Resources):
 Static payload resources:
-* `nards://[workspace]/projects` (List projects)
-* `nards://[workspace]/templates` (Global Schemas)
-* `nards://[project]/snapshots/[id]` (Historical keyframes)
+* `nords://[workspace]/projects` (List projects)
+* `nords://[workspace]/templates` (Global Schemas)
+* `nords://[project]/snapshots/[id]` (Historical keyframes)
 
 ### 4.2 The Semantic Dictionary (Step Zero Resource):
-Before accessing topology, the AI pulls `nards://[project]/semantic_dictionary`. This resource acts as the "Rulebook" containing Project Meta, Nard Lexicon, and Tether definitions. The AI deduces the specific qualitative meaning of the workspace *before* walking the data. If the user invokes a "Blank Canvas", the AI operates gracefully on minimal context without forcing heavy rigid deductions.
+Before accessing topology, the AI pulls `nords://[project]/semantic_dictionary`. This resource acts as the "Rulebook" containing Project Meta, Nard Lexicon, and Tether definitions. The AI deduces the specific qualitative meaning of the workspace *before* walking the data. If the user invokes a "Blank Canvas", the AI operates gracefully on minimal context without forcing heavy rigid deductions.
 
 ### 4.3 Progressive Traversal Tooling:
 * `get_macro_topology(args)`: The "Map". Returns highly compressed Mermaid diagram.
@@ -41,7 +41,7 @@ MCP injects this prompt wrapper to the connected agent:
 
 ## 5. Spatial Manipulation & Autonomous Actions (How the AI "Acts")
 AI agents act as multiplayer co-creators.
-* **Autonomous Graph Mutation:** Spawning Nards, establishing and severing Tethers, updating metadata.
+* **Autonomous Graph Mutation:** Spawning Nords, establishing and severing Tethers, updating metadata.
 * **Real-Time Physics Interaction:** When an AI updates the 0.0-1.0 value of a Tether natively, it triggers the force-directed physics engine on the user's screen — visually animating the canvas live.
 * **Temporal Autonomy:** AI agents can spawn and lock Snapshots autonomously.
 

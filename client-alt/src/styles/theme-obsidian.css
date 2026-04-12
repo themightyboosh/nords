@@ -11,95 +11,95 @@
 
 [data-theme="obsidian"] {
   /* ── Typography ── */
-  --nards-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --nards-font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --nords-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nords-font-mono: 'JetBrains Mono', 'SF Mono', monospace;
 
-  --nards-font-weight-thin: 300;
-  --nards-font-weight-normal: 400;
-  --nards-font-weight-medium: 500;
-  --nards-font-weight-semibold: 600;
-  --nards-font-weight-bold: 700;
-  --nards-font-weight-black: 800;
+  --nords-font-weight-thin: 300;
+  --nords-font-weight-normal: 400;
+  --nords-font-weight-medium: 500;
+  --nords-font-weight-semibold: 600;
+  --nords-font-weight-bold: 700;
+  --nords-font-weight-black: 800;
 
-  --nards-font-size-xs: 0.6875rem;   /* 11px */
-  --nards-font-size-sm: 0.75rem;     /* 12px */
-  --nards-font-size-body: 0.8125rem; /* 13px — dense default */
-  --nards-font-size-md: 0.875rem;    /* 14px */
-  --nards-font-size-lg: 1rem;        /* 16px */
-  --nards-font-size-xl: 1.25rem;     /* 20px */
-  --nards-font-size-2xl: 1.5rem;     /* 24px */
+  --nords-font-size-xs: 0.6875rem;   /* 11px */
+  --nords-font-size-sm: 0.75rem;     /* 12px */
+  --nords-font-size-body: 0.8125rem; /* 13px — dense default */
+  --nords-font-size-md: 0.875rem;    /* 14px */
+  --nords-font-size-lg: 1rem;        /* 16px */
+  --nords-font-size-xl: 1.25rem;     /* 20px */
+  --nords-font-size-2xl: 1.5rem;     /* 24px */
 
-  --nards-line-height-tight: 1.2;
-  --nards-line-height-normal: 1.5;
-  --nards-line-height-relaxed: 1.65;
+  --nords-line-height-tight: 1.2;
+  --nords-line-height-normal: 1.5;
+  --nords-line-height-relaxed: 1.65;
 
-  --nards-letter-spacing-tight: -0.02em;
-  --nards-letter-spacing-normal: 0;
-  --nards-letter-spacing-wide: 0.06em;
+  --nords-letter-spacing-tight: -0.02em;
+  --nords-letter-spacing-normal: 0;
+  --nords-letter-spacing-wide: 0.06em;
 
   /* ── Surfaces ── */
-  --nards-color-bg-deep: #0d0f12;
-  --nards-color-bg-canvas: #13161b;
-  --nards-color-bg-surface: #1a1e25;
-  --nards-color-bg-elevated: #21262e;
-  --nards-color-bg-hover: #282e38;
+  --nords-color-bg-deep: #0d0f12;
+  --nords-color-bg-canvas: #13161b;
+  --nords-color-bg-surface: #1a1e25;
+  --nords-color-bg-elevated: #21262e;
+  --nords-color-bg-hover: #282e38;
 
   /* ── Borders ── */
-  --nards-color-border-subtle: rgba(255, 255, 255, 0.06);
-  --nards-color-border-default: rgba(255, 255, 255, 0.10);
-  --nards-color-border-strong: rgba(255, 255, 255, 0.16);
+  --nords-color-border-subtle: rgba(255, 255, 255, 0.06);
+  --nords-color-border-default: rgba(255, 255, 255, 0.10);
+  --nords-color-border-strong: rgba(255, 255, 255, 0.16);
 
   /* ── Text ── */
-  --nards-color-text-primary: #e8eaed;
-  --nards-color-text-secondary: #9aa0ab;
-  --nards-color-text-tertiary: #5f6671;
-  --nards-color-text-disabled: #3d434d;
+  --nords-color-text-primary: #e8eaed;
+  --nords-color-text-secondary: #9aa0ab;
+  --nords-color-text-tertiary: #5f6671;
+  --nords-color-text-disabled: #3d434d;
 
   /* ── Accent (ice blue) ── */
-  --nards-color-accent: #4da6ff;
-  --nards-color-accent-dim: rgba(77, 166, 255, 0.12);
-  --nards-color-accent-hover: #6bb5ff;
+  --nords-color-accent: #4da6ff;
+  --nords-color-accent-dim: rgba(77, 166, 255, 0.12);
+  --nords-color-accent-hover: #6bb5ff;
 
   /* ── Semantic ── */
-  --nards-color-success: #34d399;
-  --nards-color-warning: #fbbf24;
-  --nards-color-danger: #f87171;
-  --nards-color-info: #60a5fa;
+  --nords-color-success: #34d399;
+  --nords-color-warning: #fbbf24;
+  --nords-color-danger: #f87171;
+  --nords-color-info: #60a5fa;
 
   /* ── Label on Color ── */
-  --nards-color-label-on-color: #111317;
+  --nords-color-label-on-color: #111317;
 
   /* ── Tethers ── */
-  --nards-color-tether-active: #4da6ff;
-  --nards-color-tether-ghost: rgba(77, 166, 255, 0.15);
+  --nords-color-tether-active: #4da6ff;
+  --nords-color-tether-ghost: rgba(77, 166, 255, 0.15);
 
   /* ── Shadows ── */
-  --nards-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --nards-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --nards-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --nards-shadow-glow: 0 0 20px rgba(77, 166, 255, 0.15);
+  --nords-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --nords-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --nords-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --nords-shadow-glow: 0 0 20px rgba(77, 166, 255, 0.15);
 
   /* ── Radius ── */
-  --nards-radius-sm: 4px;
-  --nards-radius-md: 6px;
-  --nards-radius-lg: 10px;
-  --nards-radius-xl: 16px;
-  --nards-radius-pill: 100px;
+  --nords-radius-sm: 4px;
+  --nords-radius-md: 6px;
+  --nords-radius-lg: 10px;
+  --nords-radius-xl: 16px;
+  --nords-radius-pill: 100px;
 
   /* ── Spacing ── */
-  --nards-space-xs: 4px;
-  --nards-space-sm: 8px;
-  --nards-space-md: 12px;
-  --nards-space-lg: 16px;
-  --nards-space-xl: 24px;
-  --nards-space-2xl: 32px;
+  --nords-space-xs: 4px;
+  --nords-space-sm: 8px;
+  --nords-space-md: 12px;
+  --nords-space-lg: 16px;
+  --nords-space-xl: 24px;
+  --nords-space-2xl: 32px;
 
   /* ── Layout ── */
-  --nards-header-height: 48px;
-  --nards-dock-height: 52px;
-  --nards-drawer-width: 380px;
+  --nords-header-height: 48px;
+  --nords-dock-height: 52px;
+  --nords-drawer-width: 380px;
 
   /* ── Glass ── */
-  --nards-glass-bg: rgba(19, 22, 27, 0.85);
-  --nards-glass-blur: 16px;
+  --nords-glass-bg: rgba(19, 22, 27, 0.85);
+  --nords-glass-blur: 16px;
 }

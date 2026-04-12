@@ -23,13 +23,13 @@ html, body, #root {
 }
 
 body {
-  font-family: var(--nards-font-primary);
-  font-size: var(--nards-font-size-body);
-  font-weight: var(--nards-font-weight-normal);
-  line-height: var(--nards-line-height-normal);
-  letter-spacing: var(--nards-letter-spacing-normal);
-  color: var(--nards-color-text-primary);
-  background-color: var(--nards-color-bg-canvas);
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-body);
+  font-weight: var(--nords-font-weight-normal);
+  line-height: var(--nords-line-height-normal);
+  letter-spacing: var(--nords-letter-spacing-normal);
+  color: var(--nords-color-text-primary);
+  background-color: var(--nords-color-bg-canvas);
   transition: background-color 0.4s ease, color 0.4s ease;
 }
 
@@ -38,15 +38,15 @@ body {
 /* ═══════════════════════════════════════════════════════ */
 
 /* ── Glass Surface ── */
-.nards-glass {
-  background: var(--nards-glass-bg);
-  backdrop-filter: blur(var(--nards-glass-blur));
-  -webkit-backdrop-filter: blur(var(--nards-glass-blur));
-  border: 1px solid var(--nards-color-border-default);
+.nords-glass {
+  background: var(--nords-glass-bg);
+  backdrop-filter: blur(var(--nords-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nords-glass-blur));
+  border: 1px solid var(--nords-color-border-default);
 }
 
 /* ── App Container ── */
-.nards-app-container {
+.nords-app-container {
   position: relative;
   width: 100%;
   height: 100%;
@@ -55,7 +55,7 @@ body {
 
 /* ── Focus Ring (Accessibility) ── */
 :focus-visible {
-  outline: 2px solid var(--nards-color-accent);
+  outline: 2px solid var(--nords-color-accent);
   outline-offset: 2px;
 }
 
@@ -67,15 +67,15 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--nards-color-border-default);
+  background: var(--nords-color-border-default);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--nards-color-border-strong);
+  background: var(--nords-color-border-strong);
 }
 
 /* ── Selection ── */
 ::selection {
-  background: var(--nards-color-accent-dim);
-  color: var(--nards-color-text-primary);
+  background: var(--nords-color-accent-dim);
+  color: var(--nords-color-text-primary);
 }

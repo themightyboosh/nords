@@ -34,7 +34,7 @@ function App() {
   };
 
   return (
-    <div className="nards-app-container">
+    <div className="nords-app-container">
       {/* Canvas / Matrix background */}
       <CanvasMock
         onNardClick={handleNardClick}

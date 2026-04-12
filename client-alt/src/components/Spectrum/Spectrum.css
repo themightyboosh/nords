@@ -2,21 +2,21 @@
 /* SPECTRUM — reusable range indicator             */
 /* ═══════════════════════════════════════════════ */
 
-.nards-spectrum {
+.nords-spectrum {
   position: relative;
   height: 4px;
   border-radius: 2px;
   cursor: default;
 }
 
-.nards-spectrum__track {
+.nords-spectrum__track {
   position: absolute;
   inset: 0;
-  background: var(--nards-color-border-default);
+  background: var(--nords-color-border-default);
   border-radius: 2px;
 }
 
-.nards-spectrum__fill {
+.nords-spectrum__fill {
   position: absolute;
   top: 0;
   left: 0;
@@ -25,15 +25,15 @@
   transition: width 0.2s ease;
 }
 
-.nards-spectrum__thumb {
+.nords-spectrum__thumb {
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--nards-color-bg-surface);
+  background: var(--nords-color-bg-surface);
   border: 2px solid;
-  box-shadow: var(--nards-shadow-sm);
+  box-shadow: var(--nords-shadow-sm);
   transition: left 0.2s ease;
 }

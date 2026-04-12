@@ -1,30 +1,30 @@
-# Nards: Vision & Invariants
+# Nords: Vision & Invariants
 
 *"I'm never going to use Trello again."*
 — Target user reaction after first 10 minutes
 
 ## 1. Vision
-Nards is a graph-native ideation and project management tool that replaces flat, column-based tools (Trello, Notion boards) with a spatial canvas where ideas, tasks, people, and concepts exist as nodes in a living network. Relationships are first-class citizens — not afterthoughts.
+Nords is a graph-native ideation and project management tool that replaces flat, column-based tools (Trello, Notion boards) with a spatial canvas where ideas, tasks, people, and concepts exist as nodes in a living network. Relationships are first-class citizens — not afterthoughts.
 
-Core analogy: SQL is to Postgres Graph/Neo4j as Trello is to Nards.
-Trello assumes your work belongs in a line. Nards assumes it belongs in a network.
+Core analogy: SQL is to Postgres Graph/Neo4j as Trello is to Nords.
+Trello assumes your work belongs in a line. Nords assumes it belongs in a network.
 
 ### 1.1 Competitive Positioning
-**Why not Miro?** Miro's data model is a drawing — shapes on a canvas with visual connectors. Nards' data model is a graph — typed nodes with typed, semantically-rich relationships. Miro can't query "show me everything that blocks the Q3 launch" because its connectors carry no meaning. This is an architectural difference, not a feature gap. It must be felt in the first 30 seconds.
+**Why not Miro?** Miro's data model is a drawing — shapes on a canvas with visual connectors. Nords' data model is a graph — typed nodes with typed, semantically-rich relationships. Miro can't query "show me everything that blocks the Q3 launch" because its connectors carry no meaning. This is an architectural difference, not a feature gap. It must be felt in the first 30 seconds.
 
-**Why not Trello/Notion?** They are column-based. A card lives in one list. Nards exist in a network where the same node participates in many relationships, and each relationship type has its own spatial language.
+**Why not Trello/Notion?** They are column-based. A card lives in one list. Nords exist in a network where the same node participates in many relationships, and each relationship type has its own spatial language.
 
 **Defensibility:** Per-line-type spatial semantics, MCP-native AI integration, and the animated view transition system ("The Reveal") create a product experience that cannot be replicated by adding features to a drawing tool or a kanban board.
 
 ### 1.2 Glossary & Key Terms
 * **Nard:** The fundamental visual node representing an entity (task, person, idea, etc.).
-* **Tether (Line):** A relationship connecting two Nards, whose physical length translates to a 0.0-1.0 data value.
+* **Tether (Line):** A relationship connecting two Nords, whose physical length translates to a 0.0-1.0 data value.
 * **Semantic Stepper:** The user-defined text labels (e.g., "Blocker" to "Independent") that map to the 0.0-1.0 distance scale.
 * **Snapshot:** An immutable, time-stamped keyframe saving the exact state of the entire project graph.
 * **Lens (View):** A specific way to visualize the data, such as the Spatial Canvas or the Matrix View.
 * **The Reveal:** The fluid physics-based animation that plays when data or views change, letting users track where nodes move.
 * **Matrix View (Spatial Pivot Table):** A dual-axis layout combining line types into columns and swimlanes.
-* **Elastic Zone (Grouping):** A dynamically morphing boundary drawn around a group of Nards to denote a loose geographic area.
+* **Elastic Zone (Grouping):** A dynamically morphing boundary drawn around a group of Nords to denote a loose geographic area.
 
 ### 1.3 Constitutional Invariants (AI Anti-Drift Architecture)
 To prevent drift during implementation or when utilizing external LLM agents, these rules are unbending invariants of the system architecture:
@@ -49,7 +49,7 @@ A Trello power user who has tried to make Miro + Trello + spreadsheets work toge
 "I have a project where the relationships between things matter more than the sequence, and no tool lets me express that."
 
 ### 2.4 Path to Mass Market
-The AI-obsessed PM is the wedge, not the ceiling. The viral loop is Nard DNA — shareable context URLs that make any AI tool smarter. Non-technical PMs adopt because their AI-native teammate says "just put it in Nards so Claude can see it."
+The AI-obsessed PM is the wedge, not the ceiling. The viral loop is Nard DNA — shareable context URLs that make any AI tool smarter. Non-technical PMs adopt because their AI-native teammate says "just put it in Nords so Claude can see it."
 
 ---
 

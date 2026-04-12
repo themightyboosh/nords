@@ -1,13 +1,14 @@
-Let's call "Edit T¥pe Schemas" "Manage TYpes" Lets see what that screen would look like.
+Can the project name be larger, 
+can we have a project icon selector (same for Nords)
 
-I shouldnt be able to "+ property" when viewing a nard or line detail (I can change property values but properties are set at type level)
+Need to see the project drop-down, project browser, add create delete, clone.
 
-Give me a matrix of the possible properties and their functionality by nard and connection (let's refer to lines as connections globally)
 
-LOOK AT The attached file we need an icon like that to indicate the user can scale the nard container. 
+THe spectrum config for the project is just for the scale of the Nord.
 
-THe scaling user value should be shown in the expansion.
+THe user should be able to determine the step count and what each step means (step values round up)
 
-I need to see the project settings screen. We need a global "spectrum value thing" help me wioth terminoloo9gy. It's just the way a user puts values on a 0 to 1.0 range (the normalized distances, scale etc.) should support X, and X and Y
 
-Look at the PRDs and update as neceesar¥ globally .
+For Lines we need to use the same step system but it should support both X, and X + Y steps. 
+
+This should 

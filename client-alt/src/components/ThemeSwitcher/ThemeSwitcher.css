@@ -1,9 +1,9 @@
-.nards-theme-switcher {
+.nords-theme-switcher {
   display: flex;
   align-items: center;
 }
 
-.nards-theme-switcher__toggle {
+.nords-theme-switcher__toggle {
   width: 30px;
   height: 30px;
   display: flex;
@@ -11,13 +11,13 @@
   justify-content: center;
   background: transparent;
   border: none;
-  color: var(--nards-color-text-tertiary);
-  border-radius: var(--nards-radius-md);
+  color: var(--nords-color-text-tertiary);
+  border-radius: var(--nords-radius-md);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.nards-theme-switcher__toggle:hover {
-  color: var(--nards-color-text-secondary);
-  background: var(--nards-color-bg-hover);
+.nords-theme-switcher__toggle:hover {
+  color: var(--nords-color-text-secondary);
+  background: var(--nords-color-bg-hover);
 }

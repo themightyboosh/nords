@@ -1,16 +1,16 @@
 import React from 'react';
 
 /**
- * Nards Logo — standalone SVG.
+ * Nords Logo — standalone SVG.
  * Replace the <path> / <g> contents when the final logo is ready.
  * Props: size (defaults to 20), color inherits from currentColor.
  */
-interface NardsLogoProps {
+interface NordsLogoProps {
   size?: number;
   className?: string;
 }
 
-const NardsLogo: React.FC<NardsLogoProps> = ({ size = 20, className }) => (
+const NordsLogo: React.FC<NordsLogoProps> = ({ size = 20, className }) => (
   <svg
     width={size}
     height={size}
@@ -29,4 +29,4 @@ const NardsLogo: React.FC<NardsLogoProps> = ({ size = 20, className }) => (
   </svg>
 );
 
-export default NardsLogo;
+export default NordsLogo;

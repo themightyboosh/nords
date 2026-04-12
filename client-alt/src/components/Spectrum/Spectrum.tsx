@@ -14,7 +14,7 @@ interface SpectrumProps {
 
 /**
  * Spectrum — A compact, reusable range indicator component.
- * Used by Nards (container size = importance) and Lines (distance = weight).
+ * Used by Nords (container size = importance) and Lines (distance = weight).
  * Renders as a thin horizontal bar with a filled portion.
  */
 const Spectrum: React.FC<SpectrumProps> = ({
@@ -27,20 +27,20 @@ const Spectrum: React.FC<SpectrumProps> = ({
 
   return (
     <div
-      className="nards-spectrum"
+      className="nords-spectrum"
       style={{ width }}
       title={label}
     >
-      <div className="nards-spectrum__track" />
+      <div className="nords-spectrum__track" />
       <div
-        className="nards-spectrum__fill"
+        className="nords-spectrum__fill"
         style={{
           width: `${clamped * 100}%`,
           backgroundColor: color,
         }}
       />
       <div
-        className="nards-spectrum__thumb"
+        className="nords-spectrum__thumb"
         style={{
           left: `${clamped * 100}%`,
           borderColor: color,
