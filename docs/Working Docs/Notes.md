@@ -1,12 +1,13 @@
-We don't need the zoom on the matrix view.
+Let's call "Edit T¥pe Schemas" "Manage TYpes" Lets see what that screen would look like.
 
-We don't need a summarize button othe header.
+I shouldnt be able to "+ property" when viewing a nard or line detail (I can change property values but properties are set at type level)
 
-Put the logo in the center top a little larger
+Give me a matrix of the possible properties and their functionality by nard and connection (let's refer to lines as connections globally)
 
-Make the zoom icon on the nard a triangle pull thing that point to the upper riogh corner make it more prominent (the user can make it 25% smaller to %200 larger current size)
+LOOK AT The attached file we need an icon like that to indicate the user can scale the nard container. 
 
-Need to see the expanison of a sticky and line to see how it's editied.
+THe scaling user value should be shown in the expansion.
 
+I need to see the project settings screen. We need a global "spectrum value thing" help me wioth terminoloo9gy. It's just the way a user puts values on a 0 to 1.0 range (the normalized distances, scale etc.) should support X, and X and Y
 
-The nards and lines canvas menu items "say nards and lines" it should really be "display" or something. Help me here! +new should really bee add - we are adding existing nard types but we need a way to create existing line and nard types - we ma¥ want to add an "approved" option to "tasks" in which case it would add that to all active task nard types, COnverseley if we delete it it would remove that from all active card types. Or we create new ones. THink on this as UX person. It's looking really good.
+Look at the PRDs and update as neceesar¥ globally .

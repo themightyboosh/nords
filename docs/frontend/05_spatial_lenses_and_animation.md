@@ -6,19 +6,19 @@ The underlying data is always the graph. Views (Lenses) are distinct visual fram
 The full spatial physics graph (2D at launch, 3D in Phase 2). Activated via the **Canvas** button in the Dock's 3-way Lens Toggle.
 * Pan, zoom, select, drag behaviors
 * Nards rendered with type-specific accent colors, properties, and size-driven widths
-* Lines rendered with type styling, direction arrows, angle-matched labels in colored pills, and ribbon spreading for parallel connections
-* Ghost Lines: Faint background connections for non-active line types (8% opacity)
-* **Dock Tools:** Nards ▾ (visibility toggles per type), Lines ▾ (visibility toggles), Sticky (drag source), + New ▾ (creation grid)
-* **Visibility Cascade:** See §1.12 in UI doc — hidden nard types with visible line connections render as ghosts at 20% opacity
+* Connections rendered with type styling, direction arrows, angle-matched labels in colored pills, and ribbon spreading for parallel connections
+* Ghost Connections: Faint background connections for non-active connection types (8% opacity)
+* **Dock Tools:** Display ▾ (unified visibility toggles for Nard Types + Connection Types), Sticky (drag source), Add ▾ (creation grid + Manage Types)
+* **Visibility Cascade:** See §1.12 in UI doc — hidden nard types with visible connections render as ghosts at 20% opacity
 
 ## 2. The Link Lens (Focused Editing)
-Activated via the **Link** button in the Dock's Lens Toggle. This is the only mode where spatial editing (drag = write distance) is permitted. It isolates exactly one Line Type for focused relationship management.
-* **Active Relationship Selector:** The dock shows the active Line Type (e.g., "Blocks") with its color swatch and a spectrum slider. Clicking opens a dropdown to switch types.
-* **Ghosting:** Nards not connected by the active Line Type render at 20% opacity (desaturated, non-interactive). The active line type renders at full saturation with labels and arrows. Other line types render as context ghosts (8% opacity) or are hidden entirely.
+Activated via the **Link** button in the Dock's Lens Toggle. This is the only mode where spatial editing (drag = write distance) is permitted. It isolates exactly one Connection Type for focused relationship management.
+* **Active Relationship Selector:** The dock shows the active Connection Type (e.g., "Blocks") with its color swatch and a spectrum slider. Clicking opens a dropdown to switch types.
+* **Ghosting:** Nards not connected by the active Connection Type render at 20% opacity (desaturated, non-interactive). The active connection type renders at full saturation with labels and arrows. Other connection types render as context ghosts (8% opacity) or are hidden entirely.
 * **Context Toggle:** A toggle in the dock controls whether unconnected nards are shown as ghosts (ON) or completely hidden (OFF). This allows discovery of "what doesn't participate in this relationship."
-* **Add Line:** A crosshair-mode button lets the user click source nard → target nard to create a new connection of the active type.
-* **Drag Info Panel:** Per §1.9, dragging a nard shows live distance values for the active line type.
-* **Dock Tools:** Relationship ▾, Context toggle, Add Line, Sticky.
+* **Connect:** A crosshair-mode button lets the user click source nard → target nard to create a new connection of the active type.
+* **Drag Info Panel:** Per §1.9, dragging a nard shows live distance values for the active connection type.
+* **Dock Tools:** Relationship ▾, Context toggle, Connect, Sticky.
 
 ### 2.1 Palette Visibility & Activity
 The Canvas Lens manages Palettes with independent visibility and activity toggles. The Link Lens replaces this with a single-relationship focus.

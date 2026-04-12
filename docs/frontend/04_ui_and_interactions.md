@@ -7,32 +7,33 @@ The app utilizes tactile, point-and-click logic rather than keyboard-heavy power
 The UI explicitly minimizes persistent sidebars to keep 95% of space aimed at the Spatial Canvas.
 * **The Viewport Header:** A full-width top bar spanning the entire viewport. Contains:
   * *Left:* Nards logo + Project Switcher (folder icon, project name, snapshot state, chevron dropdown for switching projects and accessing project settings).
-  * *Center:* AI action buttons (e.g., "Summarize").
+  * *Center:* Nards logo (larger, centered for brand identity).
   * *Right:* Notification bell (with unread badge), Activity pulse (off-screen change count), teammate avatars, theme toggle, project settings gear, and **User Account Menu** (avatar + chevron dropdown for profile, preferences, logout).
 * **The Global Dock:** A floating, pill-shaped dock centered at the bottom of the screen. The dock contains a **3-way Lens Toggle** (Canvas / Link / Matrix) followed by a separator, then contextual tools that change based on the active lens:
-  * *Canvas Lens:* Nards ▾ (type list with visibility toggles), Lines ▾ (type list with visibility toggles), Sticky (drag source), + New ▾ (creation grid).
-  * *Link Lens:* Relationship ▾ (active line type selector with spectrum slider), Context toggle (show/hide unconnected nards at 20%), Add Line (crosshair draw mode), Sticky.
-  * *Matrix Lens:* Columns ▾ (line type selector for X-axis), Rows (optional line type for Y-axis), Sticky, + New ▾.
+  * *Canvas Lens:* Display ▾ (unified visibility toggles for Nard Types + Connection Types), Sticky (drag source), Add ▾ (creation grid for nards/connections + **Manage Types** button).
+  * *Link Lens:* Relationship ▾ (active connection type selector with spectrum slider), Context toggle (show/hide unconnected nards at 20%), Connect (crosshair draw mode), Sticky.
+  * *Matrix Lens:* Columns ▾ (connection type selector for X-axis), Rows (optional connection type for Y-axis), Sticky, Add ▾.
 
 ### 1.2 Tactile Interaction Design
 * **Double-Click Radial Menu (Quick Spawn):** Double-clicking empty canvas summons a temporary, circular context menu. The wedges display the user's most recently used Nard Types, with a "More..." wedge that opens the full Nard Palette.
 * **Hover-Focus (Graph Isolation):** Hovering over a Nard dims all non-connected Nards to 20% opacity, highlighting the active local graph path brightly.
 * **The Detail Drawer:** Double-clicking a Nard opens a right-side "Detail Drawer" for editing Markdown description and fields, keeping the canvas visible on the left. The Drawer contains tabs for: **Properties** (metadata fields), **Connections** (list of all Tethers with inline Stepper controls), and **Comments** (threaded conversation with @mention support).
 
-### 1.3 Establishing Tethers (Drawing Lines)
+### 1.3 Establishing Connections (Drawing Tethers)
 Two distinct, purely mouse-driven interactions accommodate different cognitive models:
-* **The Spatial Method (Drag-to-Connect):** Selecting a Nard surfaces 4 translucent connector nodes on its edges. The user clicks and drags from a node to the target. Upon drop, a micro-menu prompts the user to select the Line Type.
-* **The Structured Method (Drawer Linking):** For dense clusters where drawing lines is visually cramped, the user opens the Detail Drawer, clicks "Add Connection", selects the Type dropdown, and types the target Nard's name. The system generates the physical math line implicitly.
+* **The Spatial Method (Drag-to-Connect):** Selecting a Nard surfaces 4 translucent connector nodes on its edges. The user clicks and drags from a node to the target. Upon drop, a micro-menu prompts the user to select the Connection Type.
+* **The Structured Method (Drawer Linking):** For dense clusters where drawing connections is visually cramped, the user opens the Detail Drawer, clicks "Add Connection", selects the Type dropdown, and types the target Nard's name. The system generates the physical math line implicitly.
 
 ### 1.4 Nard Card Anatomy & Typography
 Card density relies strictly on "Collapsed" vs "Expanded" models to keep massive graphs readable. Each Nard is typed (Task, Bug, Person, Artifact, Milestone, Idea, Epic, Risk, etc.) with a unique icon and accent color.
 * **Collapsed State (Canvas Default):**
-  * *Title Bar:* Type icon (colored) + type label (uppercase) on the left, drag-to-resize handle (GripVertical) on the right.
+  * *Title Bar:* Type icon (colored) + type label (uppercase) on the left.
+  * *Scale Indicator:* A diagonal expand/contract arrow icon (`Maximize2`) anchored to the bottom-right corner of the card. The user drags this handle to resize the card from **25%** to **200%** of base width. The current scale value (e.g., `1.2×`) is shown in the Detail Drawer.
   * *Title:* Soft 40 character limit, 2-line clamp.
-  * *Properties:* 2 configurable key:value property rows (e.g., "Status: Done", "Assignee: Daniel"). A "+N more" indicator shows when additional properties exist.
-  * *Footer:* Spectrum component showing the Nard's relative size/importance value. Size drives the card's rendered width (0.75x to 2.0x base).
+  * *Properties:* 2 configurable key:value property rows (e.g., "Status: Done", "Assignee: Daniel"). A "+N more" indicator shows when additional properties exist. **Properties cannot be added to individual instances** — they are defined at the type level via Manage Types (§1.13).
+  * *Footer:* Spectrum component showing the Nard's relative scale value. Scale drives the card's rendered width (0.25x to 2.0x base).
   * *Card Tinting:* Card background is tinted 10% with the type's accent color via `color-mix()`. Border is tinted 20%.
-* **Expanded State:** The Detail Drawer reveals the full, un-truncated markdown string and the entirety of Metadata fields inside a standard form UI.
+* **Expanded State:** The Detail Drawer reveals the full, un-truncated markdown string and the entirety of Metadata fields in a form UI. Property **values** can be changed here, but properties cannot be added or removed (that requires Manage Types).
 
 ### 1.5 Multi-Select & Bulk Actions
 When 2+ Nards are selected (via lasso or shift-click), a **Group Action Toolbar** appears above the selection:
@@ -99,12 +100,39 @@ The platform avoids desktop-first compromises to support tablets and mobile inte
   * *Detail Drawer:* Degrades on mobile from Right-Slide-over into a swipeable Bottom Sheet covering the lower 70% of the screen.
 
 ### 1.12 Visibility Cascade Rules
-When Nard Types and Line Types have independent visibility toggles, boundary conditions arise at partial-visibility intersections.
-* **Line visible, connected Nard hidden:** The hidden Nard is rendered as a **ghost** (20% opacity, desaturated, non-interactive) so the visible line doesn't terminate in empty space. This preserves spatial continuity.
-* **Nard visible, connected Line hidden:** The Nard renders normally. The hidden line is not drawn. The nard stands alone without its connections.
+When Nard Types and Connection Types have independent visibility toggles, boundary conditions arise at partial-visibility intersections.
+* **Connection visible, connected Nard hidden:** The hidden Nard is rendered as a **ghost** (20% opacity, desaturated, non-interactive) so the visible connection doesn't terminate in empty space. This preserves spatial continuity.
+* **Nard visible, connected Connection hidden:** The Nard renders normally. The hidden connection is not drawn. The nard stands alone without its connections.
 * **Both hidden:** Nothing rendered. Complete removal from the canvas.
-* **Both visible:** Full rendering — nard at full saturation, line at full saturation with arrow and label.
+* **Both visible:** Full rendering — nard at full saturation, connection at full saturation with arrow and label.
 * **Ghost Behavior:** Ghost nards share styling with Link mode's context ghosts (identical CSS class `nards-node--ghosted`). They cannot be clicked, dragged, or selected. They exist purely as spatial anchors.
+
+### 1.13 Manage Types Screen
+A full-screen modal accessed from the **Add ▾ → Manage Types** button in the dock. This is where the project's type schemas are defined.
+* **Two tabs:** Nard Types | Connection Types.
+* **Type List:** Sidebar listing all types with their icon/accent color. Includes a "+ New Type" button at the bottom.
+* **Properties Table:** For the selected type, shows all properties in a reorderable table with columns: Name, Data Type, Values/Config, and Card Row (which determines the 2 properties shown in collapsed state).
+* **+ Add Property:** Adds a new property to the selected type. The property immediately appears on all existing instances of that type (with a default/empty value).
+* **Remove Property:** Deletes a property from the type schema. Confirms before removing, as this deletes the property data from ALL instances.
+* **Connection-specific:** Connection types show a **Spectrum Stepper Labels** field (comma-separated) for quantizing the 0.0–1.0 distance into named buckets.
+* **Common Properties:** All types inherit Title (string), Scale (spectrum_1d), Description (markdown), and Tags (tag[]).
+
+### 1.14 Project Settings Screen
+A full-screen modal accessed from the **gear icon** in the Viewport Header.
+* **General:** Project name, description, default snapshot mode.
+* **Members:** List of team members with role dropdowns (Admin, Editor, Commenter, Viewer). Invite button.
+* **Permissions:** Role-based access control configuration.
+* **Spectrum Config:** Global defaults for the Spectrum widget (§1.15). Preview for 1D and 2D variants.
+* **Notifications:** Alert routing preferences.
+* **Sharing:** Public view-only link management with copy-to-clipboard.
+* **Danger Zone:** Project deletion with confirmation.
+
+### 1.15 The Spectrum (Universal Value Widget)
+The **Spectrum** is Nards' universal widget for expressing a normalized value on a 0.0–1.0 range. It appears wherever a continuous value needs visual representation.
+* **Spectrum 1D (Single Axis):** A horizontal bar with a thumb indicator. Used for: connection distances, nard scale, progress, priority, capacity, allocation. Color inherits from the parent type's accent.
+* **Spectrum 2D (Dual Axis):** An X×Y coordinate pad with a draggable dot. Used for dual-axis mapping (e.g., Urgency × Impact).
+* **Stepper Labels:** Optional named labels that quantize the continuous value into discrete buckets (e.g., `["To Do", "Doing", "Done"]`). The bucket width is `1.0 / num_labels`. Values snap to the nearest bucket visually while maintaining continuous precision underneath.
+* **Data Rule:** Per Invariant #1, the Spectrum is not decorative — it IS the data. Connection distance, nard scale, and spectrum_1d properties all use this widget as their primary read/write interface.
 
 ---
 
