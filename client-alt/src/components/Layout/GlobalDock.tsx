@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
   Eye, Link2, LayoutGrid,
-  Square, Minus as LineIcon, StickyNote, Plus,
+  StickyNote, Plus, Pencil,
   EyeIcon, EyeOff, ChevronDown, ArrowLeftRight, Ghost, Crosshair,
   Bug, User, FileText, Target, Lightbulb, Layers, AlertTriangle,
+  Square, Minus as LineIcon, Settings2, Trash2,
 } from 'lucide-react';
 import type { LensMode } from '../../App';
 import Spectrum from '../Spectrum/Spectrum';
@@ -92,24 +93,11 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
             <>
               <div className="nards-dock__section">
                 <button
-                  className={`nards-dock__item ${openPanel === 'nards' ? 'is-active' : ''}`}
-                  onClick={() => togglePanel('nards')}
+                  className={`nards-dock__item ${openPanel === 'display' ? 'is-active' : ''}`}
+                  onClick={() => togglePanel('display')}
                 >
-                  <Square size={15} strokeWidth={1.6} />
-                  <span className="nards-dock__label">Nards</span>
-                  <ChevronDown size={10} className="nards-dock__chevron" />
-                </button>
-              </div>
-
-              <div className="nards-dock__separator" />
-
-              <div className="nards-dock__section">
-                <button
-                  className={`nards-dock__item ${openPanel === 'lines' ? 'is-active' : ''}`}
-                  onClick={() => togglePanel('lines')}
-                >
-                  <LineIcon size={15} strokeWidth={1.6} />
-                  <span className="nards-dock__label">Lines</span>
+                  <Eye size={15} strokeWidth={1.6} />
+                  <span className="nards-dock__label">Display</span>
                   <ChevronDown size={10} className="nards-dock__chevron" />
                 </button>
               </div>
@@ -127,11 +115,11 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
 
               <div className="nards-dock__section">
                 <button
-                  className={`nards-dock__item nards-dock__item--accent ${openPanel === 'new' ? 'is-active' : ''}`}
-                  onClick={() => togglePanel('new')}
+                  className={`nards-dock__item nards-dock__item--accent ${openPanel === 'add' ? 'is-active' : ''}`}
+                  onClick={() => togglePanel('add')}
                 >
                   <Plus size={15} strokeWidth={2} />
-                  <span className="nards-dock__label">New</span>
+                  <span className="nards-dock__label">Add</span>
                   <ChevronDown size={10} className="nards-dock__chevron" />
                 </button>
               </div>
@@ -208,7 +196,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
               <div className="nards-dock__separator" />
 
               <div className="nards-dock__section">
-                <button className="nards-dock__item" disabled title="Optional — drag a Line Type here for rows">
+                <button className="nards-dock__item" disabled title="Optional — select a Line Type for rows">
                   <span className="nards-dock__label-prefix">Rows:</span>
                   <span className="nards-dock__label nards-dock__label--empty">None</span>
                 </button>
@@ -227,11 +215,11 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
 
               <div className="nards-dock__section">
                 <button
-                  className={`nards-dock__item nards-dock__item--accent ${openPanel === 'new' ? 'is-active' : ''}`}
-                  onClick={() => togglePanel('new')}
+                  className={`nards-dock__item nards-dock__item--accent ${openPanel === 'add' ? 'is-active' : ''}`}
+                  onClick={() => togglePanel('add')}
                 >
                   <Plus size={15} strokeWidth={2} />
-                  <span className="nards-dock__label">New</span>
+                  <span className="nards-dock__label">Add</span>
                   <ChevronDown size={10} className="nards-dock__chevron" />
                 </button>
               </div>
@@ -242,13 +230,16 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
 
         {/* ═══════════ FLYOUT PANELS ═══════════ */}
 
-        {/* Nard Types */}
-        <div className={`nards-flyout nards-glass ${openPanel === 'nards' ? 'is-open' : ''}`}>
+        {/* Display — unified visibility for Nards + Lines */}
+        <div className={`nards-flyout nards-glass ${openPanel === 'display' ? 'is-open' : ''}`}>
           <div className="nards-flyout__header">
-            <h3 className="nards-flyout__title">Nard Types</h3>
-            <span className="nards-flyout__count">{NARD_TYPES.reduce((a, b) => a + b.count, 0)} total</span>
+            <h3 className="nards-flyout__title">Display</h3>
+            <span className="nards-flyout__count">
+              {NARD_TYPES.reduce((a, b) => a + b.count, 0)} nards · {LINE_TYPES.reduce((a, b) => a + b.count, 0)} lines
+            </span>
           </div>
           <div className="nards-flyout__list">
+            <div className="nards-flyout__section-label">Nard Types</div>
             {NARD_TYPES.map((type) => (
               <div key={type.name} className="nards-flyout__row" draggable title={`Drag to create ${type.name}`}>
                 <div className="nards-flyout__row-left">
@@ -263,16 +254,8 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
                 </button>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Line Types */}
-        <div className={`nards-flyout nards-glass ${openPanel === 'lines' ? 'is-open' : ''}`}>
-          <div className="nards-flyout__header">
-            <h3 className="nards-flyout__title">Line Types</h3>
-            <span className="nards-flyout__count">{LINE_TYPES.reduce((a, b) => a + b.count, 0)} connections</span>
-          </div>
-          <div className="nards-flyout__list">
+            <div className="nards-flyout__section-divider" />
+            <div className="nards-flyout__section-label">Line Types</div>
             {LINE_TYPES.map((type) => (
               <div key={type.name} className="nards-flyout__row">
                 <div className="nards-flyout__row-left">
@@ -347,18 +330,18 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
           </div>
         </div>
 
-        {/* New — create Nard or Line */}
-        <div className={`nards-flyout nards-glass ${openPanel === 'new' ? 'is-open' : ''}`}>
+        {/* Add — create instances + manage types */}
+        <div className={`nards-flyout nards-glass ${openPanel === 'add' ? 'is-open' : ''}`}>
           <div className="nards-flyout__header">
-            <h3 className="nards-flyout__title">Create New</h3>
+            <h3 className="nards-flyout__title">Add</h3>
           </div>
           <div className="nards-flyout__list">
             <div className="nards-flyout__create-section">
-              <h4 className="nards-flyout__create-label">Nard</h4>
+              <h4 className="nards-flyout__create-label">Add Nard</h4>
               <div className="nards-flyout__create-grid">
                 {NARD_TYPES.map((type) => (
-                  <button key={type.name} className="nards-flyout__create-btn" title={`Create ${type.name}`}>
-                    <type.icon size={18} strokeWidth={1.8} color={type.color} />
+                  <button key={type.name} className="nards-flyout__create-btn" title={`Add a ${type.name}`}>
+                    <type.icon size={16} strokeWidth={1.8} color={type.color} />
                     <span>{type.name}</span>
                   </button>
                 ))}
@@ -366,21 +349,29 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
             </div>
             <div className="nards-flyout__create-divider" />
             <div className="nards-flyout__create-section">
-              <h4 className="nards-flyout__create-label">Line</h4>
+              <h4 className="nards-flyout__create-label">Add Line</h4>
               <div className="nards-flyout__create-grid">
                 {LINE_TYPES.map((type) => (
-                  <button key={type.name} className="nards-flyout__create-btn" title={`Create ${type.name} line`}>
+                  <button key={type.name} className="nards-flyout__create-btn" title={`Add a ${type.name} connection`}>
                     <span className="nards-flyout__line-swatch--lg" style={{ background: type.color }} />
                     <span>{type.name}</span>
                   </button>
                 ))}
               </div>
             </div>
-          </div>
-          <div className="nards-flyout__footer">
-            <span className="nards-flyout__footer-hint">
-              Select type, then configure properties
-            </span>
+            <div className="nards-flyout__create-divider" />
+            <div className="nards-flyout__create-section">
+              <h4 className="nards-flyout__create-label">Manage Types</h4>
+              <div className="nards-flyout__manage-actions">
+                <button className="nards-flyout__manage-btn" title="Edit type schemas — add/remove properties, create new types">
+                  <Settings2 size={14} strokeWidth={1.6} />
+                  <span>Edit Type Schemas</span>
+                </button>
+              </div>
+              <p className="nards-flyout__manage-hint">
+                Add properties to types, create new types, or remove unused ones. Changes apply to all nards/lines of that type.
+              </p>
+            </div>
           </div>
         </div>
 

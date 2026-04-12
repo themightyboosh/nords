@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-  Sparkles, Settings, Activity, LogOut, ChevronDown,
-  FolderKanban, Users, Bell,
+  Settings, Activity, ChevronDown,
+  FolderKanban, Bell,
 } from 'lucide-react';
 import NardsLogo from '../NardsLogo';
 import ThemeSwitcher from '../ThemeSwitcher/ThemeSwitcher';
@@ -15,13 +15,8 @@ interface ViewportHeaderProps {
 const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeChange }) => {
   return (
     <header className="nards-viewport-header nards-glass">
-      {/* ═══ Left: Logo + Project ═══ */}
+      {/* ═══ Left: Project ═══ */}
       <div className="nards-viewport-header__left">
-        <div className="nards-viewport-header__logo">
-          <NardsLogo size={16} />
-          <span className="nards-viewport-header__wordmark">nards</span>
-        </div>
-        <div className="nards-viewport-header__divider" />
         <button className="nards-viewport-header__project-btn">
           <FolderKanban size={13} strokeWidth={1.6} />
           <div className="nards-viewport-header__project">
@@ -35,12 +30,12 @@ const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeCh
         </button>
       </div>
 
-      {/* ═══ Center: Actions ═══ */}
+      {/* ═══ Center: Logo ═══ */}
       <div className="nards-viewport-header__center">
-        <button className="nards-viewport-header__action-btn">
-          <Sparkles size={12} />
-          Summarize
-        </button>
+        <div className="nards-viewport-header__logo">
+          <NardsLogo size={22} />
+          <span className="nards-viewport-header__wordmark">nards</span>
+        </div>
       </div>
 
       {/* ═══ Right: Activity + Avatars + User ═══ */}

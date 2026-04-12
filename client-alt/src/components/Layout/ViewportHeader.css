@@ -8,9 +8,9 @@
   left: 0;
   right: 0;
   height: var(--nards-header-height);
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   padding: 0 var(--nards-space-lg);
   z-index: 100;
   box-shadow: var(--nards-shadow-sm);
@@ -18,33 +18,13 @@
   border-radius: 0;
 }
 
-/* ── Left: Logo + Project ── */
+/* ── Left: Project ── */
 .nards-viewport-header__left {
   display: flex;
   align-items: center;
   gap: var(--nards-space-md);
   min-width: 0;
-}
-
-.nards-viewport-header__logo {
-  display: flex;
-  align-items: center;
-  gap: var(--nards-space-sm);
-  color: var(--nards-color-accent);
-  flex-shrink: 0;
-}
-
-.nards-viewport-header__wordmark {
-  font-size: var(--nards-font-size-md);
-  font-weight: var(--nards-font-weight-bold);
-  letter-spacing: var(--nards-letter-spacing-tight);
-}
-
-.nards-viewport-header__divider {
-  width: 1px;
-  height: 20px;
-  background: var(--nards-color-border-default);
-  flex-shrink: 0;
+  justify-self: start;
 }
 
 .nards-viewport-header__project-btn {
@@ -109,34 +89,31 @@
   color: var(--nards-color-text-disabled);
 }
 
-/* ── Center: Actions ── */
+/* ── Center: Logo ── */
 .nards-viewport-header__center {
   display: flex;
   align-items: center;
-  gap: var(--nards-space-sm);
+  justify-content: center;
 }
 
-.nards-viewport-header__action-btn {
-  font-family: var(--nards-font-primary);
+.nards-viewport-header__logo {
   display: flex;
   align-items: center;
-  gap: var(--nards-space-xs);
-  font-size: var(--nards-font-size-xs);
-  font-weight: var(--nards-font-weight-medium);
-  color: var(--nards-color-text-secondary);
-  background: transparent;
-  border: 1px solid var(--nards-color-border-subtle);
-  padding: 4px 12px;
-  border-radius: var(--nards-radius-pill);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
+  gap: var(--nards-space-sm);
+  color: var(--nards-color-accent);
 }
 
-.nards-viewport-header__action-btn:hover {
-  color: var(--nards-color-text-primary);
-  border-color: var(--nards-color-border-default);
-  background: var(--nards-color-bg-hover);
+.nards-viewport-header__wordmark {
+  font-size: 1.1rem;
+  font-weight: var(--nards-font-weight-bold);
+  letter-spacing: var(--nards-letter-spacing-tight);
+}
+
+.nards-viewport-header__divider {
+  width: 1px;
+  height: 20px;
+  background: var(--nards-color-border-default);
+  flex-shrink: 0;
 }
 
 /* ── Right: Activity + Avatars + User ── */
@@ -145,6 +122,7 @@
   align-items: center;
   gap: var(--nards-space-sm);
   flex-shrink: 0;
+  justify-self: end;
 }
 
 .nards-viewport-header__icon-btn {
@@ -267,7 +245,7 @@
   .nards-viewport-header {
     padding: 0 var(--nards-space-sm);
   }
-  .nards-viewport-header__center {
+  .nards-viewport-header__center .nards-viewport-header__wordmark {
     display: none;
   }
   .nards-viewport-header__project-name {

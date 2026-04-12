@@ -404,6 +404,58 @@
   gap: var(--nards-space-xs);
 }
 
+/* ── Section labels in flyout ── */
+.nards-flyout__section-label {
+  font-size: 9px;
+  font-weight: var(--nards-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--nards-letter-spacing-wide);
+  color: var(--nards-color-text-disabled);
+  padding: var(--nards-space-sm) var(--nards-space-lg) var(--nards-space-xs);
+}
+
+.nards-flyout__section-divider {
+  height: 1px;
+  background: var(--nards-color-border-subtle);
+  margin: var(--nards-space-xs) var(--nards-space-lg);
+}
+
+/* ── Manage Types ── */
+.nards-flyout__manage-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nards-flyout__manage-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--nards-space-sm);
+  padding: var(--nards-space-sm) var(--nards-space-md);
+  background: var(--nards-color-bg-deep);
+  border: 1px solid var(--nards-color-border-subtle);
+  border-radius: var(--nards-radius-md);
+  color: var(--nards-color-text-secondary);
+  font-family: var(--nards-font-primary);
+  font-size: var(--nards-font-size-xs);
+  font-weight: var(--nards-font-weight-medium);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nards-flyout__manage-btn:hover {
+  background: var(--nards-color-bg-hover);
+  border-color: var(--nards-color-border-default);
+  color: var(--nards-color-text-primary);
+}
+
+.nards-flyout__manage-hint {
+  font-size: 10px;
+  color: var(--nards-color-text-disabled);
+  line-height: 1.4;
+  margin-top: var(--nards-space-xs);
+}
+
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .nards-dock-wrapper {

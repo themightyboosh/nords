@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
-  Square, User, FileText, Plus, Minus, Maximize, StickyNote, GripVertical,
-  Bug, Target, Lightbulb, Layers, AlertTriangle,
+  Square, User, FileText, Plus, Minus, Maximize, StickyNote,
+  Bug, Target, Lightbulb, Layers, AlertTriangle, X, Pencil, Trash2,
 } from 'lucide-react';
 import type { LensMode } from '../../App';
 import Spectrum from '../Spectrum/Spectrum';
@@ -308,15 +308,6 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
             ))}
           </div>
         </div>
-
-        {/* Zoom Controls (still visible) */}
-        <div className="nards-zoom-controls nards-glass">
-          <button className="nards-zoom-controls__btn" onClick={zoomOut}><Minus size={14} strokeWidth={1.8} /></button>
-          <button className="nards-zoom-controls__level" onClick={resetZoom}>{zoom}%</button>
-          <button className="nards-zoom-controls__btn" onClick={zoomIn}><Plus size={14} strokeWidth={1.8} /></button>
-          <div className="nards-zoom-controls__separator" />
-          <button className="nards-zoom-controls__btn" onClick={resetZoom}><Maximize size={13} strokeWidth={1.8} /></button>
-        </div>
       </div>
     );
   }
@@ -456,9 +447,6 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
                       {nard.type}
                     </span>
                   </div>
-                  <div className="nards-node__resize-handle" title="Drag to resize">
-                    <GripVertical size={10} strokeWidth={1.5} />
-                  </div>
                 </div>
 
                 <h3 className="nards-node__title">{nard.title}</h3>
@@ -485,6 +473,14 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
                     <span className="nards-node__more">+{nard.properties.length - 2} more</span>
                   )}
                 </div>
+
+                {/* Resize handle — bottom-right triangle */}
+                <div className="nards-node__resize-handle" title="Drag to resize (25%–200%)">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 12 L12 2 L12 12 Z" fill="currentColor" opacity="0.5" />
+                    <path d="M6 12 L12 6 L12 12 Z" fill="currentColor" opacity="0.3" />
+                  </svg>
+                </div>
               </div>
 
               {/* Anchored stickies — outside top-right of nard */}
@@ -502,6 +498,30 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
                   {nard.stickyCount > 1 && (
                     <span className="nards-sticky__count">{nard.stickyCount}</span>
                   )}
+                </div>
+              )}
+
+              {/* Expanded sticky editor — demo for API Design Doc */}
+              {nard.id === 'n5' && nard.stickyCount > 0 && !isGhosted && (
+                <div
+                  className="nards-sticky-editor"
+                  style={{
+                    left: `calc(${nard.x}% + ${(200 * (0.75 + nard.size * 1.25)) / 2 + 8}px)`,
+                    top: `calc(${nard.y}% - 24px)`,
+                    transform: `scale(${inverseScale})`,
+                  }}
+                >
+                  <div className="nards-sticky-editor__header">
+                    <StickyNote size={12} fill="currentColor" strokeWidth={1} />
+                    <span>Sticky Note</span>
+                    <div className="nards-sticky-editor__actions">
+                      <button className="nards-sticky-editor__btn" title="Delete"><Trash2 size={10} /></button>
+                      <button className="nards-sticky-editor__btn" title="Close"><X size={10} /></button>
+                    </div>
+                  </div>
+                  <div className="nards-sticky-editor__body">
+                    Needs security review before merging. Check OAuth scopes.
+                  </div>
                 </div>
               )}
             </React.Fragment>
