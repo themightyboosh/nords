@@ -6,8 +6,8 @@
  */
 
 import {
-  FolderKanban, Plus, Search, Clock, Users, MoreHorizontal,
-  Layers, Star, Globe, BookOpen
+  FolderKanban, Plus, Users, MoreHorizontal,
+  Layers, Star, BookOpen
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import NordsLogo from '../NordsLogo';
@@ -31,11 +31,6 @@ export default function ProjectDashboard() {
           <NordsLogo size={28} />
         </div>
 
-        <div className="nords-dashboard__sidebar-search">
-          <Search size={13} strokeWidth={1.5} />
-          <input placeholder="Search projects..." data-testid="project-search" />
-        </div>
-
         <nav className="nords-dashboard__sidebar-nav">
           <button className="nords-dashboard__nav-item is-active">
             <FolderKanban size={14} strokeWidth={1.5} />
@@ -46,14 +41,6 @@ export default function ProjectDashboard() {
             <Star size={14} strokeWidth={1.5} />
             Starred
             <span className="nords-dashboard__nav-count">{PROJECTS.filter(p => p.starred).length}</span>
-          </button>
-          <button className="nords-dashboard__nav-item">
-            <Clock size={14} strokeWidth={1.5} />
-            Recent
-          </button>
-          <button className="nords-dashboard__nav-item">
-            <Globe size={14} strokeWidth={1.5} />
-            Shared With Me
           </button>
         </nav>
 
