@@ -5,31 +5,9 @@
  * and what React Flow needs to render nodes and edges on the canvas.
  */
 
-import {
-  Square, User, FileText, Bug, Target, Lightbulb, Layers,
-  AlertTriangle, CheckSquare, CircleDot, Hexagon, Star,
-  Zap, Heart, Bookmark, Flag, Clock, Shield, Globe,
-  Code, Database, Cloud, Settings, Package, Puzzle
-} from 'lucide-react';
 import type { Node, Edge } from '@xyflow/react';
 import type { ProjectGraph, Nord, Connection, NordType, ConnectionType } from '../hooks/useProjectGraph';
-
-// ── Icon Registry ──
-// Maps icon string names (stored in DB) to Lucide React components.
-
-const ICON_MAP: Record<string, React.ElementType> = {
-  Square, User, FileText, Bug, Target, Lightbulb, Layers,
-  AlertTriangle, CheckSquare, CircleDot, Hexagon, Star,
-  Zap, Heart, Bookmark, Flag, Clock, Shield, Globe,
-  Code, Database, Cloud, Settings, Package, Puzzle,
-};
-
-const DEFAULT_ICON = Square;
-
-function resolveIcon(iconName: string | null): React.ElementType {
-  if (!iconName) return DEFAULT_ICON;
-  return ICON_MAP[iconName] || DEFAULT_ICON;
-}
+import { resolveIcon } from './iconRegistry';
 
 // ── Transformers ──
 
@@ -38,6 +16,20 @@ export function graphToNodes(
   nordTypes: NordType[]
 ): Node[] {
   const typeMap = new Map(nordTypes.map(t => [t.id, t]));
+
+  // ── Per-type scale normalization ──
+  // Group nords by type, find min/max scale within each group
+  const scaleRanges = new Map<string, { min: number; max: number }>();
+  for (const nord of nords) {
+    const existing = scaleRanges.get(nord.type_id);
+    const s = nord.scale ?? 0.5;
+    if (!existing) {
+      scaleRanges.set(nord.type_id, { min: s, max: s });
+    } else {
+      existing.min = Math.min(existing.min, s);
+      existing.max = Math.max(existing.max, s);
+    }
+  }
 
   return nords.map(nord => {
     const type = typeMap.get(nord.type_id);
@@ -49,6 +41,14 @@ export function graphToNodes(
     // Using a 2000x2000 canvas space (plenty of room)
     const canvasX = nord.position_x * 2000 - 1000;
     const canvasY = nord.position_y * 2000 - 1000;
+
+    // Normalize scale within type: lowest-of-type → 0.0, highest → 1.0
+    const rawScale = nord.scale ?? 0.5;
+    const range = scaleRanges.get(nord.type_id);
+    let normalizedScale = 0.5; // default for single-node types
+    if (range && range.max !== range.min) {
+      normalizedScale = (rawScale - range.min) / (range.max - range.min);
+    }
 
     // Build properties array from JSONB
     const properties = Object.entries(nord.properties || {}).map(([key, value]) => ({
@@ -65,10 +65,13 @@ export function graphToNodes(
         type: typeName,
         typeIcon,
         typeColor,
-        size: nord.scale ?? 0.5,
-        hasScale: true,
+        size: normalizedScale,
+        hasScale: !!type?.scale_property,
         properties,
         isGhosted: false,
+        // Preserve raw values for write-back
+        _rawScale: rawScale,
+        _typeId: nord.type_id,
       },
     };
   });
@@ -94,9 +97,20 @@ export function graphToEdges(
         type: typeName,
         color: typeColor,
         direction: conn.direction === 'forward' ? 'to' : conn.direction === 'reverse' ? 'from' : 'none',
+        _typeId: conn.type_id,
+        _distanceX: conn.distance_x,
+        _distanceY: conn.distance_y,
       },
     };
   });
+}
+
+/**
+ * Convert a single API Nord into a React Flow Node.
+ * Used when creating a new nord (we get one Nord back from the API).
+ */
+export function nordToNode(nord: Nord, nordTypes: NordType[]): Node {
+  return graphToNodes([nord], nordTypes)[0];
 }
 
 /**

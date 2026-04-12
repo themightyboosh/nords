@@ -25,9 +25,10 @@ import './GlobalDock.css';
 
 interface GlobalDockProps {
   onOpenManageTypes?: () => void;
+  onCreateNord?: (typeId: string, position?: { x: number; y: number }) => void;
 }
 
-export default function GlobalDock({ onOpenManageTypes }: GlobalDockProps) {
+export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDockProps) {
   const { lens, setLens, activeLine, setActiveLine } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [snapshotTab, setSnapshotTab] = useState<'take' | 'history'>('take');
@@ -38,11 +39,18 @@ export default function GlobalDock({ onOpenManageTypes }: GlobalDockProps) {
   const { addNodes, screenToFlowPosition } = useReactFlow();
 
   const handleAddNord = (typeInfo: any) => {
-    // Add to center of screen
     const x = window.innerWidth / 2;
     const y = window.innerHeight / 2;
     const position = screenToFlowPosition({ x, y });
 
+    // Prefer the API-backed creation callback
+    if (onCreateNord && typeInfo.id) {
+      onCreateNord(typeInfo.id, position);
+      setOpenPanel(null);
+      return;
+    }
+
+    // Fallback: add node locally (for when API is not wired)
     const newNode = {
       id: `n-${crypto.randomUUID()}`,
       position,
@@ -58,7 +66,7 @@ export default function GlobalDock({ onOpenManageTypes }: GlobalDockProps) {
       }
     };
     addNodes(newNode);
-    setOpenPanel(null); // close menu
+    setOpenPanel(null);
   };
 
   const togglePanel = (panel: string) => {

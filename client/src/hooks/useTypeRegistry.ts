@@ -1,10 +1,18 @@
-import {
-  Bug, User, FileText, Target, Lightbulb, Layers, AlertTriangle,
-  Square
-} from 'lucide-react';
+/**
+ * useTypeRegistry — returns live type data from the TypeRegistryContext.
+ *
+ * Previously returned hardcoded mocks. Now consumes the context populated
+ * by CanvasEngine via TypeRegistryProvider. The old NordTypeMock/ConnectionTypeMock
+ * interfaces are preserved for backward compat with existing consumers
+ * (GlobalDock, Display flyout, etc.) but now carry real database data.
+ */
+
+import { useMemo } from 'react';
+import { useTypeRegistryContext } from '../context/TypeRegistryContext';
 import type { LucideIcon } from 'lucide-react';
 
 export interface NordTypeMock {
+  id: string;
   name: string;
   icon: LucideIcon;
   color: string;
@@ -12,33 +20,39 @@ export interface NordTypeMock {
 }
 
 export interface ConnectionTypeMock {
+  id: string;
   name: string;
   color: string;
   count: number;
 }
 
-// Global registry since these represent "server" data before Epic 5
-export const MOCK_NORD_TYPES: NordTypeMock[] = [
-  { name: 'Task', icon: Square, color: '#4da6ff', count: 4 },
-  { name: 'Bug', icon: Bug, color: '#f87171', count: 1 },
-  { name: 'Person', icon: User, color: '#34d399', count: 1 },
-  { name: 'Artifact', icon: FileText, color: '#fbbf24', count: 1 },
-  { name: 'Milestone', icon: Target, color: '#a78bfa', count: 1 },
-  { name: 'Idea', icon: Lightbulb, color: '#fb923c', count: 1 },
-  { name: 'Epic', icon: Layers, color: '#f472b6', count: 1 },
-  { name: 'Risk', icon: AlertTriangle, color: '#ef4444', count: 1 },
-];
-
-export const MOCK_CONNECTION_TYPES: ConnectionTypeMock[] = [
-  { name: 'Blocks', color: '#4da6ff', count: 5 },
-  { name: 'Depends', color: '#fbbf24', count: 4 },
-  { name: 'Relates', color: '#a78bfa', count: 4 },
-  { name: 'Assigned', color: '#34d399', count: 2 },
-];
-
 export function useTypeRegistry() {
+  const { nordTypes, connectionTypes } = useTypeRegistryContext();
+
+  // Map resolved types into the shape existing consumers expect
+  const mappedNordTypes = useMemo<NordTypeMock[]>(() =>
+    nordTypes.map(t => ({
+      id: t.id,
+      name: t.name,
+      icon: t.icon,
+      color: t.color,
+      count: 0, // Count is computed elsewhere (from nodes state)
+    })),
+    [nordTypes]
+  );
+
+  const mappedConnectionTypes = useMemo<ConnectionTypeMock[]>(() =>
+    connectionTypes.map(t => ({
+      id: t.id,
+      name: t.name,
+      color: t.color,
+      count: 0,
+    })),
+    [connectionTypes]
+  );
+
   return {
-    nordTypes: MOCK_NORD_TYPES,
-    connectionTypes: MOCK_CONNECTION_TYPES
+    nordTypes: mappedNordTypes,
+    connectionTypes: mappedConnectionTypes,
   };
 }

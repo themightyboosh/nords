@@ -1,22 +1,19 @@
 import React, { useCallback, useMemo } from 'react';
 import {
   ReactFlow,
-  ReactFlowProvider,
   Background,
   BackgroundVariant,
   useNodesState,
   useEdgesState,
   ConnectionMode,
-  type NodeChange,
-  type EdgeChange,
   type Node,
-  useReactFlow
+  useReactFlow,
 } from '@xyflow/react';
 import { useLens } from '../../context/LensContext';
 import { useCanvasShortcuts } from '../../hooks/useCanvasShortcuts';
 import { useProjectGraph } from '../../hooks/useProjectGraph';
 import { useNordMutations } from '../../hooks/useNordMutations';
-import { graphToNodes, graphToEdges, pixelToNormalized } from '../../utils/graphToReactFlow';
+import { graphToNodes, graphToEdges, nordToNode, pixelToNormalized } from '../../utils/graphToReactFlow';
 import { NordNode } from './NordNode';
 import { EuclideanEdge } from './EuclideanEdge';
 import { NodeContextMenu } from './NodeContextMenu';
@@ -44,7 +41,8 @@ interface InteractiveCanvasProps {
 
 function InteractiveCanvas({ projectId, onNordClick, selectedNord }: InteractiveCanvasProps) {
   const { graph, loading, error, refetch } = useProjectGraph(projectId);
-  const { batchUpdatePositions, deleteNord } = useNordMutations(projectId);
+  const { createNord, batchUpdatePositions, deleteNord } = useNordMutations(projectId);
+  const { addNodes, screenToFlowPosition } = useReactFlow();
 
   // Transform API data → React Flow format
   const rfNodes = useMemo(() => {
@@ -61,6 +59,8 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
   const [edges, setEdges, onEdgesChange] = useEdgesState(rfEdges);
   const [menuConfig, setMenuConfig] = React.useState<{ x: number, y: number, node: any } | null>(null);
   const [radialMenuPos, setRadialMenuPos] = React.useState<{ x: number, y: number } | null>(null);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragNodeId, setDragNodeId] = React.useState<string | null>(null);
 
   // Sync when graph data changes (initial load or refetch)
   const { fitView } = useReactFlow();
@@ -68,7 +68,6 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
   React.useEffect(() => {
     if (rfNodes.length > 0) {
       setNodes(rfNodes);
-      // Re-trigger fitView after data loads (slight delay for React Flow to process)
       setTimeout(() => fitView({ padding: 0.15, duration: 300 }), 100);
     }
   }, [rfNodes, setNodes, fitView]);
@@ -83,9 +82,98 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
   useSpatialAnimations();
   const { onNodeClick } = useNodeSelection(onNordClick);
 
-  // Persist position to database on drag end
+  // ── Create Nord (used by Add flyout & RadialMenu) ──
+  const handleCreateNord = useCallback(async (
+    typeId: string,
+    canvasPosition?: { x: number; y: number }
+  ) => {
+    if (!graph) return;
+    
+    // Default to center of screen if no position given
+    const pos = canvasPosition || screenToFlowPosition({ 
+      x: window.innerWidth / 2, 
+      y: window.innerHeight / 2 
+    });
+    const normalized = pixelToNormalized(pos.x, pos.y);
+    const typeName = graph.nord_types.find(t => t.id === typeId)?.name || 'Nord';
+
+    try {
+      const newNord = await createNord({
+        type_id: typeId,
+        title: `New ${typeName}`,
+        position_x: normalized.x,
+        position_y: normalized.y,
+        scale: 0.5,
+      });
+      
+      // Convert to React Flow node and add with spawn animation class
+      const rfNode = nordToNode(newNord, graph.nord_types);
+      rfNode.className = 'is-entering';
+      addNodes(rfNode);
+      
+      // Remove the animation class after it plays
+      setTimeout(() => {
+        setNodes(nds => nds.map(n => 
+          n.id === rfNode.id ? { ...n, className: '' } : n
+        ));
+      }, 500);
+    } catch (err) {
+      console.error('Failed to create nord:', err);
+    }
+  }, [graph, createNord, addNodes, setNodes, screenToFlowPosition]);
+
+  // ── Duplicate Nord ──
+  const handleDuplicate = useCallback(async (id: string) => {
+    if (!graph) return;
+    const sourceNode = nodes.find(n => n.id === id);
+    if (!sourceNode) return;
+
+    const offsetPos = {
+      x: sourceNode.position.x + 40,
+      y: sourceNode.position.y + 40,
+    };
+    const normalized = pixelToNormalized(offsetPos.x, offsetPos.y);
+    const sourceData = sourceNode.data as any;
+
+    try {
+      const newNord = await createNord({
+        type_id: sourceData._typeId,
+        title: `Copy of ${sourceData.title}`,
+        position_x: normalized.x,
+        position_y: normalized.y,
+        scale: sourceData._rawScale ?? 0.5,
+        properties: sourceData.properties 
+          ? Object.fromEntries(sourceData.properties.map((p: any) => [p.key, p.value]))
+          : {},
+      });
+
+      const rfNode = nordToNode(newNord, graph.nord_types);
+      rfNode.className = 'is-entering';
+      addNodes(rfNode);
+      
+      setTimeout(() => {
+        setNodes(nds => nds.map(n => 
+          n.id === rfNode.id ? { ...n, className: '' } : n
+        ));
+      }, 500);
+    } catch (err) {
+      console.error('Failed to duplicate nord:', err);
+    }
+  }, [graph, nodes, createNord, addNodes, setNodes]);
+
+  // ── Persist position on drag end ──
+  const onNodeDragStart = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      setIsDragging(true);
+      setDragNodeId(node.id);
+    },
+    []
+  );
+
   const onNodeDragStop = useCallback(
     async (_event: React.MouseEvent, node: Node) => {
+      setIsDragging(false);
+      setDragNodeId(null);
       const normalized = pixelToNormalized(node.position.x, node.position.y);
       try {
         await batchUpdatePositions([{ id: node.id, x: normalized.x, y: normalized.y }]);
@@ -96,25 +184,7 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
     [batchUpdatePositions]
   );
 
-  const onNodeContextMenu = useCallback(
-    (event: React.MouseEvent, node: any) => {
-      event.preventDefault();
-      setMenuConfig({ x: event.clientX, y: event.clientY, node });
-    },
-    [setMenuConfig],
-  );
-
-  const onPaneContextMenuRadial = useCallback(
-    (event: React.MouseEvent) => {
-      event.preventDefault();
-      setRadialMenuPos({ x: event.clientX, y: event.clientY });
-    },
-    [setRadialMenuPos],
-  );
-
-  const closeMenu = useCallback(() => setMenuConfig(null), []);
-  const closeRadialMenu = useCallback(() => setRadialMenuPos(null), []);
-
+  // ── Delete Nord ──
   const handleDelete = useCallback(async (id: string) => {
     try {
       await deleteNord(id);
@@ -124,7 +194,27 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
     } catch (err) {
       console.error('Failed to delete nord:', err);
     }
-  }, [deleteNord, setNodes, setEdges, closeMenu]);
+  }, [deleteNord, setNodes, setEdges]);
+
+  // ── Context Menus ──
+  const onNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: any) => {
+      event.preventDefault();
+      setMenuConfig({ x: event.clientX, y: event.clientY, node });
+    },
+    [],
+  );
+
+  const onPaneContextMenuRadial = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      setRadialMenuPos({ x: event.clientX, y: event.clientY });
+    },
+    [],
+  );
+
+  const closeMenu = useCallback(() => setMenuConfig(null), []);
+  const closeRadialMenu = useCallback(() => setRadialMenuPos(null), []);
 
   // Loading state
   if (loading && nodes.length === 0) {
@@ -146,6 +236,9 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
     );
   }
 
+  // Compute CSS class for active-path isolation during drag
+  const canvasClass = isDragging ? 'nords-canvas--dragging' : '';
+
   return (
     <>
       <ReactFlow
@@ -154,6 +247,7 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
+        onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
         onNodeContextMenu={onNodeContextMenu}
         onPaneClick={() => { closeMenu(); closeRadialMenu(); }}
@@ -162,11 +256,13 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
         edgeTypes={edgeTypes}
         connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={{ type: 'euclidean' }}
+        className={canvasClass}
         fitView
         panOnScroll
         zoomOnPinch
         minZoom={0.25}
         maxZoom={2.0}
+        data-dragging-node={dragNodeId}
       >
         <Background variant={BackgroundVariant.Dots} gap={32} size={1.5} color="var(--nords-color-text-disabled)" />
       </ReactFlow>
@@ -177,7 +273,8 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
         <RadialMenu 
           x={radialMenuPos.x} 
           y={radialMenuPos.y} 
-          onClose={closeRadialMenu} 
+          onClose={closeRadialMenu}
+          onCreateNord={handleCreateNord}
         />
       )}
 
@@ -188,7 +285,7 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
           node={menuConfig.node}
           onClose={closeMenu}
           onEdit={(id) => onNordClick(id)}
-          onDuplicate={(id) => console.log('Duplicate', id)}
+          onDuplicate={handleDuplicate}
           onDelete={handleDelete}
           onChangeType={(id) => console.log('ChangeType', id)}
           onAddConnection={(id) => console.log('AddConnection', id)}
@@ -198,7 +295,8 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
   );
 }
 
-// Ensure the props match the same signature as CanvasMock during the transition
+// ── Public API ──
+
 interface CanvasEngineProps {
   onNordClick: (id: string) => void;
   selectedNord: string | null;
@@ -207,16 +305,13 @@ interface CanvasEngineProps {
 
 export default function CanvasEngine({ onNordClick, selectedNord, projectId }: CanvasEngineProps) {
   const { lens } = useLens();
-  
-  // Use provided projectId or fall back to test project
   const activeProjectId = projectId || '5413fc94-3245-4153-9641-b9d025367e1d';
 
   if (lens === 'matrix') {
     return (
       <div className="nords-canvas nords-matrix-view">
         <div className="nords-matrix">
-           {/* Matrix view placeholder until we pull the CSS grid over */}
-           <div style={{ color: 'white' }}>Matrix View Placeholder</div>
+          <div style={{ color: 'white' }}>Matrix View Placeholder</div>
         </div>
       </div>
     );
@@ -228,3 +323,4 @@ export default function CanvasEngine({ onNordClick, selectedNord, projectId }: C
     </div>
   );
 }
+

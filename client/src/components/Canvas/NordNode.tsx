@@ -26,9 +26,10 @@ export const NordNode = memo(({ id, data, selected }: NodeProps<NordNodeData>) =
   const isGhosted = data.isGhosted === true;
   
   // Calculate width from size scale (0.0 - 1.0)
-  // width = 200px * (0.75 + size * 1.25)
+  // Per spec: 0.25x to 2.0x of 200px base
+  // At 0.0 → 50px (0.25×200), at 1.0 → 400px (2.0×200)
   const baseSize = data.size ?? 0.5;
-  const width = 200 * (0.75 + baseSize * 1.25);
+  const width = 200 * (0.25 + baseSize * 1.75);
 
   const containerClasses = [
     'nords-node',

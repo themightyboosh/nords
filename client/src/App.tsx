@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import '@xyflow/react/dist/style.css';
 import { ReactFlowProvider } from '@xyflow/react';
 import { AuthProvider } from './context/AuthContext';
 import { LensProvider } from './context/LensContext';
+import { TypeRegistryProvider } from './context/TypeRegistryContext';
+import { useProjectGraph } from './hooks/useProjectGraph';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import ViewportHeader from './components/Layout/ViewportHeader';
 import GlobalDock from './components/Layout/GlobalDock';
@@ -19,12 +21,18 @@ import ForgotPasswordScreen from './components/Auth/ForgotPasswordScreen';
 
 /**
  * WorkspaceShell — wraps Header + Dock + Canvas for a single project.
- * This is the main spatial workspace layout.
+ * This is the main spatial workspace layout. 
+ * TypeRegistryProvider lives here so both GlobalDock and CanvasEngine
+ * share the same live type data from the database.
  */
 function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string, onThemeChange: (theme: string) => void }) {
   const { id: projectId } = useParams<{ id: string }>();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedNord, setSelectedNord] = useState<string | null>(null);
+  
+  // Load graph at the shell level so TypeRegistryProvider wraps everything
+  const activeProjectId = projectId || '5413fc94-3245-4153-9641-b9d025367e1d';
+  const { graph } = useProjectGraph(activeProjectId);
 
   const handleNordClick = (id: string) => {
     setSelectedNord(id);
@@ -39,16 +47,21 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
   return (
     <ReactFlowProvider>
       <LensProvider>
-        <div className="nords-app-container">
-          <ViewportHeader
-            currentTheme={currentTheme}
-            onThemeChange={onThemeChange}
-          />
-          <GlobalDock />
-          <ZoomControls />
-          <CanvasEngine onNordClick={handleNordClick} selectedNord={selectedNord} projectId={projectId} />
-          <DetailDrawer isOpen={isDrawerOpen} onClose={closeDrawer} nordId={selectedNord} />
-        </div>
+        <TypeRegistryProvider
+          rawNordTypes={graph?.nord_types || []}
+          rawConnectionTypes={graph?.connection_types || []}
+        >
+          <div className="nords-app-container">
+            <ViewportHeader
+              currentTheme={currentTheme}
+              onThemeChange={onThemeChange}
+            />
+            <GlobalDock />
+            <ZoomControls />
+            <CanvasEngine onNordClick={handleNordClick} selectedNord={selectedNord} projectId={projectId} />
+            <DetailDrawer isOpen={isDrawerOpen} onClose={closeDrawer} nordId={selectedNord} />
+          </div>
+        </TypeRegistryProvider>
       </LensProvider>
     </ReactFlowProvider>
   );

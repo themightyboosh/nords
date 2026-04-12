@@ -133,7 +133,7 @@
 /* ═══════════════════════════════════════════════ */
 
 .nords-node {
-  position: absolute;
+  position: relative;
   z-index: 12;
   min-width: 150px;
   border-width: 1px;
@@ -723,5 +723,75 @@
 
 .nords-canvas-error button:hover {
   filter: brightness(1.15);
+}
+
+/* ═══════════════════════════════════════════════ */
+/* SPAWN ANIMATION (Spring Bounce)                 */
+/* ═══════════════════════════════════════════════ */
+
+.react-flow__node.is-entering {
+  animation: nords-spawn-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes nords-spawn-in {
+  0% {
+    opacity: 0;
+    filter: blur(4px);
+    transform: scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+/* ═══════════════════════════════════════════════ */
+/* ACTIVE PATH ISOLATION (Focus Drag)              */
+/* When a node is being dragged, fade out           */
+/* non-connected nodes and edges to 30% opacity     */
+/* ═══════════════════════════════════════════════ */
+
+.nords-canvas--dragging .react-flow__node:not(.dragging):not(.selected) {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.nords-canvas--dragging .react-flow__node.dragging,
+.nords-canvas--dragging .react-flow__node.selected {
+  opacity: 1;
+  z-index: 10;
+}
+
+.nords-canvas--dragging .react-flow__edge:not(.selected) {
+  opacity: 0.15;
+  transition: opacity 0.2s ease;
+}
+
+.nords-canvas--dragging .react-flow__edge.selected {
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════ */
+/* CONTEXT MENU POLISH                             */
+/* ═══════════════════════════════════════════════ */
+
+.nords-context-menu {
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+}
+
+.nords-context-menu__item .nords-context-menu__shortcut {
+  margin-left: auto;
+  padding-left: var(--nords-space-lg);
+  font-size: 10px;
+  color: var(--nords-color-text-disabled);
+  font-family: var(--nords-font-mono, monospace);
+  letter-spacing: 0.5px;
 }
 

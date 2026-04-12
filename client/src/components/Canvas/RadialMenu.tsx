@@ -8,9 +8,10 @@ interface RadialMenuProps {
   x: number;
   y: number;
   onClose: () => void;
+  onCreateNord?: (typeId: string, position?: { x: number; y: number }) => void;
 }
 
-export function RadialMenu({ x, y, onClose }: RadialMenuProps) {
+export function RadialMenu({ x, y, onClose, onCreateNord }: RadialMenuProps) {
   const { addNodes, screenToFlowPosition } = useReactFlow();
   const { canAdd, isAtLimit } = useNodeCountLimit();
   const { visibleNodeTypes } = useTypeVisibility();
@@ -31,6 +32,14 @@ export function RadialMenu({ x, y, onClose }: RadialMenuProps) {
     // Convert screen coordinates to canvas logic coordinates
     const position = screenToFlowPosition({ x, y });
 
+    // Prefer the API-backed creation callback
+    if (onCreateNord && (item as any).id) {
+      onCreateNord((item as any).id, position);
+      onClose();
+      return;
+    }
+
+    // Fallback: add node locally
     const newNode = {
       id: `n-${crypto.randomUUID()}`,
       position,
