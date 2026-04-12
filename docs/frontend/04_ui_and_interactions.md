@@ -5,8 +5,14 @@ The app utilizes tactile, point-and-click logic rather than keyboard-heavy power
 
 ### 1.1 Macro Workspace Layout
 The UI explicitly minimizes persistent sidebars to keep 95% of space aimed at the Spatial Canvas.
-* **The Global Dock:** A floating, pill-shaped dock centered at the bottom of the screen housing the Nard Palette, Connections Palette, Lens Selector, and Snapshot Timeline.
-* **The Viewport Header:** A minimalist top-left floating element showing Project Name and Snapshot state. Top-right houses Multiplayer avatars and Settings.
+* **The Viewport Header:** A full-width top bar spanning the entire viewport. Contains:
+  * *Left:* Nards logo + Project Switcher (folder icon, project name, snapshot state, chevron dropdown for switching projects and accessing project settings).
+  * *Center:* AI action buttons (e.g., "Summarize").
+  * *Right:* Notification bell (with unread badge), Activity pulse (off-screen change count), teammate avatars, theme toggle, project settings gear, and **User Account Menu** (avatar + chevron dropdown for profile, preferences, logout).
+* **The Global Dock:** A floating, pill-shaped dock centered at the bottom of the screen. The dock contains a **3-way Lens Toggle** (Canvas / Link / Matrix) followed by a separator, then contextual tools that change based on the active lens:
+  * *Canvas Lens:* Nards ▾ (type list with visibility toggles), Lines ▾ (type list with visibility toggles), Sticky (drag source), + New ▾ (creation grid).
+  * *Link Lens:* Relationship ▾ (active line type selector with spectrum slider), Context toggle (show/hide unconnected nards at 20%), Add Line (crosshair draw mode), Sticky.
+  * *Matrix Lens:* Columns ▾ (line type selector for X-axis), Rows (optional line type for Y-axis), Sticky, + New ▾.
 
 ### 1.2 Tactile Interaction Design
 * **Double-Click Radial Menu (Quick Spawn):** Double-clicking empty canvas summons a temporary, circular context menu. The wedges display the user's most recently used Nard Types, with a "More..." wedge that opens the full Nard Palette.
@@ -19,8 +25,13 @@ Two distinct, purely mouse-driven interactions accommodate different cognitive m
 * **The Structured Method (Drawer Linking):** For dense clusters where drawing lines is visually cramped, the user opens the Detail Drawer, clicks "Add Connection", selects the Type dropdown, and types the target Nard's name. The system generates the physical math line implicitly.
 
 ### 1.4 Nard Card Anatomy & Typography
-Card density relies strictly on "Collapsed" vs "Expanded" models to keep massive graphs readable.
-* **Collapsed State (Canvas Default):** Soft 40 character Title limit. Description truncated to two lines text maximum. Metadata pill limit capped at 3 tags.
+Card density relies strictly on "Collapsed" vs "Expanded" models to keep massive graphs readable. Each Nard is typed (Task, Bug, Person, Artifact, Milestone, Idea, Epic, Risk, etc.) with a unique icon and accent color.
+* **Collapsed State (Canvas Default):**
+  * *Title Bar:* Type icon (colored) + type label (uppercase) on the left, drag-to-resize handle (GripVertical) on the right.
+  * *Title:* Soft 40 character limit, 2-line clamp.
+  * *Properties:* 2 configurable key:value property rows (e.g., "Status: Done", "Assignee: Daniel"). A "+N more" indicator shows when additional properties exist.
+  * *Footer:* Spectrum component showing the Nard's relative size/importance value. Size drives the card's rendered width (0.75x to 2.0x base).
+  * *Card Tinting:* Card background is tinted 10% with the type's accent color via `color-mix()`. Border is tinted 20%.
 * **Expanded State:** The Detail Drawer reveals the full, un-truncated markdown string and the entirety of Metadata fields inside a standard form UI.
 
 ### 1.5 Multi-Select & Bulk Actions
@@ -33,7 +44,7 @@ When 2+ Nards are selected (via lasso or shift-click), a **Group Action Toolbar*
 ### 1.6 Line Interaction & Graph Readability
 * **Line Directionality Toggle:** Clicking any active line displays a floating micro-toolbar allowing the user to tap an Arrow icon, cycling A -> B, A <- B, A <-> B or none.
 * **Line Spreading (Ribboning):** When two Nards share multiple distinct line types between them (e.g. "Depends On" AND "Assigned To" are both visible), the lines do not stack invisibly on top of each other. They bow outward sequentially like a ribbon cable, ensuring all parallel relationships remain mutually visible and selectable.
-* **Line Label Positioning:** Semantic Stepper labels (e.g., "Blocks", "Loves") anchor at the midpoint of the line inside a small background pill. Labels auto-hide if the line is shorter than a minimum pixel threshold.
+* **Line Label Positioning:** Semantic Stepper labels (e.g., "Blocks", "Loves") anchor at the midpoint of the line inside a small background pill colored to match the line type. **The label text angle matches the angle of its parent line** using CSS `rotate()`, ensuring labels read naturally along the line direction. Labels auto-correct angles beyond ±90° to remain readable. When multiple lines share the same pair of nards, labels stagger slightly along the line axis to avoid overlap. Labels are zoom-independent (inverse-scaled). Label text uses auto-contrasting color based on theme.
 * **Line Intersections (Hops/Bridges):** Background/foreground optical parsing is preserved by giving overlapping lines "Line Hops" (a semi-circular visual jump or stroke-gap/halo) when routing so lines don't appear conjoined.
 
 ### 1.7 Accessible Color Strategy
@@ -42,11 +53,13 @@ When 2+ Nards are selected (via lasso or shift-click), a **Group Action Toolbar*
 
 ### 1.8 Canvas Annotations (Sticky Notes)
 Not everything on the canvas should be a formal graph node. Sometimes a user needs to leave a note for themselves or their team.
-* **Anchored Notes:** Lightweight annotation indicators that **may anchor to either a Nard or a Line**. They are excluded from Snapshot data comparisons and ignored by AI topology tools.
-* **Visibility Inheritance:** An anchored note inherits the visibility state of its parent. If the parent Nard Type is hidden, all notes anchored to those Nards disappear. If the parent Line Type is toggled invisible, notes anchored to those Lines disappear.
-* **Unanchored Notes:** Notes not anchored to any entity are displayed as a horizontal row of icon indicators flowing left-to-right at the top of the viewport. These can be **drag-anchored** to any Nard or Line by dragging them onto the target.
-* **Visual Treatment:** Notes are **always rendered as a small icon-only indicator** (24×24px sticky note icon) on the canvas — no text is ever shown inline. They are zoom-independent (fixed size regardless of zoom level) and positioned relative to their anchor. The icon uses the note's accent color with a dotted connector to the anchor point.
-* **Click to Expand/Edit:** Clicking any note (anchored or unanchored) opens an inline markdown editor popover. Notes support basic markdown: bold, italic, links, and lists. The editor dismisses on blur or Escape.
+* **Anchored Stickies:** Lightweight annotation indicators that **may anchor to either a Nard or a Line**. They are excluded from Snapshot data comparisons and ignored by AI topology tools.
+* **Positioning:** Anchored stickies are placed **outside** the boundary of their parent element — never overlapping. For Nards: positioned at the top-right corner outside the card edge (calculated from card width + 8px offset). For Lines: positioned below the line midpoint, offset perpendicular to the line angle. Multiple stickies on the same anchor display a single icon with a **count badge** (e.g., red badge with "2", "3", etc.).
+* **Visibility Inheritance:** An anchored sticky inherits the visibility state of its parent. If the parent Nard Type is hidden, all stickies anchored to those Nards disappear. If the parent Line Type is toggled invisible, stickies anchored to those Lines disappear.
+* **Unanchored Stickies:** Stickies not anchored to any entity are displayed as a horizontal row of icon indicators flowing left-to-right at the top of the viewport. These can be **drag-anchored** to any Nard or Line by dragging them onto the target.
+* **Visual Treatment:** Stickies are **always rendered as a small icon-only indicator** (22×22px sticky note icon) on the canvas — no text is ever shown inline. They are zoom-independent (inverse-scaled to maintain fixed size regardless of zoom level) and positioned relative to their anchor. The icon uses the sticky's accent color (default: amber/warning).
+* **Click to Expand/Edit:** Clicking any sticky (anchored or unanchored) opens an inline markdown editor popover. Stickies support basic markdown: bold, italic, links, and lists. The editor dismisses on blur or Escape. Open stickies can be deleted or closed.
+* **Dock Integration:** The Global Dock contains a Sticky drag-source button (neutral icon, matching other dock items). Dragging from this button creates a new unanchored sticky.
 * **Use Cases:** "Don't reorganize this cluster until Thursday" (anchored to a Nard), "Sarah — review this relationship" (anchored to a Line), general project reminders (unanchored, top row).
 
 ### 1.9 Drag Distance Info Panel
@@ -84,6 +97,14 @@ The platform avoids desktop-first compromises to support tablets and mobile inte
 * **Adaptive Layouts:**
   * *Global Dock:* On mobile/portrait, it abandons the bottom (to dodge OS home bars/keyboards) and snaps vertically to a side edge.
   * *Detail Drawer:* Degrades on mobile from Right-Slide-over into a swipeable Bottom Sheet covering the lower 70% of the screen.
+
+### 1.12 Visibility Cascade Rules
+When Nard Types and Line Types have independent visibility toggles, boundary conditions arise at partial-visibility intersections.
+* **Line visible, connected Nard hidden:** The hidden Nard is rendered as a **ghost** (20% opacity, desaturated, non-interactive) so the visible line doesn't terminate in empty space. This preserves spatial continuity.
+* **Nard visible, connected Line hidden:** The Nard renders normally. The hidden line is not drawn. The nard stands alone without its connections.
+* **Both hidden:** Nothing rendered. Complete removal from the canvas.
+* **Both visible:** Full rendering — nard at full saturation, line at full saturation with arrow and label.
+* **Ghost Behavior:** Ghost nards share styling with Link mode's context ghosts (identical CSS class `nards-node--ghosted`). They cannot be clicked, dragged, or selected. They exist purely as spatial anchors.
 
 ---
 
