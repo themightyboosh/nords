@@ -395,7 +395,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
    * Per PRD §1.10: "Line labels and sticky notes do NOT scale —
    * they remain at a fixed readable size regardless of zoom level."
    */
-  const inverseScale = 100 / zoom;
+  const inverseScale = Math.min(0.65, 100 / zoom);
 
   /** Look up a nord's canvas position by ID */
   const getNordPos = (id: string) => {
@@ -560,36 +560,36 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
         <svg className="nords-canvas__connections" viewBox="0 0 100 100" preserveAspectRatio="none">
           {/* Arrow markers for each connection type color */}
           <defs>
-            <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-              <path d="M0,0 L8,3 L0,6Z" fill="#4da6ff" />
+            <marker id="arrow-blue" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
+              <path d="M0,0 L5,2 L0,4Z" fill="#4da6ff" />
             </marker>
-            <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-              <path d="M0,0 L8,3 L0,6Z" fill="#34d399" />
+            <marker id="arrow-green" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
+              <path d="M0,0 L5,2 L0,4Z" fill="#34d399" />
             </marker>
-            <marker id="arrow-amber" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-              <path d="M0,0 L8,3 L0,6Z" fill="#fbbf24" />
+            <marker id="arrow-amber" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
+              <path d="M0,0 L5,2 L0,4Z" fill="#fbbf24" />
             </marker>
-            <marker id="arrow-violet" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-              <path d="M0,0 L8,3 L0,6Z" fill="#a78bfa" />
+            <marker id="arrow-violet" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
+              <path d="M0,0 L5,2 L0,4Z" fill="#a78bfa" />
             </marker>
-            <marker id="arrow-red" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-              <path d="M0,0 L8,3 L0,6Z" fill="#f87171" />
+            <marker id="arrow-red" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
+              <path d="M0,0 L5,2 L0,4Z" fill="#f87171" />
             </marker>
             {/* Start markers — for 'from' direction (arrow at source end) */}
-            <marker id="arrow-blue-start" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto-start-reverse">
-              <path d="M8,0 L0,3 L8,6Z" fill="#4da6ff" />
+            <marker id="arrow-blue-start" markerWidth="5" markerHeight="4" refX="0.5" refY="2" orient="auto-start-reverse">
+              <path d="M5,0 L0,2 L5,4Z" fill="#4da6ff" />
             </marker>
-            <marker id="arrow-green-start" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto-start-reverse">
-              <path d="M8,0 L0,3 L8,6Z" fill="#34d399" />
+            <marker id="arrow-green-start" markerWidth="5" markerHeight="4" refX="0.5" refY="2" orient="auto-start-reverse">
+              <path d="M5,0 L0,2 L5,4Z" fill="#34d399" />
             </marker>
-            <marker id="arrow-amber-start" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto-start-reverse">
-              <path d="M8,0 L0,3 L8,6Z" fill="#fbbf24" />
+            <marker id="arrow-amber-start" markerWidth="5" markerHeight="4" refX="0.5" refY="2" orient="auto-start-reverse">
+              <path d="M5,0 L0,2 L5,4Z" fill="#fbbf24" />
             </marker>
-            <marker id="arrow-violet-start" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto-start-reverse">
-              <path d="M8,0 L0,3 L8,6Z" fill="#a78bfa" />
+            <marker id="arrow-violet-start" markerWidth="5" markerHeight="4" refX="0.5" refY="2" orient="auto-start-reverse">
+              <path d="M5,0 L0,2 L5,4Z" fill="#a78bfa" />
             </marker>
-            <marker id="arrow-red-start" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto-start-reverse">
-              <path d="M8,0 L0,3 L8,6Z" fill="#f87171" />
+            <marker id="arrow-red-start" markerWidth="5" markerHeight="4" refX="0.5" refY="2" orient="auto-start-reverse">
+              <path d="M5,0 L0,2 L5,4Z" fill="#f87171" />
             </marker>
           </defs>
 

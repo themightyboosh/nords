@@ -122,7 +122,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
           <div className="nords-lens-toggle">
             <button
               className={`nords-lens-toggle__btn ${lens === 'canvas' ? 'is-active' : ''}`}
-              onClick={() => onLensChange('canvas')}
+              onClick={() => { onLensChange('canvas'); setOpenPanel(null); }}
               title="Canvas — spatial graph view"
             >
               <Eye size={14} strokeWidth={1.6} />
@@ -130,7 +130,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
             </button>
             <button
               className={`nords-lens-toggle__btn ${lens === 'link' ? 'is-active' : ''}`}
-              onClick={() => onLensChange('link')}
+              onClick={() => { onLensChange('link'); setOpenPanel(null); }}
               title="Link — focused relationship editing"
             >
               <Link2 size={14} strokeWidth={1.6} />
@@ -138,7 +138,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
             </button>
             <button
               className={`nords-lens-toggle__btn ${lens === 'matrix' ? 'is-active' : ''}`}
-              onClick={() => onLensChange('matrix')}
+              onClick={() => { onLensChange('matrix'); setOpenPanel(null); }}
               title="Matrix — spatial pivot table"
             >
               <LayoutGrid size={14} strokeWidth={1.6} />

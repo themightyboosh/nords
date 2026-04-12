@@ -85,3 +85,5 @@ The bottom menu items are inconsistantly styled recent one have odd padding. CLi
 
 
 
+---- review the dock in mobile view it could be improved - it looks odd.
+-- also create a document thåt studies the best way to draw lines between objects in a canvas - we are not the first people to try and solve this elegantly.  They have to stay conencted and adapt to when nords are resized by the user.
