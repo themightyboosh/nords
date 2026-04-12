@@ -5,6 +5,10 @@ export async function findById(id: string): Promise<Project | null> {
   return queryOne<Project>('SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL', [id]);
 }
 
+export async function findAll(): Promise<Project[]> {
+  return query<Project>('SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC');
+}
+
 export async function findByOrg(orgId: string): Promise<Project[]> {
   return query<Project>('SELECT * FROM projects WHERE org_id = $1 AND deleted_at IS NULL', [orgId]);
 }
