@@ -1,12 +1,24 @@
+/**
+ * NordsLogo.tsx — Standalone SVG Logo
+ *
+ * Placeholder mark consisting of three connected nodes forming a triangle,
+ * representing Nords' graph-native identity. The three circles symbolize
+ * the fundamental primitive (Nords/nodes) and the connecting lines
+ * represent Connections (relationships).
+ *
+ * Replace the paths when the final logo is ready.
+ *
+ * Props:
+ *   - `size` defaults to 20px
+ *   - Color inherits from CSS `currentColor`
+ */
+
 import React from 'react';
 
-/**
- * Nords Logo — standalone SVG.
- * Replace the <path> / <g> contents when the final logo is ready.
- * Props: size (defaults to 20), color inherits from currentColor.
- */
 interface NordsLogoProps {
+  /** Size of the logo in pixels (default: 20) */
   size?: number;
+  /** Optional CSS class name */
   className?: string;
 }
 
@@ -19,10 +31,11 @@ const NordsLogo: React.FC<NordsLogoProps> = ({ size = 20, className }) => (
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    {/* Placeholder mark — three connected nodes forming a triangle */}
+    {/* Three connected nodes forming a triangle */}
     <circle cx="12" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5" />
     <circle cx="5" cy="18" r="2.5" stroke="currentColor" strokeWidth="1.5" />
     <circle cx="19" cy="18" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+    {/* Connection lines connecting the three nodes */}
     <line x1="10" y1="7" x2="6.5" y2="16" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />
     <line x1="14" y1="7" x2="17.5" y2="16" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />
     <line x1="7.5" y1="18" x2="16.5" y2="18" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />

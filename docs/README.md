@@ -7,8 +7,9 @@ To prevent AI hallucination and token-dilution, the monolithic PRD has been deco
 ## 🏗️ Architecture & Backend
 *(Provide these to agents handling the database, MCP routing, API, and Core Logic)*
 * **[`01_vision_and_invariants.md`](./architecture/01_vision_and_invariants.md):** The core anchor. Defines the competitive moat, terminology, and 3 unbreakable AI Laws (Invariants) that agents must never drift from. **(Always include this file)**
-* **[`02_data_model_and_physics.md`](./architecture/02_data_model_and_physics.md):** Defines Nords, Tethers, Postgres JSON payloads, the Semantic Stepper bounds, and how physics auto-equilibrium prevents overlapping data.
+* **[`02_data_model_and_physics.md`](./architecture/02_data_model_and_physics.md):** Defines Nords, Connections, Postgres JSON payloads, the Semantic Stage bounds, and how physics auto-equilibrium prevents overlapping data.
 * **[`03_mcp_and_ai_protocols.md`](./architecture/03_mcp_and_ai_protocols.md):** Defines exactly how AI agents use MCP tooling to read graphs (Semantic Dictionary, Dual-Payload formatting) and write back explicitly via distance values.
+* **[`08_property_types_reference.md`](./architecture/08_property_types_reference.md):** Complete property type reference for Nords and Connections. Documents all data types (Text, Number, Stage, Date, etc.), the dual-axis Distance model (X + Y), Scale encoding, and Matrix view row/column logic.
 
 ## 🖥️ UI & Frontend
 *(Provide these to agents writing React components, CSS, and interactive state)*

@@ -220,8 +220,8 @@
   margin-left: auto;
 }
 
-/* Stepper labels */
-.nords-manage__stepper-section {
+/* stage labels */
+.nords-manage__stage-section {
   margin-bottom: var(--nords-space-lg);
 }
 

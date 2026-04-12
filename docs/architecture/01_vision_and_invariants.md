@@ -17,9 +17,9 @@ Trello assumes your work belongs in a line. Nords assumes it belongs in a networ
 **Defensibility:** Per-line-type spatial semantics, MCP-native AI integration, and the animated view transition system ("The Reveal") create a product experience that cannot be replicated by adding features to a drawing tool or a kanban board.
 
 ### 1.2 Glossary & Key Terms
-* **Nard:** The fundamental visual node representing an entity (task, person, idea, etc.).
-* **Tether (Line):** A relationship connecting two Nords, whose physical length translates to a 0.0-1.0 data value.
-* **Semantic Stepper:** The user-defined text labels (e.g., "Blocker" to "Independent") that map to the 0.0-1.0 distance scale.
+* **Nord:** The fundamental visual node representing an entity (task, person, idea, etc.).
+* **Connection (Line):** A relationship connecting two Nords, whose physical length translates to a 0.0-1.0 data value.
+* **Semantic Stage:** The user-defined text labels (e.g., "Blocker" to "Independent") that map to the 0.0-1.0 distance scale.
 * **Snapshot:** An immutable, time-stamped keyframe saving the exact state of the entire project graph.
 * **Lens (View):** A specific way to visualize the data, such as the Spatial Canvas or the Matrix View.
 * **The Reveal:** The fluid physics-based animation that plays when data or views change, letting users track where nodes move.
@@ -28,8 +28,8 @@ Trello assumes your work belongs in a line. Nords assumes it belongs in a networ
 
 ### 1.3 Constitutional Invariants (AI Anti-Drift Architecture)
 To prevent drift during implementation or when utilizing external LLM agents, these rules are unbending invariants of the system architecture:
-* **INVARIANT 1 (Distance is Truth):** The Nard's geometric distance is the single source of truth. The UI Semantic Stepper text label is a calculated mathematical projection of that distance, never the underlying stored value.
-* **INVARIANT 2 (Absolute vs. Relative):** A Nard's relative position is governed by the active force-directed physics engine. However, its absolute resting X/Y coordinates must be explicitly saved per Snapshot, ensuring nodes don't lose their place if the physics simulation is entirely toggled off.
+* **INVARIANT 1 (Distance is Truth):** The Nord's geometric distance is the single source of truth. The UI Semantic Stage text label is a calculated mathematical projection of that distance, never the underlying stored value.
+* **INVARIANT 2 (Absolute vs. Relative):** A Nord's relative position is governed by the active force-directed physics engine. However, its absolute resting X/Y coordinates must be explicitly saved per Snapshot, ensuring nodes don't lose their place if the physics simulation is entirely toggled off.
 * **INVARIANT 3 (Format Exclusivity):** The MCP server's Dual-Payload protocol (Mermaid topology + JSON parameters) is the one and only permitted bridge between the spatial graph database and an LLM context window. Any feature attempting to "read the graph" must consume this exact payload structure.
 
 ---
@@ -49,7 +49,7 @@ A Trello power user who has tried to make Miro + Trello + spreadsheets work toge
 "I have a project where the relationships between things matter more than the sequence, and no tool lets me express that."
 
 ### 2.4 Path to Mass Market
-The AI-obsessed PM is the wedge, not the ceiling. The viral loop is Nard DNA — shareable context URLs that make any AI tool smarter. Non-technical PMs adopt because their AI-native teammate says "just put it in Nords so Claude can see it."
+The AI-obsessed PM is the wedge, not the ceiling. The viral loop is Nord DNA — shareable context URLs that make any AI tool smarter. Non-technical PMs adopt because their AI-native teammate says "just put it in Nords so Claude can see it."
 
 ---
 

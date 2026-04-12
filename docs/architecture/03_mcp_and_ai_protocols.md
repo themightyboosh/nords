@@ -7,12 +7,13 @@ AI reads the graph to provide insights. The AI can execute natural language quer
 
 ## 2. Model Context Protocol (MCP) & Permissions
 To enable seamless human-AI collaboration, the platform exposes its spatial database to external LLMs and agents via an MCP Server.
-* **Permission Parity:** AI agents possess the exact same operational permissions as standard human users. They can mutate the canvas, alter Nard schemas, and manage Snapshots based on their access token.
+* **Permission Parity:** AI agents possess the exact same operational permissions as standard human users. They can mutate the canvas, alter Nord schemas, and manage Snapshots based on their access token.
+* **Token Management:** Web access tokens are managed in **Project Settings → API & Access**. Tokens support Read-Only, Read-Write, and Admin scopes. MCP endpoint URL and Nord DNA base URL are also configured there.
 
 ## 3. AI Spatial Translation (How the AI "Sees")
 Because external LLMs are text-based, the Nords engine cannot just dump x/y coordinates into context. It utilizes a highly optimized Dual-Payload translation. Every time the AI reads the canvas, it receives:
-* **The Semantic Layer (Mermaid.js):** The backend compiles active Nords and Tethers into a Mermaid string. This leverages the LLM's native training to grasp topology, dependencies, and flow instantly.
-* **The Spatial Layer (JSON):** A structured JSON array providing explicit schemas, Kanban matrix buckets, and the exact 0.0 to 1.0 normalized value of all active Tethers.
+* **The Semantic Layer (Mermaid.js):** The backend compiles active Nords and Connections into a Mermaid string. This leverages the LLM's native training to grasp topology, dependencies, and flow instantly.
+* **The Spatial Layer (JSON):** A structured JSON array providing explicit schemas, Kanban matrix buckets, and the exact 0.0 to 1.0 normalized value of all active Connections.
 
 ## 4. The AI Traversal Architecture (How the AI Walks)
 *Anthropic's MCP Golden Rule: Progressive Disclosure.* Avoid dumping infinite JSON into context.
@@ -24,11 +25,11 @@ Static payload resources:
 * `nords://[project]/snapshots/[id]` (Historical keyframes)
 
 ### 4.2 The Semantic Dictionary (Step Zero Resource):
-Before accessing topology, the AI pulls `nords://[project]/semantic_dictionary`. This resource acts as the "Rulebook" containing Project Meta, Nard Lexicon, and Tether definitions. The AI deduces the specific qualitative meaning of the workspace *before* walking the data. If the user invokes a "Blank Canvas", the AI operates gracefully on minimal context without forcing heavy rigid deductions.
+Before accessing topology, the AI pulls `nords://[project]/semantic_dictionary`. This resource acts as the "Rulebook" containing Project Meta, Nord Lexicon, and Connection definitions. The AI deduces the specific qualitative meaning of the workspace *before* walking the data. If the user invokes a "Blank Canvas", the AI operates gracefully on minimal context without forcing heavy rigid deductions.
 
 ### 4.3 Progressive Traversal Tooling:
 * `get_macro_topology(args)`: The "Map". Returns highly compressed Mermaid diagram.
-* `read_nard_detail(args)`: The "Magnifying Glass". Full markdown and specific fields for a node.
+* `read_nord_detail(args)`: The "Magnifying Glass". Full markdown and specific fields for a node.
 * `explore_neighborhood(args)`: The "Flashlight". Returns a Dual-Payload radius outward from a target node.
 * `calculate_spatial_delta(args)`: Compares 0.0-1.0 shifts across snapshots automatically.
 
@@ -36,13 +37,13 @@ Before accessing topology, the AI pulls `nords://[project]/semantic_dictionary`.
 MCP injects this prompt wrapper to the connected agent:
 * **Step 0 (Semantic Deduction):** Read Semantic Dictionary to understand schemas and line implications.
 * **Step 1 (Macro Topology):** Run `get_macro_topology`.
-* **Step 2 (Targeted Discovery):** Identify targets and `read_nard_detail`.
+* **Step 2 (Targeted Discovery):** Identify targets and `read_nord_detail`.
 * **Step 3 (Micro Traversal):** Trace specific vectors using `explore_neighborhood(depth: 1)`.
 
 ## 5. Spatial Manipulation & Autonomous Actions (How the AI "Acts")
 AI agents act as multiplayer co-creators.
-* **Autonomous Graph Mutation:** Spawning Nords, establishing and severing Tethers, updating metadata.
-* **Real-Time Physics Interaction:** When an AI updates the 0.0-1.0 value of a Tether natively, it triggers the force-directed physics engine on the user's screen — visually animating the canvas live.
+* **Autonomous Graph Mutation:** Spawning Nords, establishing and severing Connections, updating metadata.
+* **Real-Time Physics Interaction:** When an AI updates the 0.0-1.0 value of a Connection natively, it triggers the force-directed physics engine on the user's screen — visually animating the canvas live.
 * **Temporal Autonomy:** AI agents can spawn and lock Snapshots autonomously.
 
 ## 6. AI Context Window & State Management
@@ -50,8 +51,8 @@ AI agents act as multiplayer co-creators.
 * **Just-In-Time Refreshing:** Before the AI executes a physical movement via write tool, the MCP Server auto-refreshes the Dual-Payload array so the AI acts on real-time coordinates.
 * **Snapshot Retrieval:** The AI only loads historical Snapshots when directed vs. keeping them in context memory.
 
-## 7. Nard DNA (Portable Context URLs)
-Every nard has a unique URL. For an AI tool handling the URL via MCP, it dumps a massive context-bomb payload including the single Nard details, the 1st degree neighborhood arrays, spatial distances, and textual connection descriptions immediately to the local chat stream. It acts as the viral loop wrapper for PMs dropping knowledge bits into IDEs.
+## 7. Nord DNA (Portable Context URLs)
+Every nord has a unique URL. For an AI tool handling the URL via MCP, it dumps a massive context-bomb payload including the single Nord details, the 1st degree neighborhood arrays, spatial distances, and textual connection descriptions immediately to the local chat stream. It acts as the viral loop wrapper for PMs dropping knowledge bits into IDEs.
 
 ## 8. The Gravity Summary (Always-On AI Insight)
 A single button in the Viewport Header — **"Summarize This View"** — takes the current visible canvas state (respecting active Lens filters and zoom level) and generates a natural-language paragraph via MCP:

@@ -7,12 +7,16 @@ Core product with the three signature features defining Nords' identity capabili
 * Canvas (2D)
 * Nords with full content (markdown, fields, attachments, comments)
 * Lines with schemas, directional arrows, styles
-* Spatial Semantic Paradigm (Size global, distance/direction mapped via Semantic Stepper)
+* Spatial Semantic Paradigm (Size global, distance/direction mapped via Semantic Stage)
 * Real-time multiplayer (shared canvas, Granular soft-locking)
 * Immutable Snapshots & History scrubbing
 * CSV & JSON Import/Export
 * Initialization Flow & Template Injection workflows
-* **Signature Fast-Follows:** The Reveal (Animated Tweening Transitions), Ghost Lines (Ambient connection hints), and Nard DNA (context URLs).
+* **Signature Fast-Follows:** The Reveal (Animated Tweening Transitions), Ghost Lines (Ambient connection hints), and Nord DNA (context URLs).
+* Web Access Tokens & API URLs (MCP endpoint, Nord DNA base URL)
+* Full Export (RAG-optimized context dump — Markdown/JSON/YAML)
+* Global Icon Library (Lucide icon set for project + type icons)
+* Line Detail Drawer (arrow direction, spectrum, per-connection comments)
 
 ### Phase 2: Intelligence + Depth
 * MCP Server with token-based access scaling (Full AI human-parity API logic)
@@ -26,13 +30,13 @@ Core product with the three signature features defining Nords' identity capabili
 * Perspective Mode
 * The Gravity Summary (Always-on AI view summarization)
 * Template Marketplace capabilities (Admin publish)
-* **Webhook & Event Bus:** Emit events on Nard creation, Tether changes, Snapshot saves, etc., enabling Slack notifications, Jira sync, and custom integrations alongside MCP.
-* **Migration Importers:** Dedicated Trello and Notion importers that map columns to Semantic Stepper values and boards to projects, dramatically reducing onboarding friction for switchers.
+* **Webhook & Event Bus:** Emit events on Nord creation, Connection changes, Snapshot saves, etc., enabling Slack notifications, Jira sync, and custom integrations alongside MCP.
+* **Migration Importers:** Dedicated Trello and Notion importers that map columns to Semantic Stage values and boards to projects, dramatically reducing onboarding friction for switchers.
 
 ### Phase 3: Expansion + Growth
 * AI Author Mode (AI spawning and suggesting spatial setups natively requiring approval)
 * The Gravity Well (Optional physics mode for discovery-driven exploratory layouts)
-* **Wormholes (Cross-Project Tension):** Establish tethers across active projects. If Marketing drags a dependent deadline outward on their screen, the Engineering team watches the edge of their canvas stretch as the Marketing team exerts gravitational pull from another dimension.
+* **Wormholes (Cross-Project Tension):** Establish connections across active projects. If Marketing drags a dependent deadline outward on their screen, the Engineering team watches the edge of their canvas stretch as the Marketing team exerts gravitational pull from another dimension.
 * **Sandbox Branching:** Forking a Snapshot to play out "What-If" scenarios (e.g. destroying 30 Nords to watch the physics react) without affecting the Live State.
 * **Flatten to Doc Export:** Exporting the spatial layout into a beautifully formatted, linear, readable PDF or Notion-style document for executive consumption.
 * **Canvas Merge:** Combine two isolated projects natively, detecting overlaps, and resolving duplicates securely.
@@ -54,7 +58,7 @@ Core product with the three signature features defining Nords' identity capabili
 
 ## 3. Monetization Strategy
 * **Launch:** Free. No paywall. Focus purely on validation and concept adoption.
-* **Future Monetization Levers:** Nard count per workspace. The free tier carries a generous Nard limit (e.g. 50 nords). Paid tiers unlock 200+ bounds, advanced AI analyses models, administrative controls, custom workspace templates, The Pitch features, and increased MCP API rate limits.
+* **Future Monetization Levers:** Nord count per workspace. The free tier carries a generous Nord limit (e.g. 50 nords). Paid tiers unlock 200+ bounds, advanced AI analyses models, administrative controls, custom workspace templates, The Pitch features, and increased MCP API rate limits.
 
 ## 4. Success Metrics
 ### North Star Indicator
@@ -63,18 +67,18 @@ Core product with the three signature features defining Nords' identity capabili
 ### Quantitative
 * Projects created per user per month
 * Nords per project (Building true graphs vs 3-node toys)
-* Lines per Nard ratio (Connecting items vs isolated card drops)
+* Lines per Nord ratio (Connecting items vs isolated card drops)
 * View switches / Lens toggles per session (Engaging with 'The Reveal' animations)
 * Matrix pivot axis swaps per session (Engaging with the Spatial Pivot Table)
 * Snapshot Diff usage (Are users comparing states?)
 * Return rate (7-day traction)
 * MCP Token authentication metrics (AI integration adoption)
-* Nard DNA link sharing frequencies
+* Nord DNA link sharing frequencies
 * Gravity Summary invocations (Are viewers engaging with AI insights?)
 
 ### Qualitative
-* First-session "Aha" moment when the user drags a Nard and sees math data change.
-* "The Reveal" reaction when filtering Tethers triggers layout rewrites.
+* First-session "Aha" moment when the user drags a Nord and sees math data change.
+* "The Reveal" reaction when filtering Connections triggers layout rewrites.
 * Tension Detection insights prompting manual behavior shifts.
 
 ## 5. Risk Mitigation

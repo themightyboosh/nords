@@ -223,14 +223,14 @@
   font-weight: var(--nords-font-weight-bold);
 }
 
-/* ── Add Property ── */
-.nords-drawer__add-property {
+/* ── Manage Types link (replaces old "Add Property") ── */
+.nords-drawer__manage-link {
   font-family: var(--nords-font-primary);
   display: flex;
   align-items: center;
   gap: var(--nords-space-sm);
-  font-size: var(--nords-font-size-sm);
-  color: var(--nords-color-text-tertiary);
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-text-disabled);
   background: transparent;
   border: none;
   padding: var(--nords-space-sm) 0;
@@ -238,9 +238,159 @@
   cursor: pointer;
   transition: color 0.15s ease;
 }
-.nords-drawer__add-property:hover {
+.nords-drawer__manage-link:hover {
   color: var(--nords-color-accent);
 }
+
+/* ═══════════════════════════════════════════════ */
+/* LINE DETAIL — Arrow direction + Endpoints       */
+/* ═══════════════════════════════════════════════ */
+
+.nords-drawer__type-icon--line {
+  border-radius: 3px;
+}
+
+/* Arrow direction toggle */
+.nords-line-direction {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--nords-space-sm);
+}
+
+.nords-line-direction__btn {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-sm);
+  padding: var(--nords-space-sm) var(--nords-space-md);
+  background: var(--nords-color-bg-deep);
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-md);
+  color: var(--nords-color-text-tertiary);
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-medium);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.nords-line-direction__btn:hover {
+  border-color: var(--nords-color-border-default);
+  color: var(--nords-color-text-secondary);
+}
+.nords-line-direction__btn.is-active {
+  border-color: var(--nords-color-accent);
+  color: var(--nords-color-accent);
+  background: var(--nords-color-accent-dim);
+}
+
+.nords-line-direction__node {
+  font-size: var(--nords-font-size-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.nords-line-direction__hint {
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-warning);
+  margin-top: var(--nords-space-xs);
+  line-height: 1.4;
+}
+
+/* Endpoints (source + target nords) */
+.nords-line-endpoints {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nords-space-sm);
+}
+
+.nords-line-endpoint {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-sm);
+  padding: var(--nords-space-sm) var(--nords-space-md);
+  background: var(--nords-color-bg-deep);
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-md);
+}
+
+.nords-line-endpoint__icon {
+  flex-shrink: 0;
+}
+
+.nords-line-endpoint__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nords-line-endpoint__type {
+  font-size: 9px;
+  font-weight: var(--nords-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide);
+  color: var(--nords-color-text-disabled);
+}
+
+.nords-line-endpoint__name {
+  font-size: var(--nords-font-size-sm);
+  font-weight: var(--nords-font-weight-medium);
+  color: var(--nords-color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Spectrum distance (grayed when no arrow) */
+.nords-line-spectrum {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nords-space-sm);
+  padding: var(--nords-space-md);
+  background: var(--nords-color-bg-deep);
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-md);
+  transition: opacity 0.2s ease;
+}
+
+.nords-line-spectrum.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.nords-line-spectrum__bar {
+  display: flex;
+  align-items: center;
+}
+
+.nords-line-spectrum__values {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-sm);
+}
+
+.nords-line-spectrum__number {
+  font-family: var(--nords-font-mono);
+  font-size: var(--nords-font-size-md);
+  font-weight: var(--nords-font-weight-semibold);
+  color: var(--nords-color-accent);
+}
+
+.nords-line-spectrum__label {
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-text-tertiary);
+}
+
+.nords-line-spectrum__disabled-hint {
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-warning);
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════ */
+/* DESCRIPTION, CONNECTIONS, COMMENTS (unchanged)  */
+/* ═══════════════════════════════════════════════ */
 
 /* ── Description ── */
 .nords-drawer__description {
@@ -311,7 +461,7 @@
   margin-bottom: var(--nords-space-xs);
 }
 
-.nords-connection__stepper {
+.nords-connection__stage {
   display: flex;
   align-items: center;
   gap: var(--nords-space-sm);

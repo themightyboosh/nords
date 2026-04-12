@@ -67,9 +67,9 @@
   /* ── Label on Color ── */
   --nords-color-label-on-color: #ffffff;
 
-  /* ── Tethers ── */
-  --nords-color-tether-active: #2563eb;
-  --nords-color-tether-ghost: rgba(37, 99, 235, 0.12);
+  /* ── Connections ── */
+  --nords-color-connection-active: #2563eb;
+  --nords-color-connection-ghost: rgba(37, 99, 235, 0.12);
 
   /* ── Shadows (softer for light) ── */
   --nords-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);

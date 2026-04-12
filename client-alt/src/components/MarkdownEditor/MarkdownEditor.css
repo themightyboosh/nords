@@ -1,0 +1,182 @@
+/* ── MarkdownEditor.css — Centralized Markdown Editor/Viewer ── */
+
+.nords-md-editor {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-md);
+  overflow: hidden;
+  background: var(--nords-color-bg-inset);
+}
+
+/* Toolbar */
+.nords-md-editor__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nords-space-xs) var(--nords-space-sm);
+  border-bottom: 1px solid var(--nords-color-border-subtle);
+  background: color-mix(in srgb, var(--nords-color-bg-surface) 60%, transparent);
+  min-height: 30px;
+}
+
+.nords-md-editor__tools {
+  display: flex;
+  gap: 2px;
+}
+
+.nords-md-editor__tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  border-radius: var(--nords-radius-sm);
+  color: var(--nords-color-text-tertiary);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.nords-md-editor__tool:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+
+.nords-md-editor__mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 0.6rem;
+  font-family: var(--nords-font-sans);
+  font-weight: var(--nords-font-weight-medium);
+  color: var(--nords-color-text-tertiary);
+  background: transparent;
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-sm);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.nords-md-editor__mode-toggle:hover {
+  color: var(--nords-color-text-primary);
+  border-color: var(--nords-color-border-default);
+}
+
+.nords-md-editor__mode-toggle.is-preview {
+  color: var(--nords-color-accent);
+  border-color: var(--nords-color-accent);
+}
+
+/* Textarea (edit mode) */
+.nords-md-editor__textarea {
+  flex: 1;
+  padding: var(--nords-space-md);
+  font-size: var(--nords-font-size-sm);
+  font-family: var(--nords-font-mono);
+  color: var(--nords-color-text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.nords-md-editor__textarea::placeholder {
+  color: var(--nords-color-text-disabled);
+}
+
+/* Preview (view mode) */
+.nords-md-editor__preview {
+  flex: 1;
+  padding: var(--nords-space-md);
+  overflow-y: auto;
+  font-size: var(--nords-font-size-sm);
+  color: var(--nords-color-text-primary);
+  line-height: 1.6;
+}
+
+.nords-md-editor__preview h1 {
+  font-size: 1.3rem;
+  font-weight: var(--nords-font-weight-bold);
+  margin: 0 0 var(--nords-space-sm);
+  color: var(--nords-color-text-primary);
+}
+
+.nords-md-editor__preview h2 {
+  font-size: 1.1rem;
+  font-weight: var(--nords-font-weight-semibold);
+  margin: var(--nords-space-md) 0 var(--nords-space-xs);
+  color: var(--nords-color-text-primary);
+}
+
+.nords-md-editor__preview h3 {
+  font-size: 0.95rem;
+  font-weight: var(--nords-font-weight-semibold);
+  margin: var(--nords-space-sm) 0 var(--nords-space-xs);
+  color: var(--nords-color-text-secondary);
+}
+
+.nords-md-editor__preview strong {
+  font-weight: var(--nords-font-weight-bold);
+  color: var(--nords-color-text-primary);
+}
+
+.nords-md-editor__preview em {
+  font-style: italic;
+  color: var(--nords-color-text-secondary);
+}
+
+.nords-md-editor__preview code {
+  font-family: var(--nords-font-mono);
+  font-size: 0.85em;
+  padding: 1px 5px;
+  background: var(--nords-color-bg-hover);
+  border-radius: 3px;
+  color: var(--nords-color-accent);
+}
+
+.nords-md-editor__preview pre {
+  background: var(--nords-color-bg-base);
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-md);
+  padding: var(--nords-space-md);
+  margin: var(--nords-space-sm) 0;
+  overflow-x: auto;
+}
+
+.nords-md-editor__preview pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.nords-md-editor__preview blockquote {
+  border-left: 3px solid var(--nords-color-accent);
+  padding-left: var(--nords-space-md);
+  margin: var(--nords-space-sm) 0;
+  color: var(--nords-color-text-secondary);
+  font-style: italic;
+}
+
+.nords-md-editor__preview li {
+  padding-left: var(--nords-space-sm);
+  margin: var(--nords-space-xs) 0;
+}
+
+.nords-md-editor__preview li::before {
+  content: '•';
+  color: var(--nords-color-accent);
+  margin-right: var(--nords-space-xs);
+}
+
+.nords-md-editor__preview a {
+  color: var(--nords-color-accent);
+  text-decoration: none;
+}
+
+.nords-md-editor__preview a:hover {
+  text-decoration: underline;
+}
