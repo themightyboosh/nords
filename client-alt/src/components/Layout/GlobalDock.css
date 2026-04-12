@@ -576,7 +576,7 @@
 .nords-flyout__comment-entry {
   display: flex;
   gap: var(--nords-space-sm);
-  padding: var(--nords-space-sm) 0;
+  padding: var(--nords-space-sm) var(--nords-space-lg);
   border-bottom: 1px solid var(--nords-color-border-subtle);
 }
 
