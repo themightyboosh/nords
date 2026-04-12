@@ -11,14 +11,14 @@
 
 ### [STORY] 10.1.1: Take Snapshot (Dock Button)
 * **Target:** `src/hooks/useSnapshot.ts`
-* **Directive:** "Snapshot" dock button (available in all 3 lenses) captures current state. Opens naming dialog: name (required), description (optional markdown). On confirm, serializes full graph state (all nords with positions + properties, all connections with distances, all type schemas) to JSONB and POSTs to snapshots API. Toast confirmation.
+* **Directive:** "Snapshot" dock button (available in all 3 lenses) captures current state. Opens naming dialog: name (required), description (optional markdown). On confirm, calls `POST /api/projects/:id/snapshots` which executes `fn_capture_snapshot()` stored procedure. The entire graph assembly and storage happens inside PostgreSQL with zero data leaving the database. Toast confirmation.
 * **Ref:** `02_data_model.md` §2.2, `04_ui.md` §1.14
 * **AC:** Click Snapshot → enter name → save. Snapshot appears in Project Settings → Snapshots list.
 
 ### [STORY] 10.1.2: Snapshot Serialization Format
-* **Target:** `src/utils/snapshotSerializer.ts`
-* **Directive:** Export `serializeSnapshot(nords, connections, types)` returning JSONB: `{ version: 1, timestamp, nords: [{id, type_id, title, position_x, position_y, scale, properties}], connections: [{id, type_id, source, target, direction, distance_x, distance_y}], nord_types: [...], connection_types: [...] }`.
-* **AC:** Unit test: serialize → deserialize round-trip produces identical data. All float values maintain 6 decimal precision.
+* **Target:** Server-side via `fn_capture_snapshot()` stored procedure
+* **Directive:** The `fn_capture_snapshot` stored procedure internally calls `fn_load_project_graph()` and stores the assembled JSONB as an immutable snapshot row. Client only sends `name` and `description` — no graph data leaves the browser. Snapshot format: `{ nords: [{id, type_id, title, position_x, position_y, scale, properties, ...}], connections: [{...}], nord_types: [{...}], connection_types: [{...}] }`.
+* **AC:** `POST /api/projects/:id/snapshots` with `{name, description}` creates a snapshot containing all graph data. Float values maintain precision.
 
 ---
 

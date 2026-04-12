@@ -45,9 +45,9 @@
 
 ### [STORY] 8.2.1: Matrix Lens — Grid Shell & Column Headers
 * **Target:** `src/components/Lenses/MatrixView.tsx`, `MatrixView.css`
-* **Directive:** Full-viewport grid layout. Column headers from selected X-axis connection type's stage labels (e.g., "To Do" | "Doing" | "Done"). Each header shows label name and nord count. Headers are sticky on vertical scroll.
-* **Ref:** `05_spatial.md` §5
-* **AC:** Selecting connection type with 3 X-stage labels renders 3-column grid with sticky headers showing counts.
+* **Directive:** Full-viewport grid layout that MUST look, feel, and function exactly like a traditional Kanban board. Crisp columns, clear swimlanes, rigid rows. Zero learning curve. Column headers from selected X-axis connection type's stage labels (e.g., "To Do" | "Doing" | "Done"). Each header shows label name and nord count. Headers are sticky on vertical scroll.
+* **Ref:** `05_spatial.md` §5, `12_matrix_view_design.md` §2
+* **AC:** Selecting connection type with 3 X-stage labels renders 3-column grid with sticky headers showing counts. Users can immediately understand and use it like Jira or Linear.
 
 ### [STORY] 8.2.2: Matrix Lens — Row Headers (Optional Y-Axis)
 * **Target:** `MatrixView.tsx`
@@ -63,9 +63,9 @@
 
 ### [STORY] 8.2.4: Matrix Lens — Card Rendering in Cells
 * **Target:** `src/components/Lenses/MatrixCard.tsx`
-* **Directive:** Compact card: type icon, type label, title, first property value. Left-border accent matching nord type color. Cards stack vertically within cells. Scroll within cell if overflow.
-* **Ref:** `05_spatial.md` §5
-* **AC:** Cards render in correct cells. Each card shows type badge + title. Cell with 5+ cards scrolls vertically.
+* **Directive:** Compact card: type Lucide icon, type label, title, first 2-3 visible property values. Left-border accent stripe matching nord type color. Different Nord types are visually distinguishable by their accent color and icon, even when mixed in the same cell. Cards stack vertically within cells. Scroll within cell if overflow.
+* **Ref:** `05_spatial.md` §5, `12_matrix_view_design.md` §3
+* **AC:** Cards render in correct cells. Each card shows type badge + title. Cell with 5+ cards scrolls vertically. Multiple Nord types render with distinct accent colors.
 
 ### [STORY] 8.2.5: Matrix Lens — Drag-to-Reassign (Bidirectional Sync)
 * **Target:** `MatrixView.tsx`
@@ -87,8 +87,8 @@
 
 ### [STORY] 8.2.8: Matrix Lens — Axis Pivoting
 * **Target:** `MatrixView.tsx`
-* **Directive:** User can swap X and Y axes, or select entirely different connection types. On change, cards animate to new positions (The Reveal — deferred to Animation epic, instant cut acceptable initially).
-* **Ref:** `05_spatial.md` §5
+* **Directive:** User can swap X and Y axes, or select entirely different connection types. Supports Target-Centric Matrices: Y-axis can optionally be set to actual target Nords instead of stage labels, creating a dependency matrix. On change, cards animate to new positions (The Reveal — deferred to Animation epic, instant cut acceptable initially).
+* **Ref:** `05_spatial.md` §5, `12_matrix_view_design.md` §3
 * **AC:** Swapping Column type from "Progress" to "Priority" re-sorts all cards into new columns correctly.
 
 ### [STORY] 8.2.9: Cross-Palette Highlighting
@@ -96,3 +96,27 @@
 * **Directive:** Selecting a Nord on canvas highlights its connected Line Types in the Connections Palette. Selecting a Line Type in palette highlights all connected Nords, dimming the rest.
 * **Ref:** `05_spatial.md` §2.1
 * **AC:** Clicking a nord: its connection types glow in the palette sidebar. Clicking a type in palette: connected nords highlight, others dim.
+
+### [STORY] 8.2.10: Matrix Lens — Unconnected Overflow Column
+* **Target:** `MatrixView.tsx`
+* **Directive:** Nords with no connections of the active type are placed in a right-side "Unconnected" column with dashed border. Dragging a card FROM "Unconnected" to a cell creates a new connection with median distance of the target bucket. Dragging a card TO "Unconnected" soft-deletes the connection.
+* **Ref:** `12_matrix_view_design.md` §Edge Cases
+* **AC:** Nords without active-type connections appear in Unconnected column. Drag to cell creates connection. Drag to Unconnected removes it.
+
+### [STORY] 8.2.11: Matrix Lens — Saved Matrix Views
+* **Target:** `src/hooks/useMatrixViews.ts`
+* **Directive:** Matrix configurations are savable and remembered. A saved view stores: `connection_type_id`, `y_axis_enabled`, `visible_nord_type_ids[]`, `sort_property`, `sort_direction`. MVP: persist to `localStorage` keyed as `nords_matrix_views_{projectId}`. V2: `matrix_views` PostgreSQL table. Last-used view auto-loads when switching to Matrix lens.
+* **Ref:** `12_matrix_view_design.md` §6
+* **AC:** Save a view named "Sprint Board". Switch away and back. View restores. Create a second view. Both appear in view selector dropdown.
+
+### [STORY] 8.2.12: Matrix Lens — Type Filter Controls
+* **Target:** `MatrixView.tsx`
+* **Directive:** Multi-select checkboxes in the Matrix header bar allowing the user to show/hide specific Nord types within the active view. Each checkbox shows the Nord type's Lucide icon and accent color. When all types are hidden, show empty state: "No Nord types selected."
+* **Ref:** `12_matrix_view_design.md` §Multi-type
+* **AC:** Uncheck "Bug" type: all Bug nords disappear from the grid. Re-check: they reappear in correct cells.
+
+### [STORY] 8.2.13: Matrix Lens — Sort-By Property Selector
+* **Target:** `MatrixView.tsx`
+* **Directive:** Dropdown in Matrix header to select which property (from the visible Nord types' `properties_schema`) controls within-cell card sort order. Default sort: `updated_at` descending. Select properties (e.g., "Priority") use their option order. Numeric properties sort numerically. Date properties sort chronologically.
+* **Ref:** `12_matrix_view_design.md` §Sort
+* **AC:** Select "Priority" as sort-by: cards reorder within each cell by priority value. Select "Updated": cards reorder by most recent.

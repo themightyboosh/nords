@@ -90,3 +90,47 @@
 * **Target:** `src/server/repositories/nords.ts`, `connections.ts`, `projects.ts`
 * **Directive:** Each entity gets a repository with: `findById()`, `findByProject()`, `create()`, `update()`, `softDelete()`. All queries filter `WHERE deleted_at IS NULL` by default. Return typed results.
 * **AC:** Integration test: create a nord, retrieve it, update title, soft-delete it, verify `findById` no longer returns it.
+
+---
+
+## [FEATURE] 2.5: Performance Engineering & API Layer
+
+### [STORY] 2.5.1: Stored Procedures (Graph Load, Snapshot, Batch Positions)
+* **Target:** `server/migrations/004_indexes_and_procedures.sql`
+* **Directive:** Three PostgreSQL stored procedures:
+  - `fn_load_project_graph(project_uuid)` — Assembles all nords, connections, nord_types, and connection_types into a single JSONB payload entirely inside database memory. Reduces 4 network round trips to 1.
+  - `fn_capture_snapshot(project_uuid, name, description, user_id)` — Internally calls `fn_load_project_graph`, stores the result as an immutable snapshot. Zero data leaves the database.
+  - `fn_batch_update_positions(updates_jsonb)` — Updates N nords' positions in a single SQL statement using `jsonb_array_elements`.
+* **AC:** `SELECT fn_load_project_graph(uuid)` returns complete graph JSON. `fn_capture_snapshot` creates row with `snapshot_data` populated. `fn_batch_update_positions` updates multiple nords in one call.
+
+### [STORY] 2.5.2: Database Triggers (Immutability, Cascade, Timestamps)
+* **Target:** `server/migrations/004_indexes_and_procedures.sql`
+* **Directive:** Four triggers:
+  - `trg_snapshot_immutability` — Prevents UPDATE/DELETE on snapshots table.
+  - `trg_cascade_soft_delete_connections` — When a nord is soft-deleted, automatically soft-deletes all connections referencing it.
+  - `trg_set_updated_at` — Auto-updates `updated_at` on nords, connections, and projects on any UPDATE.
+* **AC:** Attempting `UPDATE snapshots SET name = 'x'` fails. Soft-deleting a nord cascades to its connections. Updating a nord's title changes its `updated_at`.
+
+### [STORY] 2.5.3: Express REST API (18 Endpoints)
+* **Target:** `server/src/index.ts`, `server/src/routes/projects.ts`, `graph.ts`, `snapshots.ts`, `comments.ts`
+* **Directive:** Express server with CORS, JSON body parsing, and 4 route modules:
+  - **Projects (5):** GET list, POST create, GET by ID, PUT update, DELETE soft-delete
+  - **Graph (8):** GET full graph (via stored proc), POST/PUT/DELETE nords, POST/PUT/DELETE connections, PUT batch positions (via stored proc)
+  - **Snapshots (3):** GET list, POST capture (via stored proc), GET load by ID
+  - **Comments (4):** GET list (with filtering), POST create/reply, PUT update/resolve, DELETE soft-delete
+* **AC:** `curl http://localhost:3000/health` returns `{"status":"ok"}`. All 18 endpoints return correct HTTP status codes and JSON payloads.
+
+### [STORY] 2.5.4: Frontend API Client & React Hooks
+* **Target:** `client/src/api/client.ts`, `client/src/hooks/useProjectGraph.ts`, `useNordMutations.ts`, `useSnapshots.ts`
+* **Directive:** Thin fetch wrapper that auto-injects Firebase auth tokens. React hooks:
+  - `useProjectGraph(projectId)` — Loads entire graph via `fn_load_project_graph`
+  - `useNordMutations(projectId)` — CRUD + `batchUpdatePositions()`
+  - `useConnectionMutations(projectId)` — CRUD for edges
+  - `useSnapshots(projectId)` — List, capture, load
+* **AC:** `useProjectGraph` returns typed `ProjectGraph` object. Mutations update server and return updated entities.
+
+### [STORY] 2.5.5: OpenAPI 3.0 Specification & Swagger UI
+* **Target:** `server/src/swagger.ts`, route files (JSDoc annotations)
+* **Directive:** Full OpenAPI 3.0.3 spec auto-generated from JSDoc annotations on route handlers. 18 schemas (all entities + request/response models). Swagger UI served at `/api-docs`. Raw JSON spec at `/api-docs.json`. Firebase Bearer Auth security scheme defined. Server definitions for localhost, staging, and production.
+* **AC:** `GET /api-docs.json` returns valid OpenAPI 3.0.3 spec. Swagger UI renders at `/api-docs` with all 20 endpoints documented.
+

@@ -38,12 +38,13 @@
 ### [STORY] 0.2.2: Local PostgreSQL via Docker Compose
 * **Target:** `docker-compose.yml`, `db/init.sql`
 * **Directive:** Postgres 15 container on port 5432. Default database `nords_dev`. Volume mount for persistence. Health check configured.
+> [!NOTE] **Current State:** Development currently runs against live Cloud SQL instance `nords-db-main` at `136.115.68.48:5432` in GCP project `nords-spatial-1776012153`. Docker Compose remains available as a local fallback. The Cloud SQL Auth Proxy sidecar must be configured before production deployment.
 * **Ref:** `10_technology_and_infrastructure.md` §2.2 (Cloud SQL for PostgreSQL)
 * **AC:** `docker compose up -d db` starts Postgres. `psql -h localhost -U nords -d nords_dev -c "SELECT 1"` returns 1.
 
 ### [STORY] 0.2.3: Configure GCP CLI Profiles (Staging + Prod)
 * **Target:** `scripts/gcp_setup.sh`
-* **Directive:** Script creates two named gcloud configurations: `nords-staging` and `nords-prod`. Sets project IDs, default regions (us-central1).
+* **Directive:** Script creates two named gcloud configurations: `nords-staging` and `nords-prod`. Sets project IDs, default regions (us-central1). GCP Project ID: `nords-spatial-1776012153`. Cloud SQL instance: `nords-db-main`.
 * **Ref:** `10_technology_and_infrastructure.md` §2.1
 > [!WARNING] **GCP Architect Note:** Ensure networking provisions a Serverless VPC Access Connector for the Cloud Run environment. Cloud Run must use Private IPs to communicate securely with Cloud SQL and Memorystore without traversing the public internet.
 
@@ -70,5 +71,5 @@
 
 ### [STORY] 0.3.4: Environment Variables & Config Management
 * **Target:** `.env.example`, `src/config/env.ts`
-* **Directive:** Define all env vars: `VITE_FIREBASE_*` (6 keys), `VITE_API_URL`, `VITE_WS_URL`, `DATABASE_URL`. Type-safe config module with runtime validation (throws on missing required vars).
+* **Directive:** Define all env vars: `VITE_FIREBASE_*` (6 keys), `VITE_API_URL` (Express server), `VITE_WS_URL`, `DATABASE_URL` (server-side Postgres connection string). Type-safe config module with runtime validation (throws on missing required vars).
 * **AC:** Importing `config` in any module returns typed, validated env values. Missing `VITE_FIREBASE_API_KEY` throws descriptive error at startup.

@@ -73,9 +73,9 @@
 
 ### [STORY] 3.3.1: Project Dashboard Screen
 * **Target:** `src/components/ProjectDashboard/ProjectDashboard.tsx`, `.css`
-* **Directive:** Grid of project cards. Each shows: project icon, name, member count, last modified date, thumbnail preview. "New Project" card with plus icon. Click navigates to `/project/:id`.
-* **Ref:** `client-alt/ProjectDashboard/ProjectDashboard.tsx` (5858 bytes)
-* **AC:** Dashboard loads with list of user's projects from API. "New Project" opens creation wizard. Navigation works via React Router.
+* **Directive:** Grid of project cards. Each shows: project Lucide icon (using same icon picker as Manage Types), name, member count, last modified date. Sidebar contains only "All Projects" and "Starred" nav items (no search, no recents, no shared). "New Project" dashed card with plus icon at end of grid. "New Project" button also in sidebar footer. Click card navigates to `/project/:id`. Data loaded via `api/client.ts` fetch wrapper with Firebase auth tokens.
+* **Ref:** `client-alt/ProjectDashboard/ProjectDashboard.tsx`
+* **AC:** Dashboard loads with list of user's projects from API. "New Project" opens creation dialog with Lucide icon picker. Navigation works via React Router.
 
 ### [STORY] 3.3.2: Empty State (No Projects)
 * **Target:** `src/components/EmptyState/EmptyState.tsx`, `.css`
