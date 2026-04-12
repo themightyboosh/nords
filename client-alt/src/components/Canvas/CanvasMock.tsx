@@ -37,20 +37,15 @@ const NARDS: NardData[] = [
 ];
 
 const TETHERS: TetherData[] = [
-  // n1 ↔ n2: TWO connections — will ribbon
   { from: 'n1', to: 'n2', type: 'Blocks', color: '#4da6ff', value: 0.72, label: 'Partial Block' },
   { from: 'n1', to: 'n2', type: 'Relates', color: '#a78bfa', value: 0.30, label: 'Weak Relation' },
-  // n2 ↔ n3: THREE connections — full ribbon demo
   { from: 'n2', to: 'n3', type: 'Blocks', color: '#4da6ff', value: 0.91, label: 'Hard Block' },
   { from: 'n2', to: 'n3', type: 'Depends', color: '#fbbf24', value: 0.55, label: 'Medium Dep.' },
   { from: 'n2', to: 'n3', type: 'Relates', color: '#a78bfa', value: 0.20, label: 'Context', ghost: true },
-  // n4 → n2, n4 → n6
   { from: 'n4', to: 'n2', type: 'Assigned', color: '#34d399', value: 0.15, label: 'Primary' },
   { from: 'n4', to: 'n6', type: 'Assigned', color: '#34d399', value: 0.32, label: 'Secondary', ghost: true },
-  // n3 ↔ n5: TWO ghost connections
   { from: 'n3', to: 'n5', type: 'Depends', color: '#fbbf24', value: 0.45, label: 'Moderate', ghost: true },
   { from: 'n3', to: 'n5', type: 'Relates', color: '#a78bfa', value: 0.60, label: 'Strong Ref.', ghost: true },
-  // n5 → n6, n6 → n2
   { from: 'n5', to: 'n6', type: 'Blocks', color: '#4da6ff', value: 0.88, label: 'Near-Block', ghost: true },
   { from: 'n6', to: 'n2', type: 'Depends', color: '#fbbf24', value: 0.65, label: 'Strong Dep.', ghost: true },
 ];
@@ -76,6 +71,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
   const zoomIn = () => setZoom(z => Math.min(200, z + 10));
   const zoomOut = () => setZoom(z => Math.max(25, z - 10));
   const resetZoom = () => setZoom(100);
+  const inverseScale = 100 / zoom;
 
   const getNardPos = (id: string) => {
     const n = NARDS.find(n => n.id === id);
@@ -94,24 +90,20 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
     const perpX = (-dy / len) * offset;
     const perpY = (dx / len) * offset;
-    return {
-      x: midX + perpX,
-      y: midY + perpY,
-      type: t.type,
-      value: t.value,
-      color: t.color,
-    };
+    return { x: midX + perpX, y: midY + perpY, type: t.type, value: t.value, color: t.color };
   });
 
   return (
     <div className="nards-canvas">
+      {/* Grid: dots + every 10th = light grid lines */}
       <div className="nards-canvas__grid" />
+      <div className="nards-canvas__grid-lines" />
 
       <div
         className="nards-canvas__content"
         style={{ transform: `scale(${zoom / 100})` }}
       >
-        {/* SVG tether lines only — no text inside SVG */}
+        {/* SVG tether lines */}
         <svg className="nards-canvas__tethers" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
             <marker id="arrow-active" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
@@ -134,7 +126,6 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
             const pathD = offset === 0
               ? `M ${from.x} ${from.y} L ${to.x} ${to.y}`
               : `M ${from.x} ${from.y} Q ${cpX} ${cpY} ${to.x} ${to.y}`;
-
             return (
               <path
                 key={i}
@@ -148,12 +139,16 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
           })}
         </svg>
 
-        {/* HTML tether labels — positioned absolutely via % */}
+        {/* Line labels — counter-scale so they stay fixed size during zoom */}
         {tetherLabels.map((label, i) => (
           <div
             key={`label-${i}`}
             className="nards-tether-label"
-            style={{ left: `${label.x}%`, top: `${label.y}%` }}
+            style={{
+              left: `${label.x}%`,
+              top: `${label.y}%`,
+              transform: `translate(-50%, -50%) scale(${inverseScale})`,
+            }}
           >
             <span className="nards-tether-label__type" style={{ color: label.color }}>
               {label.type}
@@ -169,14 +164,19 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
             <React.Fragment key={nard.id}>
               <div
                 className={`nards-node ${selectedNard === nard.id ? 'is-selected' : ''}`}
-                style={{ left: `${nard.x}%`, top: `${nard.y}%` }}
+                style={{
+                  left: `${nard.x}%`,
+                  top: `${nard.y}%`,
+                  backgroundColor: `color-mix(in srgb, ${nard.typeColor} 10%, var(--nards-color-bg-surface))`,
+                  borderColor: `color-mix(in srgb, ${nard.typeColor} 20%, var(--nards-color-border-default))`,
+                }}
                 onClick={() => onNardClick(nard.id)}
               >
                 <div className="nards-node__header">
-                  <span className="nards-node__type-badge" style={{ backgroundColor: nard.typeColor }}>
-                    <Icon size={10} strokeWidth={2.5} color="white" />
+                  <Icon size={14} strokeWidth={2} color={nard.typeColor} />
+                  <span className="nards-node__type-label" style={{ color: nard.typeColor }}>
+                    {nard.type}
                   </span>
-                  <span className="nards-node__type-label">{nard.type}</span>
                 </div>
                 <h3 className="nards-node__title">{nard.title}</h3>
                 {(nard.status || nard.assignee) && (
