@@ -12,9 +12,17 @@ Nords flips this paradigm. In Nords, the **spatial canvas and its continuous dis
 
 By decoupling the *presentation* (Matrix) from the *data model* (Spatial Graph), Nords allows for infinitely flexible pivot tables that adapt to the relationships between nodes, not just their hardcoded properties.
 
+## 2. Invariant: It Must Feel Like a Board
+
+Despite the continuous math under the hood, **the Matrix view MUST look, feel, and function exactly like a traditional Kanban board/grid.** The complex spatial topology must abstract cleanly away into a familiar, highly usable interface.
+
+- **Crisp, Snappy Grids:** The user should see distinct columns, clear swimlanes, and rigid rows.
+- **Drag-to-Mutate Value UX:** Moving a card from "To Do" to "Done" must feel instantaneous. The user doesn't need to know they are changing spatial distances; they just know they are "updating to target stage," treating the UI exactly like Jira or Linear.
+- **Visual Stability:** Cards drop directly into columns. The layout uses standard drag-and-drop sorting interactions so it requires zero learning curve to use as a daily driver. The "innovations" (heatmaps, physics) are overlays that enhance, not disrupt, traditional board interactions.
+
 ---
 
-## 2. Advanced Derivation: The Anatomy of a Cell
+## 3. Advanced Derivation: The Anatomy of a Cell
 
 ### Static Boundaries vs. Fuzzy Boundaries
 In standard Kanban, a card belongs to one column definitively. Because Nords operates on a continuous 0.0-1.0 distance scale, a connection might have `distance_x: 0.333`, placing it exactly on the boundary between bucket 0 and bucket 1.
@@ -49,9 +57,9 @@ Cards are sorted within the cell initially by `updated_at` (newest on top).
 
 ---
 
-## 4. Drag-to-Reassign: Bi-directional Spatial Sync
+## 5. Drag-to-Reassign: Bi-directional Spatial Sync
 
-When a card is dragged from one column to another, it is making a profound change to the graph's spatial physics.
+When a user drags a card from one column or row to another, it works exactly like moving a task in Trello. The visual state updates immediately. Under the hood, this makes a profound change to the graph's spatial physics.
 
 ### The Algorithm: `bucketToMedianDistance()`
 ```typescript
@@ -67,7 +75,7 @@ This is a real database mutation. Because Matrix and Canvas share a unified spat
 
 ---
 
-## 5. View Configurations & AI Capabilities
+## 6. View Configurations & AI Capabilities
 
 ### Saved Matrix Views
 Matrix configurations are saved persistently, allowing teams to create bespoke dashboards for different ceremonies:
@@ -79,7 +87,7 @@ If a user views a connection type in the Matrix that possesses **no defined stag
 
 ---
 
-## 6. Competitive Differentiation Summary
+## 7. Competitive Differentiation Summary
 
 | Product | Approach | The Nords Advantage |
 |---------|----------|---------------------|
@@ -87,7 +95,7 @@ If a user views a connection type in the Matrix that possesses **no defined stag
 | **Linear** | Fixed "Status" workflows | **Domain-Agnostic Axes.** Any relationship type (Blocks, Belongs To, Influences) can be pivoted into a 2D axis. |
 | **Miro** | Free-form spatial, manual grids | **Bidirectional Physics.** Matrix is procedurally generated from Canvas math. Moving a Kanban card actually mathematically repositions the sticky note on the canvas. |
 
-## 7. Data Flow Summary
+## 8. Data Flow Summary
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
