@@ -63,6 +63,7 @@ Activated via the **Matrix** button in the Dock's Lens Toggle. Users require a s
 * **Bi-directional Sync:**
   * **Graph to Matrix:** Nords automatically sort into cells based on their current line values for the selected axes.
   * **Matrix to Graph:** Dragging a Nord to a new cell assigns it the median value of that cell's bucket on each axis (e.g., "To Do" = 0.167, "Doing" = 0.5, "Done" = 0.833). Returning to Canvas/Link Lens triggers the physics engine to reposition the Nord accordingly.
+* **Mobile & Infinite Panning:** Matrix layouts (especially those with 5+ columns) cannot physically fit on mobile screens. The Matrix view operates as an infinite panning surface with sticky Row/Column headers. On mobile devices, users can seamlessly swipe horizontally to explore overflowing columns without breaking the grid structure.
 * **Dock Tools:** Columns ▾ (Line Type selector), Rows (optional Line Type), Comments, Snapshot, + New ▾.
 
 ## 6. Spatial Transitions & Tweening (The "Wow" Moment)
