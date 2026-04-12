@@ -125,7 +125,7 @@
   font-weight: var(--nards-font-weight-bold);
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--nards-color-bg-base);
+  color: var(--nards-color-label-on-color);
 }
 
 /* ═══════════════════════════════════════════════ */
@@ -136,11 +136,12 @@
   position: absolute;
   transform: translate(-50%, -50%);
   z-index: 12;
-  width: 200px;
+  /* width set inline based on size */
+  min-width: 150px;
   border-width: 1px;
   border-style: solid;
   border-radius: var(--nards-radius-lg);
-  padding: var(--nards-space-md) var(--nards-space-lg);
+  padding: var(--nards-space-sm) var(--nards-space-md);
   box-shadow: var(--nards-shadow-sm);
   cursor: pointer;
   user-select: none;
@@ -158,11 +159,30 @@
   z-index: 13;
 }
 
+/* Title bar — contains header + resize handle */
+.nards-node__titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--nards-space-xs);
+}
+
 .nards-node__header {
   display: flex;
   align-items: center;
   gap: var(--nards-space-xs);
-  margin-bottom: var(--nards-space-xs);
+}
+
+.nards-node__resize-handle {
+  color: var(--nards-color-text-disabled);
+  cursor: ew-resize;
+  padding: 2px;
+  border-radius: var(--nards-radius-sm);
+  transition: color 0.15s ease;
+}
+
+.nards-node__resize-handle:hover {
+  color: var(--nards-color-text-secondary);
 }
 
 .nards-node__type-label {
@@ -182,6 +202,14 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Footer — status/assignee + spectrum */
+.nards-node__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--nards-space-sm);
 }
 
 .nards-node__meta {

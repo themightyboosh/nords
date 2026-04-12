@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Square, User, FileText, Plus, Minus, Maximize, StickyNote } from 'lucide-react';
+import { Square, User, FileText, Plus, Minus, Maximize, StickyNote, GripVertical } from 'lucide-react';
+import Spectrum from '../Spectrum/Spectrum';
 import './CanvasMock.css';
 
 interface NardData {
@@ -15,6 +16,8 @@ interface NardData {
   x: number;
   y: number;
   note?: string;
+  /** Relative size 0–1 (maps to 75%–200% container scale). Semantic: importance, cost, etc. */
+  size: number;
 }
 
 interface TetherData {
@@ -28,12 +31,12 @@ interface TetherData {
 }
 
 const NARDS: NardData[] = [
-  { id: 'n1', title: 'Auth & SSO Integration', type: 'Task', typeIcon: Square, typeColor: '#4da6ff', status: 'Done', statusColor: 'var(--nards-color-success)', assignee: 'D', assigneeColor: '#2563eb', x: 18, y: 30 },
-  { id: 'n2', title: 'Physics Engine Spike', type: 'Task', typeIcon: Square, typeColor: '#4da6ff', status: 'In Progress', statusColor: 'var(--nards-color-info)', assignee: 'S', assigneeColor: '#059669', x: 42, y: 45, note: 'Benchmark at 500+ nodes' },
-  { id: 'n3', title: 'Canvas Renderer', type: 'Task', typeIcon: Square, typeColor: '#4da6ff', status: 'To Do', statusColor: 'var(--nards-color-danger)', x: 66, y: 26 },
-  { id: 'n4', title: 'Sarah Chen', type: 'Person', typeIcon: User, typeColor: '#34d399', x: 22, y: 65 },
-  { id: 'n5', title: 'API Design Doc', type: 'Artifact', typeIcon: FileText, typeColor: '#fbbf24', status: 'Review', statusColor: 'var(--nards-color-warning)', x: 72, y: 58 },
-  { id: 'n6', title: 'MCP Server', type: 'Task', typeIcon: Square, typeColor: '#4da6ff', status: 'Blocked', statusColor: 'var(--nards-color-danger)', x: 48, y: 74 },
+  { id: 'n1', title: 'Auth & SSO Integration', type: 'Task', typeIcon: Square, typeColor: '#4da6ff', status: 'Done', statusColor: 'var(--nards-color-success)', assignee: 'D', assigneeColor: '#2563eb', x: 18, y: 30, size: 0.5 },
+  { id: 'n2', title: 'Physics Engine Spike', type: 'Task', typeIcon: Square, typeColor: '#4da6ff', status: 'In Progress', statusColor: 'var(--nards-color-info)', assignee: 'S', assigneeColor: '#059669', x: 42, y: 45, note: 'Benchmark at 500+ nodes', size: 0.85 },
+  { id: 'n3', title: 'Canvas Renderer', type: 'Task', typeIcon: Square, typeColor: '#4da6ff', status: 'To Do', statusColor: 'var(--nards-color-danger)', x: 66, y: 26, size: 0.6 },
+  { id: 'n4', title: 'Sarah Chen', type: 'Person', typeIcon: User, typeColor: '#34d399', x: 22, y: 65, size: 0.35 },
+  { id: 'n5', title: 'API Design Doc', type: 'Artifact', typeIcon: FileText, typeColor: '#fbbf24', status: 'Review', statusColor: 'var(--nards-color-warning)', x: 72, y: 58, size: 0.7 },
+  { id: 'n6', title: 'MCP Server', type: 'Task', typeIcon: Square, typeColor: '#4da6ff', status: 'Blocked', statusColor: 'var(--nards-color-danger)', x: 48, y: 74, size: 0.4 },
 ];
 
 const TETHERS: TetherData[] = [
@@ -218,35 +221,45 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
                 style={{
                   left: `${nard.x}%`,
                   top: `${nard.y}%`,
+                  width: `${200 * (0.75 + nard.size * 1.25)}px`,
                   backgroundColor: `color-mix(in srgb, ${nard.typeColor} 10%, var(--nards-color-bg-surface))`,
                   borderColor: `color-mix(in srgb, ${nard.typeColor} 20%, var(--nards-color-border-default))`,
                 }}
                 onClick={() => onNardClick(nard.id)}
               >
-                <div className="nards-node__header">
-                  <Icon size={14} strokeWidth={2} color={nard.typeColor} />
-                  <span className="nards-node__type-label" style={{ color: nard.typeColor }}>
-                    {nard.type}
-                  </span>
+                {/* Title bar with drag-resize handle */}
+                <div className="nards-node__titlebar">
+                  <div className="nards-node__header">
+                    <Icon size={14} strokeWidth={2} color={nard.typeColor} />
+                    <span className="nards-node__type-label" style={{ color: nard.typeColor }}>
+                      {nard.type}
+                    </span>
+                  </div>
+                  <div className="nards-node__resize-handle" title="Drag to resize (importance/cost)">
+                    <GripVertical size={10} strokeWidth={1.5} />
+                  </div>
                 </div>
                 <h3 className="nards-node__title">{nard.title}</h3>
-                {(nard.status || nard.assignee) && (
-                  <div className="nards-node__meta">
-                    {nard.status && (
-                      <span
-                        className="nards-node__pill"
-                        style={{ color: nard.statusColor, background: `color-mix(in srgb, ${nard.statusColor} 12%, transparent)` }}
-                      >
-                        {nard.status}
-                      </span>
-                    )}
-                    {nard.assignee && (
-                      <span className="nards-node__assignee" style={{ backgroundColor: nard.assigneeColor }}>
-                        {nard.assignee}
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div className="nards-node__footer">
+                  {(nard.status || nard.assignee) && (
+                    <div className="nards-node__meta">
+                      {nard.status && (
+                        <span
+                          className="nards-node__pill"
+                          style={{ color: nard.statusColor, background: `color-mix(in srgb, ${nard.statusColor} 12%, transparent)` }}
+                        >
+                          {nard.status}
+                        </span>
+                      )}
+                      {nard.assignee && (
+                        <span className="nards-node__assignee" style={{ backgroundColor: nard.assigneeColor }}>
+                          {nard.assignee}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <Spectrum value={nard.size} color={nard.typeColor} width={40} />
+                </div>
               </div>
               {/* Anchored sticky — icon-only, click to edit */}
               {nard.note && (

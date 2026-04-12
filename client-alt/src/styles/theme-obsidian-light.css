@@ -64,6 +64,9 @@
   --nards-color-danger: #dc2626;
   --nards-color-info: #2563eb;
 
+  /* ── Label on Color ── */
+  --nards-color-label-on-color: #ffffff;
+
   /* ── Tethers ── */
   --nards-color-tether-active: #2563eb;
   --nards-color-tether-ghost: rgba(37, 99, 235, 0.12);

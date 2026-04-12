@@ -1,0 +1,39 @@
+/* ═══════════════════════════════════════════════ */
+/* SPECTRUM — reusable range indicator             */
+/* ═══════════════════════════════════════════════ */
+
+.nards-spectrum {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+  cursor: default;
+}
+
+.nards-spectrum__track {
+  position: absolute;
+  inset: 0;
+  background: var(--nards-color-border-default);
+  border-radius: 2px;
+}
+
+.nards-spectrum__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.2s ease;
+}
+
+.nards-spectrum__thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--nards-color-bg-surface);
+  border: 2px solid;
+  box-shadow: var(--nards-shadow-sm);
+  transition: left 0.2s ease;
+}
