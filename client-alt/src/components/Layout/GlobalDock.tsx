@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import {
-  Square, Minus as LineIcon, ArrowLeftRight, StickyNote, Plus,
-  Eye, EyeOff, ChevronDown,
+  Eye, Link2, LayoutGrid,
+  Square, Minus as LineIcon, StickyNote, Plus,
+  EyeIcon, EyeOff, ChevronDown, ArrowLeftRight, Ghost, Crosshair,
   Bug, User, FileText, Target, Lightbulb, Layers, AlertTriangle,
 } from 'lucide-react';
+import type { LensMode } from '../../App';
 import Spectrum from '../Spectrum/Spectrum';
 import './GlobalDock.css';
 
@@ -27,19 +29,26 @@ const LINE_TYPES = [
 ];
 
 interface GlobalDockProps {
-  activeView: string;
-  onViewChange: (view: string) => void;
+  lens: LensMode;
+  onLensChange: (lens: LensMode) => void;
+  activeLine: string;
+  onActiveLineChange: (line: string) => void;
+  showContext: boolean;
+  onShowContextChange: (show: boolean) => void;
 }
 
-const GlobalDock: React.FC<GlobalDockProps> = ({ }) => {
+const GlobalDock: React.FC<GlobalDockProps> = ({
+  lens, onLensChange,
+  activeLine, onActiveLineChange,
+  showContext, onShowContextChange,
+}) => {
   const [openPanel, setOpenPanel] = useState<string | null>(null);
-  const [activeRelationship, setActiveRelationship] = useState('Blocks');
 
   const togglePanel = (panel: string) => {
     setOpenPanel(openPanel === panel ? null : panel);
   };
 
-  const activeLineType = LINE_TYPES.find(l => l.name === activeRelationship);
+  const activeLineType = LINE_TYPES.find(l => l.name === activeLine);
 
   return (
     <>
@@ -48,87 +57,192 @@ const GlobalDock: React.FC<GlobalDockProps> = ({ }) => {
       <div className="nards-dock-wrapper">
         <nav className="nards-global-dock nards-glass">
 
-          {/* Nards dropdown */}
-          <div className="nards-dock__section">
+          {/* ═══ Lens Toggle ═══ */}
+          <div className="nards-lens-toggle">
             <button
-              className={`nards-dock__item ${openPanel === 'nards' ? 'is-active' : ''}`}
-              onClick={() => togglePanel('nards')}
+              className={`nards-lens-toggle__btn ${lens === 'canvas' ? 'is-active' : ''}`}
+              onClick={() => onLensChange('canvas')}
+              title="Canvas — spatial graph view"
             >
-              <Square size={16} strokeWidth={1.6} />
-              <span className="nards-dock__label">Nards</span>
-              <ChevronDown size={10} className="nards-dock__chevron" />
+              <Eye size={14} strokeWidth={1.6} />
+              <span>Canvas</span>
+            </button>
+            <button
+              className={`nards-lens-toggle__btn ${lens === 'link' ? 'is-active' : ''}`}
+              onClick={() => onLensChange('link')}
+              title="Link — focused relationship editing"
+            >
+              <Link2 size={14} strokeWidth={1.6} />
+              <span>Link</span>
+            </button>
+            <button
+              className={`nards-lens-toggle__btn ${lens === 'matrix' ? 'is-active' : ''}`}
+              onClick={() => onLensChange('matrix')}
+              title="Matrix — spatial pivot table"
+            >
+              <LayoutGrid size={14} strokeWidth={1.6} />
+              <span>Matrix</span>
             </button>
           </div>
 
           <div className="nards-dock__separator" />
 
-          {/* Lines dropdown */}
-          <div className="nards-dock__section">
-            <button
-              className={`nards-dock__item ${openPanel === 'lines' ? 'is-active' : ''}`}
-              onClick={() => togglePanel('lines')}
-            >
-              <LineIcon size={16} strokeWidth={1.6} />
-              <span className="nards-dock__label">Lines</span>
-              <ChevronDown size={10} className="nards-dock__chevron" />
-            </button>
-          </div>
+          {/* ═══ CANVAS TOOLS ═══ */}
+          {lens === 'canvas' && (
+            <>
+              <div className="nards-dock__section">
+                <button
+                  className={`nards-dock__item ${openPanel === 'nards' ? 'is-active' : ''}`}
+                  onClick={() => togglePanel('nards')}
+                >
+                  <Square size={15} strokeWidth={1.6} />
+                  <span className="nards-dock__label">Nards</span>
+                  <ChevronDown size={10} className="nards-dock__chevron" />
+                </button>
+              </div>
 
-          <div className="nards-dock__separator" />
+              <div className="nards-dock__separator" />
 
-          {/* Relationship dropdown */}
-          <div className="nards-dock__section">
-            <button
-              className={`nards-dock__item nards-dock__item--relationship ${openPanel === 'relationship' ? 'is-active' : ''}`}
-              onClick={() => togglePanel('relationship')}
-            >
-              <ArrowLeftRight size={16} strokeWidth={1.6} />
-              <span className="nards-dock__label">
-                {activeRelationship}
-              </span>
-              {activeLineType && (
-                <span
-                  className="nards-dock__rel-swatch"
-                  style={{ backgroundColor: activeLineType.color }}
-                />
-              )}
-              <ChevronDown size={10} className="nards-dock__chevron" />
-            </button>
-          </div>
+              <div className="nards-dock__section">
+                <button
+                  className={`nards-dock__item ${openPanel === 'lines' ? 'is-active' : ''}`}
+                  onClick={() => togglePanel('lines')}
+                >
+                  <LineIcon size={15} strokeWidth={1.6} />
+                  <span className="nards-dock__label">Lines</span>
+                  <ChevronDown size={10} className="nards-dock__chevron" />
+                </button>
+              </div>
 
-          <div className="nards-dock__separator" />
+              <div className="nards-dock__separator" />
 
-          {/* Sticky drag-source */}
-          <div className="nards-dock__section">
-            <button
-              className="nards-dock__item nards-dock__item--drag"
-              draggable
-              title="Drag to add a sticky note"
-            >
-              <StickyNote size={16} strokeWidth={1.6} fill="var(--nards-color-warning)" />
-              <span className="nards-dock__label">Sticky</span>
-            </button>
-          </div>
+              <div className="nards-dock__section">
+                <button className="nards-dock__item nards-dock__item--drag" draggable title="Drag to add a sticky">
+                  <StickyNote size={15} strokeWidth={1.6} fill="var(--nards-color-warning)" />
+                  <span className="nards-dock__label">Sticky</span>
+                </button>
+              </div>
 
-          <div className="nards-dock__separator" />
+              <div className="nards-dock__separator" />
 
-          {/* New dropdown */}
-          <div className="nards-dock__section">
-            <button
-              className={`nards-dock__item nards-dock__item--accent ${openPanel === 'new' ? 'is-active' : ''}`}
-              onClick={() => togglePanel('new')}
-            >
-              <Plus size={16} strokeWidth={2} />
-              <span className="nards-dock__label">New</span>
-              <ChevronDown size={10} className="nards-dock__chevron" />
-            </button>
-          </div>
+              <div className="nards-dock__section">
+                <button
+                  className={`nards-dock__item nards-dock__item--accent ${openPanel === 'new' ? 'is-active' : ''}`}
+                  onClick={() => togglePanel('new')}
+                >
+                  <Plus size={15} strokeWidth={2} />
+                  <span className="nards-dock__label">New</span>
+                  <ChevronDown size={10} className="nards-dock__chevron" />
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ═══ LINK TOOLS ═══ */}
+          {lens === 'link' && (
+            <>
+              <div className="nards-dock__section">
+                <button
+                  className={`nards-dock__item nards-dock__item--relationship ${openPanel === 'relationship' ? 'is-active' : ''}`}
+                  onClick={() => togglePanel('relationship')}
+                >
+                  <ArrowLeftRight size={15} strokeWidth={1.6} />
+                  <span className="nards-dock__label">{activeLine}</span>
+                  {activeLineType && (
+                    <span className="nards-dock__rel-swatch" style={{ backgroundColor: activeLineType.color }} />
+                  )}
+                  <ChevronDown size={10} className="nards-dock__chevron" />
+                </button>
+              </div>
+
+              <div className="nards-dock__separator" />
+
+              <div className="nards-dock__section">
+                <button
+                  className={`nards-dock__item ${showContext ? 'is-active' : ''}`}
+                  onClick={() => onShowContextChange(!showContext)}
+                  title={showContext ? 'Context ON — showing unconnected nards at 20%' : 'Context OFF — hiding unconnected nards'}
+                >
+                  <Ghost size={15} strokeWidth={1.6} />
+                  <span className="nards-dock__label">Context</span>
+                </button>
+              </div>
+
+              <div className="nards-dock__separator" />
+
+              <div className="nards-dock__section">
+                <button className="nards-dock__item nards-dock__item--accent" title="Click source nard, then target nard to connect">
+                  <Crosshair size={15} strokeWidth={1.6} />
+                  <span className="nards-dock__label">Add Line</span>
+                </button>
+              </div>
+
+              <div className="nards-dock__separator" />
+
+              <div className="nards-dock__section">
+                <button className="nards-dock__item nards-dock__item--drag" draggable title="Drag to add a sticky">
+                  <StickyNote size={15} strokeWidth={1.6} fill="var(--nards-color-warning)" />
+                  <span className="nards-dock__label">Sticky</span>
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ═══ MATRIX TOOLS ═══ */}
+          {lens === 'matrix' && (
+            <>
+              <div className="nards-dock__section">
+                <button
+                  className={`nards-dock__item ${openPanel === 'matrixCols' ? 'is-active' : ''}`}
+                  onClick={() => togglePanel('matrixCols')}
+                >
+                  <span className="nards-dock__label-prefix">Columns:</span>
+                  <span className="nards-dock__label nards-dock__label--value">{activeLine}</span>
+                  {activeLineType && (
+                    <span className="nards-dock__rel-swatch" style={{ backgroundColor: activeLineType.color }} />
+                  )}
+                  <ChevronDown size={10} className="nards-dock__chevron" />
+                </button>
+              </div>
+
+              <div className="nards-dock__separator" />
+
+              <div className="nards-dock__section">
+                <button className="nards-dock__item" disabled title="Optional — drag a Line Type here for rows">
+                  <span className="nards-dock__label-prefix">Rows:</span>
+                  <span className="nards-dock__label nards-dock__label--empty">None</span>
+                </button>
+              </div>
+
+              <div className="nards-dock__separator" />
+
+              <div className="nards-dock__section">
+                <button className="nards-dock__item nards-dock__item--drag" draggable title="Drag to add a sticky">
+                  <StickyNote size={15} strokeWidth={1.6} fill="var(--nards-color-warning)" />
+                  <span className="nards-dock__label">Sticky</span>
+                </button>
+              </div>
+
+              <div className="nards-dock__separator" />
+
+              <div className="nards-dock__section">
+                <button
+                  className={`nards-dock__item nards-dock__item--accent ${openPanel === 'new' ? 'is-active' : ''}`}
+                  onClick={() => togglePanel('new')}
+                >
+                  <Plus size={15} strokeWidth={2} />
+                  <span className="nards-dock__label">New</span>
+                  <ChevronDown size={10} className="nards-dock__chevron" />
+                </button>
+              </div>
+            </>
+          )}
 
         </nav>
 
         {/* ═══════════ FLYOUT PANELS ═══════════ */}
 
-        {/* Nard Types — show/hide + drag to create */}
+        {/* Nard Types */}
         <div className={`nards-flyout nards-glass ${openPanel === 'nards' ? 'is-open' : ''}`}>
           <div className="nards-flyout__header">
             <h3 className="nards-flyout__title">Nard Types</h3>
@@ -144,18 +258,15 @@ const GlobalDock: React.FC<GlobalDockProps> = ({ }) => {
                   <span className="nards-flyout__row-name">{type.name}</span>
                   <span className="nards-flyout__row-count">{type.count}</span>
                 </div>
-                <button
-                  className={`nards-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`}
-                  title="Toggle visibility"
-                >
-                  {type.visible ? <Eye size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
+                <button className={`nards-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`} title="Toggle visibility">
+                  {type.visible ? <EyeIcon size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
                 </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Line Types — show/hide */}
+        {/* Line Types */}
         <div className={`nards-flyout nards-glass ${openPanel === 'lines' ? 'is-open' : ''}`}>
           <div className="nards-flyout__header">
             <h3 className="nards-flyout__title">Line Types</h3>
@@ -169,18 +280,15 @@ const GlobalDock: React.FC<GlobalDockProps> = ({ }) => {
                   <span className="nards-flyout__row-name">{type.name}</span>
                   <span className="nards-flyout__row-count">{type.count}</span>
                 </div>
-                <button
-                  className={`nards-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`}
-                  title="Toggle visibility"
-                >
-                  {type.visible ? <Eye size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
+                <button className={`nards-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`} title="Toggle visibility">
+                  {type.visible ? <EyeIcon size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
                 </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Relationship — active line selector + spectrum */}
+        {/* Relationship Selector (Link mode) */}
         <div className={`nards-flyout nards-glass ${openPanel === 'relationship' ? 'is-open' : ''}`}>
           <div className="nards-flyout__header">
             <h3 className="nards-flyout__title">Active Relationship</h3>
@@ -189,14 +297,14 @@ const GlobalDock: React.FC<GlobalDockProps> = ({ }) => {
             {LINE_TYPES.map((type) => (
               <div
                 key={type.name}
-                className={`nards-flyout__row nards-flyout__row--selectable ${activeRelationship === type.name ? 'is-active' : ''}`}
-                onClick={() => setActiveRelationship(type.name)}
+                className={`nards-flyout__row nards-flyout__row--selectable ${activeLine === type.name ? 'is-active' : ''}`}
+                onClick={() => { onActiveLineChange(type.name); setOpenPanel(null); }}
               >
                 <div className="nards-flyout__row-left">
                   <span className="nards-flyout__line-swatch" style={{ background: type.color }} />
                   <span className="nards-flyout__row-name">{type.name}</span>
                 </div>
-                {activeRelationship === type.name && (
+                {activeLine === type.name && (
                   <div className="nards-flyout__row-spectrum">
                     <Spectrum value={0.65} color={type.color} width={52} />
                   </div>
@@ -207,7 +315,34 @@ const GlobalDock: React.FC<GlobalDockProps> = ({ }) => {
           <div className="nards-flyout__footer">
             <span className="nards-flyout__footer-hint">
               <ArrowLeftRight size={10} />
-              Spatial distance = {activeRelationship.toLowerCase()} strength
+              Spatial distance = {activeLine.toLowerCase()} strength
+            </span>
+          </div>
+        </div>
+
+        {/* Matrix Column Selector */}
+        <div className={`nards-flyout nards-glass ${openPanel === 'matrixCols' ? 'is-open' : ''}`}>
+          <div className="nards-flyout__header">
+            <h3 className="nards-flyout__title">Column Axis</h3>
+          </div>
+          <div className="nards-flyout__list">
+            {LINE_TYPES.map((type) => (
+              <div
+                key={type.name}
+                className={`nards-flyout__row nards-flyout__row--selectable ${activeLine === type.name ? 'is-active' : ''}`}
+                onClick={() => { onActiveLineChange(type.name); setOpenPanel(null); }}
+              >
+                <div className="nards-flyout__row-left">
+                  <span className="nards-flyout__line-swatch" style={{ background: type.color }} />
+                  <span className="nards-flyout__row-name">{type.name}</span>
+                  <span className="nards-flyout__row-count">{type.count}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="nards-flyout__footer">
+            <span className="nards-flyout__footer-hint">
+              Stepper labels → column headers
             </span>
           </div>
         </div>

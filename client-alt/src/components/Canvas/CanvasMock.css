@@ -396,3 +396,145 @@
     max-width: calc(100vw - var(--nards-space-lg) * 2);
   }
 }
+
+/* ═══════════════════════════════════════════════ */
+/* LINK MODE — ghosted elements                    */
+/* ═══════════════════════════════════════════════ */
+
+.nards-node--ghosted {
+  opacity: 0.2;
+  filter: saturate(0.2);
+  pointer-events: none;
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+.nards-tether--context {
+  stroke-width: 0.08;
+  opacity: 0.08;
+  filter: saturate(0.1);
+}
+
+/* ═══════════════════════════════════════════════ */
+/* MATRIX VIEW — Spatial Pivot Table / Kanban      */
+/* ═══════════════════════════════════════════════ */
+
+.nards-matrix-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--nards-color-bg-canvas);
+}
+
+.nards-matrix {
+  width: calc(100% - var(--nards-space-2xl) * 2);
+  max-width: 1200px;
+  height: calc(100% - var(--nards-header-height) - var(--nards-dock-height) - var(--nards-space-2xl) * 3);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.nards-matrix__header {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--nards-space-sm);
+  padding-bottom: var(--nards-space-sm);
+  border-bottom: 1px solid var(--nards-color-border-default);
+  flex-shrink: 0;
+}
+
+.nards-matrix__col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nards-space-sm) var(--nards-space-md);
+}
+
+.nards-matrix__col-label {
+  font-family: var(--nards-font-primary);
+  font-size: var(--nards-font-size-sm);
+  font-weight: var(--nards-font-weight-semibold);
+  color: var(--nards-color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--nards-letter-spacing-wide);
+}
+
+.nards-matrix__col-count {
+  font-family: var(--nards-font-mono);
+  font-size: var(--nards-font-size-xs);
+  color: var(--nards-color-text-disabled);
+  font-variant-numeric: tabular-nums;
+}
+
+.nards-matrix__body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--nards-space-sm);
+  flex: 1;
+  overflow-y: auto;
+  padding-top: var(--nards-space-sm);
+}
+
+.nards-matrix__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nards-space-xs);
+  min-height: 100px;
+  padding: var(--nards-space-xs);
+  border-radius: var(--nards-radius-md);
+  background: var(--nards-color-bg-deep);
+}
+
+/* Matrix Card */
+.nards-matrix__card {
+  background: var(--nards-color-bg-surface);
+  border: 1px solid var(--nards-color-border-subtle);
+  border-left: 3px solid;
+  border-radius: var(--nards-radius-md);
+  padding: var(--nards-space-sm) var(--nards-space-md);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.nards-matrix__card:hover {
+  box-shadow: var(--nards-shadow-sm);
+  transform: translateY(-1px);
+}
+
+.nards-matrix__card.is-selected {
+  border-color: var(--nards-color-accent);
+  box-shadow: var(--nards-shadow-glow);
+}
+
+.nards-matrix__card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--nards-space-xs);
+  margin-bottom: 2px;
+}
+
+.nards-matrix__card-type {
+  font-size: 9px;
+  font-weight: var(--nards-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--nards-letter-spacing-wide);
+}
+
+.nards-matrix__card-title {
+  font-size: var(--nards-font-size-sm);
+  font-weight: var(--nards-font-weight-semibold);
+  color: var(--nards-color-text-primary);
+  line-height: var(--nards-line-height-tight);
+  margin-bottom: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.nards-matrix__card-prop {
+  font-size: var(--nards-font-size-xs);
+  font-weight: var(--nards-font-weight-medium);
+  color: var(--nards-color-text-tertiary);
+}
+

@@ -3,6 +3,7 @@ import {
   Square, User, FileText, Plus, Minus, Maximize, StickyNote, GripVertical,
   Bug, Target, Lightbulb, Layers, AlertTriangle,
 } from 'lucide-react';
+import type { LensMode } from '../../App';
 import Spectrum from '../Spectrum/Spectrum';
 import './CanvasMock.css';
 
@@ -22,14 +23,13 @@ interface NardData {
   type: string;
   typeIcon: React.ElementType;
   typeColor: string;
-  /** Properties — first 2 shown on card, rest on expansion */
   properties: NardProperty[];
   x: number;
   y: number;
-  /** Number of stickies anchored to this nard */
   stickyCount: number;
-  /** Relative size 0–1 (importance/cost) */
   size: number;
+  /** Mock stepper value for Matrix columns (0–2 maps to To Do/Doing/Done) */
+  stepperValue?: number;
 }
 
 interface TetherData {
@@ -42,7 +42,7 @@ interface TetherData {
 }
 
 /* ═══════════════════════════════════════════════ */
-/* DEMO DATA — 8 diverse nard types                */
+/* DEMO DATA                                       */
 /* ═══════════════════════════════════════════════ */
 
 const NARDS: NardData[] = [
@@ -54,7 +54,7 @@ const NARDS: NardData[] = [
       { key: 'Sprint', value: 'Sprint 3' },
       { key: 'Estimate', value: '8pt' },
     ],
-    x: 14, y: 28, stickyCount: 0, size: 0.5,
+    x: 14, y: 28, stickyCount: 0, size: 0.5, stepperValue: 2,
   },
   {
     id: 'n2', title: 'Physics Engine Spike', type: 'Task', typeIcon: Square, typeColor: '#4da6ff',
@@ -64,7 +64,7 @@ const NARDS: NardData[] = [
       { key: 'Sprint', value: 'Sprint 4' },
       { key: 'Complexity', value: 'High' },
     ],
-    x: 38, y: 42, stickyCount: 2, size: 0.85,
+    x: 38, y: 42, stickyCount: 2, size: 0.85, stepperValue: 1,
   },
   {
     id: 'n3', title: 'Canvas Renderer', type: 'Task', typeIcon: Square, typeColor: '#4da6ff',
@@ -72,7 +72,7 @@ const NARDS: NardData[] = [
       { key: 'Status', value: 'To Do', color: 'var(--nards-color-danger)' },
       { key: 'Estimate', value: '13pt' },
     ],
-    x: 62, y: 22, stickyCount: 0, size: 0.6,
+    x: 62, y: 22, stickyCount: 0, size: 0.6, stepperValue: 0,
   },
   {
     id: 'n4', title: 'Sarah Chen', type: 'Person', typeIcon: User, typeColor: '#34d399',
@@ -89,7 +89,7 @@ const NARDS: NardData[] = [
       { key: 'Owner', value: 'Daniel' },
       { key: 'Pages', value: '12' },
     ],
-    x: 72, y: 54, stickyCount: 1, size: 0.7,
+    x: 72, y: 54, stickyCount: 1, size: 0.7, stepperValue: 1,
   },
   {
     id: 'n6', title: 'Login timeout on Safari', type: 'Bug', typeIcon: Bug, typeColor: '#f87171',
@@ -98,7 +98,7 @@ const NARDS: NardData[] = [
       { key: 'Browser', value: 'Safari 17' },
       { key: 'Sprint', value: 'Sprint 4' },
     ],
-    x: 44, y: 72, stickyCount: 0, size: 0.55,
+    x: 44, y: 72, stickyCount: 0, size: 0.55, stepperValue: 0,
   },
   {
     id: 'n7', title: 'Beta Launch', type: 'Milestone', typeIcon: Target, typeColor: '#a78bfa',
@@ -106,7 +106,7 @@ const NARDS: NardData[] = [
       { key: 'Date', value: 'May 15' },
       { key: 'Progress', value: '62%' },
     ],
-    x: 82, y: 34, stickyCount: 0, size: 0.9,
+    x: 82, y: 34, stickyCount: 0, size: 0.9, stepperValue: 1,
   },
   {
     id: 'n8', title: 'Auto-layout Algorithm', type: 'Idea', typeIcon: Lightbulb, typeColor: '#fb923c',
@@ -114,7 +114,7 @@ const NARDS: NardData[] = [
       { key: 'Priority', value: 'Medium' },
       { key: 'Votes', value: '7' },
     ],
-    x: 86, y: 68, stickyCount: 0, size: 0.3,
+    x: 86, y: 68, stickyCount: 0, size: 0.3, stepperValue: 0,
   },
   {
     id: 'n9', title: 'User Onboarding', type: 'Epic', typeIcon: Layers, typeColor: '#f472b6',
@@ -123,7 +123,7 @@ const NARDS: NardData[] = [
       { key: 'Stories', value: '14' },
       { key: 'Completion', value: '40%' },
     ],
-    x: 28, y: 86, stickyCount: 0, size: 0.75,
+    x: 28, y: 86, stickyCount: 0, size: 0.75, stepperValue: 1,
   },
   {
     id: 'n10', title: 'Vendor Lock-in', type: 'Risk', typeIcon: AlertTriangle, typeColor: '#ef4444',
@@ -153,21 +153,18 @@ const TETHERS: TetherData[] = [
   { from: 'n10', to: 'n7', type: 'Blocks', color: '#4da6ff', value: 0.70, ghost: true },
 ];
 
-/* ── Unanchored stickies — top-left of viewport ── */
 const UNANCHORED_STICKIES = [
   'Sprint 4 retro scheduled for Fri',
   'Waiting on design review from Sandra',
   'MCP endpoint schema TBD',
 ];
 
-/* ═══════════════════════════════════════════════ */
-/* COMPONENT                                       */
-/* ═══════════════════════════════════════════════ */
+/* Matrix column headers (mock stepper labels for "Blocks" line type) */
+const MATRIX_COLUMNS = ['To Do', 'In Progress', 'Done'];
 
-interface CanvasMockProps {
-  onNardClick: (id: string) => void;
-  selectedNard: string | null;
-}
+/* ═══════════════════════════════════════════════ */
+/* HELPERS                                         */
+/* ═══════════════════════════════════════════════ */
 
 function getRibbonOffset(tether: TetherData, allTethers: TetherData[]): number {
   const pairKey = [tether.from, tether.to].sort().join('-');
@@ -179,7 +176,33 @@ function getRibbonOffset(tether: TetherData, allTethers: TetherData[]): number {
   return (myIndex * spread) - (totalWidth / 2);
 }
 
-const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) => {
+/** Get set of nard IDs connected by a given line type */
+function getConnectedNardIds(lineType: string): Set<string> {
+  const ids = new Set<string>();
+  TETHERS.forEach(t => {
+    if (t.type === lineType) {
+      ids.add(t.from);
+      ids.add(t.to);
+    }
+  });
+  return ids;
+}
+
+/* ═══════════════════════════════════════════════ */
+/* COMPONENT                                       */
+/* ═══════════════════════════════════════════════ */
+
+interface CanvasMockProps {
+  onNardClick: (id: string) => void;
+  selectedNard: string | null;
+  lens: LensMode;
+  activeLine: string;
+  showContext: boolean;
+}
+
+const CanvasMock: React.FC<CanvasMockProps> = ({
+  onNardClick, selectedNard, lens, activeLine, showContext,
+}) => {
   const [zoom, setZoom] = useState(100);
 
   const zoomIn = () => setZoom(z => Math.min(200, z + 10));
@@ -192,8 +215,19 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
     return n ? { x: n.x, y: n.y } : { x: 0, y: 0 };
   };
 
+  // In Link mode: which nards are connected by the active line type?
+  const connectedIds = lens === 'link' ? getConnectedNardIds(activeLine) : null;
+
   /* ── Compute label positions with angle + stagger ── */
-  const tetherLabels = TETHERS.filter(t => !t.ghost).map((t, _i, arr) => {
+  const visibleTethers = lens === 'link'
+    ? TETHERS.filter(t => t.type === activeLine)
+    : TETHERS;
+
+  const labelTethers = visibleTethers.filter(t =>
+    lens === 'link' ? true : !t.ghost
+  );
+
+  const tetherLabels = labelTethers.map((t, _i, arr) => {
     const from = getNardPos(t.from);
     const to = getNardPos(t.to);
     const dx = to.x - from.x;
@@ -220,10 +254,78 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
     return { x: midX, y: midY, type: t.type, color: t.color, angleDeg };
   });
 
+  /* ═══ MATRIX VIEW ═══ */
+  if (lens === 'matrix') {
+    const matrixNards = NARDS.filter(n => n.stepperValue !== undefined);
+    return (
+      <div className="nards-canvas nards-matrix-view">
+        <div className="nards-matrix">
+          <div className="nards-matrix__header">
+            {MATRIX_COLUMNS.map((col, i) => (
+              <div key={i} className="nards-matrix__col-header">
+                <span className="nards-matrix__col-label">{col}</span>
+                <span className="nards-matrix__col-count">
+                  {matrixNards.filter(n => n.stepperValue === i).length}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="nards-matrix__body">
+            {MATRIX_COLUMNS.map((_, colIdx) => (
+              <div key={colIdx} className="nards-matrix__column">
+                {matrixNards
+                  .filter(n => n.stepperValue === colIdx)
+                  .map(nard => {
+                    const Icon = nard.typeIcon;
+                    return (
+                      <div
+                        key={nard.id}
+                        className={`nards-matrix__card ${selectedNard === nard.id ? 'is-selected' : ''}`}
+                        style={{
+                          borderLeftColor: nard.typeColor,
+                        }}
+                        onClick={() => onNardClick(nard.id)}
+                      >
+                        <div className="nards-matrix__card-header">
+                          <Icon size={12} strokeWidth={2} color={nard.typeColor} />
+                          <span className="nards-matrix__card-type" style={{ color: nard.typeColor }}>
+                            {nard.type}
+                          </span>
+                        </div>
+                        <h4 className="nards-matrix__card-title">{nard.title}</h4>
+                        {nard.properties[0] && (
+                          <span
+                            className="nards-matrix__card-prop"
+                            style={nard.properties[0].color ? { color: nard.properties[0].color } : undefined}
+                          >
+                            {nard.properties[0].value}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Zoom Controls (still visible) */}
+        <div className="nards-zoom-controls nards-glass">
+          <button className="nards-zoom-controls__btn" onClick={zoomOut}><Minus size={14} strokeWidth={1.8} /></button>
+          <button className="nards-zoom-controls__level" onClick={resetZoom}>{zoom}%</button>
+          <button className="nards-zoom-controls__btn" onClick={zoomIn}><Plus size={14} strokeWidth={1.8} /></button>
+          <div className="nards-zoom-controls__separator" />
+          <button className="nards-zoom-controls__btn" onClick={resetZoom}><Maximize size={13} strokeWidth={1.8} /></button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ═══ CANVAS + LINK VIEWS (spatial graph) ═══ */
   return (
     <div className="nards-canvas">
 
-      {/* ═══ Unanchored stickies — top-left flow ═══ */}
+      {/* Unanchored stickies */}
       <div className="nards-unanchored-stickies">
         {UNANCHORED_STICKIES.map((text, i) => (
           <div key={i} className="nards-unanchored-sticky" title={text} draggable>
@@ -232,7 +334,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
         ))}
       </div>
 
-      {/* ═══ Zoomable content ═══ */}
+      {/* Zoomable content */}
       <div
         className="nards-canvas__content"
         style={{ transform: `scale(${zoom / 100})` }}
@@ -282,14 +384,26 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
               : t.color === '#f87171' ? 'arrow-red'
               : 'arrow-violet';
 
+            // Link mode: active type = full, others = context ghost
+            let tetherClass = t.ghost ? 'nards-tether--ghost' : 'nards-tether--active';
+            if (lens === 'link') {
+              if (t.type === activeLine) {
+                tetherClass = 'nards-tether--active';
+              } else if (showContext) {
+                tetherClass = 'nards-tether--context';
+              } else {
+                return null; // hidden
+              }
+            }
+
             return (
               <path
                 key={i}
                 d={pathD}
-                className={t.ghost ? 'nards-tether--ghost' : 'nards-tether--active'}
+                className={tetherClass}
                 stroke={t.color}
                 fill="none"
-                markerEnd={!t.ghost ? `url(#${arrowId})` : undefined}
+                markerEnd={tetherClass === 'nards-tether--active' ? `url(#${arrowId})` : undefined}
               />
             );
           })}
@@ -313,14 +427,19 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
           </div>
         ))}
 
-        {/* ═══ Nard nodes ═══ */}
+        {/* Nard nodes */}
         {NARDS.map((nard) => {
           const Icon = nard.typeIcon;
           const visibleProps = nard.properties.slice(0, 2);
+
+          // Link mode ghosting
+          const isGhosted = lens === 'link' && connectedIds && !connectedIds.has(nard.id);
+          if (isGhosted && !showContext) return null; // hidden entirely
+
           return (
             <React.Fragment key={nard.id}>
               <div
-                className={`nards-node ${selectedNard === nard.id ? 'is-selected' : ''}`}
+                className={`nards-node ${selectedNard === nard.id ? 'is-selected' : ''} ${isGhosted ? 'nards-node--ghosted' : ''}`}
                 style={{
                   left: `${nard.x}%`,
                   top: `${nard.y}%`,
@@ -330,7 +449,6 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
                 }}
                 onClick={() => onNardClick(nard.id)}
               >
-                {/* Title bar */}
                 <div className="nards-node__titlebar">
                   <div className="nards-node__header">
                     <Icon size={14} strokeWidth={2} color={nard.typeColor} />
@@ -338,15 +456,13 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
                       {nard.type}
                     </span>
                   </div>
-                  <div className="nards-node__resize-handle" title="Drag to resize (importance/cost)">
+                  <div className="nards-node__resize-handle" title="Drag to resize">
                     <GripVertical size={10} strokeWidth={1.5} />
                   </div>
                 </div>
 
-                {/* Title */}
                 <h3 className="nards-node__title">{nard.title}</h3>
 
-                {/* Visible properties (up to 2) */}
                 {visibleProps.length > 0 && (
                   <div className="nards-node__props">
                     {visibleProps.map((p) => (
@@ -363,7 +479,6 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
                   </div>
                 )}
 
-                {/* Footer — spectrum */}
                 <div className="nards-node__footer">
                   <Spectrum value={nard.size} color={nard.typeColor} width={40} />
                   {nard.properties.length > 2 && (
@@ -372,8 +487,8 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
                 </div>
               </div>
 
-              {/* ═══ Anchored stickies — top-right of nard ═══ */}
-              {nard.stickyCount > 0 && (
+              {/* Anchored stickies — top-right of nard */}
+              {nard.stickyCount > 0 && !isGhosted && (
                 <div
                   className="nards-sticky"
                   style={{

@@ -33,6 +33,67 @@
   pointer-events: auto;
 }
 
+/* ═══════════════════════════════════════════════ */
+/* LENS TOGGLE — 3-way segmented control           */
+/* ═══════════════════════════════════════════════ */
+
+.nards-lens-toggle {
+  display: flex;
+  align-items: center;
+  background: var(--nards-color-bg-deep);
+  border-radius: var(--nards-radius-md);
+  padding: 2px;
+  gap: 1px;
+}
+
+.nards-lens-toggle__btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: transparent;
+  border: none;
+  color: var(--nards-color-text-tertiary);
+  font-family: var(--nards-font-primary);
+  font-size: var(--nards-font-size-xs);
+  font-weight: var(--nards-font-weight-medium);
+  letter-spacing: var(--nards-letter-spacing-wide);
+  text-transform: uppercase;
+  border-radius: var(--nards-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.nards-lens-toggle__btn:hover {
+  color: var(--nards-color-text-secondary);
+}
+
+.nards-lens-toggle__btn.is-active {
+  background: var(--nards-color-bg-surface);
+  color: var(--nards-color-accent);
+  box-shadow: var(--nards-shadow-sm);
+}
+
+/* ── Label variants ── */
+.nards-dock__label-prefix {
+  font-family: var(--nards-font-primary);
+  font-size: 9px;
+  font-weight: var(--nards-font-weight-normal);
+  color: var(--nards-color-text-disabled);
+  text-transform: uppercase;
+  letter-spacing: var(--nards-letter-spacing-wide);
+}
+
+.nards-dock__label--value {
+  color: var(--nards-color-text-primary);
+}
+
+.nards-dock__label--empty {
+  color: var(--nards-color-text-disabled);
+  font-style: italic;
+}
+
 .nards-dock__section {
   display: flex;
   padding: 0 var(--nards-space-xs);

@@ -4,9 +4,13 @@ import GlobalDock from './components/Layout/GlobalDock';
 import DetailDrawer from './components/Drawer/DetailDrawer';
 import CanvasMock from './components/Canvas/CanvasMock';
 
+export type LensMode = 'canvas' | 'link' | 'matrix';
+
 function App() {
   const [theme, setTheme] = useState('obsidian');
-  const [activeView, setActiveView] = useState('canvas');
+  const [lens, setLens] = useState<LensMode>('canvas');
+  const [activeLine, setActiveLine] = useState('Blocks');
+  const [showContext, setShowContext] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedNard, setSelectedNard] = useState<string | null>(null);
 
@@ -27,12 +31,25 @@ function App() {
 
   return (
     <div className="nards-app-container">
-      {/* Canvas background */}
-      <CanvasMock onNardClick={handleNardClick} selectedNard={selectedNard} />
+      {/* Canvas / Matrix background */}
+      <CanvasMock
+        onNardClick={handleNardClick}
+        selectedNard={selectedNard}
+        lens={lens}
+        activeLine={activeLine}
+        showContext={showContext}
+      />
 
       {/* Floating overlays */}
       <ViewportHeader currentTheme={theme} onThemeChange={setTheme} />
-      <GlobalDock activeView={activeView} onViewChange={setActiveView} />
+      <GlobalDock
+        lens={lens}
+        onLensChange={setLens}
+        activeLine={activeLine}
+        onActiveLineChange={setActiveLine}
+        showContext={showContext}
+        onShowContextChange={setShowContext}
+      />
 
       {/* Detail Drawer */}
       <DetailDrawer isOpen={isDrawerOpen} onClose={closeDrawer} nardId={selectedNard} />
