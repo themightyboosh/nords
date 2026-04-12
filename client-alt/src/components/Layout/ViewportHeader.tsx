@@ -10,9 +10,10 @@ import './ViewportHeader.css';
 interface ViewportHeaderProps {
   currentTheme: string;
   onThemeChange: (theme: string) => void;
+  onOpenSettings?: () => void;
 }
 
-const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeChange }) => {
+const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeChange, onOpenSettings }) => {
   return (
     <header className="nards-viewport-header nards-glass">
       {/* ═══ Left: Project ═══ */}
@@ -61,7 +62,7 @@ const ViewportHeader: React.FC<ViewportHeaderProps> = ({ currentTheme, onThemeCh
 
         <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />
 
-        <button className="nards-viewport-header__icon-btn" aria-label="Project Settings" title="Project Settings">
+        <button className="nards-viewport-header__icon-btn" aria-label="Project Settings" title="Project Settings" onClick={onOpenSettings}>
           <Settings size={15} strokeWidth={1.6} />
         </button>
 

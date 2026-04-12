@@ -22,7 +22,7 @@ const NARD_TYPES = [
   { name: 'Risk', icon: AlertTriangle, color: '#ef4444', count: 1, visible: false },
 ];
 
-const LINE_TYPES = [
+const CONNECTION_TYPES = [
   { name: 'Blocks', color: '#4da6ff', count: 5, visible: true },
   { name: 'Depends', color: '#fbbf24', count: 4, visible: true },
   { name: 'Relates', color: '#a78bfa', count: 4, visible: false },
@@ -36,12 +36,14 @@ interface GlobalDockProps {
   onActiveLineChange: (line: string) => void;
   showContext: boolean;
   onShowContextChange: (show: boolean) => void;
+  onOpenManageTypes?: () => void;
 }
 
 const GlobalDock: React.FC<GlobalDockProps> = ({
   lens, onLensChange,
   activeLine, onActiveLineChange,
   showContext, onShowContextChange,
+  onOpenManageTypes,
 }) => {
   const [openPanel, setOpenPanel] = useState<string | null>(null);
 
@@ -49,7 +51,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
     setOpenPanel(openPanel === panel ? null : panel);
   };
 
-  const activeLineType = LINE_TYPES.find(l => l.name === activeLine);
+  const activeConnectionType = CONNECTION_TYPES.find(l => l.name === activeLine);
 
   return (
     <>
@@ -136,8 +138,8 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
                 >
                   <ArrowLeftRight size={15} strokeWidth={1.6} />
                   <span className="nards-dock__label">{activeLine}</span>
-                  {activeLineType && (
-                    <span className="nards-dock__rel-swatch" style={{ backgroundColor: activeLineType.color }} />
+                  {activeConnectionType && (
+                    <span className="nards-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />
                   )}
                   <ChevronDown size={10} className="nards-dock__chevron" />
                 </button>
@@ -161,7 +163,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
               <div className="nards-dock__section">
                 <button className="nards-dock__item nards-dock__item--accent" title="Click source nard, then target nard to connect">
                   <Crosshair size={15} strokeWidth={1.6} />
-                  <span className="nards-dock__label">Add Line</span>
+                  <span className="nards-dock__label">Connect</span>
                 </button>
               </div>
 
@@ -186,8 +188,8 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
                 >
                   <span className="nards-dock__label-prefix">Columns:</span>
                   <span className="nards-dock__label nards-dock__label--value">{activeLine}</span>
-                  {activeLineType && (
-                    <span className="nards-dock__rel-swatch" style={{ backgroundColor: activeLineType.color }} />
+                  {activeConnectionType && (
+                    <span className="nards-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />
                   )}
                   <ChevronDown size={10} className="nards-dock__chevron" />
                 </button>
@@ -235,7 +237,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
           <div className="nards-flyout__header">
             <h3 className="nards-flyout__title">Display</h3>
             <span className="nards-flyout__count">
-              {NARD_TYPES.reduce((a, b) => a + b.count, 0)} nards · {LINE_TYPES.reduce((a, b) => a + b.count, 0)} lines
+              {NARD_TYPES.reduce((a, b) => a + b.count, 0)} nards · {CONNECTION_TYPES.reduce((a, b) => a + b.count, 0)} connections
             </span>
           </div>
           <div className="nards-flyout__list">
@@ -255,8 +257,8 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
               </div>
             ))}
             <div className="nards-flyout__section-divider" />
-            <div className="nards-flyout__section-label">Line Types</div>
-            {LINE_TYPES.map((type) => (
+            <div className="nards-flyout__section-label">Connection Types</div>
+            {CONNECTION_TYPES.map((type) => (
               <div key={type.name} className="nards-flyout__row">
                 <div className="nards-flyout__row-left">
                   <span className="nards-flyout__line-swatch" style={{ background: type.color }} />
@@ -277,7 +279,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
             <h3 className="nards-flyout__title">Active Relationship</h3>
           </div>
           <div className="nards-flyout__list">
-            {LINE_TYPES.map((type) => (
+            {CONNECTION_TYPES.map((type) => (
               <div
                 key={type.name}
                 className={`nards-flyout__row nards-flyout__row--selectable ${activeLine === type.name ? 'is-active' : ''}`}
@@ -309,7 +311,7 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
             <h3 className="nards-flyout__title">Column Axis</h3>
           </div>
           <div className="nards-flyout__list">
-            {LINE_TYPES.map((type) => (
+            {CONNECTION_TYPES.map((type) => (
               <div
                 key={type.name}
                 className={`nards-flyout__row nards-flyout__row--selectable ${activeLine === type.name ? 'is-active' : ''}`}
@@ -349,9 +351,9 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
             </div>
             <div className="nards-flyout__create-divider" />
             <div className="nards-flyout__create-section">
-              <h4 className="nards-flyout__create-label">Add Line</h4>
+              <h4 className="nards-flyout__create-label">Add Connection</h4>
               <div className="nards-flyout__create-grid">
-                {LINE_TYPES.map((type) => (
+                {CONNECTION_TYPES.map((type) => (
                   <button key={type.name} className="nards-flyout__create-btn" title={`Add a ${type.name} connection`}>
                     <span className="nards-flyout__line-swatch--lg" style={{ background: type.color }} />
                     <span>{type.name}</span>
@@ -363,13 +365,13 @@ const GlobalDock: React.FC<GlobalDockProps> = ({
             <div className="nards-flyout__create-section">
               <h4 className="nards-flyout__create-label">Manage Types</h4>
               <div className="nards-flyout__manage-actions">
-                <button className="nards-flyout__manage-btn" title="Edit type schemas — add/remove properties, create new types">
+                <button className="nards-flyout__manage-btn" title="Add/remove properties, create new types" onClick={() => { onOpenManageTypes?.(); setOpenPanel(null); }}>
                   <Settings2 size={14} strokeWidth={1.6} />
-                  <span>Edit Type Schemas</span>
+                  <span>Manage Types</span>
                 </button>
               </div>
               <p className="nards-flyout__manage-hint">
-                Add properties to types, create new types, or remove unused ones. Changes apply to all nards/lines of that type.
+                Add properties to types, create new types, or remove unused ones. Changes apply to all nards/connections of that type.
               </p>
             </div>
           </div>

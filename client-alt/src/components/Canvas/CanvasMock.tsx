@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Square, User, FileText, Plus, Minus, Maximize, StickyNote,
+  Square, User, FileText, Plus, Minus, Maximize, Maximize2, StickyNote,
   Bug, Target, Lightbulb, Layers, AlertTriangle, X, Pencil, Trash2,
 } from 'lucide-react';
 import type { LensMode } from '../../App';
@@ -475,11 +475,8 @@ const CanvasMock: React.FC<CanvasMockProps> = ({
                 </div>
 
                 {/* Resize handle — bottom-right triangle */}
-                <div className="nards-node__resize-handle" title="Drag to resize (25%–200%)">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 12 L12 2 L12 12 Z" fill="currentColor" opacity="0.5" />
-                    <path d="M6 12 L12 6 L12 12 Z" fill="currentColor" opacity="0.3" />
-                  </svg>
+                <div className="nards-node__resize-handle" title={`Scale: ${Math.round(nard.size * 175 + 25)}% — Drag to resize`}>
+                  <Maximize2 size={11} strokeWidth={2.5} />
                 </div>
               </div>
 

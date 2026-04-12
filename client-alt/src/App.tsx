@@ -3,6 +3,8 @@ import ViewportHeader from './components/Layout/ViewportHeader';
 import GlobalDock from './components/Layout/GlobalDock';
 import DetailDrawer from './components/Drawer/DetailDrawer';
 import CanvasMock from './components/Canvas/CanvasMock';
+import ManageTypes from './components/ManageTypes/ManageTypes';
+import ProjectSettings from './components/ProjectSettings/ProjectSettings';
 
 export type LensMode = 'canvas' | 'link' | 'matrix';
 
@@ -13,6 +15,8 @@ function App() {
   const [showContext, setShowContext] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedNard, setSelectedNard] = useState<string | null>(null);
+  const [showManageTypes, setShowManageTypes] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Apply theme to html element so CSS custom properties cascade to body
   React.useEffect(() => {
@@ -41,7 +45,11 @@ function App() {
       />
 
       {/* Floating overlays */}
-      <ViewportHeader currentTheme={theme} onThemeChange={setTheme} />
+      <ViewportHeader
+        currentTheme={theme}
+        onThemeChange={setTheme}
+        onOpenSettings={() => setShowSettings(true)}
+      />
       <GlobalDock
         lens={lens}
         onLensChange={setLens}
@@ -49,10 +57,15 @@ function App() {
         onActiveLineChange={setActiveLine}
         showContext={showContext}
         onShowContextChange={setShowContext}
+        onOpenManageTypes={() => setShowManageTypes(true)}
       />
 
       {/* Detail Drawer */}
       <DetailDrawer isOpen={isDrawerOpen} onClose={closeDrawer} nardId={selectedNard} />
+
+      {/* Modal overlays */}
+      {showManageTypes && <ManageTypes onClose={() => setShowManageTypes(false)} />}
+      {showSettings && <ProjectSettings onClose={() => setShowSettings(false)} />}
     </div>
   );
 }
