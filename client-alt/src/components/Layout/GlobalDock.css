@@ -522,42 +522,50 @@
   .nords-global-dock {
     border-radius: 0;
     width: 100%;
-    flex-direction: column;
+    /* Two-tier layout: lens toggle row + tools row */
+    flex-direction: row;
+    flex-wrap: wrap;
     height: auto;
     padding: var(--nords-space-xs) var(--nords-space-sm);
-    gap: var(--nords-space-xs);
+    gap: 0;
+    padding-bottom: calc(var(--nords-space-xs) + env(safe-area-inset-bottom, 0px));
   }
-  /* Lens toggle fills full width as segmented control */
+  /* ── Top tier: Lens toggle fills full width ── */
   .nords-lens-toggle {
     width: 100%;
+    order: 1;
+    margin-bottom: var(--nords-space-xs);
   }
   .nords-lens-toggle__btn {
     flex: 1;
     justify-content: center;
     padding: 8px 0;
   }
-  /* Context tools become icon-only row */
-  .nords-dock__label {
+  /* ── Bottom tier: Tools row, icon-only, evenly spaced ── */
+  .nords-dock__separator {
     display: none;
   }
-  .nords-dock__chevron {
-    display: none;
-  }
+  .nords-dock__label,
+  .nords-dock__chevron,
   .nords-dock__label-prefix,
   .nords-dock__label--value,
-  .nords-dock__label--empty {
+  .nords-dock__label--empty,
+  .nords-dock__rel-swatch {
     display: none;
   }
   .nords-dock__section {
+    order: 2;
     padding: 0;
+    flex: 1;
+    justify-content: center;
   }
   .nords-dock__item {
     padding: 0 var(--nords-space-sm);
     height: 36px;
+    flex: 1;
+    justify-content: center;
   }
-  .nords-dock__separator {
-    height: 20px;
-  }
+  /* Flyout panels go full-width */
   .nords-flyout {
     width: calc(100vw - var(--nords-space-lg) * 2);
     max-height: 50vh;

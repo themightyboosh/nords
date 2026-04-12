@@ -51,6 +51,8 @@ Core product with the three signature features defining Nords' identity capabili
 ## 2. Tech Stack & Platform Strategy
 * **Platform:** Responsive Web Application (Desktop-first, mobile/tablet layout optimized resolving touch interactions).
 * **Hosting:** Cloud-hosted SaaS with separate MCP routing servers.
+  * *Production:* `nords.monumental.ax`
+  * *Staging:* `nord-stage.monumental.ax`
 * **Database (Relational/Spatial Storage):** Postgres natively handling graph/relational patterns.
 * **Rendering:** 2D canvas at launch (WebGL or Canvas2D with force-directed graph rendering libraries). 
 * **Performance:** Must handle 200+ active Nords per workspace rendered natively using Semantic Zoom boundaries.
