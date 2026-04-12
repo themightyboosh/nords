@@ -96,7 +96,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
     const perpX = (-dy / len) * offset;
     const perpY = (dx / len) * offset;
-    return { x: midX + perpX, y: midY + perpY, type: t.type, value: t.value, color: t.color };
+    return { x: midX + perpX, y: midY + perpY, type: t.type, color: t.color };
   });
 
   return (
@@ -187,7 +187,6 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
             <span className="nards-tether-label__type" style={{ color: label.color }}>
               {label.type}
             </span>
-            <span className="nards-tether-label__value">{label.value.toFixed(2)}</span>
           </div>
         ))}
 
