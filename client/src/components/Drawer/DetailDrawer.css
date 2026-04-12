@@ -1,10 +1,10 @@
 /* client/src/components/Drawer/DetailDrawer.css */
-.nards-drawer {
+.nords-drawer {
   position: absolute;
   top: 16px;
   right: 16px;
   bottom: 16px;
-  width: var(--nards-drawer-width);
+  width: var(--nords-drawer-width);
   border-radius: 12px;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -18,63 +18,63 @@
   to { transform: translateX(0); }
 }
 
-.nards-drawer-header {
+.nords-drawer-header {
   height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  border-bottom: 1px solid var(--nards-border-color);
+  border-bottom: 1px solid var(--nords-border-color);
 }
 
-.nards-drawer-type {
+.nords-drawer-type {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--nards-text-secondary);
+  color: var(--nords-text-secondary);
 }
 
-.nards-close-btn {
+.nords-close-btn {
   background: transparent;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: var(--nards-text-secondary);
+  color: var(--nords-text-secondary);
 }
 
-.nards-drawer-content {
+.nords-drawer-content {
   padding: 24px 20px;
   overflow-y: auto;
   flex: 1;
 }
 
-.nards-drawer-title {
+.nords-drawer-title {
   font-size: 1.6rem;
   font-weight: 700;
   margin-bottom: 24px;
   outline: none;
 }
 
-.nards-properties-list {
+.nords-properties-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-bottom: 32px;
-  border-bottom: 1px solid var(--nards-border-color);
+  border-bottom: 1px solid var(--nords-border-color);
   padding-bottom: 24px;
 }
 
-.nards-property-row {
+.nords-property-row {
   display: flex;
   align-items: center;
 }
 
-.nards-prop-label {
+.nords-prop-label {
   width: 120px;
   font-size: 0.85rem;
-  color: var(--nards-text-secondary);
+  color: var(--nords-text-secondary);
 }
 
-.nards-prop-value.nards-pill {
+.nords-prop-value.nords-pill {
   font-size: 0.8rem;
   padding: 4px 10px;
   border-radius: 4px;
@@ -82,34 +82,34 @@
   cursor: pointer;
 }
 
-.nards-prop-value.status-doing {
+.nords-prop-value.status-doing {
   background: #E6FCF5;
   color: #0CA678;
 }
 
-.nards-add-property {
-  color: var(--nards-text-secondary);
+.nords-add-property {
+  color: var(--nords-text-secondary);
   font-size: 0.85rem;
   cursor: pointer;
   margin-top: 8px;
 }
-.nards-add-property:hover {
-  color: var(--nards-color-accent);
+.nords-add-property:hover {
+  color: var(--nords-color-accent);
 }
 
-.nards-drawer-markdown {
+.nords-drawer-markdown {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--nards-text-primary);
+  color: var(--nords-text-primary);
 }
 
-.nards-drawer-markdown ul {
+.nords-drawer-markdown ul {
   margin-top: 12px;
   padding-left: 24px;
 }
 
 @media (max-width: 768px) {
-  .nards-drawer {
+  .nords-drawer {
     top: auto;
     left: 0;
     right: 0;

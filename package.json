@@ -1,0 +1,17 @@
+{
+  "name": "nords-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "db:migrate": "tsx db/migrate.ts",
+    "db:rollback": "tsx db/migrate.ts rollback"
+  },
+  "devDependencies": {
+    "node-pg-migrate": "^7.9.1",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

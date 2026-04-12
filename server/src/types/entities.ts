@@ -1,0 +1,113 @@
+export interface User {
+  id: string;
+  firebase_uid: string;
+  email: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  role: string;
+  created_at: Date;
+  deleted_at: Date | null;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface Project {
+  id: string;
+  org_id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  created_by: string | null;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+export interface PropertySchema {
+  name: string;
+  type: string;
+  config?: Record<string, unknown>;
+}
+
+export interface NordType {
+  id: string;
+  project_id: string;
+  name: string;
+  icon: string | null;
+  accent_color: string | null;
+  properties_schema: PropertySchema[];
+  scale_property: string | null;
+  sort_order: number;
+  deleted_at: Date | null;
+}
+
+export interface Nord {
+  id: string;
+  project_id: string;
+  type_id: string;
+  title: string;
+  description: string | null;
+  properties: Record<string, unknown>;
+  position_x: number;
+  position_y: number;
+  scale: number;
+  created_by: string | null;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+export interface ConnectionType {
+  id: string;
+  project_id: string;
+  name: string;
+  accent_color: string | null;
+  stroke_style: string;
+  x_stage_labels: string[];
+  y_stage_labels: string[];
+  properties_schema: PropertySchema[];
+  sort_order: number;
+  deleted_at: Date | null;
+}
+
+export interface Connection {
+  id: string;
+  project_id: string;
+  type_id: string;
+  source_nord_id: string;
+  target_nord_id: string;
+  direction: 'forward' | 'reverse' | 'none';
+  distance_x: number;
+  distance_y: number;
+  properties: Record<string, unknown>;
+  created_at: Date;
+  deleted_at: Date | null;
+}
+
+export interface Snapshot {
+  id: string;
+  project_id: string;
+  name: string;
+  description: string | null;
+  snapshot_data: Record<string, unknown>;
+  created_by: string | null;
+  created_at: Date;
+}
+
+export interface Comment {
+  id: string;
+  project_id: string;
+  target_type: 'nord' | 'connection' | 'general';
+  target_id: string | null;
+  parent_comment_id: string | null;
+  author_id: string | null;
+  body: string;
+  resolved: boolean;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}

@@ -1,0 +1,679 @@
+/* ═══════════════════════════════════════════════ */
+/* CANVAS MOCK                                     */
+/* ═══════════════════════════════════════════════ */
+
+.nords-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.nords-canvas:active {
+  cursor: grabbing;
+}
+
+/* ═══════════════════════════════════════════════ */
+/* UNANCHORED STICKIES — top-left flow             */
+/* ═══════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════ */
+/* ZOOMABLE CONTENT — grid + connections + nodes       */
+/* ═══════════════════════════════════════════════ */
+
+.nords-canvas__content {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+}
+
+/* Dot Grid */
+.nords-canvas__grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle,
+    var(--nords-color-text-disabled) 0.8px,
+    transparent 0.8px
+  );
+  background-size: 32px 32px;
+  opacity: 0.3;
+}
+
+/* Major Grid Lines */
+.nords-canvas__grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--nords-color-border-default) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--nords-color-border-default) 1px, transparent 1px);
+  background-size: 320px 320px;
+  opacity: 0.4;
+}
+
+/* ── SVG Connection Layer ── */
+.nords-canvas__connections {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;  /* BELOW .nords-node (12) — lines pass behind opaque cards */
+  pointer-events: none;
+}
+
+.nords-connection--active {
+  stroke-width: 0.22;
+  opacity: 0.75;
+}
+
+.nords-connection--ghost {
+  stroke-width: 0.12;
+  opacity: 0.15;
+  filter: saturate(0.3);
+}
+
+/* ── Line Labels — boxed in line color, angle-matched ── */
+.nords-connection-label {
+  position: absolute;
+  z-index: 16;
+  white-space: nowrap;
+  pointer-events: none;
+  transform-origin: center center;
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.nords-connection-label__type {
+  font-family: var(--nords-font-primary);
+  font-size: 9px;
+  font-weight: var(--nords-font-weight-bold);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--nords-color-label-on-color);
+}
+
+/* ── Directional Chevron Labels ──
+ *
+ * Direction is conveyed by the label shape instead of line arrowheads:
+ *   - 'to'   → right-pointing chevron (rectangle + right triangle)
+ *   - 'from' → left-pointing chevron (left triangle + rectangle)
+ *   - 'none' → plain rounded rectangle (default)
+ *
+ * Uses CSS clip-path polygon for the chevron shape.
+ * The label rotates to match the line angle, so "right" always
+ * points toward the target node along the line direction.
+ */
+.nords-connection-label--arrow-right {
+  clip-path: polygon(0% 0%, 82% 0%, 100% 50%, 82% 100%, 0% 100%);
+  padding-right: 10px;
+  border-radius: 3px 0 0 3px;
+}
+
+.nords-connection-label--arrow-left {
+  clip-path: polygon(18% 0%, 100% 0%, 100% 100%, 18% 100%, 0% 50%);
+  padding-left: 10px;
+  border-radius: 0 3px 3px 0;
+}
+
+/* ── Label Glow — mode-specific contrast halo ── */
+.nords-connection-label {
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))
+          drop-shadow(0 0 8px rgba(0, 0, 0, 0.3));
+}
+
+[data-theme="obsidian-light"] .nords-connection-label {
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))
+          drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+}
+
+/* ═══════════════════════════════════════════════ */
+/* NORD NODES                                      */
+/* ═══════════════════════════════════════════════ */
+
+.nords-node {
+  position: absolute;
+  z-index: 12;
+  min-width: 150px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: var(--nords-radius-lg);
+  padding: var(--nords-space-sm) var(--nords-space-md);
+  box-shadow: var(--nords-shadow-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.nords-node:hover {
+  box-shadow: var(--nords-shadow-md);
+  transform: translateY(-2px);
+}
+
+.nords-node.is-selected {
+  border-color: var(--nords-color-accent) !important;
+  box-shadow: var(--nords-shadow-glow);
+  z-index: 14;
+}
+
+/* Title bar */
+.nords-node__titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.nords-node__header {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-xs);
+}
+
+.nords-node__resize-handle {
+  color: var(--nords-color-text-tertiary);
+  cursor: nwse-resize;
+  padding: 0;
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--nords-color-bg-hover);
+  transition: all 0.15s ease;
+  opacity: 0.7;
+}
+
+.nords-node__resize-handle:hover {
+  color: var(--nords-color-accent);
+  opacity: 1;
+  background: var(--nords-color-accent-dim);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--nords-color-accent) 30%, transparent);
+}
+
+.nords-node__titlebar {
+  position: relative;
+}
+
+.nords-node__type-label {
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide);
+}
+
+.nords-node__title {
+  font-size: var(--nords-font-size-sm);
+  font-weight: var(--nords-font-weight-semibold);
+  color: var(--nords-color-text-primary);
+  line-height: var(--nords-line-height-tight);
+  margin-bottom: var(--nords-space-xs);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Properties — key:value rows */
+.nords-node__props {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: var(--nords-space-xs);
+}
+
+.nords-node__prop {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-xs);
+  font-size: var(--nords-font-size-xs);
+  line-height: 1.4;
+}
+
+.nords-node__prop-key {
+  color: var(--nords-color-text-tertiary);
+  font-weight: var(--nords-font-weight-medium);
+  white-space: nowrap;
+}
+
+.nords-node__prop-key::after {
+  content: ':';
+}
+
+.nords-node__prop-value {
+  color: var(--nords-color-text-secondary);
+  font-weight: var(--nords-font-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Semantic Zoom Tiers ── */
+[data-zoom-tier="meso"] .nords-node__props,
+[data-zoom-tier="meso"] .nords-node__footer,
+[data-zoom-tier="meso"] .nords-node__title {
+  display: none;
+}
+
+[data-zoom-tier="macro"] .nords-node {
+  min-width: unset;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0;
+  border-radius: 50%;
+  border-width: 2px;
+  overflow: hidden;
+  box-shadow: none;
+}
+[data-zoom-tier="macro"] .nords-node__titlebar,
+[data-zoom-tier="macro"] .nords-node__props,
+[data-zoom-tier="macro"] .nords-node__title,
+[data-zoom-tier="macro"] .nords-node__footer {
+  display: none;
+}
+[data-zoom-tier="macro"] .nords-connection--active,
+[data-zoom-tier="macro"] .nords-connection--ghost,
+[data-zoom-tier="macro"] .nords-connection--context {
+  stroke-width: 1px !important; /* hairline */
+}
+[data-zoom-tier="macro"] .nords-connection-label {
+  display: none;
+}
+
+
+/* ── Transitioning and Animations ── */
+.nords-canvas--transitioning {
+  pointer-events: none;
+}
+
+/* ── Group Toolbar ── */
+.nords-group-toolbar {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-sm);
+  padding: var(--nords-space-xs) var(--nords-space-md);
+  background: var(--nords-color-bg-surface);
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-lg);
+  box-shadow: var(--nords-shadow-lg);
+}
+
+.nords-group-toolbar__label {
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-bold);
+  color: var(--nords-color-text-secondary);
+  margin-right: var(--nords-space-sm);
+}
+
+.nords-group-toolbar__divider {
+  width: 1px;
+  height: 20px;
+  background: var(--nords-color-border-subtle);
+  margin: 0 calc(var(--nords-space-xs) / 2);
+}
+
+/* ── Context Menu ── */
+.nords-context-menu {
+  position: absolute;
+  z-index: 2000;
+  background: var(--nords-color-bg-surface);
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-md);
+  box-shadow: var(--nords-shadow-xl);
+  min-width: 160px;
+  padding: 4px;
+}
+
+.nords-context-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--nords-color-text-primary);
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.nords-context-menu__item:hover {
+  background: var(--nords-color-bg-hover);
+}
+
+.nords-context-menu__divider {
+  height: 1px;
+  background: var(--nords-color-border-subtle);
+  margin: 4px 0;
+}
+
+.nords-canvas--transitioning {
+  transition: opacity 200ms ease;
+}
+
+/* Connection draw-in */
+.nords-edge--animating path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: nords-draw-edge 200ms ease-out forwards;
+}
+
+@keyframes nords-draw-edge {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Node spawn */
+.nords-node--spawning {
+  animation: nords-spawn 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes nords-spawn {
+  from { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* Spawn ripple */
+.nords-spawn-ripple {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--nords-color-accent);
+  animation: nords-ripple 400ms ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes nords-ripple {
+  from { width: 0; height: 0; opacity: 0.8; }
+  to { width: 120px; height: 120px; opacity: 0; margin: -60px 0 0 -60px; }
+}
+
+/* ── Context Menu Items ── */
+.nords-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--nords-color-text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: left;
+}
+.nords-menu-item:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+
+/* Footer */
+.nords-node__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--nords-space-sm);
+}
+
+.nords-node__more {
+  font-size: 9px;
+  color: var(--nords-color-text-disabled);
+  font-weight: var(--nords-font-weight-medium);
+  white-space: nowrap;
+}
+
+/* Pills & Assignees */
+.nords-node__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-xs);
+  flex-wrap: wrap;
+}
+
+.nords-node__pill {
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-medium);
+  padding: 1px 6px;
+  border-radius: var(--nords-radius-sm);
+  line-height: 1.5;
+}
+
+.nords-node__assignee {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.5rem;
+  font-weight: var(--nords-font-weight-bold);
+}
+
+/* ═══════════════════════════════════════════════ */
+/* COMMENT BADGE — top-right of nord card            */
+/* ═══════════════════════════════════════════════ */
+
+.nords-comment-badge {
+  position: absolute;
+  z-index: 14;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: var(--nords-radius-pill);
+  background: var(--nords-color-bg-surface);
+  border: 1px solid var(--nords-color-border-subtle);
+  cursor: pointer;
+  user-select: none;
+  transform-origin: center center;
+  color: var(--nords-color-text-tertiary);
+  font-size: 10px;
+  opacity: 0.85;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.nords-comment-badge:hover {
+  opacity: 1;
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-accent);
+}
+
+.nords-comment-badge__count {
+  font-weight: var(--nords-font-weight-bold);
+  font-size: 9px;
+  line-height: 1;
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .nords-node {
+    min-width: 130px;
+    padding: var(--nords-space-xs) var(--nords-space-sm);
+  }
+  .nords-unanchored-stickies {
+    flex-wrap: wrap;
+    max-width: calc(100vw - var(--nords-space-lg) * 2);
+  }
+}
+
+/* ═══════════════════════════════════════════════ */
+/* LINK MODE — ghosted elements                    */
+/* ═══════════════════════════════════════════════ */
+
+/* ── Ghosted cards ──
+ * In Link mode, unrelated nords are visually de-emphasized.
+ * CRITICAL: We must NOT use `opacity` on the card container because
+ * lines run behind cards (z-index trick). If the card becomes transparent
+ * via opacity, lines would show through, breaking the illusion.
+ *
+ * Instead, we dim via brightness + saturation filters, which affect
+ * visual appearance without changing alpha compositing.
+ */
+.nords-node--ghosted {
+  filter: brightness(0.35) saturate(0.15);
+  pointer-events: none;
+  transition: filter 0.4s ease;
+}
+
+.nords-connection--context {
+  stroke-width: 0.08;
+  opacity: 0.08;
+  filter: saturate(0.1);
+}
+
+/* ═══════════════════════════════════════════════ */
+/* MATRIX VIEW — Spatial Pivot Table / Kanban      */
+/* ═══════════════════════════════════════════════ */
+
+.nords-matrix-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--nords-color-bg-canvas);
+}
+
+.nords-matrix {
+  width: calc(100% - var(--nords-space-2xl) * 2);
+  max-width: 1200px;
+  height: calc(100% - var(--nords-header-height) - var(--nords-dock-height) - var(--nords-space-2xl) * 3);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.nords-matrix__header {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--nords-space-sm);
+  padding-bottom: var(--nords-space-sm);
+  border-bottom: 1px solid var(--nords-color-border-default);
+  flex-shrink: 0;
+}
+
+.nords-matrix__col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nords-space-sm) var(--nords-space-md);
+}
+
+.nords-matrix__col-label {
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-sm);
+  font-weight: var(--nords-font-weight-semibold);
+  color: var(--nords-color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide);
+}
+
+.nords-matrix__col-count {
+  font-family: var(--nords-font-mono);
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-text-disabled);
+  font-variant-numeric: tabular-nums;
+}
+
+.nords-matrix__body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--nords-space-sm);
+  flex: 1;
+  overflow-y: auto;
+  padding-top: var(--nords-space-sm);
+}
+
+.nords-matrix__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nords-space-xs);
+  min-height: 100px;
+  padding: var(--nords-space-xs);
+  border-radius: var(--nords-radius-md);
+  background: var(--nords-color-bg-deep);
+}
+
+/* Matrix Card */
+.nords-matrix__card {
+  background: var(--nords-color-bg-surface);
+  border: 1px solid var(--nords-color-border-subtle);
+  border-left: 3px solid;
+  border-radius: var(--nords-radius-md);
+  padding: var(--nords-space-sm) var(--nords-space-md);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.nords-matrix__card:hover {
+  box-shadow: var(--nords-shadow-sm);
+  transform: translateY(-1px);
+}
+
+.nords-matrix__card.is-selected {
+  border-color: var(--nords-color-accent);
+  box-shadow: var(--nords-shadow-glow);
+}
+
+.nords-matrix__card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-xs);
+  margin-bottom: 2px;
+}
+
+.nords-matrix__card-type {
+  font-size: 9px;
+  font-weight: var(--nords-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide);
+}
+
+.nords-matrix__card-title {
+  font-size: var(--nords-font-size-sm);
+  font-weight: var(--nords-font-weight-semibold);
+  color: var(--nords-color-text-primary);
+  line-height: var(--nords-line-height-tight);
+  margin-bottom: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.nords-matrix__card-prop {
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-medium);
+  color: var(--nords-color-text-tertiary);
+}
+
+/* ── Link Mode: Edge Connector Nodes ── */
+.nords-connector-node {
+  position: absolute;
+  z-index: 20;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid;
+  background: var(--nords-color-bg-surface);
+  cursor: crosshair;
+  opacity: 0.6;
+  transition: all 0.15s ease;
+}
+
+.nords-connector-node:hover {
+  opacity: 1;
+  width: 16px;
+  height: 16px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--nords-color-accent) 25%, transparent);
+}

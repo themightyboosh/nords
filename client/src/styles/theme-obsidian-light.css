@@ -36,16 +36,16 @@
   --nords-letter-spacing-wide: 0.06em;
 
   /* ── Surfaces (cool steel neutrals) ── */
-  --nords-color-bg-deep: #eef0f3;
-  --nords-color-bg-canvas: #f5f6f8;
+  --nords-color-bg-deep: #e2e8f0;
+  --nords-color-bg-canvas: #eef2f6;
   --nords-color-bg-surface: #ffffff;
   --nords-color-bg-elevated: #ffffff;
-  --nords-color-bg-hover: #eceef1;
+  --nords-color-bg-hover: #f1f5f9;
 
   /* ── Borders ── */
-  --nords-color-border-subtle: rgba(0, 0, 0, 0.04);
-  --nords-color-border-default: rgba(0, 0, 0, 0.08);
-  --nords-color-border-strong: rgba(0, 0, 0, 0.14);
+  --nords-color-border-subtle: rgba(0, 0, 0, 0.08);
+  --nords-color-border-default: rgba(0, 0, 0, 0.12);
+  --nords-color-border-strong: rgba(0, 0, 0, 0.20);
 
   /* ── Text ── */
   --nords-color-text-primary: #111827;

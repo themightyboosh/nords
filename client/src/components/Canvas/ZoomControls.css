@@ -1,0 +1,68 @@
+.nords-zoom-controls {
+  position: absolute;
+  bottom: var(--nords-space-lg);
+  right: var(--nords-space-lg);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--nords-radius-pill);
+  box-shadow: var(--nords-shadow-md);
+  z-index: 50;
+}
+
+.nords-zoom-controls__btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--nords-color-text-tertiary);
+  border-radius: var(--nords-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nords-zoom-controls__btn:hover {
+  color: var(--nords-color-text-secondary);
+  background: var(--nords-color-bg-hover);
+}
+
+.nords-zoom-controls__pct {
+  min-width: 40px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--nords-color-text-secondary);
+  font-family: var(--nords-font-mono);
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-medium);
+  font-variant-numeric: tabular-nums;
+  border-radius: var(--nords-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nords-zoom-controls__pct:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+
+.nords-zoom-controls__sep {
+  width: 1px;
+  height: 16px;
+  background: var(--nords-color-border-default);
+  margin: 0 2px;
+}
+
+@media (max-width: 768px) {
+  .nords-zoom-controls {
+    bottom: calc(var(--nords-dock-height) + var(--nords-space-xl) + env(safe-area-inset-bottom, 0px));
+    right: var(--nords-space-md);
+  }
+}

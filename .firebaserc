@@ -1,5 +1,18 @@
 {
   "projects": {
-    "default": "nords-dev"
+    "default": "nords-spatial-1776012153",
+    "staging": "nords-spatial-1776012153"
+  },
+  "targets": {
+    "nords-spatial-1776012153": {
+      "hosting": {
+        "production": [
+          "nords-spatial-1776012153"
+        ],
+        "staging": [
+          "nords-stage-1776012153"
+        ]
+      }
+    }
   }
 }

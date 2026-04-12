@@ -1,45 +1,51 @@
 import React from 'react';
+import { useReactFlow } from '@xyflow/react';
 import './DetailDrawer.css';
 
 interface DetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  nardId: string | null;
+  nordId: string | null;
 }
 
-const DetailDrawer: React.FC<DetailDrawerProps> = ({ isOpen, onClose, nardId }) => {
-  if (!isOpen) return null;
+const DetailDrawer: React.FC<DetailDrawerProps> = ({ isOpen, onClose, nordId }) => {
+  const { getNode } = useReactFlow();
+  if (!isOpen || !nordId) return null;
+
+  const node = getNode(nordId);
+  const title = node?.data?.title as string || 'Unknown Node';
+  const type = node?.data?.type as string || 'Task';
 
   return (
     <>
       {/* Optional: Add a subtle overlay for mobile, but keep canvas clickable on desktop if possible.
           Let's just use a slide-in for now. */}
-      <div className="nards-drawer nards-glass">
-        <header className="nards-drawer-header">
-          <div className="nards-drawer-type">🔳 Task</div>
-          <button className="nards-close-btn" onClick={onClose}>×</button>
+      <div className="nords-drawer nords-glass">
+        <header className="nords-drawer-header">
+          <div className="nords-drawer-type">🔳 {type}</div>
+          <button className="nords-close-btn" onClick={onClose}>×</button>
         </header>
 
-        <div className="nards-drawer-content">
-          <h1 className="nards-drawer-title" contentEditable suppressContentEditableWarning>
-            Implement Detail Drawer UI
+        <div className="nords-drawer-content">
+          <h1 className="nords-drawer-title" contentEditable suppressContentEditableWarning>
+            {title}
           </h1>
           
-          <div className="nards-properties-list">
-            <div className="nards-property-row">
-              <span className="nards-prop-label">Assignee</span>
-              <span className="nards-prop-value nards-pill">Daniel</span>
+          <div className="nords-properties-list">
+            <div className="nords-property-row">
+              <span className="nords-prop-label">Assignee</span>
+              <span className="nords-prop-value nords-pill">Daniel</span>
             </div>
-            <div className="nards-property-row">
-              <span className="nards-prop-label">Status</span>
-              <span className="nards-prop-value nards-pill status-doing">In Progress</span>
+            <div className="nords-property-row">
+              <span className="nords-prop-label">Status</span>
+              <span className="nords-prop-value nords-pill status-doing">In Progress</span>
             </div>
-            <div className="nards-property-row nards-add-property">
+            <div className="nords-property-row nords-add-property">
               <span>+ Add Property</span>
             </div>
           </div>
 
-          <div className="nards-drawer-markdown">
+          <div className="nords-drawer-markdown">
             <p>This is a simulated markdown description of what needs to be done. It acts exactly like a Notion page. You can add images, bullet points, etc.</p>
             <ul>
               <li>Build Drawer component</li>

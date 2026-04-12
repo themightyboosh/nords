@@ -1,0 +1,38 @@
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { AuthLoading } from './AuthLoading';
+import { config } from '../../config/env';
+import logger from '../../lib/logger';
+
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requireVerification?: boolean;
+}
+
+export function ProtectedRoute({ children, requireVerification = true }: ProtectedRouteProps) {
+  const { isAuthenticated, isEmailVerified, loading } = useAuth();
+  const location = useLocation();
+
+  // Dev bypass: skip auth when Firebase isn't configured (demo-api-key fallback)
+  if (config.isDev && config.firebase.apiKey === 'demo-api-key') {
+    logger.warn('Auth bypassed: Firebase not configured (demo mode)');
+    return <>{children}</>;
+  }
+
+  if (loading) {
+    return <AuthLoading />;
+  }
+
+  if (!isAuthenticated) {
+    logger.info('Redirecting to login', { from: location.pathname });
+    // Redirect unauthenticated users to login page, but save the current location they were trying to go to
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (requireVerification && !isEmailVerified) {
+    return <Navigate to="/verify-email" replace />;
+  }
+
+  return <>{children}</>;
+}

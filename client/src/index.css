@@ -79,3 +79,16 @@ body {
   background: var(--nords-color-accent-dim);
   color: var(--nords-color-text-primary);
 }
+
+/* ═══════════════════════════════════════════════════════ */
+/* SHARED ANIMATIONS                                       */
+/* ═══════════════════════════════════════════════════════ */
+
+@keyframes nords-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.nords-spin {
+  animation: nords-spin 1s linear infinite;
+}

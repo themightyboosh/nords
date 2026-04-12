@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "architecture/09_edge_rendering_study.md",
+                "file": "stories/01_sprint_zero.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "09_edge_rendering_study"
+              "title": "01_sprint_zero"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "architecture/09_edge_rendering_study.md",
+                "file": "stories/01_sprint_zero.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for 09_edge_rendering_study"
+              "title": "Backlinks for 01_sprint_zero"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "architecture/09_edge_rendering_study.md",
+                "file": "stories/01_sprint_zero.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from 09_edge_rendering_study"
+              "title": "Outgoing links from 01_sprint_zero"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "architecture/09_edge_rendering_study.md",
+                "file": "stories/01_sprint_zero.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of 09_edge_rendering_study"
+              "title": "Outline of 01_sprint_zero"
             }
           }
         ]
@@ -185,12 +185,33 @@
   },
   "active": "9250b2ff8236f5ba",
   "lastOpenFiles": [
+    "stories/00_master_index.md",
+    "stories/15_mcp_ai_integration.md",
+    "stories/14_admin_templates_onboarding.md",
+    "stories/13_animations_and_perf.md",
+    "stories/11_snapshots_and_history.md",
+    "stories/07_connections_and_edges.md",
+    "stories/06_nords_and_types.md",
+    "stories/05_canvas_engine.md",
+    "stories/04_app_shell.md",
+    "stories/03_data_model_and_database.md",
+    "stories/10_multiplayer_crdt.md",
+    "stories/09_spatial_lenses.md",
+    "stories/12_comments_search_polish.md",
+    "stories/01_sprint_zero.md",
+    "stories/08_detail_drawer.md",
+    "stories/02_auth_and_identity.md",
+    "architecture/09_edge_rendering_study.md",
+    "stories/07_mcp_ai_integration.md",
+    "stories/06_polish_and_auth.md",
+    "stories/05_matrix_lenses.md",
+    "stories/04_data_persistence.md",
+    "stories/03_crdt_multiplayer.md",
+    "stories/02_spatial_engine.md",
+    "stories",
     "architecture/11_ai_optimized_agile_schemas.md",
     "architecture/10_technology_and_infrastructure.md",
     "Working Docs/Notes.md",
-    "architecture/09_edge_rendering_study.md",
-    "Working Docs/mock_audit_and_tech_readiness.md",
-    "architecture/08_property_types_reference.md",
     "Pasted image 20260412004520.png"
   ]
 }

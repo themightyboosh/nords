@@ -1,8 +1,14 @@
 .env
 .env.*
+!.env.local.example
 node_modules/
 dist/
 build/
 .DS_Store
 .vite/
 Nards/
+
+# Test artifacts
+playwright-report/
+test-results/
+coverage/
