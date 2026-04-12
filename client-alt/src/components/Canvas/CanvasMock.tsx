@@ -85,18 +85,35 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
     return n ? { x: n.x, y: n.y } : { x: 0, y: 0 };
   };
 
-  const tetherLabels = TETHERS.filter(t => !t.ghost).map((t) => {
+  const tetherLabels = TETHERS.filter(t => !t.ghost).map((t, _i, arr) => {
     const from = getNardPos(t.from);
     const to = getNardPos(t.to);
-    const midX = (from.x + to.x) / 2;
-    const midY = (from.y + to.y) / 2;
-    const offset = getRibbonOffset(t, TETHERS);
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const offset = getRibbonOffset(t, TETHERS);
     const perpX = (-dy / len) * offset;
     const perpY = (dx / len) * offset;
-    return { x: midX + perpX, y: midY + perpY, type: t.type, color: t.color };
+
+    // For Bézier curves, tangent at midpoint = direction from start to end
+    // For linear, same thing. Angle in degrees.
+    let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+    // Keep text readable — flip if upside down
+    if (angleDeg > 90) angleDeg -= 180;
+    if (angleDeg < -90) angleDeg += 180;
+
+    // Stagger: shift label along the line direction for parallel siblings
+    const pairKey = [t.from, t.to].sort().join('-');
+    const siblings = arr.filter(s => [s.from, s.to].sort().join('-') === pairKey);
+    const sibIdx = siblings.indexOf(t);
+    const stagger = siblings.length > 1 ? (sibIdx - (siblings.length - 1) / 2) * 2 : 0;
+    const staggerX = (dx / len) * stagger;
+    const staggerY = (dy / len) * stagger;
+
+    const midX = (from.x + to.x) / 2 + perpX + staggerX;
+    const midY = (from.y + to.y) / 2 + perpY + staggerY;
+
+    return { x: midX, y: midY, type: t.type, color: t.color, angleDeg };
   });
 
   return (
@@ -173,7 +190,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
           })}
         </svg>
 
-        {/* Line labels — counter-scaled for zoom independence */}
+        {/* Line labels — angle-matched, counter-scaled */}
         {tetherLabels.map((label, i) => (
           <div
             key={`label-${i}`}
@@ -181,7 +198,7 @@ const CanvasMock: React.FC<CanvasMockProps> = ({ onNardClick, selectedNard }) =>
             style={{
               left: `${label.x}%`,
               top: `${label.y}%`,
-              transform: `translate(-50%, -50%) scale(${inverseScale})`,
+              transform: `translate(-50%, -50%) scale(${inverseScale}) rotate(${label.angleDeg}deg)`,
             }}
           >
             <span className="nards-tether-label__type" style={{ color: label.color }}>
