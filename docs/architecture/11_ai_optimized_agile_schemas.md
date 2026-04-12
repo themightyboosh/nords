@@ -23,6 +23,13 @@ properties:
   
   out_of_scope_boundaries: "Array<String>"
     - "Do not modify the Auth tables."
+    
+  # Computable Validation
+  acceptance_criteria:
+    # High-level macro validations (e.g., CI/CD pipeline states or integration checks)
+    - type: "pipeline_check"
+      command: "gh api repos/:owner/:repo/actions/workflows/integration.yml/runs --jq '.workspace_status'"
+      expected_output: "success"
   
   # Relational
   child_features: "Array<UUID>" # Binds downwards
@@ -48,6 +55,14 @@ properties:
   data_contracts:
     inputs: "JSON Schema" # Expected payload entering the feature
     outputs: "JSON Schema" # Expected payload leaving the feature
+    
+  # Computable Validation
+  acceptance_criteria:
+    # Feature-level integration or End-to-End suites
+    - command: "npx playwright test --grep @feature-UUID"
+      expected_exit_code: 0
+    - command: "npm run test:api-contracts"
+      expected_exit_code: 0
   
   # Relational
   dependencies: "Array<UUID>" # Other features that MUST be closed before this can be started
