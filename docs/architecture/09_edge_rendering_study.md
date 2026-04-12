@@ -18,6 +18,7 @@ Nords are rectangular cards placed on an infinite 2D canvas. **Lines** (connecti
 | **Labels** | Each line displays a connection type label (e.g., BLOCKS, DEPENDS) along the midpoint. Labels must be readable regardless of zoom level. |
 | **Performance at scale** | Target: 200+ Nords with an average of 2–4 connections each (~400–800 edges) rendered at 60fps during drag interactions. |
 | **Resize responsiveness** | When a Nord is resized (user drags the corner handle), all attached lines must re-anchor to the new perimeter in real-time. |
+| **The Distance Invariant** | Connection semantic values (0.0-1.0) dictate physical canvas distance. The line drawn between Nords must visually honor this pure Euclidean distance rather than obfuscating it. |
 
 ---
 
@@ -198,19 +199,43 @@ Lines consist of only horizontal and vertical segments with right-angle bends.
 Uses A* or visibility-graph algorithms to compute paths avoiding obstacles.
 
 **Pros:** Eliminates visual clutter, professional output.
-**Cons:** Computationally expensive (~O(n²) per edge), requires re-running on every drag frame, impractical for 400+ edges in real-time without heavy optimization.
+**Cons:** Computationally expensive (~O(n²) per edge). **Crucially**, adding artificial bends and detours completely breaks Nords' core physical invariant where line length implies semantic distance. 
 
 ---
 
-## 5. Recommendation for Nords
+## 5. Front-End Code Review & The Distance Paradigm
+
+Upon reviewing `CanvasMock.tsx` and the core architecture documents (`02_data_model_and_physics.md`, `08_property_types_reference.md`), a profound realization emerges regarding Nords' connection system:
+
+### The "Distance Matters" Invariant
+In Nords, vertical and horizontal proximity encode precise semantic values (X/Y Data from 0.0 to 1.0). Therefore, the Euclidean distance between two Nords *is* the data. **Any routing algorithm that routes around other Nords (orthogonal, A*, obstacle-avoidance) is fundamentally wrong for this product.** A line that dramatically bends around an obstacle creates a visually much longer path, confusing the brain's intuitive reading of the relationship's tension and distance.
+
+### We Must Use Bézier Math
+Instead of pathfinding, we must use pure Bézier math. The direct line of sight between two objects is the only true representation of their connection. 
+- A straight line represents the purest, shortest distance.
+- A **Quadratic Bézier** (with a single control point offset perpendicularly) flawlessly solves the "parallel connection" problem (Ribboning) without altering the perceived anchor-to-anchor distance.
+- The control point offset simply arcs outward relative to the distance, creating a "tension" bow.
+
+### Evaluating the Current Mock Approach (`CanvasMock.tsx`)
+Currently, the mock implements a custom `<svg>` layer absolutely positioned over the canvas, using `clipToCardEdge` math to find the intersection of the border, and `getRibbonOffset` to calculate a perpendicular displacement for a Quadratic Bézier (`Q cpX cpY x2 y2`).
+
+**Verdict: The mock's mathematical approach is conceptually perfect.**
+It calculates pure intersection points and pure arcs. However, managing this state manually across hundreds of nodes during high-octane physics drags will overwhelm React's render cycle. 
+
+**Production Recommendation:** 
+We *should* migrate to React Flow for node management, but we must **reject React Flow's default edge types**. We will build a Custom Edge component in React Flow that exactly replicates our current mock's `clipToCardEdge` and Quadratic Ribboning math. This gives us the performance backbone of React Flow's internal `ResizeObserver` and transform engine, while preserving the mathematical purity of our direct distance-based arches.
+
+---
+
+## 6. Recommendation for Nords
 
 ### Phase 1 (V1 Launch)
 
 | Decision | Choice | Rationale |
 |:---|:---|:---|
-| **Rendering engine** | React Flow | Battle-tested, SVG-based, custom node/edge support, excellent React integration |
-| **Anchor strategy** | Dynamic port selection (§3.4) | Best balance of visual quality and computational cost |
-| **Edge path** | Cubic Bézier curves | Organic visual style matching Nords' spatial philosophy |
+| **Rendering engine** | React Flow | High-performance node tracking while allowing 100% custom SVG edge logic |
+| **Anchor strategy** | Line-Rectangle Intersection (`clipToCardEdge`) | Retain the mock's exact center-to-perimeter vector intersection. Floating fixed ports distort the true distance vector. |
+| **Edge path** | Quadratic Bézier curves | Direct point-to-point physical connection. Control points offset perpendicularly for ribboning. NO routing around obstacles. |
 | **Arrow rendering** | SVG `<marker>` with capped scale | Already implemented in mock; scale cap prevents visual noise |
 | **Label rendering** | Positioned at Bézier midpoint with `inverseScale` cap at 0.65 | Already proven in mock |
 
@@ -219,7 +244,7 @@ Uses A* or visibility-graph algorithms to compute paths avoiding obstacles.
 | Enhancement | Description |
 |:---|:---|
 | **Edge bundling** | When multiple edges connect the same pair of Nords, bundle them into a single visual path with a combined label |
-| **Smart avoidance** | Add `@tisoap/react-flow-smart-edge` for orthogonal mode in Link lens |
+| **Geometric Tension** | The perpendicular bow/arc of the Bézier curve could be algorithmically tightened or slackened based on semantic dissonance between the Nords. |
 | **Curve tension control** | Let users adjust Bézier curvature via the Line Detail Drawer spectrum slider |
 
 ### Phase 3 Enhancements
@@ -232,33 +257,46 @@ Uses A* or visibility-graph algorithms to compute paths avoiding obstacles.
 
 ---
 
-## 6. Implementation Sketch
+## 7. Implementation Sketch
 
 ### 6.1 Custom Edge Component (React Flow)
 
 ```tsx
-import { BaseEdge, getSmoothStepPath, type EdgeProps } from '@xyflow/react';
+import { BaseEdge, type EdgeProps } from '@xyflow/react';
 
 function NordsEdge({
-  id, sourceX, sourceY, targetX, targetY,
-  sourcePosition, targetPosition, data
+  id, sourceX, sourceY, targetX, targetY, data
 }: EdgeProps) {
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
-    sourceX, sourceY, targetX, targetY,
-    sourcePosition, targetPosition,
-    borderRadius: 16,
-  });
+  
+  // 1. Calculate intersection with node boundaries (clipToCardEdge math)
+  // 2. Calculate midpoints and perpendicular offset for Ribboning
+  // 3. Generate path string
+  
+  const midX = (sourceX + targetX) / 2;
+  const midY = (sourceY + targetY) / 2;
+  
+  // Example mock math imported from context
+  const offset = data.ribbonOffset || 0;
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const cpX = midX + (-dy / len) * offset;
+  const cpY = midY + (dx / len) * offset;
+  
+  const pathD = offset === 0
+    ? `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`
+    : `M ${sourceX} ${sourceY} Q ${cpX} ${cpY} ${targetX} ${targetY}`;
 
   return (
     <>
       <BaseEdge
         id={id}
-        path={edgePath}
+        path={pathD}
         style={{ stroke: data.color, strokeWidth: 1.5 }}
         markerEnd={`url(#arrow-${data.type})`}
       />
       <foreignObject
-        x={labelX - 30} y={labelY - 10}
+        x={midX - 30} y={midY - 10}
         width={60} height={20}
         className="nords-edge-label"
       >
@@ -269,7 +307,7 @@ function NordsEdge({
 }
 ```
 
-### 6.2 Resize-Responsive Anchoring
+### 7.2 Resize-Responsive Anchoring
 
 React Flow handles this natively through its node measurement system:
 1. Each Nord is a `<NodeComponent>` with a `ResizeObserver`
@@ -288,7 +326,7 @@ React Flow handles this natively through its node measurement system:
 
 ---
 
-## 7. Open Questions
+## 8. Open Questions
 
 > [!IMPORTANT]
 > These decisions should be finalized during the production architecture spike.
@@ -296,11 +334,11 @@ React Flow handles this natively through its node measurement system:
 1. **Should we support user-draggable waypoints on edges?** (draw.io allows this; adds significant complexity)
 2. **Should edge color encode semantic distance stage, or remain fixed per connection type?** (Phase 1 vs Phase 2 question)
 3. **Do we need edge collision detection?** (Prevents edges from overlapping cards they're not connected to — expensive)
-4. **Should Nords have exactly 4 ports (TRBL) or 8 (TRBL + corners)?** 4 is simpler and likely sufficient.
+4. **Should Nords have exactly 4 ports (TRBL) or 8 (TRBL + corners)?** Or remain dynamically continuous via vector math? The vector math provides the truest representation of distance.
 
 ---
 
-## 8. References
+## 9. References
 
 | Source | URL |
 |:---|:---|
