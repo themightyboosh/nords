@@ -3482,3 +3482,22 @@ TypeError: Component is not a function
 19:36:20.891 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":29,"rows":1}
 19:36:29.068 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":68,"rows":1}
 19:36:29.104 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+19:45:13.981 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:45:14.043 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":185,"rows":1}
+19:45:14.078 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+19:45:14.113 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+19:45:14.148 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+19:45:14.184 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+19:45:14.217 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+19:45:14.254 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+19:45:14.289 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+19:45:14.325 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+19:45:14.361 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+19:45:14.393 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+19:45:14.429 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+19:45:14.464 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+19:45:14.499 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+19:45:14.533 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+19:45:14.570 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+19:45:14.606 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+19:45:14.642 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}

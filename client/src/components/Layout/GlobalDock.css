@@ -263,9 +263,9 @@
   overflow: hidden;
 
   opacity: 0;
-  transform: translateY(8px) scale(0.97);
+  transform: translateY(0) scale(1);
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  /* No transition — instant show/hide */
 }
 
 .nords-flyout.is-open {

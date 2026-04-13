@@ -16,7 +16,7 @@
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  animation: nords-panel-scrim-in 0.2s ease;
+  /* No animation — instant appear */
 }
 
 @keyframes nords-panel-scrim-in {
@@ -36,14 +36,14 @@
   flex-direction: column;
   border-radius: 12px;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
-  animation: nords-panel-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  /* No animation — instant appear */
   will-change: transform; /* pre-promote — prevents canvas jerk on mount */
 }
 
 .nords-floating-panel--panel-left {
   right: auto;
   left: 16px;
-  animation: nords-panel-slide-in-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  /* No animation — instant appear */
 }
 
 @keyframes nords-panel-slide-in {

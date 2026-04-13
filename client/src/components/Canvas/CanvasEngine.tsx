@@ -214,10 +214,21 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   );
 
   const onReconnectEnd = useCallback(
-    (_event: MouseEvent | TouchEvent, _edge: Edge) => {
+    async (_event: MouseEvent | TouchEvent, edge: Edge, _handleType: 'source' | 'target') => {
+      // If the drop target is the pane (not a node), delete the connection
+      const target = (_event as MouseEvent).target as HTMLElement;
+      const isPane = target?.classList?.contains('react-flow__pane');
+      if (isPane) {
+        try {
+          await deleteConnection(edge.id);
+          setEdges(eds => eds.filter(e => e.id !== edge.id));
+        } catch (err) {
+          console.error('Failed to delete connection on drop:', err);
+        }
+      }
       reconnectingRef.current = null;
     },
-    []
+    [deleteConnection, setEdges]
   );
 
   // ── Duplicate Nord ──
@@ -331,7 +342,25 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       );
     });
     if (isDuplicate) {
-      console.warn('Connection already exists between these nords');
+      // Wiggle the existing duplicate edge
+      const dupeEdge = edges.find(e => {
+        const typeId = (e.data as any)?._typeId;
+        if (typeId !== connType.id) return false;
+        return (
+          (e.source === connection.source && e.target === connection.target) ||
+          (e.source === connection.target && e.target === connection.source)
+        );
+      });
+      if (dupeEdge) {
+        setEdges(eds => eds.map(e =>
+          e.id === dupeEdge.id ? { ...e, className: 'nords-edge--wiggle' } : e
+        ));
+        setTimeout(() => {
+          setEdges(eds => eds.map(e =>
+            e.id === dupeEdge.id ? { ...e, className: '' } : e
+          ));
+        }, 450);
+      }
       return;
     }
     try {
