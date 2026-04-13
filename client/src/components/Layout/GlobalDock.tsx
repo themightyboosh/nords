@@ -100,23 +100,6 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
               <span>Canvas</span>
             </button>
             <button
-              className={`nords-lens-toggle__btn ${lens === 'link' ? 'is-active' : ''}`}
-              onClick={() => {
-                setLens('link');
-                setOpenPanel(null);
-                // Auto-select first connection type if none active
-                if (!activeConnectionTypeId && visibleConnectionTypes.length > 0) {
-                  setActiveConnectionTypeId(visibleConnectionTypes[0].id);
-                  setActiveLine(visibleConnectionTypes[0].name);
-                }
-              }}
-              title="Link — focused relationship editing"
-              data-testid="lens-link"
-            >
-              <Link2 size={14} strokeWidth={1.6} />
-              <span>Link</span>
-            </button>
-            <button
               className={`nords-lens-toggle__btn ${lens === 'matrix' ? 'is-active' : ''}`}
               onClick={() => {
                 setLens('matrix');

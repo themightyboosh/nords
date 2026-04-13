@@ -14,7 +14,7 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useReactFlow, useStore, type Edge } from '@xyflow/react';
+import { useReactFlow } from '@xyflow/react';
 
 const ANIM_DURATION = 200; // ms
 
@@ -36,7 +36,6 @@ export function useLensLayout(
   relevanceNodes: { id: string; position: { x: number; y: number } }[]
 ) {
   const reactFlow = useReactFlow();
-  const edges = useStore((s) => s.edges ?? [], (a, b) => a === b) as Edge[];
   const rafRef = useRef<number>(0);
   const prevTypeRef = useRef<string | null | undefined>(undefined);
 
@@ -119,8 +118,9 @@ export function useLensLayout(
   // Compute initial positions for a connection type from distance values
   const computeTypePositions = useCallback((typeId: string): PositionMap => {
     const currentNodes = reactFlow.getNodes();
+    const currentEdges = reactFlow.getEdges();
     const nodeMap = new Map(currentNodes.map(n => [n.id, n]));
-    const typeEdges = edges.filter(e => (e.data as any)?._typeId === typeId);
+    const typeEdges = currentEdges.filter(e => (e.data as any)?._typeId === typeId);
     const adjustments = new Map<string, { dx: number; dy: number; count: number }>();
 
     for (const edge of typeEdges) {
@@ -165,7 +165,7 @@ export function useLensLayout(
     }
 
     return positions;
-  }, [reactFlow, edges]);
+  }, [reactFlow]);
 
   useEffect(() => {
     if (prevTypeRef.current === undefined) {
@@ -245,7 +245,7 @@ export function useLensLayout(
     rafRef.current = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(rafRef.current);
-  }, [activeTypeId, reactFlow, snapshotCurrentPositions, computeAveragedPositions, computeTypePositions, edges]);
+  }, [activeTypeId, reactFlow, snapshotCurrentPositions, computeAveragedPositions, computeTypePositions]);
 
   return { saveNodePosition };
 }
