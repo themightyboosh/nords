@@ -4,70 +4,54 @@ import { useLens } from '../context/LensContext';
 
 /**
  * useVisibilityCascade propagates visibility changes between nodes and edges
- * based on the Lens Context and node visibility toggling.
- * 
- * IMPORTANT: We skip calling setNodes/setEdges when nothing needs to change
- * because React Flow v12 uses a two-pass measurement system. Calling setNodes
- * during the measurement pass resets visibility:hidden and breaks rendering.
+ * based on the active connection type and the showContext toggle.
+ *
+ * When a specific connection type is selected:
+ *   showContext=true  → other types shown dimmed (gray)
+ *   showContext=false → other types completely hidden
+ *
+ * When "All Lines" is selected:
+ *   showContext=true  → orphaned nords shown
+ *   showContext=false → orphaned nords hidden
  */
 export function useVisibilityCascade() {
   const { setNodes, setEdges, getEdges } = useReactFlow();
-  const { lens, activeLine, showContext, hiddenTypes } = useLens();
+  const { activeConnectionTypeId, showContext, hiddenTypes } = useLens();
   
   useEffect(() => {
-    // In canvas mode with no hidden types, there's nothing to cascade.
-    // Skip the setNodes/setEdges call to avoid interrupting React Flow's
-    // internal measurement pass (which uses visibility:hidden).
-    if (lens === 'canvas' && hiddenTypes.size === 0) {
-      // Reset any previously applied ghosting/hiding
-      setNodes((nds) => {
-        const needsReset = nds.some(n => n.hidden || n.data?.isGhosted);
-        if (!needsReset) return nds; // No-op — don't trigger re-render
-        return nds.map(n => ({
-          ...n,
-          hidden: false,
-          data: { ...n.data, isGhosted: false }
-        }));
-      });
-      setEdges((eds) => {
-        const needsReset = eds.some(e => e.hidden);
-        if (!needsReset) return eds;
-        return eds.map(e => ({
-          ...e,
-          hidden: false,
-          data: { ...e.data, ghost: e.data?.ghost ?? false }
-        }));
-      });
-      return;
-    }
-
     const allEdges = getEdges();
 
-    // 1. Calculate active nodes for link mode
+    // Build set of nodes connected by the active type
     const connectedNodeIds = new Set<string>();
-    if (lens === 'link') {
+    if (activeConnectionTypeId) {
       allEdges.forEach(e => {
-        if (e.data?.type === activeLine) {
+        if ((e.data as any)?._typeId === activeConnectionTypeId) {
           connectedNodeIds.add(e.source);
           connectedNodeIds.add(e.target);
         }
       });
+    } else {
+      // All view: all connected nodes
+      allEdges.forEach(e => {
+        connectedNodeIds.add(e.source);
+        connectedNodeIds.add(e.target);
+      });
     }
 
-    setNodes((nds) => 
+    // Cascade nodes
+    setNodes((nds) =>
       nds.map((n) => {
         let isGhosted = false;
         let isHidden = false;
-
         const typeName = n.data?.type as string;
 
-        if (lens === 'canvas') {
-          // Canvas Mode: Only check the Display flyout type toggles
-          if (hiddenTypes.has(typeName)) {
-            isGhosted = true;
-          }
-        } else if (lens === 'link') {
-          // Link Mode: Active if connected by activeLine type; otherwise context
+        // Display flyout type toggles (always apply)
+        if (hiddenTypes.has(typeName)) {
+          isGhosted = true;
+        }
+
+        if (activeConnectionTypeId) {
+          // Specific type selected: ghost/hide unconnected nords
           const isConnected = connectedNodeIds.has(n.id);
           if (!isConnected) {
             if (showContext) {
@@ -76,29 +60,31 @@ export function useVisibilityCascade() {
               isHidden = true;
             }
           }
+        } else {
+          // All view: toggle orphaned nords
+          const isOrphan = !connectedNodeIds.has(n.id);
+          if (isOrphan && !showContext) {
+            isHidden = true;
+          }
         }
 
         return {
           ...n,
           hidden: isHidden,
-          data: {
-            ...n.data,
-            isGhosted
-          }
+          data: { ...n.data, isGhosted }
         };
       })
     );
 
-    // 2. Cascade edges
-    setEdges((eds) => 
+    // Cascade edges
+    setEdges((eds) =>
       eds.map((e) => {
         let isGhosted = false;
         let isHidden = false;
 
-        if (lens === 'canvas') {
-          isGhosted = e.data?.ghost === true;
-        } else if (lens === 'link') {
-          if (e.data?.type !== activeLine) {
+        if (activeConnectionTypeId) {
+          // Non-active types: dim if showContext, hide if not
+          if ((e.data as any)?._typeId !== activeConnectionTypeId) {
             if (showContext) {
               isGhosted = true;
             } else {
@@ -110,12 +96,9 @@ export function useVisibilityCascade() {
         return {
           ...e,
           hidden: isHidden,
-          data: {
-            ...e.data,
-            ghost: isGhosted
-          }
+          data: { ...e.data, ghost: isGhosted }
         };
       })
     );
-  }, [lens, activeLine, showContext, hiddenTypes, setNodes, setEdges, getEdges]);
+  }, [activeConnectionTypeId, showContext, hiddenTypes, setNodes, setEdges, getEdges]);
 }
