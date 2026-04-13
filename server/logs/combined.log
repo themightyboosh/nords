@@ -2273,3 +2273,8 @@ TypeError: Cannot destructure property 'updateHomePosition' of 'useLensLayout(..
 17:13:52.377 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 17:13:52.443 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":188,"rows":1}
 17:13:52.478 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+17:24:08.648 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+17:24:08.709 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":185,"rows":1}
+17:25:12.197 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+17:25:12.270 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":200,"rows":1}
+17:25:12.315 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":44,"rows":1}

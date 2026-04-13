@@ -434,6 +434,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         selectionKeyCode={null}
         selectionOnDrag={false}
         nodesDraggable={false}
+        nodesConnectable={true}
         edgesReconnectable
         reconnectRadius={25}
         onReconnectStart={onReconnectStart}
