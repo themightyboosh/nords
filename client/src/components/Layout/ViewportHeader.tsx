@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Settings, Activity, ChevronDown, Menu, X,
   FolderKanban, Bell, User, LogOut,
+  MessageSquare, Camera, Settings2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NordsLogo from '../NordsLogo';
@@ -23,9 +24,11 @@ interface ViewportHeaderProps {
   currentTheme: string;
   onThemeChange: (theme: string) => void;
   onOpenSettings?: () => void;
+  onOpenComments?: () => void;
+  onOpenSnapshots?: () => void;
 }
 
-export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSettings }: ViewportHeaderProps) {
+export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSettings, onOpenComments, onOpenSnapshots }: ViewportHeaderProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -55,6 +58,37 @@ export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSett
           </div>
           <ChevronDown size={10} className="nords-viewport-header__project-chevron" />
         </button>
+
+        {/* Project-level tools — right of title to free dock space */}
+        <div className="nords-viewport-header__project-tools">
+          <button
+            className="nords-viewport-header__tool-btn"
+            title="Manage Types"
+            onClick={onOpenSettings}
+            data-testid="header-manage-types"
+          >
+            <Settings2 size={14} strokeWidth={1.6} />
+            <span>Types</span>
+          </button>
+          <button
+            className="nords-viewport-header__tool-btn"
+            title="Comments"
+            onClick={onOpenComments}
+            data-testid="header-comments"
+          >
+            <MessageSquare size={14} strokeWidth={1.6} />
+            <span>Comments</span>
+          </button>
+          <button
+            className="nords-viewport-header__tool-btn"
+            title="Snapshots"
+            onClick={onOpenSnapshots}
+            data-testid="header-snapshots"
+          >
+            <Camera size={14} strokeWidth={1.6} />
+            <span>Snapshots</span>
+          </button>
+        </div>
       </div>
 
       {/* ═══ Center: Logo + Wordmark (hidden on mobile) ═══ */}

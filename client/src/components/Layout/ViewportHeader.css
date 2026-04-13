@@ -89,6 +89,39 @@
   color: var(--nords-color-text-disabled);
 }
 
+/* ── Project-level tools (right of title) ── */
+.nords-viewport-header__project-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: var(--nords-space-md);
+  padding-left: var(--nords-space-md);
+  border-left: 1px solid var(--nords-color-border-subtle);
+}
+
+.nords-viewport-header__tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  color: var(--nords-color-text-tertiary);
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--nords-radius-md);
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-medium);
+  letter-spacing: 0.01em;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.nords-viewport-header__tool-btn:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-secondary);
+}
+
 /* ── Center: Logo ── */
 .nords-viewport-header__center {
   display: flex;

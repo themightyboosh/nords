@@ -127,20 +127,6 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
               </div>
               <div className="nords-dock__separator" />
               <div className="nords-dock__section">
-                <button className={`nords-dock__item ${openPanel === 'comments' ? 'is-active' : ''}`} onClick={() => togglePanel('comments')} title="View all comments" data-testid="dock-comments">
-                  <MessageSquare size={15} strokeWidth={1.6} />
-                  <span className="nords-dock__label">Comments</span>
-                </button>
-              </div>
-              <div className="nords-dock__separator" />
-              <div className="nords-dock__section">
-                <button className={`nords-dock__item ${openPanel === 'snapshot' ? 'is-active' : ''}`} onClick={() => togglePanel('snapshot')} title="Take a snapshot" data-testid="dock-snapshot">
-                  <Camera size={15} strokeWidth={1.6} />
-                  <span className="nords-dock__label">Snapshot</span>
-                </button>
-              </div>
-              <div className="nords-dock__separator" />
-              <div className="nords-dock__section">
                 <button className={`nords-dock__item nords-dock__item--accent ${openPanel === 'add' ? 'is-active' : ''}`} onClick={() => togglePanel('add')} data-testid="dock-add">
                   <Plus size={15} strokeWidth={2} />
                   <span className="nords-dock__label">Add</span>
@@ -159,20 +145,6 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
                   <span className="nords-dock__label">{activeLine}</span>
                   {activeConnectionType && <span className="nords-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />}
                   <ChevronDown size={10} className="nords-dock__chevron" />
-                </button>
-              </div>
-              <div className="nords-dock__separator" />
-              <div className="nords-dock__section">
-                <button className={`nords-dock__item ${openPanel === 'comments' ? 'is-active' : ''}`} onClick={() => togglePanel('comments')} data-testid="dock-comments-link">
-                  <MessageSquare size={15} strokeWidth={1.6} />
-                  <span className="nords-dock__label">Comments</span>
-                </button>
-              </div>
-              <div className="nords-dock__separator" />
-              <div className="nords-dock__section">
-                <button className={`nords-dock__item ${openPanel === 'snapshot' ? 'is-active' : ''}`} onClick={() => togglePanel('snapshot')} data-testid="dock-snapshot-link">
-                  <Camera size={15} strokeWidth={1.6} />
-                  <span className="nords-dock__label">Snapshot</span>
                 </button>
               </div>
             </>
@@ -194,20 +166,6 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
                 <button className="nords-dock__item" disabled title="Optional — select a Line Type for rows">
                   <span className="nords-dock__label-prefix">Rows:</span>
                   <span className="nords-dock__label nords-dock__label--empty">None</span>
-                </button>
-              </div>
-              <div className="nords-dock__separator" />
-              <div className="nords-dock__section">
-                <button className={`nords-dock__item ${openPanel === 'comments' ? 'is-active' : ''}`} onClick={() => togglePanel('comments')} data-testid="dock-comments-matrix">
-                  <MessageSquare size={15} strokeWidth={1.6} />
-                  <span className="nords-dock__label">Comments</span>
-                </button>
-              </div>
-              <div className="nords-dock__separator" />
-              <div className="nords-dock__section">
-                <button className={`nords-dock__item ${openPanel === 'snapshot' ? 'is-active' : ''}`} onClick={() => togglePanel('snapshot')} data-testid="dock-snapshot-matrix">
-                  <Camera size={15} strokeWidth={1.6} />
-                  <span className="nords-dock__label">Snapshot</span>
                 </button>
               </div>
               <div className="nords-dock__separator" />
