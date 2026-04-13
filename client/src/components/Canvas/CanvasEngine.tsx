@@ -101,6 +101,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const [radialMenuPos, setRadialMenuPos] = React.useState<{ x: number, y: number } | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragNodeId, setDragNodeId] = React.useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = React.useState(false);
   // Track which edge is being reconnected for the onReconnect handler
   const reconnectingRef = React.useRef<{ edgeId: string; handleType: 'source' | 'target' } | null>(null);
 
@@ -415,7 +416,11 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   }
 
   // Compute CSS class for active-path isolation during drag
-  const canvasClass = isDragging ? 'nords-canvas--dragging' : '';
+  const canvasClass = [
+    isDragging ? 'nords-canvas--dragging' : '',
+    isConnecting ? 'nords-canvas--connecting' : '',
+    placingTypeId ? 'nords-canvas--placing' : '',
+  ].filter(Boolean).join(' ');
 
   return (
     <>
@@ -425,6 +430,8 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onConnectStart={() => setIsConnecting(true)}
+        onConnectEnd={() => setIsConnecting(false)}
         onNodeClick={onNodeClick}
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
@@ -455,7 +462,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         edgeTypes={edgeTypes}
         connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={{ type: 'euclidean' }}
-        className={`${canvasClass} ${placingTypeId ? 'nords-canvas--placing' : ''}`}
+        className={canvasClass}
         panOnScroll
         panOnDrag={isTouchDevice ? [1, 2] : true}
         zoomOnPinch
@@ -547,7 +554,7 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
   const activeProjectId = projectId || '5413fc94-3245-4153-9641-b9d025367e1d';
   const noop = async () => {};
 
-  if (lens === 'matrix') {
+  if (lens === 'board') {
     return (
       <div className="nords-canvas nords-matrix-view">
         <div className="nords-matrix">

@@ -301,9 +301,9 @@
   transform: none !important;
 }
 
-/* When RF is actively dragging a connection, enable drop targets.
- * .react-flow__connection only exists during a connection drag. */
-.react-flow:has(.react-flow__connection) .nords-node__handle--full {
+/* When actively dragging a connection, enable full-card drop targets.
+ * Class toggled by React state via onConnectStart/onConnectEnd. */
+.nords-canvas--connecting .nords-node__handle--full {
   pointer-events: all !important;
   cursor: crosshair;
 }

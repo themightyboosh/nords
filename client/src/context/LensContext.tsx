@@ -13,7 +13,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import logger from '../lib/logger';
 
-export type LensMode = 'canvas' | 'matrix';
+export type LensMode = 'canvas' | 'board';
 
 interface LensContextValue {
   lens: LensMode;

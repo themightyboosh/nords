@@ -100,20 +100,20 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
               <span>Canvas</span>
             </button>
             <button
-              className={`nords-lens-toggle__btn ${lens === 'matrix' ? 'is-active' : ''}`}
+              className={`nords-lens-toggle__btn ${lens === 'board' ? 'is-active' : ''}`}
               onClick={() => {
-                setLens('matrix');
+                setLens('board');
                 setOpenPanel(null);
                 if (!activeConnectionTypeId && visibleConnectionTypes.length > 0) {
                   setActiveConnectionTypeId(visibleConnectionTypes[0].id);
                   setActiveLine(visibleConnectionTypes[0].name);
                 }
               }}
-              title="Matrix — spatial pivot table"
-              data-testid="lens-matrix"
+              title="Board — spatial pivot table"
+              data-testid="lens-board"
             >
               <LayoutGrid size={14} strokeWidth={1.6} />
-              <span>Matrix</span>
+              <span>Board</span>
             </button>
           </div>
 
@@ -154,14 +154,16 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
             </button>
           </div>
 
-          <div className="nords-dock__separator" />
-
-          {/* Display */}
+          {/* Show/Hide toggle — hides non-active connectors (or orphans in All view) */}
           <div className="nords-dock__section">
-            <button className={`nords-dock__item ${openPanel === 'display' ? 'is-active' : ''}`} onClick={() => togglePanel('display')} data-testid="dock-display">
-              <Eye size={15} strokeWidth={1.6} />
-              <span className="nords-dock__label">Display</span>
-              <ChevronDown size={10} className="nords-dock__chevron" />
+            <button
+              className={`nords-dock__item ${showContext ? 'is-active' : ''}`}
+              onClick={() => setShowContext(!showContext)}
+              data-testid="dock-toggle-context"
+              title={activeConnectionTypeId ? 'Show/hide other connection types' : 'Show/hide orphaned nords'}
+            >
+              {showContext ? <EyeIcon size={15} strokeWidth={1.6} /> : <EyeOff size={15} strokeWidth={1.6} />}
+              <span className="nords-dock__label">{activeConnectionTypeId ? 'Others' : 'Orphans'}</span>
             </button>
           </div>
 
@@ -169,50 +171,6 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
 
         {/* ═══ FLYOUT PANELS ═══ */}
 
-        {/* Display Flyout */}
-        <div className={`nords-flyout nords-glass ${openPanel === 'display' ? 'is-open' : ''}`} data-testid="flyout-display">
-          <div className="nords-flyout__header">
-            <h3 className="nords-flyout__title">Display</h3>
-            <span className="nords-flyout__count">
-              {visibleNodeTypes.reduce((a, b) => a + b.count, 0)} nords · {visibleConnectionTypes.reduce((a, b) => a + b.count, 0)} connections
-            </span>
-          </div>
-          <div className="nords-flyout__list">
-            <div className="nords-flyout__section-label">Nord Types</div>
-            {visibleNodeTypes.map((type) => (
-              <div key={type.name} className="nords-flyout__row">
-                <div className="nords-flyout__row-left">
-                  <span className="nords-flyout__type-icon" style={{ color: type.color }}>
-                    <type.icon size={14} strokeWidth={2} />
-                  </span>
-                  <span className="nords-flyout__row-name">{type.name}</span>
-                  <span className="nords-flyout__row-count">{type.count}</span>
-                </div>
-                <button 
-                  className={`nords-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`} 
-                  title="Toggle visibility"
-                  onClick={() => toggleNodeType(type.name)}
-                >
-                  {type.visible ? <EyeIcon size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
-                </button>
-              </div>
-            ))}
-            <div className="nords-flyout__section-divider" />
-            <div className="nords-flyout__section-label">Connection Types</div>
-            {visibleConnectionTypes.map((type) => (
-              <div key={type.name} className="nords-flyout__row">
-                <div className="nords-flyout__row-left">
-                  <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
-                  <span className="nords-flyout__row-name">{type.name}</span>
-                  <span className="nords-flyout__row-count">{type.count}</span>
-                </div>
-                <button className={`nords-flyout__visibility-btn ${type.visible ? 'is-visible' : ''}`} title="Toggle visibility">
-                  {type.visible ? <EyeIcon size={13} strokeWidth={1.6} /> : <EyeOff size={13} strokeWidth={1.6} />}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Connection Type Switcher Flyout */}
         <div className={`nords-flyout nords-glass ${openPanel === 'relationship' ? 'is-open' : ''}`} data-testid="flyout-connection-type">
