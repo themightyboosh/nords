@@ -2619,3 +2619,15 @@ TypeError: Cannot read properties of null (reading 'getSnapshot')
 18:22:52.030 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":170,"rows":1}
 18:23:26.653 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 18:23:26.686 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET source_nord_id = $1, target_nord_id = $2\n    WHE","duration":155,"rows":1}
+18:30:50.859 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:30:50.896 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":164,"rows":1}
+18:31:08.769 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:08.803 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":154,"rows":1}
+18:31:21.193 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:21.226 [31merror[39m: Query failed
+error: new row for relation "connections" violates check constraint "connections_direction_check"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:203:24) {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_id, direction, distance_x, distance_y, pr","duration":157,"error":"new row for relation \"connections\" violates check constraint \"connections_direction_check\""}

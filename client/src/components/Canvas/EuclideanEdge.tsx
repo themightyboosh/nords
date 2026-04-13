@@ -314,6 +314,46 @@ export function EuclideanEdge({
     [sx - arrowSize * Math.cos(startAngle + Math.PI / 6), sy - arrowSize * Math.sin(startAngle + Math.PI / 6)],
   ].map(p => p.join(',')).join(' ') : null;
 
+  // Drag-to-detach: mousedown anywhere on the line detaches from closest endpoint
+  const onHitAreaMouseDown = React.useCallback((e: React.MouseEvent<SVGPathElement>) => {
+    // Only primary button
+    if (e.button !== 0) return;
+
+    // Find the containing edge group element
+    const edgeGroup = (e.currentTarget as SVGElement).closest('.react-flow__edge');
+    if (!edgeGroup) return;
+
+    // Convert client coords to SVG coords
+    const svg = edgeGroup.closest('svg');
+    if (!svg) return;
+    const pt = (svg as SVGSVGElement).createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const ctm = (svg as SVGSVGElement).getScreenCTM();
+    if (!ctm) return;
+    const svgPt = pt.matrixTransform(ctm.inverse());
+
+    // Determine which endpoint is closer to the click
+    const distToSource = Math.hypot(svgPt.x - sx, svgPt.y - sy);
+    const distToTarget = Math.hypot(svgPt.x - tx, svgPt.y - ty);
+    const handleType = distToSource < distToTarget ? 'source' : 'target';
+
+    // Find the EdgeUpdater circle for that endpoint and trigger its mousedown
+    const updater = edgeGroup.querySelector(`.react-flow__edgeupdater-${handleType}`);
+    if (updater) {
+      e.stopPropagation();
+      e.preventDefault();
+      const syntheticEvent = new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        button: 0,
+      });
+      updater.dispatchEvent(syntheticEvent);
+    }
+  }, [sx, sy, tx, ty]);
+
   return (
     <>
       {/* Base path — solid at 50% opacity (visible in dash gaps) */}
@@ -340,14 +380,15 @@ export function EuclideanEdge({
       {!isGhosted && startArrowPoints && (
         <polygon points={startArrowPoints} fill={edgeColor} />
       )}
-      {/* Invisible fat hit-area for click/hover detection */}
+      {/* Invisible fat hit-area — drag anywhere on line to detach from closest endpoint */}
       <path
         d={pathD}
         stroke="transparent"
         strokeWidth="30"
         fill="none"
         className="nords-connection--hitarea"
-        style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+        style={{ pointerEvents: 'stroke', cursor: 'grab' }}
+        onMouseDown={onHitAreaMouseDown}
       />
       
       {/* Label — shown for active and dimmed edges, hidden only for ghosted */}
