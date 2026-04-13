@@ -127,7 +127,7 @@ export function EuclideanEdge({
     vy: 0,
   });
   const rafRef = useRef<number>(0);
-  const [cpPos, setCpPos] = useState({ x: targetCpX, y: targetCpY });
+  const [cpPos, setCpPos] = useState({ x: targetCpX, y: targetCpY, vx: 0, vy: 0 });
 
   useEffect(() => {
     // When target changes, start the spring animation
@@ -157,12 +157,12 @@ export function EuclideanEdge({
         spring.y = targetCpY;
         spring.vx = 0;
         spring.vy = 0;
-        setCpPos({ x: targetCpX, y: targetCpY });
+        setCpPos({ x: targetCpX, y: targetCpY, vx: 0, vy: 0 });
         isAnimating = false;
         return;
       }
 
-      setCpPos({ x: spring.x, y: spring.y });
+      setCpPos({ x: spring.x, y: spring.y, vx: spring.vx, vy: spring.vy });
 
       if (isAnimating) {
         rafRef.current = requestAnimationFrame(animate);
@@ -177,20 +177,52 @@ export function EuclideanEdge({
     };
   }, [targetCpX, targetCpY]);
 
-  // ── Path Construction ──
-  const pathD = offset === 0 && Math.abs(cpPos.x - midX) < 2 && Math.abs(cpPos.y - midY) < 2
-    ? `M ${sx} ${sy} L ${tx} ${ty}`
-    : `M ${sx} ${sy} Q ${cpPos.x} ${cpPos.y} ${tx} ${ty}`;
+  // ── Path Construction (Dual Cubic Bézier — label-anchored center) ──
+  // Path splits into two segments meeting at the spring-animated center point.
+  // Source → CP1 → [CENTER/LABEL] → CP2 → Target
+  // Each half has its own wave deflection. The label sticks to the center junction.
+  const speed = Math.abs(cpPos.vx) + Math.abs(cpPos.vy);
+  const isAtRest = offset === 0 && Math.abs(cpPos.x - midX) < 2 && Math.abs(cpPos.y - midY) < 2 && speed < 0.5;
 
-  // ── Label Positioning ──
+  // Center junction point — this is where the label anchors
+  const centerX = cpPos.x;
+  const centerY = cpPos.y;
+
+  let pathD: string;
+  if (isAtRest) {
+    pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+  } else {
+    // Perpendicular unit vector to the line
+    const perpUnitX = -dy / len;
+    const perpUnitY = dx / len;
+
+    // Wave amplitude from spring velocity (clamped)
+    const waveAmp = Math.min(35, speed * 2.5);
+
+    // First half: Source → Center (wave deflects one way)
+    const cp1x = sx + dx * 0.2 + perpUnitX * waveAmp;
+    const cp1y = sy + dy * 0.2 + perpUnitY * waveAmp;
+    const cp2x = sx + dx * 0.4 - perpUnitX * waveAmp * 0.5;
+    const cp2y = sy + dy * 0.4 - perpUnitY * waveAmp * 0.5;
+
+    // Second half: Center → Target (wave deflects the other way)
+    const cp3x = sx + dx * 0.6 + perpUnitX * waveAmp * 0.5;
+    const cp3y = sy + dy * 0.6 + perpUnitY * waveAmp * 0.5;
+    const cp4x = sx + dx * 0.8 - perpUnitX * waveAmp;
+    const cp4y = sy + dy * 0.8 - perpUnitY * waveAmp;
+
+    pathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${centerX} ${centerY} C ${cp3x} ${cp3y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
+  }
+
+  // ── Label Positioning (anchored to spring center) ──
   const stagger = ribbonConfig.count > 1 
     ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20 
     : 0;
   const staggerX = (dx / len) * stagger;
   const staggerY = (dy / len) * stagger;
 
-  const labelX = midX + perpX + staggerX;
-  const labelY = midY + perpY + staggerY;
+  const labelX = centerX + staggerX;
+  const labelY = centerY + staggerY;
 
   // ── Label Angle ──
   let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
