@@ -48,9 +48,12 @@ export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<N
       }}
       data-testid={`nord-node-${id}`}
     >
-      {/* Connection handles — visible on hover */}
-      <Handle type="target" position={Position.Top} id="target" className="nords-node__handle--hidden" isConnectable={isConnectable} />
-      <Handle type="source" position={Position.Bottom} id="source" className="nords-node__handle--hidden" isConnectable={isConnectable} />
+      {/* Invisible connection handles — span the full edge of each card side.
+       * No visible circles. Dragging from any card edge starts a connection. */}
+      <Handle type="target" position={Position.Top} id="t-top" className="nords-node__handle--edge" isConnectable={isConnectable} />
+      <Handle type="target" position={Position.Left} id="t-left" className="nords-node__handle--edge" isConnectable={isConnectable} />
+      <Handle type="source" position={Position.Bottom} id="s-bottom" className="nords-node__handle--edge" isConnectable={isConnectable} />
+      <Handle type="source" position={Position.Right} id="s-right" className="nords-node__handle--edge" isConnectable={isConnectable} />
 
       {/* All text content — counter-scales uniformly below 60% zoom */}
       <div

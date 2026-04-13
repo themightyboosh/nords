@@ -2613,3 +2613,9 @@ TypeError: Cannot read properties of null (reading 'getSnapshot')
 18:08:47.272 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":167,"rows":1}
 18:09:02.625 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 18:09:02.662 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":167,"rows":1}
+18:22:26.337 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:22:26.371 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":164,"rows":1}
+18:22:51.994 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:22:52.030 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":170,"rows":1}
+18:23:26.653 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:23:26.686 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET source_nord_id = $1, target_nord_id = $2\n    WHE","duration":155,"rows":1}

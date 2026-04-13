@@ -102,36 +102,15 @@
 }
 
 /* ── Edge Reconnection Handles ──
- * SVG circles at edge endpoints for drag-to-relink.
- * Use `r` for SVG circle radius — width/height don't apply to SVG.
- * Sized to match node handles (5px radius = 10px diameter).
+ * Invisible but interactive. Drag near a line endpoint to relink.
+ * No visible circles — the line itself is the interaction affordance.
  */
 .react-flow__edgeupdater {
-  r: 5;
+  r: 8;
   cursor: move;
-  fill: var(--nords-color-accent);
-  fill-opacity: 0;
-  stroke: var(--nords-color-accent);
-  stroke-width: 2;
-  stroke-opacity: 0;
-  transition: fill-opacity 0.15s ease, stroke-opacity 0.15s ease;
-}
-
-/* Show reconnect handles on edge hover */
-.react-flow__edge:hover .react-flow__edgeupdater {
-  fill-opacity: 0.15;
-  stroke-opacity: 0.6;
-}
-
-.react-flow__edge:hover .react-flow__edgeupdater:hover {
-  fill-opacity: 0.3;
-  stroke-opacity: 1;
-}
-
-/* Show handles on selected edges */
-.react-flow__edge.selected .react-flow__edgeupdater {
-  fill-opacity: 0.2;
-  stroke-opacity: 0.8;
+  fill: transparent;
+  stroke: none;
+  pointer-events: all;
 }
 
 /* Forward direction (→ target): dashes march toward target */
@@ -297,51 +276,49 @@
   gap: var(--nords-space-xs);
 }
 
-/* Connection handles — hidden by default, revealed on hover/select.
- * The handle is cosmetic only; actual edge geometry uses rectIntersection()
- * in EuclideanEdge.tsx to find the nearest bounding-box point.
+/* ── Invisible Connection Handles ──
+ * Handles are invisible rectangles spanning each card edge.
+ * The node border itself IS the connection zone — no circles.
+ * Drag from any edge → starts a new connection.
  */
-.nords-node__handle--hidden {
-  opacity: 0;
-  width: 10px;
-  height: 10px;
-  min-width: 10px;
-  min-height: 10px;
-  border-radius: 50%;
-  border: 2px solid var(--nords-color-accent) !important;
-  background: var(--nords-color-bg-surface) !important;
+.nords-node__handle--edge {
+  opacity: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
   pointer-events: all;
-  transition: opacity 0.2s ease, box-shadow 0.2s ease;
-  z-index: 5;
+  z-index: 10;
 }
 
-/* Reveal handles on node hover or selection */
-.nords-node:hover .nords-node__handle--hidden,
-.nords-node.is-selected .nords-node__handle--hidden {
-  opacity: 0.7;
+/* Top/bottom handles span the full width */
+.nords-node__handle--edge[data-handlepos="top"],
+.nords-node__handle--edge[data-handlepos="bottom"] {
+  width: 100% !important;
+  height: 12px !important;
+  left: 0 !important;
+  transform: none !important;
+  cursor: crosshair;
 }
 
-.nords-node:hover .nords-node__handle--hidden:hover,
-.nords-node.is-selected .nords-node__handle--hidden:hover {
-  opacity: 1;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--nords-color-accent) 25%, transparent);
+/* Left/right handles span the full height */
+.nords-node__handle--edge[data-handlepos="left"],
+.nords-node__handle--edge[data-handlepos="right"] {
+  width: 12px !important;
+  height: 100% !important;
+  top: 0 !important;
+  transform: none !important;
+  cursor: crosshair;
 }
 
-/* Touch devices: handles always visible since there's no hover cursor */
+/* Touch devices: wider hit area */
 @media (pointer: coarse) {
-  .nords-node__handle--hidden {
-    opacity: 0.5;
-    width: 14px;
-    height: 14px;
-    min-width: 14px;
-    min-height: 14px;
+  .nords-node__handle--edge[data-handlepos="top"],
+  .nords-node__handle--edge[data-handlepos="bottom"] {
+    height: 18px !important;
   }
-  /* Invisible 44px touch pad behind the handle for WCAG compliance */
-  .nords-node__handle--hidden::after {
-    content: '';
-    position: absolute;
-    inset: -15px;
-    border-radius: 50%;
+  .nords-node__handle--edge[data-handlepos="left"],
+  .nords-node__handle--edge[data-handlepos="right"] {
+    width: 18px !important;
   }
 }
 

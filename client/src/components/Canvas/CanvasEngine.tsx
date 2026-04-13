@@ -313,10 +313,24 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   // ── Connect handler: persist new connections to DB ──
   const onConnect = useCallback(async (connection: Connection) => {
     if (!connection.source || !connection.target) return;
+    if (connection.source === connection.target) return; // no self-loops
     // Use the currently active connection type, or first available as fallback
     const connType = activeConnType || connectionTypes[0];
     if (!connType) {
       console.warn('No connection types available — cannot create connection');
+      return;
+    }
+    // Prevent duplicate: same type between the same two nords (either direction)
+    const isDuplicate = edges.some(e => {
+      const typeId = (e.data as any)?._typeId;
+      if (typeId !== connType.id) return false;
+      return (
+        (e.source === connection.source && e.target === connection.target) ||
+        (e.source === connection.target && e.target === connection.source)
+      );
+    });
+    if (isDuplicate) {
+      console.warn('Connection already exists between these nords');
       return;
     }
     try {
@@ -348,7 +362,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     } catch (err) {
       console.error('Failed to create connection:', err);
     }
-  }, [activeConnType, connectionTypes, createConnection, setEdges]);
+  }, [activeConnType, connectionTypes, createConnection, setEdges, edges]);
 
   // ── Delete Connection ──
   const handleDeleteEdge = useCallback(async (edgeId: string) => {
