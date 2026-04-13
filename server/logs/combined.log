@@ -1361,3 +1361,203 @@ error: invalid input syntax for type uuid: "n-985c0048-a1ba-441e-910c-eaea4a0b98
 22:34:49.927 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":167,"rows":1}
 22:35:18.138 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 22:35:18.177 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":165,"rows":1}
+22:37:13.253 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:13.289 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":155,"rows":1}
+22:37:14.770 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":29,"rows":1}
+22:37:16.857 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":33,"rows":1}
+22:37:18.514 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":33,"rows":1}
+22:37:19.475 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":34,"rows":1}
+22:37:20.789 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":32,"rows":1}
+22:37:21.742 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":33,"rows":1}
+22:37:22.619 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":29,"rows":1}
+22:37:52.791 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:52.831 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":162,"rows":1}
+22:37:53.478 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+22:37:54.866 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":31,"rows":1}
+22:37:55.787 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":29,"rows":1}
+22:37:57.144 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":34,"rows":1}
+22:37:59.118 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+22:38:11.721 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:38:11.759 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":173,"rows":1}
+22:38:19.947 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":33,"rows":1}
+22:38:23.456 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"rows":1}
+22:38:24.546 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"rows":1}
+22:38:30.807 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":39,"rows":1}
+22:38:34.199 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":35,"rows":1}
+22:38:36.989 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":38,"rows":1}
+22:38:38.359 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":34,"rows":1}
+22:38:39.198 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":34,"rows":1}
+22:38:40.153 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+22:38:43.767 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":38,"rows":1}
+22:38:54.326 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:38:54.363 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":168,"rows":1}
+22:38:57.108 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":30,"rows":1}
+22:38:58.947 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":38,"rows":1}
+22:39:03.173 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":40,"rows":1}
+22:39:03.208 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:39:07.491 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":31,"rows":1}
+22:39:41.280 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:39:41.317 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":164,"rows":1}
+22:39:53.409 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:39:53.474 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":236,"rows":1}
+22:40:28.132 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:40:28.168 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":164,"rows":1}
+22:40:28.754 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":30,"rows":1}
+22:40:53.923 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:40:53.958 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":163,"rows":1}
+22:40:53.996 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+22:42:34.049 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:42:34.092 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":177,"rows":1}
+22:42:34.127 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:42:38.323 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":40,"rows":1}
+22:42:38.357 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:43:33.906 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:43:33.942 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":172,"rows":1}
+22:43:36.053 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":35,"rows":1}
+22:43:57.216 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:43:57.252 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":164,"rows":1}
+22:43:58.350 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":32,"rows":1}
+22:43:59.642 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"rows":1}
+22:44:00.833 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":33,"rows":1}
+22:44:02.889 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+22:44:04.376 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":35,"rows":1}
+22:44:05.376 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"rows":1}
+22:44:23.903 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:44:23.942 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":174,"rows":1}
+22:44:47.448 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+22:44:47.450 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+22:44:48.421 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:44:48.453 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":157,"rows":1}
+22:44:48.483 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":29,"rows":1}
+22:44:53.460 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":53,"rows":1}
+22:44:53.499 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+22:44:53.531 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+22:44:53.563 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+22:45:02.686 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+22:45:02.718 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+22:45:13.726 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:45:13.765 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":169,"rows":1}
+22:45:13.798 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:45:18.532 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+22:45:18.567 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+22:45:57.411 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:45:57.446 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":156,"rows":1}
+22:46:01.781 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":31,"rows":1}
+22:46:01.809 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":28,"rows":1}
+22:46:04.012 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:46:04.044 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+22:46:04.076 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+22:46:04.111 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+22:46:05.956 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":30,"rows":1}
+22:46:05.985 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":28,"rows":1}
+22:46:08.181 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+22:46:08.213 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+22:46:08.247 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+22:46:08.278 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+22:46:08.858 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:46:09.867 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":29,"rows":1}
+22:46:09.896 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":28,"rows":1}
+22:46:19.772 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+22:46:19.803 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+22:46:19.836 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+22:46:19.867 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+22:46:20.351 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+22:46:46.680 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:46:46.719 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":164,"rows":1}
+22:46:46.760 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":31,"rows":1}
+22:46:46.801 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":31,"rows":1}
+22:46:46.845 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":34,"rows":1}
+22:46:46.887 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":31,"rows":1}
+22:46:46.928 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":31,"rows":1}
+22:46:46.970 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":31,"rows":1}
+22:46:47.011 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":31,"rows":1}
+22:46:47.052 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":30,"rows":1}
+22:46:47.096 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":33,"rows":1}
+22:46:47.138 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":31,"rows":1}
+22:47:07.107 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:47:07.173 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":191,"rows":1}
+22:47:07.207 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:47:07.239 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+22:47:07.274 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+22:48:36.691 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:48:36.728 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":165,"rows":1}
+22:48:46.185 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":41,"rows":1}
+22:48:47.493 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":33,"rows":1}
+22:48:49.215 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+22:48:50.123 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":39,"rows":1}
+22:50:24.052 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:50:24.097 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":173,"rows":1}
+22:50:25.863 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":33,"rows":1}
+22:50:33.453 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":33,"rows":1}
+22:50:36.106 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":39,"rows":1}
+22:50:42.125 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":38,"rows":1}
+22:50:46.315 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":38,"rows":1}
+22:50:48.061 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":32,"rows":1}
+22:50:50.581 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":35,"rows":1}
+22:50:51.727 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":38,"rows":1}
+22:50:58.732 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":31,"rows":1}
+22:51:22.595 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:51:22.630 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":153,"rows":1}
+22:51:23.998 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":32,"rows":1}
+22:51:25.825 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":29,"rows":1}
+22:51:27.951 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":38,"rows":1}
+22:51:32.821 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":34,"rows":1}
+22:51:35.026 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"rows":1}
+22:51:43.661 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":30,"rows":1}
+22:51:45.162 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"rows":1}
+22:53:08.849 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:53:08.913 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":185,"rows":1}
+22:53:08.945 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+22:53:08.979 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+22:53:09.011 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+22:53:15.320 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":42,"rows":1}
+22:53:23.287 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+22:53:49.032 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:53:49.072 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":172,"rows":1}
+22:53:58.078 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":35,"rows":1}
+22:53:59.041 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":31,"rows":1}
+22:54:00.377 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":63,"rows":1}
+22:54:00.409 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+22:54:00.442 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:54:00.474 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+22:54:09.243 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":39,"rows":1}
+22:55:30.742 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:55:30.804 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":181,"rows":1}
+22:55:30.836 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+22:55:30.869 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:55:30.902 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:55:35.729 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":40,"rows":1}
+22:55:39.511 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":29,"rows":1}
+22:55:45.255 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+22:55:49.982 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+22:55:50.013 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+22:55:50.046 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:55:50.082 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+22:56:28.534 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:56:28.601 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":190,"rows":1}
+22:56:28.634 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:56:28.667 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+22:56:28.701 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:57:42.027 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:57:42.089 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":188,"rows":1}
+22:57:42.124 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+22:57:42.156 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+22:57:42.190 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+22:57:47.252 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"rows":1}
+22:57:51.580 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+22:57:57.595 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+22:57:59.536 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":31,"rows":1}
+22:58:03.016 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":34,"rows":1}
+22:58:04.779 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":40,"rows":1}
+22:58:06.996 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":29,"rows":1}
+22:58:09.316 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":34,"rows":1}
+22:58:14.331 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":32,"rows":1}
+22:58:25.478 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:58:25.516 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":163,"rows":1}
+22:58:40.263 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:58:40.297 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":159,"rows":1}
+22:58:46.380 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":41,"rows":1}
+22:59:23.170 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:59:23.209 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":172,"rows":1}
+23:00:03.794 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:00:03.831 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":159,"rows":1}

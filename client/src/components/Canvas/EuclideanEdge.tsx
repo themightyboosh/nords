@@ -99,10 +99,29 @@ export function EuclideanEdge({
     return { count: siblings.length, index: sibIdx };
   }, (a, b) => a.count === b.count && a.index === b.index);
 
+  // ── Node Degree Splay ──
+  // Compute each node's total connection count and this edge's index among them.
+  // Used to fan out Bézier control points at heavily-connected nodes.
+  const sourceSplay = useStore((s) => {
+    const conns = s.edges.filter(e => e.source === source || e.target === source);
+    const idx = conns.findIndex(e => e.id === id);
+    return { degree: conns.length, index: idx };
+  }, (a, b) => a.degree === b.degree && a.index === b.index);
+
+  const targetSplay = useStore((s) => {
+    const conns = s.edges.filter(e => e.source === target || e.target === target);
+    const idx = conns.findIndex(e => e.id === id);
+    return { degree: conns.length, index: idx };
+  }, (a, b) => a.degree === b.degree && a.index === b.index);
+
   // ── Geometry ──
   const dx = tx - sx;
   const dy = ty - sy;
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
+
+  // Perpendicular unit vector
+  const perpUnitX = -dy / len;
+  const perpUnitY = dx / len;
 
   // Ribbon offset computation
   const spread = 40;
@@ -114,6 +133,15 @@ export function EuclideanEdge({
 
   const midX = (sx + tx) / 2;
   const midY = (sy + ty) / 2;
+
+  // Degree splay: fan-out offset at each endpoint (±6px per connection, centered)
+  const SPLAY_PX = 6;
+  const srcSplayOffset = sourceSplay.degree > 1
+    ? (sourceSplay.index - (sourceSplay.degree - 1) / 2) * SPLAY_PX
+    : 0;
+  const tgtSplayOffset = targetSplay.degree > 1
+    ? (targetSplay.index - (targetSplay.degree - 1) / 2) * SPLAY_PX
+    : 0;
 
   // Target control point (where the spring wants to rest)
   const targetCpX = midX + perpX * 2;
@@ -177,39 +205,48 @@ export function EuclideanEdge({
     };
   }, [targetCpX, targetCpY]);
 
-  // ── Path Construction (Dual Cubic Bézier — label-anchored center) ──
+  // ── Path Construction (Dual Cubic Bézier — label-anchored center + edge splay) ──
   // Path splits into two segments meeting at the spring-animated center point.
   // Source → CP1 → [CENTER/LABEL] → CP2 → Target
-  // Each half has its own wave deflection. The label sticks to the center junction.
+  // CP1 hugs the source edge, CP4 hugs the target edge — splay fans out AT the card border.
   const speed = Math.abs(cpPos.vx) + Math.abs(cpPos.vy);
-  const isAtRest = offset === 0 && Math.abs(cpPos.x - midX) < 2 && Math.abs(cpPos.y - midY) < 2 && speed < 0.5;
+  const springAtRest = Math.abs(cpPos.x - midX) < 2 && Math.abs(cpPos.y - midY) < 2 && speed < 0.5;
+  const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
+  const isFullyAtRest = offset === 0 && springAtRest && !hasSplay;
 
   // Center junction point — this is where the label anchors
   const centerX = cpPos.x;
   const centerY = cpPos.y;
 
   let pathD: string;
-  if (isAtRest) {
+  if (isFullyAtRest) {
+    // No splay, no ribbon, no spring motion — straight line
     pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+  } else if (springAtRest && hasSplay && offset === 0) {
+    // Spring settled but has splay — curve departs card edge at an angle
+    // CP1 at 8% from source (right at card border), CP2 at 92% (right at target border)
+    const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
+    const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
+    const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
+    const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
+    pathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
   } else {
-    // Perpendicular unit vector to the line
-    const perpUnitX = -dy / len;
-    const perpUnitY = dx / len;
-
     // Wave amplitude from spring velocity (clamped)
     const waveAmp = Math.min(35, speed * 2.5);
 
-    // First half: Source → Center (wave deflects one way)
-    const cp1x = sx + dx * 0.2 + perpUnitX * waveAmp;
-    const cp1y = sy + dy * 0.2 + perpUnitY * waveAmp;
-    const cp2x = sx + dx * 0.4 - perpUnitX * waveAmp * 0.5;
-    const cp2y = sy + dy * 0.4 - perpUnitY * waveAmp * 0.5;
+    // First half: Source → Center
+    // CP1 at 8% from source — splay fans out right at the card edge
+    const cp1x = sx + dx * 0.08 + perpUnitX * (waveAmp * 0.3 + srcSplayOffset);
+    const cp1y = sy + dy * 0.08 + perpUnitY * (waveAmp * 0.3 + srcSplayOffset);
+    const cp2x = sx + dx * 0.35 + perpUnitX * waveAmp;
+    const cp2y = sy + dy * 0.35 + perpUnitY * waveAmp;
 
-    // Second half: Center → Target (wave deflects the other way)
-    const cp3x = sx + dx * 0.6 + perpUnitX * waveAmp * 0.5;
-    const cp3y = sy + dy * 0.6 + perpUnitY * waveAmp * 0.5;
-    const cp4x = sx + dx * 0.8 - perpUnitX * waveAmp;
-    const cp4y = sy + dy * 0.8 - perpUnitY * waveAmp;
+    // Second half: Center → Target
+    // CP4 at 92% — splay fans in right at the target card edge
+    const cp3x = sx + dx * 0.65 - perpUnitX * waveAmp;
+    const cp3y = sy + dy * 0.65 - perpUnitY * waveAmp;
+    const cp4x = sx + dx * 0.92 - perpUnitX * (waveAmp * 0.3 + tgtSplayOffset);
+    const cp4y = sy + dy * 0.92 - perpUnitY * (waveAmp * 0.3 + tgtSplayOffset);
 
     pathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${centerX} ${centerY} C ${cp3x} ${cp3y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
   }
