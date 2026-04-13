@@ -29,7 +29,7 @@ import { ManageTypes } from './components/ManageTypes/ManageTypes';
 function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string, onThemeChange: (theme: string) => void }) {
   const { id: projectId } = useParams<{ id: string }>();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedNord, setSelectedNord] = useState<string | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<{ id: string; type: 'nord' | 'connection' } | null>(null);
   const [showManageTypes, setShowManageTypes] = useState(false);
   
   // Load graph at the shell level so TypeRegistryProvider wraps everything
@@ -37,13 +37,18 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
   const { graph, refetch } = useProjectGraph(activeProjectId);
 
   const handleNordClick = (id: string) => {
-    setSelectedNord(id);
+    setSelectedEntity({ id, type: 'nord' });
+    setIsDrawerOpen(true);
+  };
+
+  const handleEdgeDoubleClick = (id: string) => {
+    setSelectedEntity({ id, type: 'connection' });
     setIsDrawerOpen(true);
   };
 
   const closeDrawer = () => {
     setIsDrawerOpen(false);
-    setSelectedNord(null);
+    setSelectedEntity(null);
   };
 
   return (
@@ -61,8 +66,18 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
             />
             <GlobalDock />
             <ZoomControls />
-            <CanvasEngine onNordClick={handleNordClick} selectedNord={selectedNord} projectId={projectId} />
-            <DetailDrawer isOpen={isDrawerOpen} onClose={closeDrawer} nordId={selectedNord} />
+            <CanvasEngine
+              onNordClick={handleNordClick}
+              onEdgeDoubleClick={handleEdgeDoubleClick}
+              selectedNord={selectedEntity?.type === 'nord' ? selectedEntity.id : null}
+              projectId={projectId}
+            />
+            <DetailDrawer
+              isOpen={isDrawerOpen}
+              onClose={closeDrawer}
+              entityId={selectedEntity?.id || null}
+              entityType={selectedEntity?.type || 'nord'}
+            />
             {showManageTypes && (
               <ManageTypes
                 projectId={activeProjectId}

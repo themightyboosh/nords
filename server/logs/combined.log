@@ -1561,3 +1561,464 @@ error: invalid input syntax for type uuid: "n-985c0048-a1ba-441e-910c-eaea4a0b98
 22:59:23.209 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":172,"rows":1}
 23:00:03.794 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 23:00:03.831 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":159,"rows":1}
+23:04:42.426 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:04:42.464 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "n-e51786fc-1ee9-45d2-9afc-a22d07681f58"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:352:20) {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":164,"error":"invalid input syntax for type uuid: \"n-e51786fc-1ee9-45d2-9afc-a22d07681f58\""}
+23:08:10.923 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:08:10.961 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":164,"rows":1}
+23:08:12.485 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":33,"rows":1}
+23:08:14.287 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "n-e51786fc-1ee9-45d2-9afc-a22d07681f58"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:352:20) {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"error":"invalid input syntax for type uuid: \"n-e51786fc-1ee9-45d2-9afc-a22d07681f58\""}
+23:08:16.713 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:08:16.750 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":165,"rows":1}
+23:08:19.666 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":31,"rows":1}
+23:08:21.280 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":33,"rows":1}
+23:08:22.557 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":31,"rows":1}
+23:08:23.475 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":31,"rows":1}
+23:08:25.897 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+23:08:28.851 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":39,"rows":1}
+23:08:32.576 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "n-e51786fc-1ee9-45d2-9afc-a22d07681f58"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:352:20) {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":35,"error":"invalid input syntax for type uuid: \"n-e51786fc-1ee9-45d2-9afc-a22d07681f58\""}
+23:08:34.394 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:08:34.433 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "n-e51786fc-1ee9-45d2-9afc-a22d07681f58"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:352:20) {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":175,"error":"invalid input syntax for type uuid: \"n-e51786fc-1ee9-45d2-9afc-a22d07681f58\""}
+23:08:46.296 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:08:46.326 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":155,"rows":1}
+23:08:46.355 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":29,"rows":1}
+23:08:51.735 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":29,"rows":1}
+23:08:51.764 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":29,"rows":1}
+23:08:57.570 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":69,"rows":1}
+23:08:57.604 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:08:57.638 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:08:57.675 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+23:09:01.901 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"rows":1}
+23:09:04.082 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types WHERE project_id = $1 AND deleted_at IS NULL ORDER BY s","duration":33,"rows":5}
+23:09:04.173 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:09:04.208 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types WHERE project_id = $1 AND deleted_at IS NULL ORDE","duration":159,"rows":4}
+23:09:04.239 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types WHERE project_id = $1 AND deleted_at IS NULL ORDE","duration":29,"rows":4}
+23:09:04.240 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types WHERE project_id = $1 AND deleted_at IS NULL ORDER BY s","duration":30,"rows":5}
+23:09:07.719 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":34,"rows":1}
+23:09:07.741 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:07.781 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":59,"rows":1}
+23:09:07.794 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:07.817 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:07.852 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:07.858 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+23:09:07.891 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:09:07.896 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:07.900 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:07.923 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":154,"rows":1}
+23:09:07.930 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:07.939 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:07.967 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:07.972 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:08.005 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:08.040 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:08.620 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":36,"rows":1}
+23:09:08.641 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:08.654 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:08.672 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:08.688 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:08.702 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:08.720 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:08.763 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:08.768 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:08.769 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:08.806 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:08.844 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":65,"rows":1}
+23:09:08.847 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:08.851 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:08.879 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:08.891 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:08.903 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:08.914 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:08.936 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:08.950 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:08.955 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:08.967 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:08.983 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:08.992 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:09.014 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+23:09:09.014 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:09.042 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:09.049 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:09.073 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.085 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:09.117 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:09.118 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.138 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.151 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.172 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":34,"rows":1}
+23:09:09.184 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.194 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.217 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.226 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.249 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:09.257 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.283 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:09.291 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.316 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.324 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.349 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:09.349 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.380 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:09.381 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:09.414 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.415 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":36,"rows":1}
+23:09:09.440 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:09.450 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:09.471 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:09.484 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:09.499 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.519 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:09.529 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.552 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.561 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:09.585 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.596 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:09.625 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":39,"rows":1}
+23:09:09.626 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.651 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:09.657 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.680 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:09.692 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:09.711 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:09.728 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:09.754 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:09.763 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:09.797 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:09.797 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":33,"rows":1}
+23:09:09.832 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:09.833 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:09.864 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:09.876 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:09.895 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:09.897 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.923 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:09.930 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:09.954 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:09.962 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:09.984 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:09.995 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:10.012 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:10.027 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:10.041 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:10.063 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:10.083 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:10.094 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+23:09:10.106 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:10.126 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:10.138 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:10.159 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:10.171 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:10.191 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:10.202 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:10.226 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:10.234 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:10.256 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:10.258 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:10.292 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:10.293 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":34,"rows":1}
+23:09:10.323 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:10.325 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:10.348 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:10.357 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:10.376 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:10.390 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:10.424 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:10.456 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:10.488 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:10.497 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:10.522 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:10.532 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":33,"rows":1}
+23:09:10.556 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:10.602 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":45,"rows":1}
+23:09:10.637 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:10.670 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:10.702 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:10.711 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:10.735 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:10.770 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:10.770 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":33,"rows":1}
+23:09:10.802 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:10.810 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:10.835 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:10.850 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:10.867 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:10.896 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:10.901 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:10.917 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:10.932 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+23:09:10.946 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:10.966 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:10.976 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:10.985 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:11.002 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:11.017 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:11.035 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:11.047 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:11.068 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:11.078 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:11.101 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:11.113 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":33,"rows":1}
+23:09:11.133 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:11.134 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:11.164 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+23:09:11.165 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:11.197 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:11.199 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:11.234 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:11.234 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":35,"rows":1}
+23:09:11.261 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":33,"rows":1}
+23:09:11.266 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:11.288 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:11.299 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:11.329 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":29,"rows":1}
+23:09:11.330 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:11.353 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":33,"rows":1}
+23:09:11.366 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+23:09:11.380 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:11.397 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+23:09:11.412 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:11.430 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:11.441 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:11.464 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:11.473 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:11.499 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:11.506 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:11.532 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:11.564 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:11.598 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:11.631 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:12.777 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":34,"rows":1}
+23:09:12.800 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:12.812 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:12.848 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:12.850 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:12.887 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:12.892 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:12.926 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:12.931 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:12.965 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:12.970 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:12.983 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:13.006 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:13.039 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:13.107 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:13.136 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:13.144 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:13.165 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:13.177 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:13.195 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:13.213 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:13.227 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:13.245 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:13.256 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:13.277 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:13.286 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:13.310 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:13.344 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:13.509 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:13.538 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:13.543 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:13.567 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:13.576 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:13.598 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:13.609 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:13.643 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:14.248 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":36,"rows":1}
+23:09:14.267 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:14.282 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:14.319 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:14.323 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:14.363 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":33,"rows":1}
+23:09:14.363 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:14.366 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+23:09:14.402 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:14.405 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+23:09:14.438 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:14.439 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:14.452 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:14.471 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:14.479 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:14.504 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:14.505 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:14.531 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:14.537 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:14.557 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:14.570 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:14.591 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:14.605 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:14.618 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:14.640 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:14.646 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:14.674 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:14.680 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:14.710 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:14.710 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:14.737 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:14.743 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:14.766 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:14.775 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:14.794 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:14.806 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+23:09:14.839 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:14.839 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":33,"rows":1}
+23:09:14.858 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:14.872 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:14.889 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":30,"rows":1}
+23:09:14.905 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:14.916 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:14.937 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:14.949 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":32,"rows":1}
+23:09:14.970 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:14.980 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:15.004 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:15.013 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:15.036 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:15.036 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:15.070 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:15.071 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":33,"rows":1}
+23:09:15.098 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:15.102 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:15.136 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:15.168 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:15.203 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:15.235 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:15.267 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:15.407 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:15.436 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":33,"rows":1}
+23:09:15.440 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+23:09:15.476 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:15.483 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:15.518 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:15.979 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":37,"rows":1}
+23:09:15.997 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:16.015 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:16.028 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:16.047 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:09:16.060 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":31,"rows":1}
+23:09:16.086 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
+23:09:16.088 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:16.119 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:09:16.127 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:16.150 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:16.155 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:16.179 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:16.194 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
+23:09:16.209 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:16.229 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:16.239 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":29,"rows":1}
+23:09:16.263 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:16.275 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":28,"rows":1}
+23:09:16.301 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":37,"rows":1}
+23:09:16.335 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:16.369 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:23.041 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":38,"rows":1}
+23:09:23.079 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+23:09:27.545 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":34,"rows":1}
+23:09:27.581 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:30.885 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":35,"rows":1}
+23:09:30.921 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:09:39.335 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT COALESCE(MAX(sort_order), -1) + 1 AS max FROM nord_types WHERE project_id","duration":39,"rows":1}
+23:09:39.369 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_types (project_id, name, icon, accent_color, properties_schema,","duration":32,"rows":1}
+23:09:39.406 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:09:44.485 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET icon = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":36,"rows":1}
+23:09:44.526 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
+23:09:47.947 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET icon = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":37,"rows":1}
+23:09:47.983 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:09:56.865 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET icon = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":40,"rows":1}
+23:09:56.902 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:10:15.220 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:10:15.254 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":164,"rows":1}
+23:10:15.318 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":61,"rows":1}
+23:11:28.024 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:11:28.069 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":174,"rows":1}
+23:11:33.801 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":67,"rows":1}
+23:11:33.835 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:11:33.869 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:11:33.905 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:41:53.757 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:41:53.822 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":189,"rows":1}
+23:41:53.859 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:41:53.894 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+23:41:53.928 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:41:53.962 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:41:53.996 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+23:41:54.032 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+23:41:54.067 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:41:54.100 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:41:54.135 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+23:41:54.169 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32,"rows":1}
+23:41:54.205 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+01:14:00.615 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+01:14:00.714 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":219,"rows":1}
+01:14:03.247 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":32,"rows":1}
+01:18:26.147 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+01:18:26.186 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":165,"rows":1}
+01:18:28.395 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+01:18:38.328 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":35,"rows":1}
+01:18:41.048 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":32,"rows":1}
+01:18:43.808 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"rows":1}
+01:18:52.702 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":34,"rows":1}
+01:23:38.532 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+01:23:38.605 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":198,"rows":1}
+01:23:39.088 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":39,"rows":1}
+01:23:39.124 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+01:23:51.961 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+01:23:51.999 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":171,"rows":1}
+01:23:53.810 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":37,"rows":1}
+01:24:39.865 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+01:24:39.903 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":159,"rows":1}
+01:25:23.594 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+01:25:23.665 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":217,"rows":1}
+01:25:24.081 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+01:25:24.116 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+01:25:41.801 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+01:25:41.870 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":205,"rows":1}
+01:25:42.146 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":104,"rows":1}
+01:25:42.181 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+01:25:44.794 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":93,"rows":1}
+01:25:47.729 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":31,"rows":1}
+01:25:49.755 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":35,"rows":1}
+01:25:52.700 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+01:25:52.737 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+01:25:53.183 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":117,"rows":1}
+01:25:53.217 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+01:25:53.251 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+01:25:53.290 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":39,"rows":1}
+01:26:15.538 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+01:26:15.605 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":192,"rows":1}
+01:26:16.079 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
+01:26:16.118 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
+01:26:43.241 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+01:26:43.308 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":195,"rows":1}
+01:26:43.340 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":31,"rows":1}
+01:26:44.101 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":42,"rows":1}
+01:26:44.135 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+01:26:44.169 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+01:26:44.203 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+01:27:11.199 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+01:27:11.265 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":192,"rows":1}
+01:27:12.085 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":43,"rows":1}
+01:27:12.119 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}

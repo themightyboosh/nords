@@ -97,6 +97,30 @@
   color: var(--nords-color-accent);
 }
 
+/* Line Mode Drawer Header */
+.nords-drawer-line-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--nords-border-color);
+}
+
+.nords-drawer-endpoint {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--nords-text-primary);
+}
+
+.nords-drawer-direction {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
 .nords-drawer-markdown {
   font-size: 0.95rem;
   line-height: 1.6;

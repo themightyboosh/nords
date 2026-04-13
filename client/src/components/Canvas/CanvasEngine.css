@@ -891,8 +891,14 @@
   z-index: 10;
 }
 
-.nords-canvas--dragging .react-flow__edge:not(.selected) {
+.nords-canvas--dragging .react-flow__edge:not(.selected):not(.drag-connected) {
   opacity: 0.15;
+  transition: opacity 0.2s ease;
+}
+
+/* Edges connected to the dragged node stay bright — same convention as nodes */
+.nords-canvas--dragging .react-flow__edge.drag-connected {
+  opacity: 1;
   transition: opacity 0.2s ease;
 }
 

@@ -63,7 +63,7 @@ export interface Connection {
   type_id: string;
   source_nord_id: string;
   target_nord_id: string;
-  direction: 'forward' | 'reverse' | 'none';
+  direction: 'forward' | 'reverse' | 'both' | 'neither' | 'none';
   distance_x: number;
   distance_y: number;
   properties: Record<string, unknown>;

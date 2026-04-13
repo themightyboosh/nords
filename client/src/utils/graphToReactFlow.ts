@@ -74,22 +74,30 @@ export function graphToEdges(
     const typeName = type?.name || 'Unknown';
     const typeColor = type?.accent_color || '#a78bfa';
 
-    // Arrowhead markers based on direction
+    // Arrowhead markers based on direction (4-state model)
     const arrowMarker = { type: MarkerType.ArrowClosed, color: typeColor, width: 16, height: 16 };
     const isForward = conn.direction === 'forward';
     const isReverse = conn.direction === 'reverse';
+    const isBoth = conn.direction === 'both';
+    const isNeither = conn.direction === 'neither';
+
+    // Direction for visual rendering: to/from/both/none
+    const visualDirection = isForward ? 'to'
+      : isReverse ? 'from'
+      : isBoth ? 'both'
+      : 'none'; // 'neither' and 'none' both render without chevrons
 
     return {
       id: conn.id,
       source: conn.source_nord_id,
       target: conn.target_nord_id,
       type: 'euclidean',
-      ...(isForward ? { markerEnd: arrowMarker } : {}),
-      ...(isReverse ? { markerStart: arrowMarker } : {}),
+      ...(isForward || isBoth ? { markerEnd: arrowMarker } : {}),
+      ...(isReverse || isBoth ? { markerStart: arrowMarker } : {}),
       data: {
         type: typeName,
         color: typeColor,
-        direction: isForward ? 'to' : isReverse ? 'from' : 'none',
+        direction: visualDirection,
         _typeId: conn.type_id,
         _distanceX: conn.distance_x,
         _distanceY: conn.distance_y,

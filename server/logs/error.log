@@ -258,3 +258,31 @@ error: invalid input syntax for type uuid: "n-985c0048-a1ba-441e-910c-eaea4a0b98
     at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
     at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:352:20) {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":170,"error":"invalid input syntax for type uuid: \"n-985c0048-a1ba-441e-910c-eaea4a0b98c8\""}
+23:04:42.464 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "n-e51786fc-1ee9-45d2-9afc-a22d07681f58"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:352:20) {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":164,"error":"invalid input syntax for type uuid: \"n-e51786fc-1ee9-45d2-9afc-a22d07681f58\""}
+23:08:14.287 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "n-e51786fc-1ee9-45d2-9afc-a22d07681f58"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:352:20) {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":36,"error":"invalid input syntax for type uuid: \"n-e51786fc-1ee9-45d2-9afc-a22d07681f58\""}
+23:08:32.576 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "n-e51786fc-1ee9-45d2-9afc-a22d07681f58"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:352:20) {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":35,"error":"invalid input syntax for type uuid: \"n-e51786fc-1ee9-45d2-9afc-a22d07681f58\""}
+23:08:34.433 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "n-e51786fc-1ee9-45d2-9afc-a22d07681f58"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:352:20) {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":175,"error":"invalid input syntax for type uuid: \"n-e51786fc-1ee9-45d2-9afc-a22d07681f58\""}

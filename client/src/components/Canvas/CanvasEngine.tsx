@@ -41,10 +41,11 @@ const edgeTypes = {
 interface InteractiveCanvasProps {
   projectId: string;
   onNordClick: (id: string) => void;
+  onEdgeDoubleClick: (id: string) => void;
   selectedNord: string | null;
 }
 
-function InteractiveCanvas({ projectId, onNordClick, selectedNord }: InteractiveCanvasProps) {
+function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord }: InteractiveCanvasProps) {
   const { graph, loading, error, refetch } = useProjectGraph(projectId);
   const { createNord, batchUpdatePositions, deleteNord } = useNordMutations(projectId);
   const { createConnection, deleteConnection } = useConnectionMutations(projectId);
@@ -173,14 +174,24 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
     (_event: React.MouseEvent, node: Node) => {
       setIsDragging(true);
       setDragNodeId(node.id);
+      // Mark edges connected to this node so they stay bright during drag
+      setEdges(eds => eds.map(e =>
+        e.source === node.id || e.target === node.id
+          ? { ...e, className: 'drag-connected' }
+          : e
+      ));
     },
-    []
+    [setEdges]
   );
 
   const onNodeDragStop = useCallback(
     async (_event: React.MouseEvent, node: Node) => {
       setIsDragging(false);
       setDragNodeId(null);
+      // Clear drag-connected class from all edges
+      setEdges(eds => eds.map(e =>
+        e.className === 'drag-connected' ? { ...e, className: '' } : e
+      ));
       const normalized = pixelToNormalized(node.position.x, node.position.y);
       try {
         await batchUpdatePositions([{ id: node.id, x: normalized.x, y: normalized.y }]);
@@ -188,7 +199,7 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
         console.error('Failed to persist position:', err);
       }
     },
-    [batchUpdatePositions]
+    [batchUpdatePositions, setEdges]
   );
 
   // ── Delete Nord ──
@@ -324,6 +335,7 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
         onNodeDragStop={onNodeDragStop}
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
+        onEdgeDoubleClick={(_event, edge) => onEdgeDoubleClick(edge.id)}
         onPaneClick={() => { closeMenu(); closeEdgeMenu(); closeRadialMenu(); }}
         onPaneContextMenu={onPaneContextMenuRadial}
         nodeTypes={nodeTypes}
@@ -395,11 +407,12 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
 
 interface CanvasEngineProps {
   onNordClick: (id: string) => void;
+  onEdgeDoubleClick: (id: string) => void;
   selectedNord: string | null;
   projectId?: string;
 }
 
-export default function CanvasEngine({ onNordClick, selectedNord, projectId }: CanvasEngineProps) {
+export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId }: CanvasEngineProps) {
   const { lens } = useLens();
   const activeProjectId = projectId || '5413fc94-3245-4153-9641-b9d025367e1d';
 
@@ -415,7 +428,7 @@ export default function CanvasEngine({ onNordClick, selectedNord, projectId }: C
 
   return (
     <div className="nords-canvas">
-      <InteractiveCanvas projectId={activeProjectId} onNordClick={onNordClick} selectedNord={selectedNord} />
+      <InteractiveCanvas projectId={activeProjectId} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} />
     </div>
   );
 }
