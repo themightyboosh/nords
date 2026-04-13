@@ -294,7 +294,7 @@
   width: 100% !important;
   height: 100% !important;
   border-radius: 0 !important;
-  pointer-events: all;
+  pointer-events: none; /* RF finds targets by proximity — let clicks through for drag */
   z-index: 1;
   left: 0 !important;
   top: 0 !important;
