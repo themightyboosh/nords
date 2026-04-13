@@ -29,6 +29,7 @@ import { RadialMenu } from './RadialMenu';
 import { useVisibilityCascade } from '../../hooks/useVisibilityCascade';
 import { useSemanticZoom } from '../../hooks/useSemanticZoom';
 import { useSpatialAnimations } from '../../hooks/useSpatialAnimations';
+import { useLensLayout } from '../../hooks/useLensLayout';
 import './CanvasEngine.css';
 
 const nodeTypes = {
@@ -124,6 +125,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   useSemanticZoom();
   useVisibilityCascade();
   useSpatialAnimations();
+  useLensLayout(activeConnectionTypeId, rfNodes);
   const { onNodeClick } = useNodeSelection(onNordClick);
 
   // ── Create Nord (from Add panel or radial menu) ──
@@ -257,38 +259,22 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   }, [graph, nodes, createNord, addNodes, setNodes]);
 
   // ── Persist position on drag end ──
+  // Nords are not manually draggable — positions are computed from connection distances.
+  // Drag handlers are kept minimal for edge highlighting during canvas interactions.
   const onNodeDragStart = useCallback(
     (_event: React.MouseEvent, node: Node) => {
       setIsDragging(true);
       setDragNodeId(node.id);
-      // Mark edges connected to this node so they stay bright during drag
-      setEdges(eds => eds.map(e =>
-        e.source === node.id || e.target === node.id
-          ? { ...e, className: 'drag-connected' }
-          : e
-      ));
     },
-    [setEdges]
+    []
   );
 
   const onNodeDragStop = useCallback(
-    async (_event: React.MouseEvent, node: Node) => {
+    (_event: React.MouseEvent, _node: Node) => {
       setIsDragging(false);
       setDragNodeId(null);
-      // Clear drag-connected class from all edges
-      setEdges(eds => eds.map(e =>
-        e.className === 'drag-connected' ? { ...e, className: '' } : e
-      ));
-      const normalized = pixelToNormalized(node.position.x, node.position.y);
-      // Defensive: strip any accidental prefix (e.g. "n-") before sending to Postgres UUID column
-      const cleanId = node.id.replace(/^[ne]-/, '');
-      try {
-        await batchUpdatePositions([{ id: cleanId, x: normalized.x, y: normalized.y }]);
-      } catch (err) {
-        console.error('Failed to persist position:', err);
-      }
     },
-    [batchUpdatePositions, setEdges]
+    []
   );
 
   // ── Delete Nord ──
@@ -447,7 +433,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         multiSelectionKeyCode={null}
         selectionKeyCode={null}
         selectionOnDrag={false}
-        data-dragging-node={dragNodeId}
+        nodesDraggable={false}
         edgesReconnectable
         reconnectRadius={25}
         onReconnectStart={onReconnectStart}
