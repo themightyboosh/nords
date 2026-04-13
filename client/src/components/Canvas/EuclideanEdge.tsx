@@ -326,6 +326,7 @@ export function EuclideanEdge({
           direction={visualDirection as any}
           type={data?.type as string}
           color={data?.color as string}
+          edgeId={id}
         />
       )}
     </>
