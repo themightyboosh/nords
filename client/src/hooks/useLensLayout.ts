@@ -14,7 +14,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useReactFlow, useStore } from '@xyflow/react';
+import { useReactFlow, useStore, type Edge } from '@xyflow/react';
 
 const ANIM_DURATION = 400; // ms
 
@@ -33,8 +33,9 @@ export function useLensLayout(
   activeTypeId: string | null,
   relevanceNodes: { id: string; position: { x: number; y: number } }[]
 ) {
-  const { setNodes, getNodes } = useReactFlow();
-  const edges = useStore((s) => s.edges);
+  const reactFlow = useReactFlow();
+  // Safe store access — returns empty array if store isn't initialized yet
+  const edges = useStore((s) => s.edges ?? [], (a, b) => a === b) as Edge[];
   const rafRef = useRef<number>(0);
   const prevTypeRef = useRef<string | null | undefined>(undefined); // undefined = first render
   // Cache the relevance (DB) positions — stable reference keyed by node ID
@@ -61,7 +62,7 @@ export function useLensLayout(
     if (prevTypeRef.current === activeTypeId) return;
     prevTypeRef.current = activeTypeId;
 
-    const currentNodes = getNodes();
+    const currentNodes = reactFlow.getNodes();
     if (currentNodes.length === 0) return;
 
     let targets: Map<string, PositionTarget>;
@@ -153,7 +154,7 @@ export function useLensLayout(
       const t = Math.min(1, elapsed / ANIM_DURATION);
       const ease = 1 - Math.pow(1 - t, 3); // cubic ease-out
 
-      setNodes(nds =>
+      reactFlow.setNodes(nds =>
         nds.map(n => {
           const target = targets.get(n.id);
           if (!target) return n;
@@ -175,5 +176,5 @@ export function useLensLayout(
     rafRef.current = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(rafRef.current);
-  }, [activeTypeId, edges, getNodes, setNodes]);
+  }, [activeTypeId, edges, reactFlow]);
 }

@@ -93,6 +93,7 @@ export function graphToEdges(
       source: conn.source_nord_id,
       target: conn.target_nord_id,
       type: 'euclidean',
+      reconnectable: true,
       ...(isForward || isBoth ? { markerEnd: arrowMarker } : {}),
       ...(isReverse || isBoth ? { markerStart: arrowMarker } : {}),
       data: {

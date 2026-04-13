@@ -86,7 +86,7 @@
   cursor: pointer;
 }
 
-/* Edge hover feedback — thicken and brighten with prominent glow */
+/* Edge hover feedback — thicken and brighten */
 .react-flow__edge:hover .nords-connection--base {
   stroke-width: 4;
   opacity: 0.7;
@@ -94,19 +94,12 @@
 .react-flow__edge:hover .nords-connection--active {
   stroke-width: 3.5;
   opacity: 1;
-  filter: drop-shadow(0 0 5px currentColor) drop-shadow(0 0 10px currentColor);
-}
-/* Show a visible glow on the hit area when hovering (discoverability) */
-.react-flow__edge:hover .nords-connection--hitarea {
-  stroke: currentColor;
-  stroke-opacity: 0.08;
 }
 
-/* Edge selection — accent glow */
+/* Edge selection — subtle thickening */
 .react-flow__edge.selected .nords-connection--active {
   stroke-width: 3.5;
   opacity: 1;
-  filter: drop-shadow(0 0 8px var(--nords-color-accent)) drop-shadow(0 0 16px var(--nords-color-accent));
 }
 .react-flow__edge.selected .nords-connection--hitarea {
   stroke: var(--nords-color-accent);
@@ -139,7 +132,6 @@
 .react-flow__edge:hover .react-flow__edgeupdater:hover {
   fill-opacity: 0.3;
   stroke-opacity: 1;
-  filter: drop-shadow(0 0 6px var(--nords-color-accent));
 }
 
 /* Always show handles on selected edges */
