@@ -276,34 +276,84 @@
   gap: var(--nords-space-xs);
 }
 
-/* ── Invisible Connection Handles ──
- * Each handle covers the full card width and half its height.
- * Combined, source + target cover the entire card as a drop zone.
- * No visible circles — the card itself IS the connection target.
+/* ── Connection Handle Layout ──
+ * HYBRID: full-card target (drop zone) + thin-border sources (drag zone).
+ *
+ * DROP TARGET (.handle--full): covers entire card so releasing
+ * the mouse anywhere on the card completes the connection.
+ *
+ * DRAG SOURCE (.handle--border): 14px strips along each card edge
+ * so dragging starts from the border area, not the card interior.
  */
+
+/* ── Drop target — full card coverage ── */
 .nords-node__handle--full {
   opacity: 0 !important;
   background: transparent !important;
   border: none !important;
   width: 100% !important;
-  height: 50% !important;
+  height: 100% !important;
   border-radius: 0 !important;
   pointer-events: all;
   z-index: 1;
   left: 0 !important;
+  top: 0 !important;
   transform: none !important;
+}
+
+/* ── Drag source — thin border strips ── */
+.nords-node__handle--border {
+  opacity: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  pointer-events: all;
+  z-index: 2; /* above the full target handle */
   cursor: crosshair;
 }
 
-/* Top handle (target) covers upper half */
-.nords-node__handle--full[data-handlepos="top"] {
+/* Top/bottom strips span full width */
+.nords-node__handle--border[data-handlepos="top"],
+.nords-node__handle--border[data-handlepos="bottom"] {
+  width: 100% !important;
+  height: 14px !important;
+  left: 0 !important;
+  transform: none !important;
+}
+.nords-node__handle--border[data-handlepos="top"] {
   top: 0 !important;
 }
-
-/* Bottom handle (source) covers lower half */
-.nords-node__handle--full[data-handlepos="bottom"] {
+.nords-node__handle--border[data-handlepos="bottom"] {
   bottom: 0 !important;
   top: auto !important;
+}
+
+/* Left/right strips span full height */
+.nords-node__handle--border[data-handlepos="left"],
+.nords-node__handle--border[data-handlepos="right"] {
+  width: 14px !important;
+  height: 100% !important;
+  top: 0 !important;
+  transform: none !important;
+}
+.nords-node__handle--border[data-handlepos="left"] {
+  left: 0 !important;
+}
+.nords-node__handle--border[data-handlepos="right"] {
+  right: 0 !important;
+  left: auto !important;
+}
+
+/* Touch devices: wider border strips for easier hit targets */
+@media (pointer: coarse) {
+  .nords-node__handle--border[data-handlepos="top"],
+  .nords-node__handle--border[data-handlepos="bottom"] {
+    height: 20px !important;
+  }
+  .nords-node__handle--border[data-handlepos="left"],
+  .nords-node__handle--border[data-handlepos="right"] {
+    width: 20px !important;
+  }
 }
 
 .nords-node__titlebar {

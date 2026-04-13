@@ -2832,3 +2832,14 @@ error: new row for relation "connections" violates check constraint "connections
     at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
     at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:203:24) {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_id, direction, distance_x, distance_y, pr","duration":36,"error":"new row for relation \"connections\" violates check constraint \"connections_direction_check\""}
+18:50:47.732 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:50:47.768 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":164,"rows":1}
+18:50:53.693 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":34,"rows":1}
+18:52:13.083 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:52:13.117 [31merror[39m: Query failed
+error: duplicate key value violates unique constraint "uq_connection_type_source_target"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:266:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET source_nord_id = $1, target_nord_id = $2\n    WHERE id = $3 AND deleted_at IS NULL\n    RE","duration":157,"error":"duplicate key value violates unique constraint \"uq_connection_type_source_target\""}

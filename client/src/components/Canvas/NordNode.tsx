@@ -48,10 +48,14 @@ export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<N
       }}
       data-testid={`nord-node-${id}`}
     >
-      {/* Invisible handles — centered, cover full card for easy connection drop targets.
-       * Both source and target on same node so connections work in any direction. */}
+      {/* DROP TARGET — covers entire card so releasing anywhere connects */}
       <Handle type="target" position={Position.Top} id="target" className="nords-node__handle--full" isConnectable={isConnectable} />
-      <Handle type="source" position={Position.Bottom} id="source" className="nords-node__handle--full" isConnectable={isConnectable} />
+
+      {/* DRAG SOURCE — thin border strips so dragging starts from card edge */}
+      <Handle type="source" position={Position.Top} id="s-top" className="nords-node__handle--border" isConnectable={isConnectable} />
+      <Handle type="source" position={Position.Bottom} id="s-bottom" className="nords-node__handle--border" isConnectable={isConnectable} />
+      <Handle type="source" position={Position.Left} id="s-left" className="nords-node__handle--border" isConnectable={isConnectable} />
+      <Handle type="source" position={Position.Right} id="s-right" className="nords-node__handle--border" isConnectable={isConnectable} />
 
       {/* All text content — counter-scales uniformly below 60% zoom */}
       <div
