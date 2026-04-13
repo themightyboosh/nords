@@ -96,22 +96,18 @@
   opacity: 1;
 }
 
-/* Edge selection — subtle thickening */
+/* Edge selection — no glow, just thicken */
 .react-flow__edge.selected .nords-connection--active {
-  stroke-width: 3.5;
-  opacity: 1;
+  stroke-width: 3;
 }
-.react-flow__edge.selected .nords-connection--hitarea {
-  stroke: var(--nords-color-accent);
-  stroke-opacity: 0.12;
-}
+
 /* ── Edge Reconnection Handles ──
- * Circles at edge endpoints for drag-to-relink.
- * Sized to match node handles (10px) for visual consistency.
+ * SVG circles at edge endpoints for drag-to-relink.
+ * Use `r` for SVG circle radius — width/height don't apply to SVG.
+ * Sized to match node handles (5px radius = 10px diameter).
  */
 .react-flow__edgeupdater {
-  width: 10px;
-  height: 10px;
+  r: 5;
   cursor: move;
   fill: var(--nords-color-accent);
   fill-opacity: 0;
@@ -132,7 +128,7 @@
   stroke-opacity: 1;
 }
 
-/* Always show handles on selected edges */
+/* Show handles on selected edges */
 .react-flow__edge.selected .react-flow__edgeupdater {
   fill-opacity: 0.2;
   stroke-opacity: 0.8;

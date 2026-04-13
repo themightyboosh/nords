@@ -2601,3 +2601,15 @@ TypeError: Cannot read properties of null (reading 'getSnapshot')
 17:58:49.553 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
 17:58:49.588 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
 17:58:49.622 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+17:59:41.053 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+17:59:41.178 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":314,"rows":1}
+17:59:41.240 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":61,"rows":1}
+18:02:31.267 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:02:31.308 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET source_nord_id = $1, target_nord_id = $2\n    WHE","duration":175,"rows":1}
+18:07:54.954 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:07:55.017 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":190,"rows":1}
+18:07:55.054 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+18:08:47.234 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:08:47.272 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":167,"rows":1}
+18:09:02.625 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:09:02.662 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":167,"rows":1}

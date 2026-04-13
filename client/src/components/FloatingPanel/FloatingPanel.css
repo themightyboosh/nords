@@ -37,6 +37,7 @@
   border-radius: 12px;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
   animation: nords-panel-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform; /* pre-promote — prevents canvas jerk on mount */
 }
 
 .nords-floating-panel--panel-left {

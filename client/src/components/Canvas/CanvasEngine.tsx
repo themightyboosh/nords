@@ -313,37 +313,42 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   // ── Connect handler: persist new connections to DB ──
   const onConnect = useCallback(async (connection: Connection) => {
     if (!connection.source || !connection.target) return;
-    // Use the first available connection type
-    const defaultType = connectionTypes[0];
-    if (!defaultType) {
+    // Use the currently active connection type, or first available as fallback
+    const connType = activeConnType || connectionTypes[0];
+    if (!connType) {
       console.warn('No connection types available — cannot create connection');
       return;
     }
     try {
       const newConn = await createConnection({
-        type_id: defaultType.id,
+        type_id: connType.id,
         source_nord_id: connection.source,
         target_nord_id: connection.target,
-        direction: 'forward',
+        direction: connType.default_direction || 'forward',
         distance_x: 0.5,
         distance_y: 0.5,
       });
-      // Add the edge to local state
+      // Build edge with same data shape as graphToEdges
       const newEdge: Edge = {
         id: newConn.id,
         source: newConn.source_nord_id,
         target: newConn.target_nord_id,
         type: 'euclidean',
+        reconnectable: true,
         data: {
-          label: defaultType.name,
-          color: defaultType.color || '#888',
+          type: connType.name,
+          color: connType.accent_color || '#888',
+          direction: connType.default_direction || 'forward',
+          _typeId: connType.id,
+          _distanceX: 0.5,
+          _distanceY: 0.5,
         },
       };
       setEdges(eds => addEdge(newEdge, eds));
     } catch (err) {
       console.error('Failed to create connection:', err);
     }
-  }, [connectionTypes, createConnection, setEdges]);
+  }, [activeConnType, connectionTypes, createConnection, setEdges]);
 
   // ── Delete Connection ──
   const handleDeleteEdge = useCallback(async (edgeId: string) => {
@@ -405,6 +410,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
         onNodeClick={onNodeClick}
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}

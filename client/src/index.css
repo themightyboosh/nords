@@ -43,6 +43,7 @@ body {
   backdrop-filter: blur(var(--nords-glass-blur));
   -webkit-backdrop-filter: blur(var(--nords-glass-blur));
   border: 1px solid var(--nords-color-border-default);
+  will-change: transform; /* pre-promote to GPU layer — prevents canvas jerk on mount */
 }
 
 /* ── App Container ── */
