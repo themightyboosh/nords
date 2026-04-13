@@ -7,6 +7,7 @@ import {
   useEdgesState,
   ConnectionMode,
   addEdge,
+  reconnectEdge,
   type Node,
   type Edge,
   type Connection,
@@ -15,7 +16,7 @@ import {
 import { useLens } from '../../context/LensContext';
 import { useTypeRegistry } from '../../hooks/useTypeRegistry';
 import { useCanvasShortcuts } from '../../hooks/useCanvasShortcuts';
-import { useProjectGraph } from '../../hooks/useProjectGraph';
+import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import { useNordMutations } from '../../hooks/useNordMutations';
 import { useConnectionMutations } from '../../hooks/useNordMutations';
 import { graphToNodes, graphToEdges, nordToNode, pixelToNormalized } from '../../utils/graphToReactFlow';
@@ -43,14 +44,28 @@ interface InteractiveCanvasProps {
   onNordClick: (id: string) => void;
   onEdgeDoubleClick: (id: string) => void;
   selectedNord: string | null;
+  graph: ProjectGraph | null;
+  refetchGraph: () => Promise<void>;
 }
 
-function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord }: InteractiveCanvasProps) {
-  const { graph, loading, error, refetch } = useProjectGraph(projectId);
+function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord, graph, refetchGraph }: InteractiveCanvasProps) {
   const { createNord, batchUpdatePositions, deleteNord } = useNordMutations(projectId);
-  const { createConnection, deleteConnection } = useConnectionMutations(projectId);
+  const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
   const { connectionTypes } = useTypeRegistry();
+  const { activeConnectionTypeId } = useLens();
   const { addNodes, screenToFlowPosition } = useReactFlow();
+
+  // ── Click-to-place mode ──
+  // When set, a ghost node follows the cursor until clicked to place
+  const [placingTypeId, setPlacingTypeId] = React.useState<string | null>(null);
+  const placingRef = React.useRef<string | null>(null);
+  placingRef.current = placingTypeId;
+
+  // Find the active connection type for label resolution
+  const activeConnType = useMemo(() => {
+    if (!activeConnectionTypeId || !graph) return null;
+    return graph.connection_types.find(t => t.id === activeConnectionTypeId) || null;
+  }, [activeConnectionTypeId, graph]);
 
   // Transform API data → React Flow format
   const rfNodes = useMemo(() => {
@@ -63,46 +78,66 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     return graphToEdges(graph.connections, graph.connection_types);
   }, [graph]);
 
+  // Apply lens dimming: non-active type edges become ghosted
+  const lensEdges = useMemo(() => {
+    if (!activeConnectionTypeId) return rfEdges;
+    return rfEdges.map(e => {
+      const isActive = (e.data as any)?._typeId === activeConnectionTypeId;
+      if (isActive) return e;
+      // Dim non-active edges — keep them visible and interactive but gray
+      return {
+        ...e,
+        data: { ...e.data, dimmed: true },
+        className: 'nords-edge--dimmed',
+      };
+    });
+  }, [rfEdges, activeConnectionTypeId]);
+
   const [nodes, setNodes, onNodesChange] = useNodesState(rfNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(rfEdges);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(lensEdges);
   const [menuConfig, setMenuConfig] = React.useState<{ x: number, y: number, node: any } | null>(null);
   const [edgeMenuConfig, setEdgeMenuConfig] = React.useState<{ x: number, y: number, edgeId: string } | null>(null);
   const [radialMenuPos, setRadialMenuPos] = React.useState<{ x: number, y: number } | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragNodeId, setDragNodeId] = React.useState<string | null>(null);
+  // Track which edge is being reconnected for the onReconnect handler
+  const reconnectingRef = React.useRef<{ edgeId: string; handleType: 'source' | 'target' } | null>(null);
+
+  // Touch gesture isolation: on coarse-pointer devices, require two-finger pan
+  // so single-finger drag is reserved for moving nodes
+  const isTouchDevice = React.useMemo(
+    () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches,
+    []
+  );
 
   // Sync when graph data changes (initial load or refetch)
-  const { fitView } = useReactFlow();
-
   React.useEffect(() => {
     if (rfNodes.length > 0) {
       setNodes(rfNodes);
-      setTimeout(() => fitView({ padding: 0.15, duration: 300 }), 100);
     }
-  }, [rfNodes, setNodes, fitView]);
+  }, [rfNodes, setNodes]);
 
   React.useEffect(() => {
-    if (rfEdges.length > 0) setEdges(rfEdges);
-  }, [rfEdges, setEdges]);
+    if (lensEdges.length > 0) setEdges(lensEdges);
+  }, [lensEdges, setEdges]);
 
   useSemanticZoom();
   useVisibilityCascade();
   useSpatialAnimations();
   const { onNodeClick } = useNodeSelection(onNordClick);
 
-  // ── Create Nord (used by Add flyout & RadialMenu) ──
-  const handleCreateNord = useCallback(async (
-    typeId: string,
-    canvasPosition?: { x: number; y: number }
-  ) => {
+  // ── Create Nord (from Add panel or radial menu) ──
+  // In "placing" mode: don't create immediately, enter click-to-place
+  const handleCreateNord = useCallback(async (typeId: string, canvasPosition?: { x: number; y: number }) => {
     if (!graph) return;
-    
-    // Default to center of screen if no position given
-    const pos = canvasPosition || screenToFlowPosition({ 
-      x: window.innerWidth / 2, 
-      y: window.innerHeight / 2 
-    });
-    const normalized = pixelToNormalized(pos.x, pos.y);
+
+    // If no position given, enter click-to-place mode
+    if (!canvasPosition) {
+      setPlacingTypeId(typeId);
+      return;
+    }
+
+    const normalized = pixelToNormalized(canvasPosition.x, canvasPosition.y);
     const typeName = graph.nord_types.find(t => t.id === typeId)?.name || 'Nord';
 
     try {
@@ -128,7 +163,59 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     } catch (err) {
       console.error('Failed to create nord:', err);
     }
-  }, [graph, createNord, addNodes, setNodes, screenToFlowPosition]);
+  }, [graph, createNord, addNodes, setNodes]);
+
+  // ── Escape key cancels placing mode ──
+  React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && placingTypeId) {
+        setPlacingTypeId(null);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [placingTypeId]);
+
+  // ── Edge Reconnection ──
+  // When user drags an edge endpoint, record which end is being moved
+  const onReconnectStart = useCallback(
+    (_event: React.MouseEvent, _edge: Edge, _handleType: 'source' | 'target') => {
+      reconnectingRef.current = { edgeId: _edge.id, handleType: _handleType };
+    },
+    []
+  );
+
+  // When the dragged endpoint is dropped on a new node, persist the relink
+  const onReconnect = useCallback(
+    async (oldEdge: Edge, newConnection: Connection) => {
+      if (!newConnection.source || !newConnection.target) return;
+      // Optimistic: update local state immediately
+      setEdges(eds => reconnectEdge(oldEdge, newConnection, eds));
+      try {
+        await updateConnection(oldEdge.id, {
+          source_nord_id: newConnection.source,
+          target_nord_id: newConnection.target,
+        });
+      } catch (err) {
+        console.error('Failed to reconnect edge:', err);
+        // Revert on failure
+        setEdges(eds => reconnectEdge(
+          { ...oldEdge, source: newConnection.source!, target: newConnection.target! },
+          { source: oldEdge.source, target: oldEdge.target, sourceHandle: null, targetHandle: null },
+          eds
+        ));
+      }
+      reconnectingRef.current = null;
+    },
+    [updateConnection, setEdges]
+  );
+
+  const onReconnectEnd = useCallback(
+    (_event: MouseEvent | TouchEvent, _edge: Edge) => {
+      reconnectingRef.current = null;
+    },
+    []
+  );
 
   // ── Duplicate Nord ──
   const handleDuplicate = useCallback(async (id: string) => {
@@ -193,8 +280,10 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         e.className === 'drag-connected' ? { ...e, className: '' } : e
       ));
       const normalized = pixelToNormalized(node.position.x, node.position.y);
+      // Defensive: strip any accidental prefix (e.g. "n-") before sending to Postgres UUID column
+      const cleanId = node.id.replace(/^[ne]-/, '');
       try {
-        await batchUpdatePositions([{ id: node.id, x: normalized.x, y: normalized.y }]);
+        await batchUpdatePositions([{ id: cleanId, x: normalized.x, y: normalized.y }]);
       } catch (err) {
         console.error('Failed to persist position:', err);
       }
@@ -300,21 +389,11 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const closeRadialMenu = useCallback(() => setRadialMenuPos(null), []);
 
   // Loading state
-  if (loading && nodes.length === 0) {
+  if (!graph && nodes.length === 0) {
     return (
       <div className="nords-canvas-loading">
         <div className="nords-canvas-loading__spinner" />
         <span>Loading graph…</span>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error && nodes.length === 0) {
-    return (
-      <div className="nords-canvas-error">
-        <span>Failed to load graph: {error}</span>
-        <button onClick={refetch}>Retry</button>
       </div>
     );
   }
@@ -329,22 +408,39 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
         onNodeClick={onNodeClick}
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
+        onEdgeClick={(_event, edge) => onEdgeDoubleClick(edge.id)}
         onEdgeDoubleClick={(_event, edge) => onEdgeDoubleClick(edge.id)}
-        onPaneClick={() => { closeMenu(); closeEdgeMenu(); closeRadialMenu(); }}
-        onPaneContextMenu={onPaneContextMenuRadial}
+        onPaneClick={(event) => {
+          // Click-to-place: if placing mode is active, create the nord at click position
+          if (placingRef.current) {
+            const pos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+            handleCreateNord(placingRef.current, pos);
+            setPlacingTypeId(null);
+            return;
+          }
+          closeMenu(); closeEdgeMenu(); closeRadialMenu();
+        }}
+        onPaneContextMenu={(event) => {
+          // Cancel placing mode on right-click
+          if (placingRef.current) {
+            event.preventDefault();
+            setPlacingTypeId(null);
+            return;
+          }
+          onPaneContextMenuRadial(event);
+        }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={{ type: 'euclidean' }}
-        className={canvasClass}
-        fitView
+        className={`${canvasClass} ${placingTypeId ? 'nords-canvas--placing' : ''}`}
         panOnScroll
+        panOnDrag={isTouchDevice ? [1, 2] : true}
         zoomOnPinch
         minZoom={0.4}
         maxZoom={2.0}
@@ -352,11 +448,23 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         selectionKeyCode={null}
         selectionOnDrag={false}
         data-dragging-node={dragNodeId}
+        edgesReconnectable
+        reconnectRadius={25}
+        onReconnectStart={onReconnectStart}
+        onReconnect={onReconnect}
+        onReconnectEnd={onReconnectEnd}
       >
         {/* Dual-layer background: dots + subtle cross grid for depth */}
         <Background id="dots" variant={BackgroundVariant.Dots} gap={32} size={2.5} color="var(--nords-color-grid-dot)" />
         <Background id="cross" variant={BackgroundVariant.Cross} gap={200} size={0.5} color="var(--nords-color-grid-dot)" style={{ opacity: 0.4 }} />
       </ReactFlow>
+
+      {/* Click-to-place indicator */}
+      {placingTypeId && (
+        <div className="nords-placing-indicator">
+          <span>Click to place · ESC to cancel</span>
+        </div>
+      )}
 
       <GroupToolbar />
 
@@ -410,11 +518,14 @@ interface CanvasEngineProps {
   onEdgeDoubleClick: (id: string) => void;
   selectedNord: string | null;
   projectId?: string;
+  graph?: ProjectGraph | null;
+  refetchGraph?: () => Promise<void>;
 }
 
-export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId }: CanvasEngineProps) {
+export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph }: CanvasEngineProps) {
   const { lens } = useLens();
   const activeProjectId = projectId || '5413fc94-3245-4153-9641-b9d025367e1d';
+  const noop = async () => {};
 
   if (lens === 'matrix') {
     return (
@@ -428,7 +539,7 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
 
   return (
     <div className="nords-canvas">
-      <InteractiveCanvas projectId={activeProjectId} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} />
+      <InteractiveCanvas projectId={activeProjectId} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} />
     </div>
   );
 }

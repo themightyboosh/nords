@@ -30,21 +30,22 @@ export function graphToNodes(
     const canvasY = nord.position_y * 2000 - 1000;
 
     // Build properties array from JSONB, ordered by card_row
+    // Only include properties with card_row 1 or 2 on the card face
     const schema = type?.properties_schema || [];
     const propsEntries = Object.entries(nord.properties || {});
     
-    // Sort: card_row 1 first, then card_row 2, then hidden (no card_row)
     const properties = propsEntries
       .map(([key, value]) => {
         const schemaDef = schema.find((s: any) => s.name === key);
         return {
           key,
           value: String(value),
-          cardRow: schemaDef?.card_row || 999,
+          cardRow: (schemaDef as any)?.card_row as number | undefined,
         };
       })
-      .sort((a, b) => a.cardRow - b.cardRow)
-      .map(({ key, value }) => ({ key, value }));
+      .filter(p => p.cardRow === 1 || p.cardRow === 2)
+      .sort((a, b) => (a.cardRow || 999) - (b.cardRow || 999))
+      .map(({ key, value, cardRow }) => ({ key, value, cardRow }));
 
     return {
       id: nord.id,

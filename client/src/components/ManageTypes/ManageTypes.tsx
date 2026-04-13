@@ -26,6 +26,7 @@ import { resolveIcon } from '../../utils/iconRegistry';
 import { IconPicker } from './IconPicker';
 import { Spectrum1D } from '../Spectrum/Spectrum1D';
 import { hslToHex, hexToHSL, autoContrast } from '../../utils/color';
+import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import './ManageTypes.css';
 
 interface ManageTypesProps {
@@ -172,7 +173,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged }: Manage
   const sidebarList = activeTab === 'nord' ? nordTypes : connectionTypes;
 
   return (
-    <div className="manage-types-overlay" onClick={onClose}>
+    <FloatingPanel variant="modal" isOpen={open} onClose={onClose} width="min(900px, 90vw)">
       <div className="manage-types nords-glass" onClick={e => e.stopPropagation()} data-testid="manage-types-modal">
 
         {/* ── Header ── */}
@@ -424,6 +425,6 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged }: Manage
         {/* Saving indicator */}
         {saving && <div className="manage-types__saving">Saving…</div>}
       </div>
-    </div>
+    </FloatingPanel>
   );
 }

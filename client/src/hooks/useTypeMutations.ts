@@ -13,7 +13,7 @@ import { api } from '../api/client';
 
 export interface NordTypeData {
   id: string;
-  project_id: string;
+  user_id: string;
   name: string;
   icon: string;
   accent_color: string;
@@ -24,14 +24,16 @@ export interface NordTypeData {
 
 export interface ConnectionTypeData {
   id: string;
-  project_id: string;
+  user_id: string;
   name: string;
   accent_color: string;
   stroke_style: string;
+  measurement_mode: 'spectrum' | 'quadrant' | 'none';
   default_direction: string;
   x_stage_labels: string[];
   y_stage_labels: string[];
   properties_schema: PropertySchema[];
+  is_system: boolean;
   sort_order: number;
 }
 

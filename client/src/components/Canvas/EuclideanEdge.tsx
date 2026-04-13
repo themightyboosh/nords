@@ -279,6 +279,7 @@ export function EuclideanEdge({
 
   // ── Styles ──
   const isGhosted = data?.ghost === true;
+  const isDimmed = data?.dimmed === true;
   const direction = (data?.direction as string) || 'none';
 
   // Direction-aware CSS classes for marching ants
@@ -291,7 +292,9 @@ export function EuclideanEdge({
   // React Flow's marker system has issues with custom edges + markerStart,
   // so we draw arrowheads manually for reliable bidirectional rendering.
   const arrowSize = 10;
-  const edgeColor = (data?.color as string) || '#000';
+  const originalColor = (data?.color as string) || '#000';
+  // Dimmed edges render in uniform dark gray
+  const edgeColor = isDimmed ? '#555' : originalColor;
   const showEndArrow = direction === 'to' || direction === 'both';
   const showStartArrow = direction === 'from' || direction === 'both';
 
@@ -337,16 +340,17 @@ export function EuclideanEdge({
       {!isGhosted && startArrowPoints && (
         <polygon points={startArrowPoints} fill={edgeColor} />
       )}
-      {/* Invisible fat hit-area for click detection */}
+      {/* Invisible fat hit-area for click/hover detection */}
       <path
         d={pathD}
         stroke="transparent"
-        strokeWidth="15"
+        strokeWidth="30"
         fill="none"
+        className="nords-connection--hitarea"
         style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
       />
       
-      {/* Label */}
+      {/* Label — shown for active and dimmed edges, hidden only for ghosted */}
       {!isGhosted && (
         <ConnectionLabel
           x={labelX}
@@ -354,7 +358,7 @@ export function EuclideanEdge({
           angleDeg={angleDeg}
           direction={visualDirection as any}
           type={data?.type as string}
-          color={data?.color as string}
+          color={isDimmed ? '#666' : (data?.color as string)}
           edgeId={id}
         />
       )}

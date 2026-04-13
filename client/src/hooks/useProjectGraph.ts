@@ -20,7 +20,7 @@ export interface PropertySchema {
 
 export interface NordType {
   id: string;
-  project_id: string;
+  user_id: string;
   name: string;
   icon: string | null;
   accent_color: string | null;
@@ -46,14 +46,16 @@ export interface Nord {
 
 export interface ConnectionType {
   id: string;
-  project_id: string;
+  user_id: string;
   name: string;
   accent_color: string | null;
   stroke_style: string;
+  measurement_mode: 'spectrum' | 'quadrant' | 'none';
   default_direction: string;
   x_stage_labels: string[];
   y_stage_labels: string[];
   properties_schema: PropertySchema[];
+  is_system: boolean;
   sort_order: number;
 }
 

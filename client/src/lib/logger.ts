@@ -75,8 +75,23 @@ function emit(entry: LogEntry): void {
   }
 }
 
-// Error queue for batch sending (wired in Epic 5)
-const errorQueue: LogEntry[] = [];
+// ── Log queue + HTTP transport ──
+const logQueue: LogEntry[] = [];
+const FLUSH_INTERVAL_MS = 30_000; // 30 seconds
+const MAX_BATCH_SIZE = 50;
+
+async function flushToServer(): Promise<void> {
+  if (logQueue.length === 0) return;
+  const batch = logQueue.splice(0, MAX_BATCH_SIZE);
+  try {
+    // Use dynamic import to avoid circular dependency with api/client
+    const { api } = await import('../api/client');
+    await api.post('/api/logs', { entries: batch });
+  } catch {
+    // Silently drop — don't recurse into logger on flush failure
+    // In dev, we already emitted to console so nothing is lost
+  }
+}
 
 const logger = {
   error(message: string, meta?: Record<string, unknown> | Error): void {
@@ -85,31 +100,54 @@ const logger = {
     const metaObj = meta instanceof Error ? { errorMessage: meta.message } : meta;
     const entry = formatEntry('error', message, metaObj, error);
     emit(entry);
-    errorQueue.push(entry);
+    logQueue.push(entry);
   },
 
   warn(message: string, meta?: Record<string, unknown>): void {
     if (!shouldLog('warn')) return;
-    emit(formatEntry('warn', message, meta));
+    const entry = formatEntry('warn', message, meta);
+    emit(entry);
+    logQueue.push(entry);
   },
 
   info(message: string, meta?: Record<string, unknown>): void {
     if (!shouldLog('info')) return;
-    emit(formatEntry('info', message, meta));
+    const entry = formatEntry('info', message, meta);
+    emit(entry);
+    // Only queue info+ for server in production to reduce noise
+    if (!isDev) logQueue.push(entry);
   },
 
   debug(message: string, meta?: Record<string, unknown>): void {
     if (!shouldLog('debug')) return;
     emit(formatEntry('debug', message, meta));
+    // Debug logs stay browser-only — too noisy for server
   },
 
-  /** Flush queued errors to a server endpoint (Epic 5) */
-  flush(): LogEntry[] {
-    const batch = [...errorQueue];
-    errorQueue.length = 0;
-    return batch;
-  },
+  /** Force flush queued entries to the server */
+  flush: flushToServer,
 };
+
+// Auto-flush on interval
+setInterval(flushToServer, FLUSH_INTERVAL_MS);
+
+// Flush on page unload (best-effort via sendBeacon fallback)
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    if (logQueue.length === 0) return;
+    const batch = logQueue.splice(0, MAX_BATCH_SIZE);
+    // sendBeacon is fire-and-forget, works during page teardown
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    try {
+      navigator.sendBeacon(
+        `${apiBase}/api/logs`,
+        new Blob([JSON.stringify({ entries: batch })], { type: 'application/json' })
+      );
+    } catch {
+      // Best effort — page is closing anyway
+    }
+  });
+}
 
 export default logger;
 export type { LogLevel, LogEntry };

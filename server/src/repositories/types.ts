@@ -1,7 +1,8 @@
 /**
  * types.ts — Repository functions for Nord and Connection type CRUD.
  *
- * Types define the schema for nords and connections within a project.
+ * Types are user-level global components. They belong to a user account
+ * and are associated with projects via the project_types join table.
  * They control icon, accent color, properties schema, and scale behavior.
  */
 
@@ -11,7 +12,7 @@ import { query, queryOne } from '../db.js';
 
 export interface NordType {
   id: string;
-  project_id: string;
+  user_id: string;
   name: string;
   icon: string;
   accent_color: string;
@@ -24,8 +25,18 @@ export interface NordType {
 export const nordTypesRepo = {
   async findByProject(projectId: string): Promise<NordType[]> {
     return query<NordType>(
-      'SELECT * FROM nord_types WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sort_order',
+      `SELECT nt.*, pt.sort_order FROM nord_types nt
+       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nord'
+       WHERE pt.project_id = $1 AND nt.deleted_at IS NULL
+       ORDER BY pt.sort_order`,
       [projectId]
+    );
+  },
+
+  async findByUser(userId: string): Promise<NordType[]> {
+    return query<NordType>(
+      'SELECT * FROM nord_types WHERE user_id = $1 AND deleted_at IS NULL ORDER BY sort_order',
+      [userId]
     );
   },
 
@@ -37,31 +48,41 @@ export const nordTypesRepo = {
   },
 
   async create(data: {
-    project_id: string;
+    user_id: string;
+    project_id?: string;  // optional — if provided, auto-associate with project
     name: string;
     icon?: string;
     accent_color?: string;
     properties_schema?: Record<string, unknown>[];
     scale_property?: string | null;
   }): Promise<NordType> {
-    const maxSort = await queryOne<{ max: number }>(
-      'SELECT COALESCE(MAX(sort_order), -1) + 1 AS max FROM nord_types WHERE project_id = $1 AND deleted_at IS NULL',
-      [data.project_id]
-    );
     const result = await queryOne<NordType>(
-      `INSERT INTO nord_types (project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO nord_types (user_id, name, icon, accent_color, properties_schema, scale_property, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, 0)
        RETURNING *`,
       [
-        data.project_id,
+        data.user_id,
         data.name,
         data.icon || 'Square',
         data.accent_color || '#4da6ff',
         JSON.stringify(data.properties_schema || []),
         data.scale_property || null,
-        maxSort?.max ?? 0,
       ]
     );
+    // Auto-associate with project if provided
+    if (data.project_id && result) {
+      const maxSort = await queryOne<{ max: number }>(
+        `SELECT COALESCE(MAX(sort_order), -1) + 1 AS max FROM project_types
+         WHERE project_id = $1 AND type_kind = 'nord'`,
+        [data.project_id]
+      );
+      await queryOne(
+        `INSERT INTO project_types (project_id, type_id, type_kind, sort_order)
+         VALUES ($1, $2, 'nord', $3)
+         ON CONFLICT DO NOTHING`,
+        [data.project_id, result.id, maxSort?.max ?? 0]
+      );
+    }
     return result!;
   },
 
@@ -108,7 +129,7 @@ export const nordTypesRepo = {
 
 export interface ConnectionType {
   id: string;
-  project_id: string;
+  user_id: string;
   name: string;
   accent_color: string;
   stroke_style: string;
@@ -116,6 +137,7 @@ export interface ConnectionType {
   x_stage_labels: string[];
   y_stage_labels: string[];
   properties_schema: Record<string, unknown>[];
+  is_system: boolean;
   sort_order: number;
   deleted_at: string | null;
 }
@@ -123,8 +145,18 @@ export interface ConnectionType {
 export const connectionTypesRepo = {
   async findByProject(projectId: string): Promise<ConnectionType[]> {
     return query<ConnectionType>(
-      'SELECT * FROM connection_types WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sort_order',
+      `SELECT ct.*, pt.sort_order FROM connection_types ct
+       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind = 'connection'
+       WHERE pt.project_id = $1 AND ct.deleted_at IS NULL
+       ORDER BY pt.sort_order`,
       [projectId]
+    );
+  },
+
+  async findByUser(userId: string): Promise<ConnectionType[]> {
+    return query<ConnectionType>(
+      'SELECT * FROM connection_types WHERE user_id = $1 AND deleted_at IS NULL ORDER BY sort_order',
+      [userId]
     );
   },
 
@@ -136,7 +168,8 @@ export const connectionTypesRepo = {
   },
 
   async create(data: {
-    project_id: string;
+    user_id: string;
+    project_id?: string;  // optional — if provided, auto-associate with project
     name: string;
     accent_color?: string;
     stroke_style?: string;
@@ -144,17 +177,14 @@ export const connectionTypesRepo = {
     x_stage_labels?: string[];
     y_stage_labels?: string[];
     properties_schema?: Record<string, unknown>[];
+    is_system?: boolean;
   }): Promise<ConnectionType> {
-    const maxSort = await queryOne<{ max: number }>(
-      'SELECT COALESCE(MAX(sort_order), -1) + 1 AS max FROM connection_types WHERE project_id = $1 AND deleted_at IS NULL',
-      [data.project_id]
-    );
     const result = await queryOne<ConnectionType>(
-      `INSERT INTO connection_types (project_id, name, accent_color, stroke_style, default_direction, x_stage_labels, y_stage_labels, properties_schema, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO connection_types (user_id, name, accent_color, stroke_style, default_direction, x_stage_labels, y_stage_labels, properties_schema, is_system, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 0)
        RETURNING *`,
       [
-        data.project_id,
+        data.user_id,
         data.name,
         data.accent_color || '#888888',
         data.stroke_style || 'solid',
@@ -162,9 +192,23 @@ export const connectionTypesRepo = {
         JSON.stringify(data.x_stage_labels || []),
         JSON.stringify(data.y_stage_labels || []),
         JSON.stringify(data.properties_schema || []),
-        maxSort?.max ?? 0,
+        data.is_system || false,
       ]
     );
+    // Auto-associate with project if provided
+    if (data.project_id && result) {
+      const maxSort = await queryOne<{ max: number }>(
+        `SELECT COALESCE(MAX(sort_order), -1) + 1 AS max FROM project_types
+         WHERE project_id = $1 AND type_kind = 'connection'`,
+        [data.project_id]
+      );
+      await queryOne(
+        `INSERT INTO project_types (project_id, type_id, type_kind, sort_order)
+         VALUES ($1, $2, 'connection', $3)
+         ON CONFLICT DO NOTHING`,
+        [data.project_id, result.id, maxSort?.max ?? 0]
+      );
+    }
     return result!;
   },
 
@@ -192,6 +236,11 @@ export const connectionTypesRepo = {
   },
 
   async delete(id: string): Promise<boolean> {
+    // System types cannot be deleted
+    const type = await this.findById(id);
+    if (type?.is_system) {
+      throw new Error('Cannot delete system connection type');
+    }
     const instanceCount = await queryOne<{ count: string }>(
       'SELECT COUNT(*) as count FROM connections WHERE type_id = $1 AND deleted_at IS NULL',
       [id]
@@ -199,10 +248,46 @@ export const connectionTypesRepo = {
     if (instanceCount && parseInt(instanceCount.count) > 0) {
       throw new Error(`Cannot delete type: ${instanceCount.count} connections still use this type`);
     }
+    // Remove from all project associations
+    await query('DELETE FROM project_types WHERE type_id = $1', [id]);
     const result = await queryOne<{ id: string }>(
       'UPDATE connection_types SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id',
       [id]
     );
     return !!result;
+  },
+
+  /**
+   * Ensure the system "Relevance" connection type exists for a user.
+   * Called during user creation or first project load.
+   */
+  async ensureRelevanceType(userId: string): Promise<ConnectionType> {
+    const existing = await queryOne<ConnectionType>(
+      `SELECT * FROM connection_types WHERE user_id = $1 AND is_system = true AND name = 'Relevance' AND deleted_at IS NULL`,
+      [userId]
+    );
+    if (existing) return existing;
+    return this.create({
+      user_id: userId,
+      name: 'Relevance',
+      accent_color: '#666666',
+      stroke_style: 'solid',
+      default_direction: 'neither',
+      is_system: true,
+    });
+  },
+
+  /**
+   * Ensure the Relevance type is associated with a project.
+   * Called when loading a project.
+   */
+  async ensureRelevanceForProject(userId: string, projectId: string): Promise<void> {
+    const relevance = await this.ensureRelevanceType(userId);
+    await queryOne(
+      `INSERT INTO project_types (project_id, type_id, type_kind, sort_order)
+       VALUES ($1, $2, 'connection', 0)
+       ON CONFLICT DO NOTHING`,
+      [projectId, relevance.id]
+    );
   },
 };

@@ -23,6 +23,8 @@ export interface ConnectionTypeMock {
   id: string;
   name: string;
   color: string;
+  measurementMode: 'spectrum' | 'quadrant' | 'none';
+  isSystem: boolean;
   count: number;
 }
 
@@ -46,6 +48,8 @@ export function useTypeRegistry() {
       id: t.id,
       name: t.name,
       color: t.color,
+      measurementMode: t.measurementMode,
+      isSystem: t.isSystem,
       count: 0,
     })),
     [connectionTypes]

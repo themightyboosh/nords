@@ -25,9 +25,11 @@ export interface ResolvedConnectionType {
   name: string;
   color: string;
   strokeStyle: string;
+  measurementMode: 'spectrum' | 'quadrant' | 'none';
   defaultDirection: string;
   xStageLabels: string[];
   yStageLabels: string[];
+  isSystem: boolean;
 }
 
 interface TypeRegistryContextValue {
@@ -69,9 +71,11 @@ export function TypeRegistryProvider({
       name: t.name,
       color: t.accent_color || '#a78bfa',
       strokeStyle: t.stroke_style || 'solid',
+      measurementMode: t.measurement_mode || 'spectrum',
       defaultDirection: t.default_direction || 'none',
       xStageLabels: t.x_stage_labels || [],
       yStageLabels: t.y_stage_labels || [],
+      isSystem: t.is_system || false,
     })),
     [rawConnectionTypes]
   );

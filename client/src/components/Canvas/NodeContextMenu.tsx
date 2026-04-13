@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useLayoutEffect, useState } from 'react';
 import type { Node } from '@xyflow/react';
 import { Edit2, Copy, Trash2, Tag, Link as LinkIcon } from 'lucide-react';
 import './CanvasEngine.css'; // Just use shared css or inline styles for now
@@ -26,6 +26,22 @@ export function NodeContextMenu({
   onChangeType,
   onAddConnection
 }: NodeContextMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ left: x, top: y });
+
+  // After first render, measure the menu and clamp to viewport
+  useLayoutEffect(() => {
+    if (!menuRef.current) return;
+    const rect = menuRef.current.getBoundingClientRect();
+    const pad = 8; // breathing room from viewport edge
+    const clampedX = Math.min(x, window.innerWidth - rect.width - pad);
+    const clampedY = Math.min(y, window.innerHeight - rect.height - pad);
+    setPosition({
+      left: Math.max(pad, clampedX),
+      top: Math.max(pad, clampedY),
+    });
+  }, [x, y]);
+
   const handleDelete = () => {
     onDelete(node.id);
     onClose();
@@ -33,8 +49,9 @@ export function NodeContextMenu({
 
   return (
     <div 
+      ref={menuRef}
       className="nords-context-menu nords-glass" 
-      style={{ left: x, top: y }}
+      style={{ left: position.left, top: position.top }}
       data-testid="context-menu"
     >
       <button className="nords-context-menu__item" onClick={() => { onEdit(node.id); onClose(); }} data-testid="context-menu-edit">
@@ -61,25 +78,3 @@ export function NodeContextMenu({
     </div>
   );
 }
-
-// Global styles for menu items 
-// Consider moving to CanvasEngine.css
-/*
-.nords-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: none;
-  padding: 6px 12px;
-  font-size: 13px;
-  color: var(--nords-color-text-secondary);
-  cursor: pointer;
-  border-radius: 4px;
-  text-align: left;
-}
-.nords-menu-item:hover {
-  background: var(--nords-color-bg-hover);
-  color: var(--nords-color-text-primary);
-}
-*/

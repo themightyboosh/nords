@@ -29,7 +29,7 @@ interface GlobalDockProps {
 }
 
 export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDockProps) {
-  const { lens, setLens, activeLine, setActiveLine } = useLens();
+  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activeLine, setActiveLine } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [snapshotTab, setSnapshotTab] = useState<'take' | 'history'>('take');
 
@@ -39,21 +39,19 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
   const { addNodes, screenToFlowPosition } = useReactFlow();
 
   const handleAddNord = (typeInfo: any) => {
-    const x = window.innerWidth / 2;
-    const y = window.innerHeight / 2;
-    const position = screenToFlowPosition({ x, y });
-
-    // Prefer the API-backed creation callback
+    // Enter click-to-place mode — no position means the canvas
+    // shows a crosshair and waits for the user to click to place
     if (onCreateNord && typeInfo.id) {
-      onCreateNord(typeInfo.id, position);
+      onCreateNord(typeInfo.id);
       setOpenPanel(null);
       return;
     }
 
     // Fallback: add node locally (for when API is not wired)
+    const fallbackPos = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
     const newNode = {
-      id: `n-${crypto.randomUUID()}`,
-      position,
+      id: crypto.randomUUID(),
+      position: fallbackPos,
       type: 'nordNode',
       data: {
         title: `New ${typeInfo.name}`,
@@ -69,11 +67,19 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
     setOpenPanel(null);
   };
 
+  const handleSelectConnectionType = (typeId: string, typeName: string) => {
+    setActiveConnectionTypeId(typeId);
+    setActiveLine(typeName);
+    setOpenPanel(null);
+  };
+
   const togglePanel = (panel: string) => {
     setOpenPanel(openPanel === panel ? null : panel);
   };
 
-  const activeConnectionType = visibleConnectionTypes.find(l => l.name === activeLine);
+  // Find active connection type by ID (preferred) or legacy name
+  const activeConnectionType = visibleConnectionTypes.find(l => l.id === activeConnectionTypeId)
+    || visibleConnectionTypes.find(l => l.name === activeLine);
 
   return (
     <>
@@ -95,7 +101,15 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
             </button>
             <button
               className={`nords-lens-toggle__btn ${lens === 'link' ? 'is-active' : ''}`}
-              onClick={() => { setLens('link'); setOpenPanel(null); }}
+              onClick={() => {
+                setLens('link');
+                setOpenPanel(null);
+                // Auto-select first connection type if none active
+                if (!activeConnectionTypeId && visibleConnectionTypes.length > 0) {
+                  setActiveConnectionTypeId(visibleConnectionTypes[0].id);
+                  setActiveLine(visibleConnectionTypes[0].name);
+                }
+              }}
               title="Link — focused relationship editing"
               data-testid="lens-link"
             >
@@ -104,7 +118,14 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
             </button>
             <button
               className={`nords-lens-toggle__btn ${lens === 'matrix' ? 'is-active' : ''}`}
-              onClick={() => { setLens('matrix'); setOpenPanel(null); }}
+              onClick={() => {
+                setLens('matrix');
+                setOpenPanel(null);
+                if (!activeConnectionTypeId && visibleConnectionTypes.length > 0) {
+                  setActiveConnectionTypeId(visibleConnectionTypes[0].id);
+                  setActiveLine(visibleConnectionTypes[0].name);
+                }
+              }}
               title="Matrix — spatial pivot table"
               data-testid="lens-matrix"
             >
@@ -115,69 +136,51 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
 
           <div className="nords-dock__separator" />
 
-          {/* ═══ CANVAS TOOLS ═══ */}
-          {lens === 'canvas' && (
-            <>
-              <div className="nords-dock__section">
-                <button className={`nords-dock__item ${openPanel === 'display' ? 'is-active' : ''}`} onClick={() => togglePanel('display')} data-testid="dock-display">
-                  <Eye size={15} strokeWidth={1.6} />
-                  <span className="nords-dock__label">Display</span>
-                  <ChevronDown size={10} className="nords-dock__chevron" />
-                </button>
-              </div>
-              <div className="nords-dock__separator" />
-              <div className="nords-dock__section">
-                <button className={`nords-dock__item nords-dock__item--accent ${openPanel === 'add' ? 'is-active' : ''}`} onClick={() => togglePanel('add')} data-testid="dock-add">
-                  <Plus size={15} strokeWidth={2} />
-                  <span className="nords-dock__label">Add</span>
-                  <ChevronDown size={10} className="nords-dock__chevron" />
-                </button>
-              </div>
-            </>
-          )}
+          {/* ═══ SHARED TOOLS (all lens modes) ═══ */}
 
-          {/* ═══ LINK TOOLS ═══ */}
-          {lens === 'link' && (
-            <>
-              <div className="nords-dock__section">
-                <button className={`nords-dock__item nords-dock__item--relationship ${openPanel === 'relationship' ? 'is-active' : ''}`} onClick={() => togglePanel('relationship')} data-testid="dock-relationship">
-                  <ArrowLeftRight size={15} strokeWidth={1.6} />
-                  <span className="nords-dock__label">{activeLine}</span>
-                  {activeConnectionType && <span className="nords-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />}
-                  <ChevronDown size={10} className="nords-dock__chevron" />
-                </button>
-              </div>
-            </>
-          )}
+          {/* + Nord */}
+          <div className="nords-dock__section">
+            <button className={`nords-dock__item ${openPanel === 'add' ? 'is-active' : ''}`} onClick={() => togglePanel('add')} data-testid="dock-add">
+              <Plus size={15} strokeWidth={2} />
+              <span className="nords-dock__label">Nord</span>
+              <ChevronDown size={10} className="nords-dock__chevron" />
+            </button>
+          </div>
 
-          {/* ═══ MATRIX TOOLS ═══ */}
-          {lens === 'matrix' && (
-            <>
-              <div className="nords-dock__section">
-                <button className={`nords-dock__item ${openPanel === 'matrixCols' ? 'is-active' : ''}`} onClick={() => togglePanel('matrixCols')} data-testid="dock-matrix-cols">
-                  <span className="nords-dock__label-prefix">Columns:</span>
-                  <span className="nords-dock__label nords-dock__label--value">{activeLine}</span>
-                  {activeConnectionType && <span className="nords-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />}
-                  <ChevronDown size={10} className="nords-dock__chevron" />
-                </button>
-              </div>
-              <div className="nords-dock__separator" />
-              <div className="nords-dock__section">
-                <button className="nords-dock__item" disabled title="Optional — select a Line Type for rows">
-                  <span className="nords-dock__label-prefix">Rows:</span>
-                  <span className="nords-dock__label nords-dock__label--empty">None</span>
-                </button>
-              </div>
-              <div className="nords-dock__separator" />
-              <div className="nords-dock__section">
-                <button className={`nords-dock__item nords-dock__item--accent ${openPanel === 'add' ? 'is-active' : ''}`} onClick={() => togglePanel('add')} data-testid="dock-add-matrix">
-                  <Plus size={15} strokeWidth={2} />
-                  <span className="nords-dock__label">Add</span>
-                  <ChevronDown size={10} className="nords-dock__chevron" />
-                </button>
-              </div>
-            </>
-          )}
+          <div className="nords-dock__separator" />
+
+          {/* Connection Type Switcher — single dropdown, scales to unlimited types */}
+          <div className="nords-dock__section">
+            <button
+              className={`nords-dock__item ${openPanel === 'relationship' ? 'is-active' : ''}`}
+              onClick={() => togglePanel('relationship')}
+              data-testid="dock-connection-type"
+            >
+              {activeConnectionType ? (
+                <>
+                  <span className="nords-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />
+                  <span className="nords-dock__label">{activeConnectionType.name}</span>
+                </>
+              ) : (
+                <>
+                  <Link2 size={14} strokeWidth={1.6} />
+                  <span className="nords-dock__label">All Lines (Relevance)</span>
+                </>
+              )}
+              <ChevronDown size={10} className="nords-dock__chevron" />
+            </button>
+          </div>
+
+          <div className="nords-dock__separator" />
+
+          {/* Display */}
+          <div className="nords-dock__section">
+            <button className={`nords-dock__item ${openPanel === 'display' ? 'is-active' : ''}`} onClick={() => togglePanel('display')} data-testid="dock-display">
+              <Eye size={15} strokeWidth={1.6} />
+              <span className="nords-dock__label">Display</span>
+              <ChevronDown size={10} className="nords-dock__chevron" />
+            </button>
+          </div>
 
         </nav>
 
@@ -228,44 +231,30 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
           </div>
         </div>
 
-        {/* Relationship Selector (Link mode) */}
-        <div className={`nords-flyout nords-glass ${openPanel === 'relationship' ? 'is-open' : ''}`} data-testid="flyout-relationship">
+        {/* Connection Type Switcher Flyout */}
+        <div className={`nords-flyout nords-glass ${openPanel === 'relationship' ? 'is-open' : ''}`} data-testid="flyout-connection-type">
           <div className="nords-flyout__header">
-            <h3 className="nords-flyout__title">Active Relationship</h3>
-          </div>
-          <div className="nords-flyout__list">
-            {visibleConnectionTypes.map((type) => (
-              <div
-                key={type.name}
-                className={`nords-flyout__row nords-flyout__row--selectable ${activeLine === type.name ? 'is-active' : ''}`}
-                onClick={() => { setActiveLine(type.name); setOpenPanel(null); }}
-              >
-                <div className="nords-flyout__row-left">
-                  <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
-                  <span className="nords-flyout__row-name">{type.name}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="nords-flyout__footer">
-            <span className="nords-flyout__footer-hint">
-              <ArrowLeftRight size={10} />
-              Spatial distance = {activeLine.toLowerCase()} strength
+            <h3 className="nords-flyout__title">Connection Type</h3>
+            <span className="nords-flyout__count">
+              {visibleConnectionTypes.filter(t => !t.isSystem).length} types
             </span>
           </div>
-        </div>
-
-        {/* Matrix Column Selector */}
-        <div className={`nords-flyout nords-glass ${openPanel === 'matrixCols' ? 'is-open' : ''}`} data-testid="flyout-matrix-cols">
-          <div className="nords-flyout__header">
-            <h3 className="nords-flyout__title">Column Axis</h3>
-          </div>
           <div className="nords-flyout__list">
-            {visibleConnectionTypes.map((type) => (
+            {/* All Lines (Relevance) — the native baseline */}
+            <div
+              className={`nords-flyout__row nords-flyout__row--selectable ${!activeConnectionTypeId ? 'is-active' : ''}`}
+              onClick={() => { setActiveConnectionTypeId(null); setActiveLine('All'); setOpenPanel(null); }}
+            >
+              <div className="nords-flyout__row-left">
+                <Link2 size={14} strokeWidth={1.6} style={{ color: 'var(--nords-color-text-tertiary)', flexShrink: 0 }} />
+                <span className="nords-flyout__row-name">All Lines (Relevance)</span>
+              </div>
+            </div>
+            {visibleConnectionTypes.filter(t => !t.isSystem).map((type) => (
               <div
-                key={type.name}
-                className={`nords-flyout__row nords-flyout__row--selectable ${activeLine === type.name ? 'is-active' : ''}`}
-                onClick={() => { setActiveLine(type.name); setOpenPanel(null); }}
+                key={type.id}
+                className={`nords-flyout__row nords-flyout__row--selectable ${activeConnectionTypeId === type.id ? 'is-active' : ''}`}
+                onClick={() => handleSelectConnectionType(type.id, type.name)}
               >
                 <div className="nords-flyout__row-left">
                   <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
@@ -276,56 +265,31 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
             ))}
           </div>
           <div className="nords-flyout__footer">
-            <span className="nords-flyout__footer-hint">stage labels → column headers</span>
+            <span className="nords-flyout__footer-hint">
+              <ArrowLeftRight size={10} />
+              Selecting a type focuses the canvas on that relationship
+            </span>
           </div>
         </div>
 
-        {/* Add Flyout */}
+        {/* Add Nord Flyout */}
         <div className={`nords-flyout nords-glass ${openPanel === 'add' ? 'is-open' : ''}`} data-testid="flyout-add">
           <div className="nords-flyout__header">
-            <h3 className="nords-flyout__title">Add</h3>
+            <h3 className="nords-flyout__title">Add Nord</h3>
           </div>
           <div className="nords-flyout__list">
-            <div className="nords-flyout__create-section">
-              <h4 className="nords-flyout__create-label">Add Nord</h4>
-              <div className="nords-flyout__create-grid">
-                {visibleNodeTypes.map((type) => (
-                  <button 
-                    key={type.name} 
-                    className="nords-flyout__create-btn" 
-                    title={`Add a ${type.name}`}
-                    onClick={() => handleAddNord(type)}
-                  >
-                    <type.icon size={16} strokeWidth={1.8} color={type.color} />
-                    <span>{type.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="nords-flyout__create-divider" />
-            <div className="nords-flyout__create-section">
-              <h4 className="nords-flyout__create-label">Add Connection</h4>
-              <div className="nords-flyout__create-grid">
-                {visibleConnectionTypes.map((type) => (
-                  <button key={type.name} className="nords-flyout__create-btn" title={`Add a ${type.name} connection`}>
-                    <span className="nords-flyout__line-swatch--lg" style={{ background: type.color }} />
-                    <span>{type.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="nords-flyout__create-divider" />
-            <div className="nords-flyout__create-section">
-              <h4 className="nords-flyout__create-label">Manage Types</h4>
-              <div className="nords-flyout__manage-actions">
-                <button className="nords-flyout__manage-btn" title="Add/remove properties, create new types" onClick={() => { onOpenManageTypes?.(); setOpenPanel(null); }}>
-                  <Settings2 size={14} strokeWidth={1.6} />
-                  <span>Manage Types</span>
+            <div className="nords-flyout__create-grid">
+              {visibleNodeTypes.map((type) => (
+                <button 
+                  key={type.name} 
+                  className="nords-flyout__create-btn" 
+                  title={`Add a ${type.name}`}
+                  onClick={() => handleAddNord(type)}
+                >
+                  <type.icon size={16} strokeWidth={1.8} color={type.color} />
+                  <span>{type.name}</span>
                 </button>
-              </div>
-              <p className="nords-flyout__manage-hint">
-                Add properties to types, create new types, or remove unused ones.
-              </p>
+              ))}
             </div>
           </div>
         </div>

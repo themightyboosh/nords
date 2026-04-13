@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import '@xyflow/react/dist/style.css';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -36,6 +36,35 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
   const activeProjectId = projectId || '5413fc94-3245-4153-9641-b9d025367e1d';
   const { graph, refetch } = useProjectGraph(activeProjectId);
 
+  // Build typeSchemas map for DetailDrawer: typeId → PropertySchema[]
+  const typeSchemas = useMemo(() => {
+    const map = new Map<string, Array<{
+      name: string;
+      type: string;
+      options?: string[];
+      card_row?: number;
+    }>>();
+    if (graph) {
+      for (const t of graph.nord_types) {
+        map.set(t.id, (t.properties_schema || []).map((s: any) => ({
+          name: s.name,
+          type: s.type || 'string',
+          options: s.options,
+          card_row: s.card_row,
+        })));
+      }
+      for (const t of graph.connection_types) {
+        map.set(t.id, (t.properties_schema || []).map((s: any) => ({
+          name: s.name,
+          type: s.type || 'string',
+          options: s.options,
+          card_row: s.card_row,
+        })));
+      }
+    }
+    return map;
+  }, [graph]);
+
   const handleNordClick = (id: string) => {
     setSelectedEntity({ id, type: 'nord' });
     setIsDrawerOpen(true);
@@ -46,6 +75,12 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
     setIsDrawerOpen(true);
   };
 
+  // Connections tab: click a connection row → switch to Line Mode
+  const handleSelectConnection = useCallback((connectionId: string) => {
+    setSelectedEntity({ id: connectionId, type: 'connection' });
+    setIsDrawerOpen(true);
+  }, []);
+
   const closeDrawer = () => {
     setIsDrawerOpen(false);
     setSelectedEntity(null);
@@ -53,7 +88,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
 
   return (
     <ReactFlowProvider>
-      <LensProvider>
+      <LensProvider projectId={activeProjectId}>
         <TypeRegistryProvider
           rawNordTypes={graph?.nord_types || []}
           rawConnectionTypes={graph?.connection_types || []}
@@ -71,12 +106,16 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
               onEdgeDoubleClick={handleEdgeDoubleClick}
               selectedNord={selectedEntity?.type === 'nord' ? selectedEntity.id : null}
               projectId={projectId}
+              graph={graph}
+              refetchGraph={refetch}
             />
             <DetailDrawer
               isOpen={isDrawerOpen}
               onClose={closeDrawer}
               entityId={selectedEntity?.id || null}
               entityType={selectedEntity?.type || 'nord'}
+              typeSchemas={typeSchemas}
+              onSelectConnection={handleSelectConnection}
             />
             {showManageTypes && (
               <ManageTypes

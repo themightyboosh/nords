@@ -375,4 +375,8 @@
   .nords-viewport-header__project-name {
     font-size: 1rem;
   }
+  /* Hide desktop project tools — accessible via hamburger menu instead */
+  .nords-viewport-header__project-tools {
+    display: none;
+  }
 }

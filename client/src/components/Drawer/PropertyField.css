@@ -1,0 +1,321 @@
+/**
+ * PropertyField.css — Styles for all 8 property field types.
+ *
+ * Design: compact, dark-mode-first, uses nords design tokens.
+ * Each field type gets subtle visual distinctions while maintaining
+ * a consistent height rhythm.
+ */
+
+/* ── Base Layout ── */
+
+.nords-pf {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--nords-color-border-subtle, rgba(255,255,255,0.06));
+}
+
+.nords-pf:last-child {
+  border-bottom: none;
+}
+
+.nords-pf__label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--nords-color-text-muted, #8b8b9a);
+  user-select: none;
+}
+
+.nords-pf__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Text Input (string, number, date, url) ── */
+
+.nords-pf__input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--nords-color-border-default, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  background: var(--nords-color-bg-input, rgba(255,255,255,0.04));
+  color: var(--nords-color-text-primary, #e8e8ed);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.nords-pf__input:focus {
+  border-color: var(--nords-color-accent, #4da6ff);
+  background: var(--nords-color-bg-surface, rgba(255,255,255,0.06));
+}
+
+.nords-pf__input::placeholder {
+  color: var(--nords-color-text-muted, #8b8b9a);
+  opacity: 0.5;
+}
+
+.nords-pf__input--number {
+  font-variant-numeric: tabular-nums;
+  max-width: 120px;
+}
+
+.nords-pf__input--date {
+  max-width: 160px;
+  color-scheme: dark;
+}
+
+/* ── Select Dropdown ── */
+
+.nords-pf__select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--nords-color-border-default, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  background: var(--nords-color-bg-input, rgba(255,255,255,0.04));
+  color: var(--nords-color-text-primary, #e8e8ed);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b8b9a'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+  transition: border-color 0.15s ease;
+}
+
+.nords-pf__select:focus {
+  border-color: var(--nords-color-accent, #4da6ff);
+}
+
+/* ── Markdown Field ── */
+
+.nords-pf--markdown {
+  gap: 6px;
+}
+
+.nords-pf__toggle {
+  padding: 2px 8px;
+  border: 1px solid var(--nords-color-border-default, rgba(255,255,255,0.1));
+  border-radius: 4px;
+  background: transparent;
+  color: var(--nords-color-text-muted, #8b8b9a);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nords-pf__toggle:hover {
+  border-color: var(--nords-color-accent, #4da6ff);
+  color: var(--nords-color-text-primary, #e8e8ed);
+}
+
+.nords-pf__textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 8px;
+  border: 1px solid var(--nords-color-border-default, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  background: var(--nords-color-bg-input, rgba(255,255,255,0.04));
+  color: var(--nords-color-text-primary, #e8e8ed);
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.nords-pf__textarea:focus {
+  border-color: var(--nords-color-accent, #4da6ff);
+}
+
+.nords-pf__preview {
+  padding: 8px;
+  border: 1px solid var(--nords-color-border-subtle, rgba(255,255,255,0.06));
+  border-radius: 6px;
+  background: var(--nords-color-bg-surface, rgba(255,255,255,0.03));
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--nords-color-text-primary, #e8e8ed);
+  min-height: 60px;
+}
+
+.nords-pf__preview h2, .nords-pf__preview h3, .nords-pf__preview h4 {
+  margin: 8px 0 4px;
+  font-size: 14px;
+  color: var(--nords-color-text-primary, #e8e8ed);
+}
+
+.nords-pf__preview code {
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.08);
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.nords-pf__preview a {
+  color: var(--nords-color-accent, #4da6ff);
+  text-decoration: none;
+}
+
+.nords-pf__preview a:hover {
+  text-decoration: underline;
+}
+
+.nords-pf__preview ul {
+  margin: 4px 0;
+  padding-left: 18px;
+}
+
+.nords-pf__preview em {
+  color: var(--nords-color-text-muted, #8b8b9a);
+}
+
+/* ── URL Field ── */
+
+.nords-pf--url .nords-pf__url-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.nords-pf--url .nords-pf__input {
+  flex: 1;
+}
+
+.nords-pf__url-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--nords-color-border-default, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  background: transparent;
+  color: var(--nords-color-accent, #4da6ff);
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.nords-pf__url-open:hover {
+  background: var(--nords-color-accent, #4da6ff);
+  color: #fff;
+}
+
+/* ── Spectrum Bar (read-only) ── */
+
+.nords-pf__spectrum {
+  position: relative;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--nords-color-bg-input, rgba(255,255,255,0.04));
+  overflow: hidden;
+}
+
+.nords-pf__spectrum-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 4px;
+  opacity: 0.6;
+  transition: width 0.3s ease;
+}
+
+.nords-pf__spectrum-value {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--nords-color-text-primary, #e8e8ed);
+}
+
+/* ── Tags / Pills ── */
+
+.nords-pf--tags .nords-pf__tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 6px;
+  min-height: 32px;
+  border: 1px solid var(--nords-color-border-default, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  background: var(--nords-color-bg-input, rgba(255,255,255,0.04));
+  cursor: text;
+  transition: border-color 0.15s ease;
+}
+
+.nords-pf--tags .nords-pf__tags-container:focus-within {
+  border-color: var(--nords-color-accent, #4da6ff);
+}
+
+.nords-pf__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--nords-color-accent, #4da6ff);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  animation: tagPop 0.15s ease-out;
+}
+
+@keyframes tagPop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.nords-pf__tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  margin-left: 2px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.2);
+  color: #fff;
+  font-size: 10px;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.1s ease;
+}
+
+.nords-pf__tag-remove:hover {
+  background: rgba(0,0,0,0.4);
+}
+
+.nords-pf__tag-input {
+  flex: 1;
+  min-width: 60px;
+  padding: 2px 4px;
+  border: none;
+  background: transparent;
+  color: var(--nords-color-text-primary, #e8e8ed);
+  font-size: 12px;
+  outline: none;
+}
+
+.nords-pf__tag-input::placeholder {
+  color: var(--nords-color-text-muted, #8b8b9a);
+  opacity: 0.5;
+}

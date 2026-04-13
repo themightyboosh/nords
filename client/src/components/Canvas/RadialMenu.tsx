@@ -41,7 +41,7 @@ export function RadialMenu({ x, y, onClose, onCreateNord }: RadialMenuProps) {
 
     // Fallback: add node locally
     const newNode = {
-      id: `n-${crypto.randomUUID()}`,
+      id: crypto.randomUUID(),
       position,
       type: 'nordNode',
       data: {
@@ -59,6 +59,11 @@ export function RadialMenu({ x, y, onClose, onCreateNord }: RadialMenuProps) {
     onClose();
   };
 
+  // Clamp position so the entire radial circle stays inside the viewport
+  const margin = radius + 30; // radius + half button size + padding
+  const clampedX = Math.max(margin, Math.min(window.innerWidth - margin, x));
+  const clampedY = Math.max(margin, Math.min(window.innerHeight - margin, y));
+
   return (
     <>
       {/* Click outside to close */}
@@ -67,7 +72,7 @@ export function RadialMenu({ x, y, onClose, onCreateNord }: RadialMenuProps) {
         onClick={onClose} 
       />
 
-      <div style={{ position: 'absolute', left: x, top: y, zIndex: 1000 }}>
+      <div style={{ position: 'absolute', left: clampedX, top: clampedY, zIndex: 1000 }}>
         {isAtLimit && (
           <div style={{ position: 'absolute', top: '-40px', left: '-50px', width: '100px', textAlign: 'center', color: 'red', fontWeight: 'bold' }}>
             Node Limit Reached

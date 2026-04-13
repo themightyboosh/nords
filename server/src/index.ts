@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import logger from './lib/logger.js';
+import { initFirebaseAdmin } from './lib/firebaseAdmin.js';
+import { requireAuth } from './middleware/auth.js';
 import { swaggerSpec } from './swagger.js';
 import { projectsRouter } from './routes/projects.js';
 import { graphRouter } from './routes/graph.js';
@@ -9,9 +11,13 @@ import { snapshotsRouter } from './routes/snapshots.js';
 import { commentsRouter } from './routes/comments.js';
 import { seedRouter } from './routes/seed.js';
 import { typesRouter } from './routes/types.js';
+import { logsRouter } from './routes/logs.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
+
+// ── Firebase Admin SDK ──
+initFirebaseAdmin();
 
 // ── Middleware ──
 app.use(cors({
@@ -40,13 +46,15 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'nords-api', timestamp: new Date().toISOString() });
 });
 
-// ── API Routes ──
+// ── API Routes (protected by Firebase auth) ──
+app.use('/api', requireAuth);
 app.use('/api', projectsRouter);
 app.use('/api', graphRouter);
 app.use('/api', snapshotsRouter);
 app.use('/api', commentsRouter);
 app.use('/api', seedRouter); // Dev only — bulk data seeding
 app.use('/api', typesRouter);
+app.use('/api', logsRouter);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

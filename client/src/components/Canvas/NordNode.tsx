@@ -17,7 +17,7 @@ interface NordNodeData {
   properties: Array<{ key: string; value: string; color?: string }>;
 }
 
-export const NordNode = memo(({ id, data, selected }: NodeProps<NordNodeData>) => {
+export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<NordNodeData>) => {
   // Read current zoom for counter-scaling text at low zoom
   const zoom = useStore((s) => s.transform[2]);
   const inverseScale = Math.min(0.65, 100 / (zoom * 100));
@@ -48,9 +48,9 @@ export const NordNode = memo(({ id, data, selected }: NodeProps<NordNodeData>) =
       }}
       data-testid={`nord-node-${id}`}
     >
-      {/* Invisible connection handles — edge endpoints computed in EuclideanEdge */}
-      <Handle type="target" position={Position.Top} id="target" className="nords-node__handle--hidden" />
-      <Handle type="source" position={Position.Bottom} id="source" className="nords-node__handle--hidden" />
+      {/* Connection handles — visible on hover */}
+      <Handle type="target" position={Position.Top} id="target" className="nords-node__handle--hidden" isConnectable={isConnectable} />
+      <Handle type="source" position={Position.Bottom} id="source" className="nords-node__handle--hidden" isConnectable={isConnectable} />
 
       {/* All text content — counter-scales uniformly below 60% zoom */}
       <div

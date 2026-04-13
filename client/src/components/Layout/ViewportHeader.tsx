@@ -192,6 +192,20 @@ export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSett
 
       {/* ═══ Mobile slide-down menu (visible ≤768px when open) ═══ */}
       <div className={`nords-viewport-header__mobile-menu ${mobileMenuOpen ? 'is-open' : ''}`}>
+        {/* Project tools — hidden in desktop header on mobile, accessible here */}
+        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenSettings?.(); setMobileMenuOpen(false); }}>
+          <Settings2 size={14} strokeWidth={1.6} />
+          <span>Manage Types</span>
+        </button>
+        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenComments?.(); setMobileMenuOpen(false); }}>
+          <MessageSquare size={14} strokeWidth={1.6} />
+          <span>Comments</span>
+        </button>
+        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenSnapshots?.(); setMobileMenuOpen(false); }}>
+          <Camera size={14} strokeWidth={1.6} />
+          <span>Snapshots</span>
+        </button>
+        <div className="nords-context-menu__divider" style={{ margin: '4px 12px', height: '1px', background: 'var(--nords-color-border-subtle)' }} />
         <button className="nords-viewport-header__mobile-menu-item">
           <Bell size={14} strokeWidth={1.6} />
           <span>Notifications</span>

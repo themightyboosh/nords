@@ -286,3 +286,10 @@ error: invalid input syntax for type uuid: "n-e51786fc-1ee9-45d2-9afc-a22d07681f
     at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
     at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:352:20) {"service":"nords-server","text":"SELECT fn_batch_update_positions($1::jsonb) AS fn_batch_update_positions","duration":175,"error":"invalid input syntax for type uuid: \"n-e51786fc-1ee9-45d2-9afc-a22d07681f58\""}
+15:48:51.852 [31merror[39m: Query failed
+error: duplicate key value violates unique constraint "uq_connection_type_source_target"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:203:24) {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_id, direction, distance_x, distance_y, pr","duration":159,"error":"duplicate key value violates unique constraint \"uq_connection_type_source_target\""}

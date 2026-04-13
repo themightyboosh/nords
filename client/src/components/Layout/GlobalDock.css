@@ -197,6 +197,56 @@
 }
 
 /* ═══════════════════════════════════════════════ */
+/* PILL STRIP — Connection type selector           */
+/* ═══════════════════════════════════════════════ */
+
+.nords-dock__pills {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 var(--nords-space-xs);
+}
+
+.nords-dock__pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-pill);
+  color: var(--nords-color-text-tertiary);
+  font-family: var(--nords-font-primary);
+  font-size: 10px;
+  font-weight: var(--nords-font-weight-medium);
+  letter-spacing: var(--nords-letter-spacing-wide);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.nords-dock__pill:hover {
+  color: var(--nords-color-text-secondary);
+  background: var(--nords-color-bg-hover);
+  border-color: var(--nords-color-border-default);
+}
+
+.nords-dock__pill.is-active {
+  background: var(--nords-color-accent-dim);
+  border-color: var(--nords-color-accent);
+  color: var(--nords-color-accent);
+}
+
+.nords-dock__pill-swatch {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════ */
 /* FLYOUT PANEL                                    */
 /* ═══════════════════════════════════════════════ */
 
