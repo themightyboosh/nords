@@ -459,6 +459,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         panOnScroll
         panOnDrag={isTouchDevice ? [1, 2] : true}
         zoomOnPinch
+        zoomOnDoubleClick={false}
         minZoom={0.4}
         maxZoom={2.0}
         multiSelectionKeyCode={null}
