@@ -287,6 +287,30 @@ export function EuclideanEdge({
     : direction === 'both' ? 'nords-connection--march-both'
     : ''; /* 'none' = static */
 
+  // ── Custom Arrowheads (drawn as SVG polygons at path endpoints) ──
+  // React Flow's marker system has issues with custom edges + markerStart,
+  // so we draw arrowheads manually for reliable bidirectional rendering.
+  const arrowSize = 10;
+  const edgeColor = (data?.color as string) || '#000';
+  const showEndArrow = direction === 'to' || direction === 'both';
+  const showStartArrow = direction === 'from' || direction === 'both';
+
+  // Arrow at target (end of line)
+  const endAngle = Math.atan2(ty - sy, tx - sx);
+  const endArrowPoints = showEndArrow ? [
+    [tx, ty],
+    [tx - arrowSize * Math.cos(endAngle - Math.PI / 6), ty - arrowSize * Math.sin(endAngle - Math.PI / 6)],
+    [tx - arrowSize * Math.cos(endAngle + Math.PI / 6), ty - arrowSize * Math.sin(endAngle + Math.PI / 6)],
+  ].map(p => p.join(',')).join(' ') : null;
+
+  // Arrow at source (start of line)
+  const startAngle = Math.atan2(sy - ty, sx - tx);
+  const startArrowPoints = showStartArrow ? [
+    [sx, sy],
+    [sx - arrowSize * Math.cos(startAngle - Math.PI / 6), sy - arrowSize * Math.sin(startAngle - Math.PI / 6)],
+    [sx - arrowSize * Math.cos(startAngle + Math.PI / 6), sy - arrowSize * Math.sin(startAngle + Math.PI / 6)],
+  ].map(p => p.join(',')).join(' ') : null;
+
   return (
     <>
       {/* Base path — solid at 50% opacity (visible in dash gaps) */}
@@ -294,7 +318,7 @@ export function EuclideanEdge({
         <path
           d={pathD}
           className="nords-connection--base"
-          stroke={data?.color as string || '#000'}
+          stroke={edgeColor}
           fill="none"
         />
       )}
@@ -302,12 +326,17 @@ export function EuclideanEdge({
       <path
         d={pathD}
         className={isGhosted ? 'nords-connection--ghost' : `nords-connection--active ${directionClass}`}
-        stroke={data?.color as string || '#000'}
+        stroke={edgeColor}
         fill="none"
         style={style}
-        markerEnd={markerEnd}
-        markerStart={markerStart}
       />
+      {/* Custom arrowheads */}
+      {!isGhosted && endArrowPoints && (
+        <polygon points={endArrowPoints} fill={edgeColor} />
+      )}
+      {!isGhosted && startArrowPoints && (
+        <polygon points={startArrowPoints} fill={edgeColor} />
+      )}
       {/* Invisible fat hit-area for click detection */}
       <path
         d={pathD}

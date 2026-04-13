@@ -346,7 +346,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         fitView
         panOnScroll
         zoomOnPinch
-        minZoom={0.25}
+        minZoom={0.4}
         maxZoom={2.0}
         multiSelectionKeyCode={null}
         selectionKeyCode={null}
