@@ -29,7 +29,7 @@ interface GlobalDockProps {
 }
 
 export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDockProps) {
-  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activeLine, setActiveLine } = useLens();
+  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activeLine, setActiveLine, showContext, setShowContext } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [snapshotTab, setSnapshotTab] = useState<'take' | 'history'>('take');
 
