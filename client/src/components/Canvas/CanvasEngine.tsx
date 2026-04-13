@@ -125,7 +125,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   useSemanticZoom();
   useVisibilityCascade();
   useSpatialAnimations();
-  useLensLayout(activeConnectionTypeId, rfNodes);
+  const { saveNodePosition } = useLensLayout(activeConnectionTypeId, rfNodes);
   const { onNodeClick } = useNodeSelection(onNordClick);
 
   // ── Create Nord (from Add panel or radial menu) ──
@@ -258,23 +258,34 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     }
   }, [graph, nodes, createNord, addNodes, setNodes]);
 
-  // ── Persist position on drag end ──
-  // Nords are not manually draggable — positions are computed from connection distances.
-  // Drag handlers are kept minimal for edge highlighting during canvas interactions.
+  // ── Position caching on drag ──
+  // Positions are cached per connection type in useLensLayout.
   const onNodeDragStart = useCallback(
     (_event: React.MouseEvent, node: Node) => {
       setIsDragging(true);
       setDragNodeId(node.id);
+      // Highlight connected edges during drag
+      setEdges(eds => eds.map(e =>
+        e.source === node.id || e.target === node.id
+          ? { ...e, className: 'drag-connected' }
+          : e
+      ));
     },
-    []
+    [setEdges]
   );
 
   const onNodeDragStop = useCallback(
-    (_event: React.MouseEvent, _node: Node) => {
+    (_event: React.MouseEvent, node: Node) => {
       setIsDragging(false);
       setDragNodeId(null);
+      // Clear drag highlighting
+      setEdges(eds => eds.map(e =>
+        e.className === 'drag-connected' ? { ...e, className: '' } : e
+      ));
+      // Save position to the active connection type's cache
+      saveNodePosition(node.id, node.position.x, node.position.y, activeConnectionTypeId);
     },
-    []
+    [setEdges, saveNodePosition, activeConnectionTypeId]
   );
 
   // ── Delete Nord ──

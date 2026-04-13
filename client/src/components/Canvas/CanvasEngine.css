@@ -105,15 +105,13 @@
   stroke: var(--nords-color-accent);
   stroke-opacity: 0.12;
 }
-
 /* ── Edge Reconnection Handles ──
- * These are the circles at edge endpoints that allow drag-to-relink.
- * React Flow renders them as .react-flow__edgeupdater on hover.
- * Made prominent and easy to grab.
+ * Circles at edge endpoints for drag-to-relink.
+ * Sized to match node handles (10px) for visual consistency.
  */
 .react-flow__edgeupdater {
-  width: 20px;
-  height: 20px;
+  width: 10px;
+  height: 10px;
   cursor: move;
   fill: var(--nords-color-accent);
   fill-opacity: 0;
