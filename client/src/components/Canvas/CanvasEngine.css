@@ -294,16 +294,28 @@
   width: 100% !important;
   height: 100% !important;
   border-radius: 0 !important;
-  pointer-events: none; /* default: let clicks through for node drag */
   z-index: 1;
   left: 0 !important;
   top: 0 !important;
   transform: none !important;
 }
 
+/* Override RF's .connectionindicator which forces pointer-events:all.
+ * Needs high specificity to win. */
+.react-flow__handle.nords-node__handle--full,
+.react-flow__handle.nords-node__handle--full.connectionindicator,
+.react-flow__handle.nords-node__handle--full.connectingto,
+.react-flow__handle.nords-node__handle--full.connectingfrom {
+  pointer-events: none !important;
+}
+
 /* When actively dragging a connection, enable full-card drop targets.
- * Class toggled by React state via onConnectStart/onConnectEnd. */
-.nords-canvas--connecting .nords-node__handle--full {
+ * Class toggled by React state via onConnectStart/onConnectEnd. 
+ * Must override the specificity rules above. */
+.nords-canvas--connecting .react-flow__handle.nords-node__handle--full,
+.nords-canvas--connecting .react-flow__handle.nords-node__handle--full.connectionindicator,
+.nords-canvas--connecting .react-flow__handle.nords-node__handle--full.connectingto,
+.nords-canvas--connecting .react-flow__handle.nords-node__handle--full.connectingfrom {
   pointer-events: all !important;
   cursor: crosshair;
 }

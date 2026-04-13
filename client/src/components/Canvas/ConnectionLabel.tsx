@@ -11,7 +11,7 @@ interface ConnectionLabelProps {
   edgeId: string;
 }
 
-export function ConnectionLabel({ x, y, angleDeg, direction, type, color, edgeId }: ConnectionLabelProps) {
+export const ConnectionLabel = React.memo(function ConnectionLabel({ x, y, angleDeg, direction, type, color, edgeId }: ConnectionLabelProps) {
   const zoom = useStore((s) => s.transform[2]);
   // Unified text scaling — same formula as NordNode textScale
   // Below 60% zoom: counter-scale up (capped at 2.5×)
@@ -57,4 +57,4 @@ export function ConnectionLabel({ x, y, angleDeg, direction, type, color, edgeId
       </div>
     </EdgeLabelRenderer>
   );
-}
+});

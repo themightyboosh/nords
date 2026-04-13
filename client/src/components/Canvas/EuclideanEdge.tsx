@@ -53,7 +53,7 @@ function rectIntersection(
   };
 }
 
-export function EuclideanEdge({
+const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   id,
   source,
   target,
@@ -405,4 +405,6 @@ export function EuclideanEdge({
       )}
     </>
   );
-}
+});
+
+export { EuclideanEdgeInner as EuclideanEdge };

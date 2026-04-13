@@ -463,6 +463,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={{ type: 'euclidean' }}
         className={canvasClass}
+        onlyRenderVisibleElements
         panOnScroll
         panOnDrag={isTouchDevice ? [1, 2] : true}
         zoomOnPinch
