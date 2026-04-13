@@ -2848,3 +2848,8 @@ error: duplicate key value violates unique constraint "uq_connection_type_source
 18:54:10.560 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
 18:54:20.956 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 18:54:20.995 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":173,"rows":1}
+18:55:43.102 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:55:43.138 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":164,"rows":1}
+18:56:16.294 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:56:16.359 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":184,"rows":1}
+18:56:16.399 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}

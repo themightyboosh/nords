@@ -294,11 +294,18 @@
   width: 100% !important;
   height: 100% !important;
   border-radius: 0 !important;
-  pointer-events: none; /* RF finds targets by proximity — let clicks through for drag */
+  pointer-events: none; /* default: let clicks through for node drag */
   z-index: 1;
   left: 0 !important;
   top: 0 !important;
   transform: none !important;
+}
+
+/* When RF is actively dragging a connection, enable drop targets.
+ * .react-flow__connection only exists during a connection drag. */
+.react-flow:has(.react-flow__connection) .nords-node__handle--full {
+  pointer-events: all !important;
+  cursor: crosshair;
 }
 
 /* ── Drag source — thin border strips ── */
