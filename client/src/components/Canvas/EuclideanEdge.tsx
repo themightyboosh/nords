@@ -238,13 +238,18 @@ export function EuclideanEdge({
     // CP1 at 8% from source — splay fans out right at the card edge
     const cp1x = sx + dx * 0.08 + perpUnitX * (waveAmp * 0.3 + srcSplayOffset);
     const cp1y = sy + dy * 0.08 + perpUnitY * (waveAmp * 0.3 + srcSplayOffset);
-    const cp2x = sx + dx * 0.35 + perpUnitX * waveAmp;
-    const cp2y = sy + dy * 0.35 + perpUnitY * waveAmp;
+
+    // CP2: midpoint of source→center, displaced by wave
+    // Computing relative to center ensures G1 tangent continuity at the junction
+    const cp2x = (sx + centerX) / 2 + perpUnitX * waveAmp;
+    const cp2y = (sy + centerY) / 2 + perpUnitY * waveAmp;
 
     // Second half: Center → Target
+    // CP3: midpoint of center→target, displaced by opposite wave (creates the S)
+    const cp3x = (centerX + tx) / 2 - perpUnitX * waveAmp;
+    const cp3y = (centerY + ty) / 2 - perpUnitY * waveAmp;
+
     // CP4 at 92% — splay fans in right at the target card edge
-    const cp3x = sx + dx * 0.65 - perpUnitX * waveAmp;
-    const cp3y = sy + dy * 0.65 - perpUnitY * waveAmp;
     const cp4x = sx + dx * 0.92 - perpUnitX * (waveAmp * 0.3 + tgtSplayOffset);
     const cp4y = sy + dy * 0.92 - perpUnitY * (waveAmp * 0.3 + tgtSplayOffset);
 
