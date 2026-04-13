@@ -466,9 +466,10 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         selectionKeyCode={null}
         selectionOnDrag={false}
         nodesDraggable={true}
-        nodesConnectable={true}
-        edgesReconnectable
-        reconnectRadius={25}
+        nodesConnectable={!!activeConnectionTypeId}
+        edgesReconnectable={!!activeConnectionTypeId}
+        connectionRadius={80}
+        reconnectRadius={80}
         onReconnectStart={onReconnectStart}
         onReconnect={onReconnect}
         onReconnectEnd={onReconnectEnd}
