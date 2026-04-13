@@ -10,13 +10,13 @@
  * - "All Lines (Relevance)" computes AVERAGED positions across all cached types.
  *   If no types have cached positions, the DB positions are used.
  *
- * Animation: cubic ease-out over 400ms via requestAnimationFrame.
+ * Animation: cubic ease-in over 200ms via requestAnimationFrame.
  */
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useReactFlow, useStore, type Edge } from '@xyflow/react';
 
-const ANIM_DURATION = 400; // ms
+const ANIM_DURATION = 200; // ms
 
 interface PositionTarget {
   fromX: number;
@@ -221,7 +221,7 @@ export function useLensLayout(
     function animate() {
       const elapsed = performance.now() - startTime;
       const t = Math.min(1, elapsed / ANIM_DURATION);
-      const ease = 1 - Math.pow(1 - t, 3);
+      const ease = t * t * t; // cubic ease-in: starts slow, accelerates
 
       reactFlow.setNodes(nds =>
         nds.map(n => {
