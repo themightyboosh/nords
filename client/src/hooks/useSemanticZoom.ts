@@ -5,8 +5,8 @@ import { useStore, useReactFlow } from '@xyflow/react';
  * useSemanticZoom determines what visual tier to render nodes at based on the zoom lens.
  * 
  * Zoom tiers:
- * - Micro (100% - 75%): Full card anatomy
- * - Meso (74% - 25%): Hide descriptions/properties, show only title+icon
+ * - Micro (100% - 50%): Full card anatomy
+ * - Meso (49% - 25%): Hide descriptions/properties, show only title+icon
  * - Macro (< 25%): Colored dots, hairline connections
  */
 export function useSemanticZoom() {
@@ -15,7 +15,7 @@ export function useSemanticZoom() {
   // We can inject a CSS variable or class on the body to let CSS handle it easily
   useEffect(() => {
     const root = document.documentElement;
-    if (zoom >= 0.75) {
+    if (zoom >= 0.50) {
       root.setAttribute('data-zoom-tier', 'micro');
     } else if (zoom >= 0.25) {
       root.setAttribute('data-zoom-tier', 'meso');

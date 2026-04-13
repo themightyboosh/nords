@@ -52,6 +52,7 @@
   --nords-color-text-secondary: #6b7280;
   --nords-color-text-tertiary: #9ca3af;
   --nords-color-text-disabled: #d1d5db;
+  --nords-color-grid-dot: rgba(0, 0, 0, 0.15);
 
   /* ── Accent (same blue, slightly deepened for light) ── */
   --nords-color-accent: #2563eb;

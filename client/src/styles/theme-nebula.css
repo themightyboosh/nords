@@ -54,6 +54,7 @@
   --nords-color-text-secondary: #8b8fa8;
   --nords-color-text-tertiary: #565a72;
   --nords-color-text-disabled: #3a3d52;
+  --nords-color-grid-dot: rgba(139, 92, 246, 0.15);
 
   /* ── Accent (violet → cyan gradient endpoints) ── */
   --nords-color-accent: #a78bfa;

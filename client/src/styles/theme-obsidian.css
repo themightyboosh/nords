@@ -54,6 +54,7 @@
   --nords-color-text-secondary: #9aa0ab;
   --nords-color-text-tertiary: #5f6671;
   --nords-color-text-disabled: #3d434d;
+  --nords-color-grid-dot: rgba(255, 255, 255, 0.15);
 
   /* ── Accent (ice blue) ── */
   --nords-color-accent: #4da6ff;

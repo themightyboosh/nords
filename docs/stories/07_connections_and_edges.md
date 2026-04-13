@@ -28,17 +28,18 @@
 
 ## [FEATURE] 6.2: Edge Visual Features
 
-### [STORY] 6.2.1: Directional Chevron Label Shapes
-* **Target:** `src/components/Canvas/EdgeLabel.tsx`, `EdgeLabel.css`
-* **Directive:** Direction is conveyed by the **label pill shape**, NOT by arrowheads on lines. **No SVG `<marker>` elements.** Instead:
-  - `direction === 'to'` → right-pointing chevron shape (CSS `clip-path: polygon(0% 0%, 82% 0%, 100% 50%, 82% 100%, 0% 100%)`)
-  - `direction === 'from'` → left-pointing chevron shape (CSS `clip-path: polygon(18% 0%, 100% 0%, 100% 100%, 18% 100%, 0% 50%)`)
-  - `direction === 'none'` → plain rounded rectangle (no clip-path)
-* **Angle Flip Rule:** When the label rotates beyond ±90° for readability, the chevron direction MUST invert (swap left ↔ right) so it continues pointing along the correct flow direction.
-* **Ref:** `04_ui.md` §1.6, `CanvasMock.tsx` label rendering with `visualDirection` flip
-* **AC:** A "Blocks" connection (direction: 'to') shows a right-pointing chevron label. When the line angle exceeds 90°, the label flips to stay readable AND the chevron flips to left-pointing. A "Relates" connection (direction: 'none') shows a plain rectangle.
+### [STORY] 6.2.1: Directional Chevron Labels + Native Arrowheads
+* **Target:** `src/components/Canvas/ConnectionLabel.tsx`, `CanvasEngine.css`, `graphToReactFlow.ts`
+* **Directive:** Direction is conveyed by **both** the label pill shape AND native React Flow arrowheads (`MarkerType.ArrowClosed`). Four direction modes:
+  - `direction === 'end'` → right-pointing chevron label + arrowhead at target (`markerEnd`)
+  - `direction === 'start'` → left-pointing chevron label + arrowhead at source (`markerStart`)
+  - `direction === 'both'` → arrowheads at both ends (`markerStart` + `markerEnd`), plain rectangle label. Distance is shared as a single value applied equally to both directions.
+  - `direction === 'neither'` → no arrowheads, plain rounded rectangle label. **Spectrum and distance values are disabled** — connection is metadata-only.
+* **Angle Flip Rule:** When the label rotates beyond ±90° for readability, any directional chevron MUST invert so it continues pointing along the correct flow direction.
+* **Ref:** `04_ui.md` §1.6, `02_data_model.md` §1.3 Directionality
+* **AC:** A "Blocks" connection (`direction: 'end'`) shows a right-pointing chevron label AND a filled arrowhead at the target. A "Relates" connection (`direction: 'neither'`) shows a plain rectangle with no arrows and its distance values are read-only. A `direction: 'both'` connection shows arrowheads at both endpoints with a plain rectangle label.
 
-> **DBA Note:** This approach avoids all SVG `preserveAspectRatio="none"` distortion issues. The chevron is pure CSS, immune to coordinate system stretching.
+> **DBA Note:** The `direction` column in `connections` accepts: `'start'`, `'end'`, `'both'`, `'neither'`. The `'neither'` value acts as a constraint: `distance_x` and `distance_y` should be treated as read-only/null when direction is `'neither'`.
 
 ### [STORY] 6.2.2: Edge Label Positioning (Angle-Matched with Glow)
 * **Target:** `EdgeLabel.tsx`, `EdgeLabel.css`

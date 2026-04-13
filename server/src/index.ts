@@ -7,6 +7,8 @@ import { projectsRouter } from './routes/projects.js';
 import { graphRouter } from './routes/graph.js';
 import { snapshotsRouter } from './routes/snapshots.js';
 import { commentsRouter } from './routes/comments.js';
+import { seedRouter } from './routes/seed.js';
+import { typesRouter } from './routes/types.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -43,6 +45,8 @@ app.use('/api', projectsRouter);
 app.use('/api', graphRouter);
 app.use('/api', snapshotsRouter);
 app.use('/api', commentsRouter);
+app.use('/api', seedRouter); // Dev only — bulk data seeding
+app.use('/api', typesRouter);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

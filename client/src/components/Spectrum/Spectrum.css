@@ -1,0 +1,107 @@
+/* ═══════════════════════════════════════════════════════════
+ * Spectrum.css — Styles for Spectrum1D (and future Spectrum2D)
+ * ═══════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.spectrum-1d {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+/* ── Stage Labels ── */
+.spectrum-1d__labels {
+  display: flex;
+  width: 100%;
+}
+
+.spectrum-1d__label {
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-text-tertiary);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide);
+  font-weight: var(--nords-font-weight-medium);
+  transition: color 0.2s ease, opacity 0.2s ease;
+  opacity: 0.6;
+  user-select: none;
+}
+
+.spectrum-1d__label--active {
+  color: var(--nords-color-text-primary);
+  opacity: 1;
+  font-weight: var(--nords-font-weight-semibold);
+}
+
+/* ── Track ── */
+.spectrum-1d__track {
+  position: relative;
+  width: 100%;
+  border-radius: var(--nords-radius-pill);
+  background: var(--nords-color-border-subtle);
+  overflow: visible;
+}
+
+.spectrum-1d--readonly .spectrum-1d__track {
+  height: 4px;
+  cursor: default;
+}
+
+.spectrum-1d--interactive .spectrum-1d__track {
+  height: 8px;
+  cursor: pointer;
+}
+
+.spectrum-1d__track--dragging {
+  cursor: grabbing;
+}
+
+/* ── Fill ── */
+.spectrum-1d__fill {
+  height: 100%;
+  border-radius: var(--nords-radius-pill);
+  transition: width 0.15s ease-out;
+  min-width: 2px;
+}
+
+.spectrum-1d__track--dragging .spectrum-1d__fill {
+  transition: none;
+}
+
+/* ── Dividers ── */
+.spectrum-1d__divider {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  width: 1px;
+  background: var(--nords-color-bg-surface);
+  z-index: 1;
+  opacity: 0.8;
+}
+
+/* ── Thumb (interactive only) ── */
+.spectrum-1d__thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--nords-color-bg-surface);
+  border: 2px solid;
+  box-shadow: var(--nords-shadow-sm);
+  transition: left 0.15s ease-out, transform 0.1s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.spectrum-1d__track--dragging .spectrum-1d__thumb {
+  transition: none;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.spectrum-1d--interactive .spectrum-1d__track:hover .spectrum-1d__thumb {
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: var(--nords-shadow-md);
+}

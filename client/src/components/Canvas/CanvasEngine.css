@@ -63,13 +63,52 @@
   pointer-events: none;
 }
 
+/* Base path — solid line at 50% opacity, always visible through dash gaps */
+.nords-connection--base {
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.4;
+}
+
+/* Active path — dashed overlay at full opacity, static by default (no animation for 'none') */
 .nords-connection--active {
-  stroke-width: 0.22;
-  opacity: 0.75;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.85;
+  stroke-dasharray: 8 4;
+}
+
+/* Forward direction (→ target): dashes march toward target */
+.nords-connection--march-forward {
+  animation: march-forward 4s linear infinite;
+}
+
+/* Reverse direction (← source): dashes march toward source */
+.nords-connection--march-reverse {
+  animation: march-reverse 4s linear infinite;
+}
+
+/* Bidirectional (↔): dashes pulse outward from center via opacity breathing */
+.nords-connection--march-both {
+  animation: march-breathe 3s ease-in-out infinite;
+}
+
+@keyframes march-forward {
+  to { stroke-dashoffset: -48; }
+}
+
+@keyframes march-reverse {
+  to { stroke-dashoffset: 48; }
+}
+
+@keyframes march-breathe {
+  0%, 100% { opacity: 0.5; stroke-dasharray: 4 8; }
+  50%      { opacity: 1;   stroke-dasharray: 12 2; }
 }
 
 .nords-connection--ghost {
-  stroke-width: 0.12;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
   opacity: 0.15;
   filter: saturate(0.3);
 }
@@ -83,6 +122,7 @@
   transform-origin: center center;
   border-radius: 3px;
   padding: 1px 5px;
+  overflow: hidden; /* clip the shine pseudo-element */
 }
 
 .nords-connection-label__type {
@@ -92,6 +132,8 @@
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--nords-color-label-on-color);
+  position: relative; /* above the shine */
+  z-index: 1;
 }
 
 /* ── Directional Chevron Labels ──
@@ -106,15 +148,102 @@
  * points toward the target node along the line direction.
  */
 .nords-connection-label--arrow-right {
-  clip-path: polygon(0% 0%, 82% 0%, 100% 50%, 82% 100%, 0% 100%);
-  padding-right: 10px;
+  clip-path: polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%);
+  padding-right: 7px;
   border-radius: 3px 0 0 3px;
 }
 
 .nords-connection-label--arrow-left {
-  clip-path: polygon(18% 0%, 100% 0%, 100% 100%, 18% 100%, 0% 50%);
-  padding-left: 10px;
+  clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 15% 100%, 0% 50%);
+  padding-left: 7px;
   border-radius: 0 3px 3px 0;
+}
+
+/* ── Directional Shine Animation ──
+ * A subtle white gradient sweep on a long 6s loop.
+ * Sweep direction matches the arrow direction.
+ * 'both' uses a radial pulse outward from center.
+ */
+
+/* Right-pointing: shine sweeps left → right */
+.nords-connection-label--arrow-right::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; bottom: 0;
+  width: 60%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 40%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0.3) 60%,
+    transparent 100%
+  );
+  animation: shine-right 6s ease-in-out infinite;
+  animation-delay: calc(var(--shine-offset, 0) * 1s);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Left-pointing: shine sweeps right → left */
+.nords-connection-label--arrow-left::before {
+  content: '';
+  position: absolute;
+  top: 0; right: -100%; bottom: 0;
+  width: 60%;
+  background: linear-gradient(
+    270deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 40%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0.3) 60%,
+    transparent 100%
+  );
+  animation: shine-left 6s ease-in-out infinite;
+  animation-delay: calc(var(--shine-offset, 0) * 1s);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Both-direction: radial pulse outward from center */
+.nords-connection-label--arrow-both::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0%; height: 0%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.15) 40%,
+    transparent 70%
+  );
+  transform: translate(-50%, -50%);
+  animation: shine-radial 6s ease-in-out infinite;
+  animation-delay: calc(var(--shine-offset, 0) * 1s);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes shine-right {
+  0%, 85%  { left: -100%; opacity: 0; }
+  90%      { opacity: 1; }
+  95%      { left: 200%; opacity: 1; }
+  100%     { left: 200%; opacity: 0; }
+}
+
+@keyframes shine-left {
+  0%, 85%  { right: -100%; opacity: 0; }
+  90%      { opacity: 1; }
+  95%      { right: 200%; opacity: 1; }
+  100%     { right: 200%; opacity: 0; }
+}
+
+@keyframes shine-radial {
+  0%, 85%  { width: 0%; height: 0%; opacity: 0; }
+  90%      { opacity: 0.6; }
+  95%      { width: 300%; height: 300%; opacity: 0.3; }
+  100%     { width: 300%; height: 300%; opacity: 0; }
 }
 
 /* ── Label Glow — mode-specific contrast halo ── */
@@ -135,20 +264,20 @@
 .nords-node {
   position: relative;
   z-index: 12;
-  min-width: 150px;
-  border-width: 1px;
+  min-width: 100px;
+  border-width: 2px;
   border-style: solid;
   border-radius: var(--nords-radius-lg);
   padding: var(--nords-space-sm) var(--nords-space-md);
   box-shadow: var(--nords-shadow-sm);
   cursor: pointer;
   user-select: none;
+  overflow: hidden;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .nords-node:hover {
-  box-shadow: var(--nords-shadow-md);
-  transform: translateY(-2px);
+  box-shadow: var(--nords-shadow-md), 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .nords-node.is-selected {
@@ -171,29 +300,16 @@
   gap: var(--nords-space-xs);
 }
 
-.nords-node__resize-handle {
-  color: var(--nords-color-text-tertiary);
-  cursor: nwse-resize;
-  padding: 0;
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--nords-color-bg-hover);
-  transition: all 0.15s ease;
-  opacity: 0.7;
-}
-
-.nords-node__resize-handle:hover {
-  color: var(--nords-color-accent);
-  opacity: 1;
-  background: var(--nords-color-accent-dim);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--nords-color-accent) 30%, transparent);
+/* Hidden connection handles — invisible but functional for React Flow edge routing */
+.nords-node__handle--hidden {
+  opacity: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  pointer-events: all;
 }
 
 .nords-node__titlebar {
@@ -279,7 +395,7 @@
 [data-zoom-tier="macro"] .nords-connection--active,
 [data-zoom-tier="macro"] .nords-connection--ghost,
 [data-zoom-tier="macro"] .nords-connection--context {
-  stroke-width: 1px !important; /* hairline */
+  stroke-width: 1 !important; /* thinner at macro zoom */
 }
 [data-zoom-tier="macro"] .nords-connection-label {
   display: none;
@@ -433,6 +549,12 @@
   white-space: nowrap;
 }
 
+/* Scale Spectrum bar in card footer */
+.nords-node__spectrum {
+  padding: 2px 0 0;
+  margin-top: var(--nords-space-xs);
+}
+
 /* Pills & Assignees */
 .nords-node__meta {
   display: flex;
@@ -528,7 +650,8 @@
 }
 
 .nords-connection--context {
-  stroke-width: 0.08;
+  stroke-width: 0.5;
+  vector-effect: non-scaling-stroke;
   opacity: 0.08;
   filter: saturate(0.1);
 }

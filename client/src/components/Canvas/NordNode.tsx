@@ -1,35 +1,36 @@
 import React, { memo } from 'react';
 import { Handle, Position, useStore } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
-import { Maximize2, MessageSquare } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import './CanvasEngine.css'; // Relies on shared CSS
+
+// Fixed card width — all nords are the same size
+const CARD_WIDTH = 225;
 
 interface NordNodeData {
   title: string;
   type: string;
   typeIcon: React.ElementType;
   typeColor: string;
-  size: number;
-  hasScale: boolean;
   commentCount?: number;
   isGhosted?: boolean;
   properties: Array<{ key: string; value: string; color?: string }>;
 }
 
 export const NordNode = memo(({ id, data, selected }: NodeProps<NordNodeData>) => {
-  // We use useStore to read current zoom to inverse-scale the comment badge and handles
+  // Read current zoom for counter-scaling text at low zoom
   const zoom = useStore((s) => s.transform[2]);
   const inverseScale = Math.min(0.65, 100 / (zoom * 100));
 
+  // Unified text counter-scaling: below 60% zoom, scale ALL text up to stay readable
+  // At zoom 0.6 → textScale = 1.0, at zoom 0.3 → textScale = 2.0
+  // Capped at 2.5× to prevent absurdly large text at extreme zoom-out
+  const textScale = zoom < 0.6 ? Math.min(2.5, 0.6 / zoom) : 1;
+
   const Icon = data.typeIcon;
   const visibleProps = data.properties.slice(0, 3);
+  const hiddenCount = Math.max(0, data.properties.length - 3);
   const isGhosted = data.isGhosted === true;
-  
-  // Calculate width from size scale (0.0 - 1.0)
-  // Per spec: 0.25x to 2.0x of 200px base
-  // At 0.0 → 50px (0.25×200), at 1.0 → 400px (2.0×200)
-  const baseSize = data.size ?? 0.5;
-  const width = 200 * (0.25 + baseSize * 1.75);
 
   const containerClasses = [
     'nords-node',
@@ -41,20 +42,21 @@ export const NordNode = memo(({ id, data, selected }: NodeProps<NordNodeData>) =
     <div
       className={containerClasses}
       style={{
-        width: `${width}px`,
+        width: `${CARD_WIDTH}px`,
         backgroundColor: `color-mix(in srgb, ${data.typeColor || '#fff'} 10%, var(--nords-color-bg-surface))`,
         borderColor: `color-mix(in srgb, ${data.typeColor || '#fff'} 20%, var(--nords-color-border-default))`,
       }}
       data-testid={`nord-node-${id}`}
     >
-      {/* 4 Connection Handles */}
-      <Handle type="target" position={Position.Top} id="top" />
-      <Handle type="source" position={Position.Bottom} id="bottom" />
-      <Handle type="target" position={Position.Left} id="left" />
-      <Handle type="source" position={Position.Right} id="right" />
+      {/* Invisible connection handles — edge endpoints computed in EuclideanEdge */}
+      <Handle type="target" position={Position.Top} id="target" className="nords-node__handle--hidden" />
+      <Handle type="source" position={Position.Bottom} id="source" className="nords-node__handle--hidden" />
 
-      {/* Type badge */}
-      <div className="nords-node__titlebar">
+      {/* All text content — counter-scales uniformly below 60% zoom */}
+      <div
+        className="nords-node__titlebar"
+        style={textScale > 1 ? { transform: `scale(${textScale})`, transformOrigin: 'top left' } : undefined}
+      >
         <div className="nords-node__header">
           {Icon && <Icon size={14} strokeWidth={2} color={data.typeColor} />}
           <span className="nords-node__type-label" style={{ color: data.typeColor }}>
@@ -63,8 +65,11 @@ export const NordNode = memo(({ id, data, selected }: NodeProps<NordNodeData>) =
         </div>
       </div>
 
-      {/* Title */}
-      <h3 className="nords-node__title">{data.title}</h3>
+      {/* Title — also counter-scales */}
+      <h3
+        className="nords-node__title"
+        style={textScale > 1 ? { transform: `scale(${textScale})`, transformOrigin: 'top left' } : undefined}
+      >{data.title}</h3>
 
       {/* Properties */}
       {visibleProps.length > 0 && (
@@ -83,25 +88,14 @@ export const NordNode = memo(({ id, data, selected }: NodeProps<NordNodeData>) =
         </div>
       )}
 
-      {/* Footer / Overflow */}
+      {/* Footer */}
       <div className="nords-node__footer">
-        {data.properties.length > 3 && (
-          <span className="nords-node__more">+{data.properties.length - 3} more</span>
+        {hiddenCount > 0 && (
+          <span className="nords-node__more">+{hiddenCount} more</span>
         )}
       </div>
 
-      {/* Resize handle */}
-      {data.hasScale && (
-        <div 
-          className="nords-node__resize-handle" 
-          title={`Scale: ${Math.round(baseSize * 175 + 25)}%`}
-          // We'd add custom drag logic here in Epic 5 
-        >
-          <Maximize2 size={14} strokeWidth={2} />
-        </div>
-      )}
-
-      {/* Comment badge (absolute positioned relative to node boundaries) */}
+      {/* Comment badge */}
       {(data.commentCount || 0) > 0 && !isGhosted && (
         <div
           className="nords-comment-badge"

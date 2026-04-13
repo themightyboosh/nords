@@ -18,6 +18,7 @@ import LoginScreen from './components/Auth/LoginScreen';
 import SignupScreen from './components/Auth/SignupScreen';
 import VerifyEmailScreen from './components/Auth/VerifyEmailScreen';
 import ForgotPasswordScreen from './components/Auth/ForgotPasswordScreen';
+import { ManageTypes } from './components/ManageTypes/ManageTypes';
 
 /**
  * WorkspaceShell — wraps Header + Dock + Canvas for a single project.
@@ -29,10 +30,11 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
   const { id: projectId } = useParams<{ id: string }>();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedNord, setSelectedNord] = useState<string | null>(null);
+  const [showManageTypes, setShowManageTypes] = useState(false);
   
   // Load graph at the shell level so TypeRegistryProvider wraps everything
   const activeProjectId = projectId || '5413fc94-3245-4153-9641-b9d025367e1d';
-  const { graph } = useProjectGraph(activeProjectId);
+  const { graph, refetch } = useProjectGraph(activeProjectId);
 
   const handleNordClick = (id: string) => {
     setSelectedNord(id);
@@ -55,11 +57,20 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
             <ViewportHeader
               currentTheme={currentTheme}
               onThemeChange={onThemeChange}
+              onOpenSettings={() => setShowManageTypes(true)}
             />
             <GlobalDock />
             <ZoomControls />
             <CanvasEngine onNordClick={handleNordClick} selectedNord={selectedNord} projectId={projectId} />
             <DetailDrawer isOpen={isDrawerOpen} onClose={closeDrawer} nordId={selectedNord} />
+            {showManageTypes && (
+              <ManageTypes
+                projectId={activeProjectId}
+                open={showManageTypes}
+                onClose={() => setShowManageTypes(false)}
+                onTypesChanged={refetch}
+              />
+            )}
           </div>
         </TypeRegistryProvider>
       </LensProvider>
@@ -90,6 +101,14 @@ function App() {
         {/* Protected Routes */}
         <Route
           path="/"
+          element={
+            <ProtectedRoute>
+              <ProjectDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/projects"
           element={
             <ProtectedRoute>
               <ProjectDashboard />

@@ -38,9 +38,10 @@ export function useSpatialAnimations() {
 
   useOnSelectionChange({
     onChange: ({ nodes }) => {
-      if (nodes.length === 1) {
-        triggerFocusFly(nodes[0].id);
-      } else if (nodes.length >= 2) {
+      // Only auto-fit for 2+ selected nodes (equalize view)
+      // Single-select no longer flies the camera — it was causing the
+      // "other cards move" bug during drag since setCenter panned the viewport.
+      if (nodes.length >= 2) {
         triggerMultiSelectEqualize();
       }
     },

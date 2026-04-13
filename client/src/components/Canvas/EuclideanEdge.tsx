@@ -1,14 +1,11 @@
 /**
  * EuclideanEdge.tsx — Custom edge renderer with spring-physics "Reason Wiggle."
  *
- * The Bézier control point is driven by a 1D spring-mass-damper system.
- * When source or target positions change rapidly (during drag, spring settle,
- * or programmatic relocation), the control point lags behind, oscillates,
- * and settles at the geometric equilibrium — producing the tactile "cable
- * wiggle" effect made famous by Propellerhead Reason.
+ * Lines connect to the nearest point on each card's bounding rectangle,
+ * not to fixed handle positions. The Bézier control point is driven by
+ * a 1D spring-mass-damper system for the tactile cable-wiggle effect.
  *
- * Physics constants are tuned for subtlety: the wiggle resolves within
- * ~400ms and never overshoots more than 15% of the line length.
+ * Physics tuned for 2x pronounced wiggle — resolves within ~600ms.
  */
 
 import React, { useRef, useEffect, useState } from 'react';
@@ -17,16 +14,43 @@ import type { EdgeProps } from '@xyflow/react';
 import { ConnectionLabel } from './ConnectionLabel';
 import './CanvasEngine.css';
 
-// ── Spring Physics Constants ──
-const STIFFNESS = 0.12;   // How tightly the control point snaps to target
-const DAMPING   = 0.78;   // Friction — lower = more oscillation
-const THRESHOLD = 0.3;    // Stop animating when velocity drops below this
+// ── Spring Physics Constants (more pronounced, longer-lasting) ──
+const STIFFNESS = 0.03;   // Very low snap → wide oscillation arcs
+const DAMPING   = 0.65;   // Low friction → more bounces before settling
+const THRESHOLD = 0.2;    // Lower threshold → animation runs longer
 
 interface SpringState {
   x: number;
   y: number;
   vx: number;
   vy: number;
+}
+
+/**
+ * Compute where a line from center-to-center intersects the bounding
+ * rectangle of a node. Returns the intersection point on the rect edge.
+ */
+function rectIntersection(
+  cx: number, cy: number,  // center of THIS node
+  tx: number, ty: number,  // center of OTHER node (line target direction)
+  w: number, h: number     // width and height of THIS node
+): { x: number; y: number } {
+  const dx = tx - cx;
+  const dy = ty - cy;
+  if (dx === 0 && dy === 0) return { x: cx, y: cy };
+
+  const halfW = w / 2;
+  const halfH = h / 2;
+
+  // Scale factor to reach rectangle edge
+  const scaleX = dx !== 0 ? halfW / Math.abs(dx) : Infinity;
+  const scaleY = dy !== 0 ? halfH / Math.abs(dy) : Infinity;
+  const scale = Math.min(scaleX, scaleY);
+
+  return {
+    x: cx + dx * scale,
+    y: cy + dy * scale,
+  };
 }
 
 export function EuclideanEdge({
@@ -40,30 +64,56 @@ export function EuclideanEdge({
   style,
   data,
   markerEnd,
+  markerStart,
 }: EdgeProps) {
-  // O(1) re-renders: select ribbon config
+  // Read node dimensions from React Flow store for bounding-rect computation
+  const sourceNode = useStore((s) => s.nodeLookup.get(source));
+  const targetNode = useStore((s) => s.nodeLookup.get(target));
+
+  // Node centers (React Flow positions are top-left, add half dimensions)
+  const sW = sourceNode?.measured?.width ?? 200;
+  const sH = sourceNode?.measured?.height ?? 60;
+  const tW = targetNode?.measured?.width ?? 200;
+  const tH = targetNode?.measured?.height ?? 60;
+
+  const sCx = (sourceNode?.position?.x ?? 0) + sW / 2;
+  const sCy = (sourceNode?.position?.y ?? 0) + sH / 2;
+  const tCx = (targetNode?.position?.x ?? 0) + tW / 2;
+  const tCy = (targetNode?.position?.y ?? 0) + tH / 2;
+
+  // Compute intersection of center-to-center line with each card's bounding rect
+  const srcPt = rectIntersection(sCx, sCy, tCx, tCy, sW, sH);
+  const tgtPt = rectIntersection(tCx, tCy, sCx, sCy, tW, tH);
+
+  // Effective source/target for drawing
+  const sx = srcPt.x;
+  const sy = srcPt.y;
+  const tx = tgtPt.x;
+  const ty = tgtPt.y;
+
+  // O(1) re-renders: select ribbon config for parallel edges
   const ribbonConfig = useStore((s) => {
     const pairKey = [source, target].sort().join('-');
     const siblings = s.edges.filter(e => [e.source, e.target].sort().join('-') === pairKey);
     const sibIdx = siblings.findIndex(e => e.id === id);
     return { count: siblings.length, index: sibIdx };
   }, (a, b) => a.count === b.count && a.index === b.index);
-  
+
   // ── Geometry ──
-  const dx = targetX - sourceX;
-  const dy = targetY - sourceY;
+  const dx = tx - sx;
+  const dy = ty - sy;
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
 
   // Ribbon offset computation
   const spread = 40;
   const totalWidth = (ribbonConfig.count - 1) * spread;
   const offset = ribbonConfig.count > 1 ? (ribbonConfig.index * spread) - (totalWidth / 2) : 0;
-  
+
   const perpX = (-dy / len) * offset;
   const perpY = (dx / len) * offset;
 
-  const midX = (sourceX + targetX) / 2;
-  const midY = (sourceY + targetY) / 2;
+  const midX = (sx + tx) / 2;
+  const midY = (sy + ty) / 2;
 
   // Target control point (where the spring wants to rest)
   const targetCpX = midX + perpX * 2;
@@ -129,8 +179,8 @@ export function EuclideanEdge({
 
   // ── Path Construction ──
   const pathD = offset === 0 && Math.abs(cpPos.x - midX) < 2 && Math.abs(cpPos.y - midY) < 2
-    ? `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`
-    : `M ${sourceX} ${sourceY} Q ${cpPos.x} ${cpPos.y} ${targetX} ${targetY}`;
+    ? `M ${sx} ${sy} L ${tx} ${ty}`
+    : `M ${sx} ${sy} Q ${cpPos.x} ${cpPos.y} ${tx} ${ty}`;
 
   // ── Label Positioning ──
   const stagger = ribbonConfig.count > 1 
@@ -155,16 +205,34 @@ export function EuclideanEdge({
 
   // ── Styles ──
   const isGhosted = data?.ghost === true;
-  const connectionClass = isGhosted ? 'nords-connection--ghost' : 'nords-connection--active';
+  const direction = (data?.direction as string) || 'none';
+
+  // Direction-aware CSS classes for marching ants
+  const directionClass = direction === 'to' ? 'nords-connection--march-forward'
+    : direction === 'from' ? 'nords-connection--march-reverse'
+    : direction === 'both' ? 'nords-connection--march-both'
+    : ''; /* 'none' = static */
 
   return (
     <>
+      {/* Base path — solid at 50% opacity (visible in dash gaps) */}
+      {!isGhosted && (
+        <path
+          d={pathD}
+          className="nords-connection--base"
+          stroke={data?.color as string || '#000'}
+          fill="none"
+        />
+      )}
+      {/* Top path — dashed, direction-aware marching animation */}
       <path
         d={pathD}
-        className={connectionClass}
+        className={isGhosted ? 'nords-connection--ghost' : `nords-connection--active ${directionClass}`}
         stroke={data?.color as string || '#000'}
         fill="none"
         style={style}
+        markerEnd={markerEnd}
+        markerStart={markerStart}
       />
       {/* Invisible fat hit-area for click detection */}
       <path

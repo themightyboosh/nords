@@ -5,6 +5,7 @@
  * and what React Flow needs to render nodes and edges on the canvas.
  */
 
+import { MarkerType } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
 import type { ProjectGraph, Nord, Connection, NordType, ConnectionType } from '../hooks/useProjectGraph';
 import { resolveIcon } from './iconRegistry';
@@ -17,20 +18,6 @@ export function graphToNodes(
 ): Node[] {
   const typeMap = new Map(nordTypes.map(t => [t.id, t]));
 
-  // ── Per-type scale normalization ──
-  // Group nords by type, find min/max scale within each group
-  const scaleRanges = new Map<string, { min: number; max: number }>();
-  for (const nord of nords) {
-    const existing = scaleRanges.get(nord.type_id);
-    const s = nord.scale ?? 0.5;
-    if (!existing) {
-      scaleRanges.set(nord.type_id, { min: s, max: s });
-    } else {
-      existing.min = Math.min(existing.min, s);
-      existing.max = Math.max(existing.max, s);
-    }
-  }
-
   return nords.map(nord => {
     const type = typeMap.get(nord.type_id);
     const typeColor = type?.accent_color || '#4da6ff';
@@ -42,19 +29,22 @@ export function graphToNodes(
     const canvasX = nord.position_x * 2000 - 1000;
     const canvasY = nord.position_y * 2000 - 1000;
 
-    // Normalize scale within type: lowest-of-type → 0.0, highest → 1.0
-    const rawScale = nord.scale ?? 0.5;
-    const range = scaleRanges.get(nord.type_id);
-    let normalizedScale = 0.5; // default for single-node types
-    if (range && range.max !== range.min) {
-      normalizedScale = (rawScale - range.min) / (range.max - range.min);
-    }
-
-    // Build properties array from JSONB
-    const properties = Object.entries(nord.properties || {}).map(([key, value]) => ({
-      key,
-      value: String(value),
-    }));
+    // Build properties array from JSONB, ordered by card_row
+    const schema = type?.properties_schema || [];
+    const propsEntries = Object.entries(nord.properties || {});
+    
+    // Sort: card_row 1 first, then card_row 2, then hidden (no card_row)
+    const properties = propsEntries
+      .map(([key, value]) => {
+        const schemaDef = schema.find((s: any) => s.name === key);
+        return {
+          key,
+          value: String(value),
+          cardRow: schemaDef?.card_row || 999,
+        };
+      })
+      .sort((a, b) => a.cardRow - b.cardRow)
+      .map(({ key, value }) => ({ key, value }));
 
     return {
       id: nord.id,
@@ -65,12 +55,8 @@ export function graphToNodes(
         type: typeName,
         typeIcon,
         typeColor,
-        size: normalizedScale,
-        hasScale: !!type?.scale_property,
         properties,
         isGhosted: false,
-        // Preserve raw values for write-back
-        _rawScale: rawScale,
         _typeId: nord.type_id,
       },
     };
@@ -88,15 +74,22 @@ export function graphToEdges(
     const typeName = type?.name || 'Unknown';
     const typeColor = type?.accent_color || '#a78bfa';
 
+    // Arrowhead markers based on direction
+    const arrowMarker = { type: MarkerType.ArrowClosed, color: typeColor, width: 16, height: 16 };
+    const isForward = conn.direction === 'forward';
+    const isReverse = conn.direction === 'reverse';
+
     return {
       id: conn.id,
       source: conn.source_nord_id,
       target: conn.target_nord_id,
       type: 'euclidean',
+      ...(isForward ? { markerEnd: arrowMarker } : {}),
+      ...(isReverse ? { markerStart: arrowMarker } : {}),
       data: {
         type: typeName,
         color: typeColor,
-        direction: conn.direction === 'forward' ? 'to' : conn.direction === 'reverse' ? 'from' : 'none',
+        direction: isForward ? 'to' : isReverse ? 'from' : 'none',
         _typeId: conn.type_id,
         _distanceX: conn.distance_x,
         _distanceY: conn.distance_y,

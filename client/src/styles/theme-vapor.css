@@ -55,6 +55,7 @@
   --nords-color-text-secondary: #6b6b6b;
   --nords-color-text-tertiary: #999999;
   --nords-color-text-disabled: #c4c4c4;
+  --nords-color-grid-dot: rgba(0, 0, 0, 0.12);
 
   /* ── Accent (warm copper/amber) ── */
   --nords-color-accent: #c2733e;

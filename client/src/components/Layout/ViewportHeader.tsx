@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Settings, Activity, ChevronDown, Menu, X,
   FolderKanban, Bell, User, LogOut,
@@ -26,6 +27,7 @@ interface ViewportHeaderProps {
 
 export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSettings }: ViewportHeaderProps) {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
@@ -41,7 +43,12 @@ export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSett
 
       {/* ═══ Left: Project Switcher ═══ */}
       <div className="nords-viewport-header__left">
-        <button className="nords-viewport-header__project-btn" data-testid="project-switcher-btn">
+        <button 
+          className="nords-viewport-header__project-btn" 
+          data-testid="project-switcher-btn"
+          onClick={() => navigate('/projects')}
+          title="Back to Projects"
+        >
           <FolderKanban size={18} strokeWidth={1.6} />
           <div className="nords-viewport-header__project">
             <span className="nords-viewport-header__project-name">Product Launch Q3</span>

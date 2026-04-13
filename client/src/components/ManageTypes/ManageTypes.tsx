@@ -1,0 +1,429 @@
+/**
+ * ManageTypes — Admin modal for CRUD on Nord and Connection types.
+ *
+ * ┌──────────────────────────────────────────────────────────┐
+ * │ Manage Types                                        [X]  │
+ * │ Define properties at the type level.                      │
+ * ├────────────┬─────────────────────────────────────────────┤
+ * │ NORD TYPES │  ☐ Task                        NORD TYPE    │
+ * │ CONN TYPES │  Name: [editable]  Icon: [picker]           │
+ * │            │  Color: [hue slider]                        │
+ * │ ☐ Task   > │  Properties         [+ Add Property]       │
+ * │ + New Type │  ┌───────────────────────────────────┐      │
+ * │            │  │ Name │ Type │ Card Row              │      │
+ * │            │  └───────────────────────────────────┘      │
+ * └────────────┴─────────────────────────────────────────────┘
+ *
+ * Properties are TYPE-LEVEL schema definitions.
+ * Individual nords hold property VALUES, not schema.
+ * "Add Property" exists ONLY here, never on a nord card.
+ */
+
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { X, Plus, Trash2, GripVertical, ChevronRight } from 'lucide-react';
+import { useTypeMutations, type NordTypeData, type ConnectionTypeData, type PropertySchema } from '../../hooks/useTypeMutations';
+import { resolveIcon } from '../../utils/iconRegistry';
+import { IconPicker } from './IconPicker';
+import { Spectrum1D } from '../Spectrum/Spectrum1D';
+import { hslToHex, hexToHSL, autoContrast } from '../../utils/color';
+import './ManageTypes.css';
+
+interface ManageTypesProps {
+  projectId: string;
+  open: boolean;
+  onClose: () => void;
+  onTypesChanged?: () => void;
+}
+
+type Tab = 'nord' | 'connection';
+
+export function ManageTypes({ projectId, open, onClose, onTypesChanged }: ManageTypesProps) {
+  const mutations = useTypeMutations(projectId);
+
+  const [nordTypes, setNordTypes] = useState<NordTypeData[]>([]);
+  const [connectionTypes, setConnectionTypes] = useState<ConnectionTypeData[]>([]);
+  const [activeTab, setActiveTab] = useState<Tab>('nord');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // ── Load types ──
+  const loadTypes = useCallback(async () => {
+    try {
+      const data = await mutations.fetchTypes();
+      setNordTypes(data.nord_types);
+      setConnectionTypes(data.connection_types);
+      // Auto-select first if nothing selected
+      if (!selectedId) {
+        const firstId = data.nord_types[0]?.id || data.connection_types[0]?.id;
+        if (firstId) setSelectedId(firstId);
+      }
+    } catch (err) {
+      console.error('Failed to load types:', err);
+    }
+  }, [mutations, selectedId]);
+
+  useEffect(() => {
+    if (open) loadTypes();
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Selected type ──
+  const selectedNordType = useMemo(() =>
+    nordTypes.find(t => t.id === selectedId),
+    [nordTypes, selectedId]
+  );
+  const selectedConnType = useMemo(() =>
+    connectionTypes.find(t => t.id === selectedId),
+    [connectionTypes, selectedId]
+  );
+  const selected = selectedNordType || selectedConnType;
+  const isNordType = !!selectedNordType;
+
+  // ── Type mutations ──
+  const handleCreateType = useCallback(async () => {
+    setSaving(true);
+    try {
+      if (activeTab === 'nord') {
+        const newType = await mutations.createNordType({ name: 'New Type', icon: 'Square', accent_color: '#4da6ff' });
+        setNordTypes(prev => [...prev, newType]);
+        setSelectedId(newType.id);
+      } else {
+        const newType = await mutations.createConnectionType({ name: 'New Connection', accent_color: '#888888' });
+        setConnectionTypes(prev => [...prev, newType]);
+        setSelectedId(newType.id);
+      }
+      onTypesChanged?.();
+    } catch (err) {
+      console.error('Failed to create type:', err);
+    } finally {
+      setSaving(false);
+    }
+  }, [activeTab, mutations, onTypesChanged]);
+
+  const handleUpdateField = useCallback(async (field: string, value: unknown) => {
+    if (!selectedId) return;
+    setSaving(true);
+    try {
+      if (isNordType) {
+        const updated = await mutations.updateNordType(selectedId, { [field]: value });
+        setNordTypes(prev => prev.map(t => t.id === selectedId ? updated : t));
+      } else {
+        const updated = await mutations.updateConnectionType(selectedId, { [field]: value });
+        setConnectionTypes(prev => prev.map(t => t.id === selectedId ? updated : t));
+      }
+      onTypesChanged?.();
+    } catch (err) {
+      console.error('Failed to update type:', err);
+    } finally {
+      setSaving(false);
+    }
+  }, [selectedId, isNordType, mutations, onTypesChanged]);
+
+  const handleDeleteType = useCallback(async () => {
+    if (!selectedId) return;
+    if (!window.confirm('Delete this type? This cannot be undone.')) return;
+    setSaving(true);
+    try {
+      if (isNordType) {
+        await mutations.deleteNordType(selectedId);
+        setNordTypes(prev => prev.filter(t => t.id !== selectedId));
+      } else {
+        await mutations.deleteConnectionType(selectedId);
+        setConnectionTypes(prev => prev.filter(t => t.id !== selectedId));
+      }
+      setSelectedId(null);
+      onTypesChanged?.();
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err.message || 'Cannot delete type — instances still exist.';
+      alert(msg);
+    } finally {
+      setSaving(false);
+    }
+  }, [selectedId, isNordType, mutations, onTypesChanged]);
+
+  // ── Property mutations (schema-level) ──
+  const addProperty = useCallback(() => {
+    if (!selected) return;
+    const currentSchema = (selected as any).properties_schema || [];
+    const newProp: PropertySchema = { name: 'New Property', type: 'string' };
+    handleUpdateField('properties_schema', [...currentSchema, newProp]);
+  }, [selected, handleUpdateField]);
+
+  const updateProperty = useCallback((index: number, updates: Partial<PropertySchema>) => {
+    if (!selected) return;
+    const currentSchema = [...((selected as any).properties_schema || [])];
+    currentSchema[index] = { ...currentSchema[index], ...updates };
+    handleUpdateField('properties_schema', currentSchema);
+  }, [selected, handleUpdateField]);
+
+  const removeProperty = useCallback((index: number) => {
+    if (!selected) return;
+    const currentSchema = [...((selected as any).properties_schema || [])];
+    currentSchema.splice(index, 1);
+    handleUpdateField('properties_schema', currentSchema);
+  }, [selected, handleUpdateField]);
+
+  if (!open) return null;
+
+  const currentHue = selected ? hexToHSL((selected as any).accent_color || '#888').h : 200;
+  const currentColor = (selected as any)?.accent_color || '#888888';
+  const Icon = selected && isNordType ? resolveIcon((selected as NordTypeData).icon) : null;
+
+  const sidebarList = activeTab === 'nord' ? nordTypes : connectionTypes;
+
+  return (
+    <div className="manage-types-overlay" onClick={onClose}>
+      <div className="manage-types nords-glass" onClick={e => e.stopPropagation()} data-testid="manage-types-modal">
+
+        {/* ── Header ── */}
+        <div className="manage-types__header">
+          <div>
+            <h2 className="manage-types__title">Manage Types</h2>
+            <p className="manage-types__subtitle">
+              Define properties and appearance. Changes apply to all nords of each type.
+            </p>
+          </div>
+          <button className="manage-types__close" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="manage-types__body">
+
+          {/* ── Sidebar ── */}
+          <div className="manage-types__sidebar">
+            {/* Tab Switcher */}
+            <div className="manage-types__tabs">
+              <button
+                className={`manage-types__tab ${activeTab === 'nord' ? 'manage-types__tab--active' : ''}`}
+                onClick={() => { setActiveTab('nord'); setSelectedId(nordTypes[0]?.id || null); }}
+              >
+                Nord Types
+              </button>
+              <button
+                className={`manage-types__tab ${activeTab === 'connection' ? 'manage-types__tab--active' : ''}`}
+                onClick={() => { setActiveTab('connection'); setSelectedId(connectionTypes[0]?.id || null); }}
+              >
+                Conn Types
+              </button>
+            </div>
+
+            {/* Type List */}
+            <div className="manage-types__list">
+              {sidebarList.map(t => {
+                const TypeIcon = isNordType ? resolveIcon((t as NordTypeData).icon) : null;
+                return (
+                  <button
+                    key={t.id}
+                    className={`manage-types__list-item ${t.id === selectedId ? 'manage-types__list-item--selected' : ''}`}
+                    onClick={() => setSelectedId(t.id)}
+                  >
+                    <span
+                      className="manage-types__swatch"
+                      style={{ backgroundColor: (t as any).accent_color }}
+                    />
+                    {TypeIcon && <TypeIcon size={14} strokeWidth={1.6} />}
+                    <span className="manage-types__list-name">{t.name}</span>
+                    <ChevronRight size={12} className="manage-types__list-chevron" />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* New Type */}
+            <button
+              className="manage-types__new-btn"
+              onClick={handleCreateType}
+              disabled={saving}
+            >
+              <Plus size={14} />
+              <span>New {activeTab === 'nord' ? 'Type' : 'Connection'}</span>
+            </button>
+          </div>
+
+          {/* ── Editor ── */}
+          <div className="manage-types__editor">
+            {selected ? (
+              <>
+                {/* Type header with live preview */}
+                <div className="manage-types__editor-header" style={{ borderLeftColor: currentColor }}>
+                  {Icon && (
+                    <button
+                      className="manage-types__icon-btn"
+                      style={{ color: currentColor }}
+                      onClick={() => setShowIconPicker(!showIconPicker)}
+                      title="Change icon"
+                    >
+                      <Icon size={24} strokeWidth={1.8} />
+                    </button>
+                  )}
+                  <div className="manage-types__editor-meta">
+                    <span className="manage-types__editor-badge" style={{ color: autoContrast(currentColor), backgroundColor: currentColor }}>
+                      {activeTab === 'nord' ? 'NORD TYPE' : 'CONNECTION TYPE'}
+                    </span>
+                  </div>
+                  <button className="manage-types__delete-btn" onClick={handleDeleteType} title="Delete type" disabled={saving}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+
+                {/* Icon picker popover */}
+                {showIconPicker && isNordType && (
+                  <div className="manage-types__icon-picker-popover">
+                    <IconPicker
+                      currentIcon={(selected as NordTypeData).icon}
+                      accentColor={currentColor}
+                      onSelect={(iconName) => {
+                        handleUpdateField('icon', iconName);
+                        setShowIconPicker(false);
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Name */}
+                <div className="manage-types__field">
+                  <label className="manage-types__field-label">Name</label>
+                  <input
+                    type="text"
+                    className="manage-types__input"
+                    value={selected.name}
+                    onChange={(e) => handleUpdateField('name', e.target.value)}
+                  />
+                </div>
+
+                {/* Color (Hue slider) */}
+                <div className="manage-types__field">
+                  <label className="manage-types__field-label">Color</label>
+                  <div className="manage-types__color-row">
+                    <input
+                      type="range"
+                      min="0"
+                      max="360"
+                      value={currentHue}
+                      onChange={(e) => {
+                        const hue = parseInt(e.target.value);
+                        const hex = hslToHex(hue, 55, 50);
+                        handleUpdateField('accent_color', hex);
+                      }}
+                      className="manage-types__hue-slider"
+                      style={{
+                        background: `linear-gradient(to right, 
+                          hsl(0, 55%, 50%), hsl(60, 55%, 50%), hsl(120, 55%, 50%), 
+                          hsl(180, 55%, 50%), hsl(240, 55%, 50%), hsl(300, 55%, 50%), hsl(360, 55%, 50%))`,
+                      }}
+                    />
+                    <span className="manage-types__color-preview" style={{ backgroundColor: currentColor }} />
+                  </div>
+                </div>
+
+                {/* Connection-specific: Stage Labels */}
+                {!isNordType && (
+                  <div className="manage-types__field">
+                    <label className="manage-types__field-label">X-Axis Stages</label>
+                    <input
+                      type="text"
+                      className="manage-types__input"
+                      value={((selected as ConnectionTypeData).x_stage_labels || []).join(', ')}
+                      placeholder="e.g. To Do, In Progress, Done"
+                      onChange={(e) => {
+                        const labels = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                        handleUpdateField('x_stage_labels', labels);
+                      }}
+                    />
+                    {(selected as ConnectionTypeData).x_stage_labels?.length > 0 && (
+                      <div style={{ marginTop: 8 }}>
+                        <Spectrum1D
+                          value={0.5}
+                          color={currentColor}
+                          stageLabels={(selected as ConnectionTypeData).x_stage_labels}
+                          interactive
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Properties Schema */}
+                <div className="manage-types__field">
+                  <div className="manage-types__field-header">
+                    <label className="manage-types__field-label">Properties</label>
+                    <button className="manage-types__add-prop-btn" onClick={addProperty}>
+                      <Plus size={12} />
+                      <span>Add Property</span>
+                    </button>
+                  </div>
+
+                  <div className="manage-types__props-table">
+                    <div className="manage-types__props-header">
+                      <span>Name</span>
+                      <span>Type</span>
+                      <span>Card Row</span>
+                      <span></span>
+                    </div>
+                    {((selected as any).properties_schema || []).map((prop: PropertySchema, i: number) => (
+                      <div key={i} className="manage-types__props-row">
+                        <input
+                          type="text"
+                          className="manage-types__prop-input"
+                          value={prop.name}
+                          onChange={(e) => updateProperty(i, { name: e.target.value })}
+                        />
+                        <select
+                          className="manage-types__prop-select"
+                          value={prop.type}
+                          onChange={(e) => updateProperty(i, { type: e.target.value as PropertySchema['type'] })}
+                        >
+                          <option value="string">String</option>
+                          <option value="number">Number</option>
+                          <option value="select">Select</option>
+                          <option value="date">Date</option>
+                          <option value="markdown">Markdown</option>
+                          <option value="url">URL</option>
+                          <option value="spectrum_1d">Spectrum</option>
+                          <option value="tags">Tags</option>
+                        </select>
+                        <select
+                          className="manage-types__prop-select"
+                          value={prop.card_row || ''}
+                          onChange={(e) => updateProperty(i, { card_row: e.target.value ? parseInt(e.target.value) : undefined })}
+                        >
+                          <option value="">Hidden</option>
+                          <option value="1">Row 1</option>
+                          <option value="2">Row 2</option>
+                        </select>
+                        <button
+                          className="manage-types__prop-delete"
+                          onClick={() => removeProperty(i)}
+                          title="Remove property"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    {((selected as any).properties_schema || []).length === 0 && (
+                      <div className="manage-types__props-empty">
+                        No properties defined. Click "Add Property" to create one.
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="manage-types__props-hint">
+                    Common properties (Title, Scale, Description) are built-in and always available.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="manage-types__empty">
+                <p>Select a type from the sidebar, or create a new one.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Saving indicator */}
+        {saving && <div className="manage-types__saving">Saving…</div>}
+      </div>
+    </div>
+  );
+}

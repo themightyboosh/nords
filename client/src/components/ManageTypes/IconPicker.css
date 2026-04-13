@@ -1,0 +1,71 @@
+/* ═══════════════════════════════════════════════════════════
+ * IconPicker.css
+ * ═══════════════════════════════════════════════════════════ */
+
+.icon-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nords-space-sm);
+}
+
+.icon-picker__search {
+  width: 100%;
+  padding: var(--nords-space-sm) var(--nords-space-md);
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: var(--nords-radius-md);
+  background: var(--nords-color-bg-surface);
+  color: var(--nords-color-text-primary);
+  font-size: var(--nords-font-size-sm);
+  font-family: var(--nords-font-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.icon-picker__search:focus {
+  border-color: var(--nords-color-accent);
+}
+
+.icon-picker__search::placeholder {
+  color: var(--nords-color-text-tertiary);
+}
+
+.icon-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.icon-picker__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--nords-radius-sm);
+  background: transparent;
+  color: var(--nords-color-text-secondary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.icon-picker__item:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+
+.icon-picker__item--selected {
+  color: var(--nords-color-text-primary);
+  font-weight: var(--nords-font-weight-bold);
+}
+
+.icon-picker__empty {
+  grid-column: 1 / -1;
+  padding: var(--nords-space-lg);
+  text-align: center;
+  color: var(--nords-color-text-tertiary);
+  font-size: var(--nords-font-size-sm);
+}

@@ -6,13 +6,18 @@ import {
   useNodesState,
   useEdgesState,
   ConnectionMode,
+  addEdge,
   type Node,
+  type Edge,
+  type Connection,
   useReactFlow,
 } from '@xyflow/react';
 import { useLens } from '../../context/LensContext';
+import { useTypeRegistry } from '../../hooks/useTypeRegistry';
 import { useCanvasShortcuts } from '../../hooks/useCanvasShortcuts';
 import { useProjectGraph } from '../../hooks/useProjectGraph';
 import { useNordMutations } from '../../hooks/useNordMutations';
+import { useConnectionMutations } from '../../hooks/useNordMutations';
 import { graphToNodes, graphToEdges, nordToNode, pixelToNormalized } from '../../utils/graphToReactFlow';
 import { NordNode } from './NordNode';
 import { EuclideanEdge } from './EuclideanEdge';
@@ -42,6 +47,8 @@ interface InteractiveCanvasProps {
 function InteractiveCanvas({ projectId, onNordClick, selectedNord }: InteractiveCanvasProps) {
   const { graph, loading, error, refetch } = useProjectGraph(projectId);
   const { createNord, batchUpdatePositions, deleteNord } = useNordMutations(projectId);
+  const { createConnection, deleteConnection } = useConnectionMutations(projectId);
+  const { connectionTypes } = useTypeRegistry();
   const { addNodes, screenToFlowPosition } = useReactFlow();
 
   // Transform API data → React Flow format
@@ -58,6 +65,7 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
   const [nodes, setNodes, onNodesChange] = useNodesState(rfNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(rfEdges);
   const [menuConfig, setMenuConfig] = React.useState<{ x: number, y: number, node: any } | null>(null);
+  const [edgeMenuConfig, setEdgeMenuConfig] = React.useState<{ x: number, y: number, edgeId: string } | null>(null);
   const [radialMenuPos, setRadialMenuPos] = React.useState<{ x: number, y: number } | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragNodeId, setDragNodeId] = React.useState<string | null>(null);
@@ -76,7 +84,6 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
     if (rfEdges.length > 0) setEdges(rfEdges);
   }, [rfEdges, setEdges]);
 
-  useCanvasShortcuts();
   useSemanticZoom();
   useVisibilityCascade();
   useSpatialAnimations();
@@ -196,11 +203,75 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
     }
   }, [deleteNord, setNodes, setEdges]);
 
+  // ── Keyboard shortcuts (needs handlers above) ──
+  const handleDeleteBatch = useCallback(async (ids: string[]) => {
+    for (const id of ids) { await handleDelete(id); }
+  }, [handleDelete]);
+
+  useCanvasShortcuts({
+    onDelete: handleDeleteBatch,
+    onDuplicate: handleDuplicate,
+  });
+
+  // ── Connect handler: persist new connections to DB ──
+  const onConnect = useCallback(async (connection: Connection) => {
+    if (!connection.source || !connection.target) return;
+    // Use the first available connection type
+    const defaultType = connectionTypes[0];
+    if (!defaultType) {
+      console.warn('No connection types available — cannot create connection');
+      return;
+    }
+    try {
+      const newConn = await createConnection({
+        type_id: defaultType.id,
+        source_nord_id: connection.source,
+        target_nord_id: connection.target,
+        direction: 'forward',
+        distance_x: 0.5,
+        distance_y: 0.5,
+      });
+      // Add the edge to local state
+      const newEdge: Edge = {
+        id: newConn.id,
+        source: newConn.source_nord_id,
+        target: newConn.target_nord_id,
+        type: 'euclidean',
+        data: {
+          label: defaultType.name,
+          color: defaultType.color || '#888',
+        },
+      };
+      setEdges(eds => addEdge(newEdge, eds));
+    } catch (err) {
+      console.error('Failed to create connection:', err);
+    }
+  }, [connectionTypes, createConnection, setEdges]);
+
+  // ── Delete Connection ──
+  const handleDeleteEdge = useCallback(async (edgeId: string) => {
+    try {
+      await deleteConnection(edgeId);
+      setEdges(eds => eds.filter(e => e.id !== edgeId));
+      setEdgeMenuConfig(null);
+    } catch (err) {
+      console.error('Failed to delete connection:', err);
+    }
+  }, [deleteConnection, setEdges]);
+
   // ── Context Menus ──
   const onNodeContextMenu = useCallback(
     (event: React.MouseEvent, node: any) => {
       event.preventDefault();
       setMenuConfig({ x: event.clientX, y: event.clientY, node });
+    },
+    [],
+  );
+
+  const onEdgeContextMenu = useCallback(
+    (event: React.MouseEvent, edge: Edge) => {
+      event.preventDefault();
+      setEdgeMenuConfig({ x: event.clientX, y: event.clientY, edgeId: edge.id });
     },
     [],
   );
@@ -214,6 +285,7 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
   );
 
   const closeMenu = useCallback(() => setMenuConfig(null), []);
+  const closeEdgeMenu = useCallback(() => setEdgeMenuConfig(null), []);
   const closeRadialMenu = useCallback(() => setRadialMenuPos(null), []);
 
   // Loading state
@@ -246,11 +318,13 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
         onNodeClick={onNodeClick}
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
         onNodeContextMenu={onNodeContextMenu}
-        onPaneClick={() => { closeMenu(); closeRadialMenu(); }}
+        onEdgeContextMenu={onEdgeContextMenu}
+        onPaneClick={() => { closeMenu(); closeEdgeMenu(); closeRadialMenu(); }}
         onPaneContextMenu={onPaneContextMenuRadial}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
@@ -262,9 +336,14 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
         zoomOnPinch
         minZoom={0.25}
         maxZoom={2.0}
+        multiSelectionKeyCode={null}
+        selectionKeyCode={null}
+        selectionOnDrag={false}
         data-dragging-node={dragNodeId}
       >
-        <Background variant={BackgroundVariant.Dots} gap={32} size={1.5} color="var(--nords-color-text-disabled)" />
+        {/* Dual-layer background: dots + subtle cross grid for depth */}
+        <Background id="dots" variant={BackgroundVariant.Dots} gap={32} size={2.5} color="var(--nords-color-grid-dot)" />
+        <Background id="cross" variant={BackgroundVariant.Cross} gap={200} size={0.5} color="var(--nords-color-grid-dot)" style={{ opacity: 0.4 }} />
       </ReactFlow>
 
       <GroupToolbar />
@@ -290,6 +369,23 @@ function InteractiveCanvas({ projectId, onNordClick, selectedNord }: Interactive
           onChangeType={(id) => console.log('ChangeType', id)}
           onAddConnection={(id) => console.log('AddConnection', id)}
         />
+      )}
+
+      {/* Edge context menu (right-click on connection line) */}
+      {edgeMenuConfig && (
+        <div 
+          className="nords-context-menu nords-glass" 
+          style={{ left: edgeMenuConfig.x, top: edgeMenuConfig.y }}
+          data-testid="edge-context-menu"
+        >
+          <button 
+            className="nords-context-menu__item" 
+            style={{ color: 'var(--nords-color-danger)' }}
+            onClick={() => handleDeleteEdge(edgeMenuConfig.edgeId)}
+          >
+            Delete Connection
+          </button>
+        </div>
       )}
     </>
   );

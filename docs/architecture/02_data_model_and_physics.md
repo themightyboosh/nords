@@ -31,12 +31,8 @@ Familiar to any Notion power user, property schemas are defined at the **type le
 * **File / Media Attachment:** Uploads for images, PDFs, or raw text files.
 * **User / Assignee:** Links directly to workspace members.
 
-**Nord Spatial Properties (Normalized):**
-* **Size (Type-Level Scale):** Card scaling is configured per-Nord-Type, not globally. Each type independently decides:
-  * **Whether** it uses spectrum-driven scaling at all.
-  * **Which property** drives the scale (e.g., "Effort" for Tasks, "Impact" for Risks, "None" for Person).
-  * When configured, the card's physical width becomes the spectrum value (0.25x to 2.0x base width). A resize handle (`Maximize2` icon) appears on the card.
-  * When not configured, the card renders at a uniform base width with no resize handle.
+**Nord Visual Properties:**
+* **Uniform Card Width:** All nords render at a fixed base width (225px). There is no per-card scaling. Visual differentiation comes from type-specific accent colors, icons, and property content — not physical size.
 
 ### 1.3 Lines (Connections / Relationships)
 Lines connect nords and represent the nature of their relationship. Line types are user-defined schemas managed by Admins. They define the vocabulary of relationships available in a workspace.
@@ -48,12 +44,12 @@ Because a Line's primary data payload is its spatial distance, additional metada
 * **Name / Label:** Semantic meaning (e.g., "Depends On").
 * **Description:** Markdown-supported text field to explain the context of the relationship.
 
-**Directionality (Single Arrow):** Defines which node is the \"subject\" of the relationship. Each connection supports:
-* *Undirected:* A simple bond, no arrow.
-* *A→B:* Forward direction.
-* *A←B:* Reverse direction.
-* **No bidirectional arrows** — only a single arrow is permitted.
-* **Arrow ↔ Spectrum rule:** If no arrow direction is set and the line type has a Spectrum property, the distance value is grayed out (read-only). Direction is required before spatial editing is meaningful.
+**Directionality (Arrow Configuration):** Defines the flow of the relationship and controls which spatial metrics are available. Each connection supports one of four modes:
+* *Neither (default):* A simple bond, no arrows. **Disallows spectrum (distance_x) and spectrum+distance (distance_x + distance_y) assignment.** The connection is metadata-only with no spatial data.
+* *Start:* Arrow at the source node (A←B). The source is the "subject" of the relationship.
+* *End:* Arrow at the target node (A→B). The target is the "subject" of the relationship.
+* *Both:* Arrows at both ends (A↔B). The connection is fully bidirectional — distance is shared as a single value applied equally to both directions since they share directionality.
+* **Arrow ↔ Spectrum rule:** If direction is set to `neither`, spectrum and distance values are disabled (grayed out / read-only). At least `start`, `end`, or `both` is required before spatial editing is meaningful.
 
 **Visual Styling & Toggles:** Toggles for Boolean states (e.g., Active vs. Proposed) and system meta for color, stroke thickness, and dash style.
 
