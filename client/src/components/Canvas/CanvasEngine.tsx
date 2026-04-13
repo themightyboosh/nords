@@ -338,7 +338,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         type_id: connType.id,
         source_nord_id: connection.source,
         target_nord_id: connection.target,
-        direction: connType.default_direction || 'forward',
+        direction: 'forward',
         distance_x: 0.5,
         distance_y: 0.5,
       });
@@ -352,7 +352,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         data: {
           type: connType.name,
           color: connType.accent_color || '#888',
-          direction: connType.default_direction || 'forward',
+          direction: 'to',
           _typeId: connType.id,
           _distanceX: 0.5,
           _distanceY: 0.5,

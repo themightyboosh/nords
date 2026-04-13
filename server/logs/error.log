@@ -765,3 +765,31 @@ TypeError: Cannot read properties of null (reading 'getSnapshot')
     at useNodeSelection (http://localhost:5173/src/hooks/useNodeSelection.ts:4:33)
     at InteractiveCanvas (http://localhost:5173/src/components/Canvas/CanvasEngine.tsx?t=1776119999505:93:26)
     at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:12867:12) {"service":"nords-client","clientTimestamp":"2026-04-13T22:39:59.541Z","errorMessage":"Cannot read properties of null (reading 'getSnapshot')","componentStack":"\n    at InteractiveCanvas (http://localhost:5173/src/components/Canvas/CanvasEngine.tsx?t=1776119999505:25:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5173/src/components/Canvas/CanvasEngine.tsx?t=1776119999505:555:40)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5173/src/context/TypeRegistryContext.tsx?t=1776106417746:18:40)\n    at LensProvider (http://localhost:5173/src/context/LensContext.tsx?t=1776110049189:35:32)\n    at BatchProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5173/src/App.tsx?t=1776118042588:31:27)\n    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx?t=1776110049189:10:34)\n    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5173/src/context/AuthContext.tsx?t=1776110049189:10:32)\n    at App (http://localhost:5173/src/App.tsx?t=1776118042588:178:42)\n    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5173/src/components/ErrorBoundary.tsx?t=1776110049189:11:3)","userId":"dev-user-000"}
+18:42:35.038 [31merror[39m: Query failed
+error: new row for relation "connections" violates check constraint "connections_direction_check"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:203:24) {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_id, direction, distance_x, distance_y, pr","duration":160,"error":"new row for relation \"connections\" violates check constraint \"connections_direction_check\""}
+18:42:41.337 [31merror[39m: Query failed
+error: new row for relation "connections" violates check constraint "connections_direction_check"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:203:24) {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_id, direction, distance_x, distance_y, pr","duration":165,"error":"new row for relation \"connections\" violates check constraint \"connections_direction_check\""}
+18:42:53.276 [31merror[39m: Query failed
+error: new row for relation "connections" violates check constraint "connections_direction_check"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:203:24) {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_id, direction, distance_x, distance_y, pr","duration":183,"error":"new row for relation \"connections\" violates check constraint \"connections_direction_check\""}
+18:43:12.112 [31merror[39m: Query failed
+error: new row for relation "connections" violates check constraint "connections_direction_check"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:203:24) {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_id, direction, distance_x, distance_y, pr","duration":36,"error":"new row for relation \"connections\" violates check constraint \"connections_direction_check\""}

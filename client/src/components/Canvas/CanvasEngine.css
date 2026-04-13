@@ -277,49 +277,33 @@
 }
 
 /* ── Invisible Connection Handles ──
- * Handles are invisible rectangles spanning each card edge.
- * The node border itself IS the connection zone — no circles.
- * Drag from any edge → starts a new connection.
+ * Each handle covers the full card width and half its height.
+ * Combined, source + target cover the entire card as a drop zone.
+ * No visible circles — the card itself IS the connection target.
  */
-.nords-node__handle--edge {
+.nords-node__handle--full {
   opacity: 0 !important;
   background: transparent !important;
   border: none !important;
+  width: 100% !important;
+  height: 50% !important;
   border-radius: 0 !important;
   pointer-events: all;
-  z-index: 10;
-}
-
-/* Top/bottom handles span the full width */
-.nords-node__handle--edge[data-handlepos="top"],
-.nords-node__handle--edge[data-handlepos="bottom"] {
-  width: 100% !important;
-  height: 12px !important;
+  z-index: 1;
   left: 0 !important;
   transform: none !important;
   cursor: crosshair;
 }
 
-/* Left/right handles span the full height */
-.nords-node__handle--edge[data-handlepos="left"],
-.nords-node__handle--edge[data-handlepos="right"] {
-  width: 12px !important;
-  height: 100% !important;
+/* Top handle (target) covers upper half */
+.nords-node__handle--full[data-handlepos="top"] {
   top: 0 !important;
-  transform: none !important;
-  cursor: crosshair;
 }
 
-/* Touch devices: wider hit area */
-@media (pointer: coarse) {
-  .nords-node__handle--edge[data-handlepos="top"],
-  .nords-node__handle--edge[data-handlepos="bottom"] {
-    height: 18px !important;
-  }
-  .nords-node__handle--edge[data-handlepos="left"],
-  .nords-node__handle--edge[data-handlepos="right"] {
-    width: 18px !important;
-  }
+/* Bottom handle (source) covers lower half */
+.nords-node__handle--full[data-handlepos="bottom"] {
+  bottom: 0 !important;
+  top: auto !important;
 }
 
 .nords-node__titlebar {
