@@ -335,7 +335,7 @@
 .nords-node__handle--border[data-handlepos="top"],
 .nords-node__handle--border[data-handlepos="bottom"] {
   width: 100% !important;
-  height: 14px !important;
+  height: 6px !important;
   left: 0 !important;
   transform: none !important;
 }
@@ -350,7 +350,7 @@
 /* Left/right strips span full height */
 .nords-node__handle--border[data-handlepos="left"],
 .nords-node__handle--border[data-handlepos="right"] {
-  width: 14px !important;
+  width: 6px !important;
   height: 100% !important;
   top: 0 !important;
   transform: none !important;
@@ -367,11 +367,11 @@
 @media (pointer: coarse) {
   .nords-node__handle--border[data-handlepos="top"],
   .nords-node__handle--border[data-handlepos="bottom"] {
-    height: 20px !important;
+    height: 8px !important;
   }
   .nords-node__handle--border[data-handlepos="left"],
   .nords-node__handle--border[data-handlepos="right"] {
-    width: 20px !important;
+    width: 8px !important;
   }
 }
 
