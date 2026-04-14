@@ -44,6 +44,11 @@ export interface Nord {
   updated_at: string;
 }
 
+export interface StageLabel {
+  label: string;
+  position: number; // 0.0–1.0
+}
+
 export interface ConnectionType {
   id: string;
   user_id: string;
@@ -52,8 +57,8 @@ export interface ConnectionType {
   stroke_style: string;
   measurement_mode: 'spectrum' | 'quadrant' | 'none';
   default_direction: string;
-  x_stage_labels: string[];
-  y_stage_labels: string[];
+  x_stage_labels: StageLabel[];
+  y_stage_labels: StageLabel[];
   properties_schema: PropertySchema[];
   is_system: boolean;
   sort_order: number;

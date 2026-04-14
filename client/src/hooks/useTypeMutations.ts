@@ -8,6 +8,7 @@
 
 import { useCallback } from 'react';
 import { api } from '../api/client';
+import type { StageLabel } from './useProjectGraph';
 
 // ── Types ──
 
@@ -30,8 +31,8 @@ export interface ConnectionTypeData {
   stroke_style: string;
   measurement_mode: 'spectrum' | 'quadrant' | 'none';
   default_direction: string;
-  x_stage_labels: string[];
-  y_stage_labels: string[];
+  x_stage_labels: StageLabel[];
+  y_stage_labels: StageLabel[];
   properties_schema: PropertySchema[];
   is_system: boolean;
   sort_order: number;

@@ -9,6 +9,7 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import type { NordType, ConnectionType } from '../hooks/useProjectGraph';
 import { resolveIcon } from '../utils/iconRegistry';
+import { normalizeStageLabels } from '../utils/stageLabels';
 import type { LucideIcon } from 'lucide-react';
 
 export interface ResolvedNordType {
@@ -20,6 +21,7 @@ export interface ResolvedNordType {
   propertiesSchema: Array<{ name: string; type: string; config?: Record<string, unknown> }>;
   count: number;
 }
+import type { StageLabel } from '../hooks/useProjectGraph';
 
 export interface ResolvedConnectionType {
   id: string;
@@ -28,8 +30,8 @@ export interface ResolvedConnectionType {
   strokeStyle: string;
   measurementMode: 'spectrum' | 'quadrant' | 'none';
   defaultDirection: string;
-  xStageLabels: string[];
-  yStageLabels: string[];
+  xStageLabels: StageLabel[];
+  yStageLabels: StageLabel[];
   isSystem: boolean;
   count: number;
 }
@@ -97,8 +99,8 @@ export function TypeRegistryProvider({
       strokeStyle: t.stroke_style || 'solid',
       measurementMode: t.measurement_mode || 'spectrum',
       defaultDirection: t.default_direction || 'none',
-      xStageLabels: t.x_stage_labels || [],
-      yStageLabels: t.y_stage_labels || [],
+      xStageLabels: normalizeStageLabels(t.x_stage_labels),
+      yStageLabels: normalizeStageLabels(t.y_stage_labels),
       isSystem: t.is_system || false,
       count: connCountMap.get(t.id) || 0,
     })),

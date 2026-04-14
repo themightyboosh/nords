@@ -24,7 +24,8 @@ import { X, Plus, Trash2, GripVertical, ChevronRight } from 'lucide-react';
 import { useTypeMutations, type NordTypeData, type ConnectionTypeData, type PropertySchema } from '../../hooks/useTypeMutations';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { IconPicker } from './IconPicker';
-import { Spectrum1D } from '../Spectrum/Spectrum1D';
+import { SpectrumEditor } from '../Spectrum/SpectrumEditor';
+import { normalizeStageLabels } from '../../utils/stageLabels';
 import { hslToHex, hexToHSL, autoContrast } from '../../utils/color';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import './ManageTypes.css';
@@ -321,27 +322,12 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged }: Manage
                 {/* Connection-specific: Stage Labels */}
                 {!isNordType && (
                   <div className="manage-types__field">
-                    <label className="manage-types__field-label">X-Axis Stages</label>
-                    <input
-                      type="text"
-                      className="manage-types__input"
-                      value={((selected as ConnectionTypeData).x_stage_labels || []).join(', ')}
-                      placeholder="e.g. To Do, In Progress, Done"
-                      onChange={(e) => {
-                        const labels = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
-                        handleUpdateField('x_stage_labels', labels);
-                      }}
+                    <label className="manage-types__field-label">Stage Labels</label>
+                    <SpectrumEditor
+                      labels={normalizeStageLabels((selected as ConnectionTypeData).x_stage_labels)}
+                      color={currentColor}
+                      onChange={(labels) => handleUpdateField('x_stage_labels', labels)}
                     />
-                    {(selected as ConnectionTypeData).x_stage_labels?.length > 0 && (
-                      <div style={{ marginTop: 8 }}>
-                        <Spectrum1D
-                          value={0.5}
-                          color={currentColor}
-                          stageLabels={(selected as ConnectionTypeData).x_stage_labels}
-                          interactive
-                        />
-                      </div>
-                    )}
                   </div>
                 )}
 
