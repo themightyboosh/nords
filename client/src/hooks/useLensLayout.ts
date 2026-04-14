@@ -16,7 +16,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
 
-const ANIM_DURATION = 200; // ms
+const ANIM_DURATION = 350; // ms — enough for the ease-out tail to land softly
 
 interface PositionTarget {
   fromX: number;
@@ -221,7 +221,10 @@ export function useLensLayout(
     function animate() {
       const elapsed = performance.now() - startTime;
       const t = Math.min(1, elapsed / ANIM_DURATION);
-      const ease = t * t * t; // cubic ease-in: starts slow, accelerates
+      // Ease-in-out: smooth start AND smooth landing (matches spring feel)
+      const ease = t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
       reactFlow.setNodes(nds =>
         nds.map(n => {

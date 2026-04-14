@@ -181,12 +181,10 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
       const distToTarget = Math.abs(spring.x - targetCpX) + Math.abs(spring.y - targetCpY);
 
       if (speed < THRESHOLD && distToTarget < 1) {
-        // Snap to final position
-        spring.x = targetCpX;
-        spring.y = targetCpY;
+        // Stop at current natural position — no hard snap
         spring.vx = 0;
         spring.vy = 0;
-        setCpPos({ x: targetCpX, y: targetCpY, vx: 0, vy: 0 });
+        setCpPos({ x: spring.x, y: spring.y, vx: 0, vy: 0 });
         isAnimating = false;
         return;
       }
