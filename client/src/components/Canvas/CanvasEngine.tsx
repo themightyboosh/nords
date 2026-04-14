@@ -653,6 +653,8 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
           graph={graph ?? null}
           onNordClick={onNordClick}
           selectedNord={selectedNord}
+          projectId={projectId || ''}
+          refetchGraph={refetchGraph ?? noop}
         />
       </div>
     );

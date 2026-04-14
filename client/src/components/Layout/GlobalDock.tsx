@@ -181,17 +181,22 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
             </span>
           </div>
           <div className="nords-flyout__list">
-            {/* All Lines (Relevance) — the native baseline */}
-            <div
-              className={`nords-flyout__row nords-flyout__row--selectable ${!activeConnectionTypeId ? 'is-active' : ''}`}
-              onClick={() => { setActiveConnectionTypeId(null); setActiveLine('All'); setOpenPanel(null); }}
-            >
-              <div className="nords-flyout__row-left">
-                <Link2 size={14} strokeWidth={1.6} style={{ color: 'var(--nords-color-text-tertiary)', flexShrink: 0 }} />
-                <span className="nords-flyout__row-name">All Lines (Relevance)</span>
+            {/* All Lines (Relevance) — hidden in board mode, board requires a specific type */}
+            {lens !== 'board' && (
+              <div
+                className={`nords-flyout__row nords-flyout__row--selectable ${!activeConnectionTypeId ? 'is-active' : ''}`}
+                onClick={() => { setActiveConnectionTypeId(null); setActiveLine('All'); setOpenPanel(null); }}
+              >
+                <div className="nords-flyout__row-left">
+                  <Link2 size={14} strokeWidth={1.6} style={{ color: 'var(--nords-color-text-tertiary)', flexShrink: 0 }} />
+                  <span className="nords-flyout__row-name">All Lines (Relevance)</span>
+                </div>
               </div>
-            </div>
-            {visibleConnectionTypes.filter(t => !t.isSystem).map((type) => (
+            )}
+            {visibleConnectionTypes
+              .filter(t => !t.isSystem)
+              .filter(t => lens !== 'board' || (t.measurementMode !== 'none' && t.xStageLabels.length > 0))
+              .map((type) => (
               <div
                 key={type.id}
                 className={`nords-flyout__row nords-flyout__row--selectable ${activeConnectionTypeId === type.id ? 'is-active' : ''}`}
