@@ -257,15 +257,25 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     pathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${centerX} ${centerY} C ${cp3x} ${cp3y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
   }
 
-  // ── Label Positioning (anchored to spring center) ──
+  // ── Label Positioning (anchored to spring center + splay offset) ──
+  // Splay: offset the center perpendicular to the connection to spread overlapping labels
+  const splayMidOffset = (srcSplayOffset + tgtSplayOffset) / 2;
+  const splayedCenterX = centerX + perpUnitX * splayMidOffset;
+  const splayedCenterY = centerY + perpUnitY * splayMidOffset;
+
+  // Ribbon stagger (parallel edges between same node pair)
   const stagger = ribbonConfig.count > 1 
     ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20 
     : 0;
   const staggerX = (dx / len) * stagger;
   const staggerY = (dy / len) * stagger;
 
-  const labelX = centerX + staggerX;
-  const labelY = centerY + staggerY;
+  // Shift label 15% toward the target node so labels fan toward their pointed-at node
+  const shiftX = (dx / len) * len * 0.15;
+  const shiftY = (dy / len) * len * 0.15;
+
+  const labelX = splayedCenterX + staggerX + shiftX;
+  const labelY = splayedCenterY + staggerY + shiftY;
 
   // ── Label Angle ──
   let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
