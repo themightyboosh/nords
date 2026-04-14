@@ -273,7 +273,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
       );
       updatePaths(pathD);
 
-      // Update label position ref (lightweight — no re-render until settled)
+      // Update label position ref
       const stagger = ribbonConfig.count > 1
         ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20
         : 0;
@@ -291,11 +291,10 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
         return;
       }
 
-      // During animation, update label position at ~20fps (every 3rd frame)
-      // to keep it roughly tracking without 60fps React re-renders
-      if (isAnimating && rafRef.current % 3 === 0) {
-        setLabelPos({ ...labelPosRef.current });
-      }
+      // Update label position every frame — labels are small HTML divs
+      // via EdgeLabelRenderer portal, so this is cheap. The expensive
+      // SVG path mutation is handled by direct DOM ref above.
+      setLabelPos({ ...labelPosRef.current });
 
       if (isAnimating) {
         rafRef.current = requestAnimationFrame(animate);
