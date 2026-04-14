@@ -8,10 +8,12 @@
  * Physics tuned for 2x pronounced wiggle — resolves within ~600ms.
  */
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { useStore } from '@xyflow/react';
 import type { EdgeProps } from '@xyflow/react';
 import { ConnectionLabel } from './ConnectionLabel';
+import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
+import { resolveStageLabel } from '../../utils/stageLabels';
 import './CanvasEngine.css';
 
 // ── Spring Physics Constants (more pronounced, longer-lasting) ──
@@ -69,6 +71,17 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   // Read node dimensions from React Flow store for bounding-rect computation
   const sourceNode = useStore((s) => s.nodeLookup.get(source));
   const targetNode = useStore((s) => s.nodeLookup.get(target));
+
+  // ── Resolve distance to stage label ──
+  const { connectionTypes } = useTypeRegistryContext();
+  const resolvedLabel = useMemo(() => {
+    const typeId = (data as any)?._typeId;
+    const distanceX = (data as any)?._distanceX;
+    if (!typeId || distanceX == null) return null;
+    const ct = connectionTypes.find(c => c.id === typeId);
+    if (!ct || ct.xStageLabels.length === 0) return null;
+    return resolveStageLabel(distanceX, ct.xStageLabels);
+  }, [data, connectionTypes]);
 
   // Node centers (React Flow positions are top-left, add half dimensions)
   const sW = sourceNode?.measured?.width ?? 200;
@@ -401,6 +414,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
           color={isDimmed ? '#666' : (data?.color as string)}
           edgeId={id}
           isDimmed={isDimmed}
+          resolvedLabel={resolvedLabel}
         />
       )}
     </>

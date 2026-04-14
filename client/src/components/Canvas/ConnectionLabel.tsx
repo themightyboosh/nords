@@ -10,9 +10,10 @@ interface ConnectionLabelProps {
   color: string;
   edgeId: string;
   isDimmed?: boolean;
+  resolvedLabel?: string | null;
 }
 
-export const ConnectionLabel = React.memo(function ConnectionLabel({ x, y, angleDeg, direction, type, color, edgeId, isDimmed }: ConnectionLabelProps) {
+export const ConnectionLabel = React.memo(function ConnectionLabel({ x, y, angleDeg, direction, type, color, edgeId, isDimmed, resolvedLabel }: ConnectionLabelProps) {
   const zoom = useStore((s) => s.transform[2]);
   // Unified text scaling — same formula as NordNode textScale
   // Below 60% zoom: counter-scale up (capped at 2.5×)
@@ -56,6 +57,9 @@ export const ConnectionLabel = React.memo(function ConnectionLabel({ x, y, angle
         } as React.CSSProperties}
       >
         <span className="nords-connection-label__type">{type}</span>
+        {resolvedLabel && (
+          <span className="nords-connection-label__resolved">{resolvedLabel}</span>
+        )}
       </div>
     </EdgeLabelRenderer>
   );

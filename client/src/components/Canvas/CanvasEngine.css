@@ -211,6 +211,22 @@
   color: var(--nords-color-label-on-color);
 }
 
+.nords-connection-label__resolved {
+  font-family: var(--nords-font-primary);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--nords-color-label-on-color);
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+.nords-connection-label__resolved::before {
+  content: '·';
+  margin-right: 3px;
+  opacity: 0.5;
+}
+
 /* ── Directional Chevron Labels ──
  *
  * Direction is conveyed by the label shape:
