@@ -751,6 +751,11 @@
   transition: filter 0.4s ease;
 }
 
+/* Locked nodes in "All Lines" mode — position is computed, not user-controlled */
+.react-flow__node:not(.draggable) .nords-node {
+  cursor: default;
+}
+
 .nords-connection--context {
   stroke-width: 0.5;
   vector-effect: non-scaling-stroke;

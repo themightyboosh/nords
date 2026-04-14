@@ -97,7 +97,30 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     });
   }, [rfEdges, activeConnectionTypeId]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(rfNodes);
+  // ── "All Lines" drag lock ──
+  // In "All Lines" mode (no active type), node positions are COMPUTED from
+  // averaged distances — dragging them is meaningless since the position
+  // would snap back on next lens switch. Only orphan nodes (zero connections
+  // across ALL types) are freely draggable.
+  // When a specific connection type is selected, all nodes are draggable.
+  const lensNodes = useMemo(() => {
+    if (activeConnectionTypeId) {
+      // Type-specific view: all nodes draggable (positions are per-type cached)
+      return rfNodes.map(n => ({ ...n, draggable: true }));
+    }
+    // "All Lines" view: lock connected nodes, free orphans
+    const connectedIds = new Set<string>();
+    for (const e of rfEdges) {
+      connectedIds.add(e.source);
+      connectedIds.add(e.target);
+    }
+    return rfNodes.map(n => ({
+      ...n,
+      draggable: !connectedIds.has(n.id), // only orphans are draggable
+    }));
+  }, [rfNodes, rfEdges, activeConnectionTypeId]);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(lensNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(lensEdges);
   const [menuConfig, setMenuConfig] = React.useState<{ x: number, y: number, node: any } | null>(null);
   const [edgeMenuConfig, setEdgeMenuConfig] = React.useState<{ x: number, y: number, edgeId: string } | null>(null);
@@ -117,10 +140,10 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
 
   // Sync when graph data changes (initial load or refetch)
   React.useEffect(() => {
-    if (rfNodes.length > 0) {
-      setNodes(rfNodes);
+    if (lensNodes.length > 0) {
+      setNodes(lensNodes);
     }
-  }, [rfNodes, setNodes]);
+  }, [lensNodes, setNodes]);
 
   React.useEffect(() => {
     if (lensEdges.length > 0) setEdges(lensEdges);
