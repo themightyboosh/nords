@@ -24,6 +24,7 @@ export interface ConnectionTypeMock {
   name: string;
   color: string;
   measurementMode: 'spectrum' | 'quadrant' | 'none';
+  xStageLabels: Array<{ label: string; position: number }>;
   isSystem: boolean;
   count: number;
 }
@@ -49,6 +50,7 @@ export function useTypeRegistry() {
       name: t.name,
       color: t.color,
       measurementMode: t.measurementMode,
+      xStageLabels: t.xStageLabels || [],
       isSystem: t.isSystem,
       count: t.count,
     })),
