@@ -101,6 +101,14 @@
   animation: nords-wiggle 0.4s ease-in-out;
 }
 
+/* ── Z-layering: active edges render above dimmed/inactive ── */
+.react-flow__edge.nords-edge--dimmed {
+  z-index: 0 !important;
+}
+.react-flow__edge:not(.nords-edge--dimmed) {
+  z-index: 1 !important;
+}
+
 /* Edge hover feedback — thicken and brighten */
 .react-flow__edge:hover .nords-connection--base {
   stroke-width: 4;
