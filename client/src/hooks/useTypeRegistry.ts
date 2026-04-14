@@ -38,7 +38,7 @@ export function useTypeRegistry() {
       name: t.name,
       icon: t.icon,
       color: t.color,
-      count: 0, // Count is computed elsewhere (from nodes state)
+      count: t.count,
     })),
     [nordTypes]
   );
@@ -50,7 +50,7 @@ export function useTypeRegistry() {
       color: t.color,
       measurementMode: t.measurementMode,
       isSystem: t.isSystem,
-      count: 0,
+      count: t.count,
     })),
     [connectionTypes]
   );

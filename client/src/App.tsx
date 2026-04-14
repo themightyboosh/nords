@@ -92,6 +92,8 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
         <TypeRegistryProvider
           rawNordTypes={graph?.nord_types || []}
           rawConnectionTypes={graph?.connection_types || []}
+          rawNords={graph?.nords || []}
+          rawConnections={graph?.connections || []}
         >
           <div className="nords-app-container">
             <ViewportHeader

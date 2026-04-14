@@ -18,6 +18,7 @@ export interface ResolvedNordType {
   color: string;
   scaleProperty: string | null;
   propertiesSchema: Array<{ name: string; type: string; config?: Record<string, unknown> }>;
+  count: number;
 }
 
 export interface ResolvedConnectionType {
@@ -30,6 +31,7 @@ export interface ResolvedConnectionType {
   xStageLabels: string[];
   yStageLabels: string[];
   isSystem: boolean;
+  count: number;
 }
 
 interface TypeRegistryContextValue {
@@ -45,14 +47,35 @@ const TypeRegistryContext = createContext<TypeRegistryContextValue>({
 interface TypeRegistryProviderProps {
   rawNordTypes: NordType[];
   rawConnectionTypes: ConnectionType[];
+  rawNords: { type_id: string }[];
+  rawConnections: { type_id: string }[];
   children: React.ReactNode;
 }
 
 export function TypeRegistryProvider({
   rawNordTypes,
   rawConnectionTypes,
+  rawNords,
+  rawConnections,
   children,
 }: TypeRegistryProviderProps) {
+  // Pre-compute count maps from raw data
+  const nordCountMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const n of rawNords) {
+      map.set(n.type_id, (map.get(n.type_id) || 0) + 1);
+    }
+    return map;
+  }, [rawNords]);
+
+  const connCountMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const c of rawConnections) {
+      map.set(c.type_id, (map.get(c.type_id) || 0) + 1);
+    }
+    return map;
+  }, [rawConnections]);
+
   const nordTypes = useMemo<ResolvedNordType[]>(() =>
     rawNordTypes.map(t => ({
       id: t.id,
@@ -61,8 +84,9 @@ export function TypeRegistryProvider({
       color: t.accent_color || '#4da6ff',
       scaleProperty: t.scale_property,
       propertiesSchema: t.properties_schema || [],
+      count: nordCountMap.get(t.id) || 0,
     })),
-    [rawNordTypes]
+    [rawNordTypes, nordCountMap]
   );
 
   const connectionTypes = useMemo<ResolvedConnectionType[]>(() =>
@@ -76,8 +100,9 @@ export function TypeRegistryProvider({
       xStageLabels: t.x_stage_labels || [],
       yStageLabels: t.y_stage_labels || [],
       isSystem: t.is_system || false,
+      count: connCountMap.get(t.id) || 0,
     })),
-    [rawConnectionTypes]
+    [rawConnectionTypes, connCountMap]
   );
 
   return (
