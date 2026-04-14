@@ -85,12 +85,11 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   const srcPt = rectIntersection(sCx, sCy, tCx, tCy, sW, sH);
   const tgtPt = rectIntersection(tCx, tCy, sCx, sCy, tW, tH);
 
-  // Effective source/target — apply splay offset at the boundary to fan out connections
-  // (splay computed below, but we need the raw intersection first)
-  const sx0 = srcPt.x;
-  const sy0 = srcPt.y;
-  const tx0 = tgtPt.x;
-  const ty0 = tgtPt.y;
+  // Effective source/target for drawing
+  const sx = srcPt.x;
+  const sy = srcPt.y;
+  const tx = tgtPt.x;
+  const ty = tgtPt.y;
 
   // O(1) re-renders: select ribbon config for parallel edges
   const ribbonConfig = useStore((s) => {
@@ -115,30 +114,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     return { degree: conns.length, index: idx };
   }, (a, b) => a.degree === b.degree && a.index === b.index);
 
-  // ── Splay: spread connection anchor points along node boundary ──
-  // Compute splay FIRST so we can use the splayed sx/sy/tx/ty for all geometry.
-  const SPLAY_PX = 14;
-  const srcSplayOffset = sourceSplay.degree > 1
-    ? (sourceSplay.index - (sourceSplay.degree - 1) / 2) * SPLAY_PX
-    : 0;
-  const tgtSplayOffset = targetSplay.degree > 1
-    ? (targetSplay.index - (targetSplay.degree - 1) / 2) * SPLAY_PX
-    : 0;
-
-  // Perpendicular to raw connection direction for splay offset
-  const rawDx = tx0 - sx0;
-  const rawDy = ty0 - sy0;
-  const rawLen = Math.sqrt(rawDx * rawDx + rawDy * rawDy) || 1;
-  const rawPerpX = -rawDy / rawLen;
-  const rawPerpY = rawDx / rawLen;
-
-  // Final endpoints with splay applied at the node boundary
-  const sx = sx0 + rawPerpX * srcSplayOffset;
-  const sy = sy0 + rawPerpY * srcSplayOffset;
-  const tx = tx0 - rawPerpX * tgtSplayOffset;
-  const ty = ty0 - rawPerpY * tgtSplayOffset;
-
-  // ── Geometry (uses splayed endpoints) ──
+  // ── Geometry ──
   const dx = tx - sx;
   const dy = ty - sy;
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -157,6 +133,16 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
 
   const midX = (sx + tx) / 2;
   const midY = (sy + ty) / 2;
+
+  // Degree splay: fan-out control points at each endpoint (±8px per connection, centered)
+  // Only affects curvature near the node — endpoints stay at the intersection point.
+  const SPLAY_PX = 8;
+  const srcSplayOffset = sourceSplay.degree > 1
+    ? (sourceSplay.index - (sourceSplay.degree - 1) / 2) * SPLAY_PX
+    : 0;
+  const tgtSplayOffset = targetSplay.degree > 1
+    ? (targetSplay.index - (targetSplay.degree - 1) / 2) * SPLAY_PX
+    : 0;
 
   // Target control point (where the spring wants to rest)
   const targetCpX = midX + perpX * 2;
