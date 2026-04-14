@@ -19,7 +19,7 @@ import { useCanvasShortcuts } from '../../hooks/useCanvasShortcuts';
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import { useNordMutations } from '../../hooks/useNordMutations';
 import { useConnectionMutations } from '../../hooks/useNordMutations';
-import { graphToNodes, graphToEdges, nordToNode, pixelToNormalized } from '../../utils/graphToReactFlow';
+import { graphToNodes, graphToEdges, nordToNode, pixelToNormalized, computeNormalizedDistance } from '../../utils/graphToReactFlow';
 import { NordNode } from './NordNode';
 import { EuclideanEdge } from './EuclideanEdge';
 import { NodeContextMenu } from './NodeContextMenu';
@@ -54,7 +54,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
   const { connectionTypes } = useTypeRegistry();
   const { activeConnectionTypeId } = useLens();
-  const { addNodes, screenToFlowPosition } = useReactFlow();
+  const { addNodes, screenToFlowPosition, getNodes } = useReactFlow();
 
   // ── Click-to-place mode ──
   // When set, a ghost node follows the cursor until clicked to place
@@ -195,10 +195,23 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       // Optimistic: update local state immediately
       setEdges(eds => reconnectEdge(oldEdge, newConnection, eds));
       try {
+        // Recalculate distance from new positions
+        const allNodes = getNodes();
+        const srcNode = allNodes.find(n => n.id === newConnection.source);
+        const tgtNode = allNodes.find(n => n.id === newConnection.target);
+        const newDist = srcNode && tgtNode
+          ? computeNormalizedDistance(srcNode.position, tgtNode.position)
+          : 0.5;
+
         await updateConnection(oldEdge.id, {
           source_nord_id: newConnection.source,
           target_nord_id: newConnection.target,
+          distance_x: newDist,
         });
+        // Update local edge data with new distance
+        setEdges(eds => eds.map(e =>
+          e.id === oldEdge.id ? { ...e, data: { ...e.data, _distanceX: newDist } } : e
+        ));
       } catch (err) {
         console.error('Failed to reconnect edge:', err);
         // Revert on failure
@@ -210,7 +223,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       }
       reconnectingRef.current = null;
     },
-    [updateConnection, setEdges]
+    [updateConnection, setEdges, getNodes]
   );
 
   const onReconnectEnd = useCallback(
@@ -296,8 +309,26 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       ));
       // Save position to the active connection type's cache
       saveNodePosition(node.id, node.position.x, node.position.y, activeConnectionTypeId);
+
+      // Recalculate distance_x for all connected edges and persist
+      const connectedEdges = edges.filter(e => e.source === node.id || e.target === node.id);
+      const nodeMap = new Map(nodes.map(n => [n.id, n]));
+      for (const edge of connectedEdges) {
+        const srcNode = edge.source === node.id ? node : nodeMap.get(edge.source);
+        const tgtNode = edge.target === node.id ? node : nodeMap.get(edge.target);
+        if (!srcNode || !tgtNode) continue;
+        const newDist = computeNormalizedDistance(srcNode.position, tgtNode.position);
+        // Update local edge data
+        setEdges(eds => eds.map(e =>
+          e.id === edge.id ? { ...e, data: { ...e.data, _distanceX: newDist } } : e
+        ));
+        // Persist to DB (fire-and-forget)
+        updateConnection(edge.id, { distance_x: newDist }).catch(err =>
+          console.error('Failed to persist distance:', err)
+        );
+      }
     },
-    [setEdges, saveNodePosition, activeConnectionTypeId]
+    [setEdges, saveNodePosition, activeConnectionTypeId, edges, nodes, updateConnection]
   );
 
   // ── Delete Nord ──

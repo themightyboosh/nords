@@ -125,3 +125,19 @@ export function pixelToNormalized(x: number, y: number): { x: number; y: number 
     y: Math.max(0, Math.min(1, (y + 1000) / 2000)),
   };
 }
+
+/**
+ * Compute normalized distance (0–1) from pixel positions of two connected nodes.
+ * Reverses the layout model: targetDist = 150 + distance * 550
+ * So distance = clamp((euclidean - 150) / 550, 0, 1)
+ */
+export function computeNormalizedDistance(
+  srcPos: { x: number; y: number },
+  tgtPos: { x: number; y: number },
+): number {
+  const dx = tgtPos.x - srcPos.x;
+  const dy = tgtPos.y - srcPos.y;
+  const euclidean = Math.sqrt(dx * dx + dy * dy);
+  return Math.max(0, Math.min(1, (euclidean - 150) / 550));
+}
+
