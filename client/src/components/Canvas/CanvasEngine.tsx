@@ -84,12 +84,15 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     if (!activeConnectionTypeId) return rfEdges;
     return rfEdges.map(e => {
       const isActive = (e.data as any)?._typeId === activeConnectionTypeId;
-      if (isActive) return e;
+      if (isActive) {
+        return { ...e, zIndex: 10 };
+      }
       // Dim non-active edges — keep them visible and interactive but gray
       return {
         ...e,
         data: { ...e.data, dimmed: true },
         className: 'nords-edge--dimmed',
+        zIndex: 0,
       };
     });
   }, [rfEdges, activeConnectionTypeId]);

@@ -402,6 +402,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
           type={data?.type as string}
           color={isDimmed ? '#666' : (data?.color as string)}
           edgeId={id}
+          isDimmed={isDimmed}
         />
       )}
     </>

@@ -1664,3 +1664,33 @@ ReferenceError: reactFlow is not defined
     at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:8324:37)
     at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:8308:6)
     at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:7993:27) {"service":"nords-client","clientTimestamp":"2026-04-14T00:14:56.536Z","errorMessage":"reactFlow is not defined","componentStack":"\n    at InteractiveCanvas (http://localhost:5173/src/components/Canvas/CanvasEngine.tsx?t=1776125696471:25:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5173/src/components/Canvas/CanvasEngine.tsx?t=1776125696471:631:40)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5173/src/context/TypeRegistryContext.tsx?t=1776106417746:18:40)\n    at LensProvider (http://localhost:5173/src/context/LensContext.tsx?t=1776121600175:35:32)\n    at BatchProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5173/src/App.tsx?t=1776124907793:31:27)\n    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx?t=1776110049189:10:34)\n    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5173/src/context/AuthContext.tsx?t=1776110049189:10:32)\n    at App (http://localhost:5173/src/App.tsx?t=1776124907793:178:42)\n    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5173/src/components/ErrorBoundary.tsx?t=1776110049189:11:3)","userId":"dev-user-000"}
+07:15:30.812 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:36:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5005,"error":"Connection terminated due to connection timeout"}
+07:16:03.784 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:36:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32967,"error":"Connection terminated due to connection timeout"}
+07:54:15.044 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:36:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+07:54:20.050 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:36:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5002,"error":"Connection terminated due to connection timeout"}
+09:40:41.130 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-14T13:40:19.398Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+09:41:11.131 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-14T13:40:41.705Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
