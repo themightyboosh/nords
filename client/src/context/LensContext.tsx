@@ -15,14 +15,6 @@ import logger from '../lib/logger';
 
 export type LensMode = 'canvas' | 'board';
 
-export interface BreadcrumbEntry {
-  connectionTypeId: string;
-  connectionTypeName: string;
-  jumpedFromNordId: string;
-  jumpedFromNordTitle: string;
-  jumpedFromLabel: string;
-}
-
 interface LensContextValue {
   lens: LensMode;
   setLens: (lens: LensMode) => void;
@@ -36,11 +28,6 @@ interface LensContextValue {
   setShowContext: (show: boolean) => void;
   hiddenTypes: Set<string>;
   toggleTypeVisibility: (typeName: string) => void;
-  /** Navigation history for Matrix View jumping */
-  matrixBreadcrumbs: BreadcrumbEntry[];
-  pushMatrixBreadcrumb: (entry: BreadcrumbEntry) => void;
-  popMatrixBreadcrumb: (index: number) => void;
-  clearMatrixBreadcrumbs: () => void;
 }
 
 const LensContext = createContext<LensContextValue | null>(null);
@@ -78,19 +65,6 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
   const [activeConnectionTypeId, setActiveConnectionTypeIdState] = useState<string | null>(
     () => projectId ? getStoredTypeId(projectId) : null
   );
-  const [matrixBreadcrumbs, setMatrixBreadcrumbs] = useState<BreadcrumbEntry[]>([]);
-
-  const pushMatrixBreadcrumb = useCallback((entry: BreadcrumbEntry) => {
-    setMatrixBreadcrumbs(prev => [...prev, entry]);
-  }, []);
-
-  const popMatrixBreadcrumb = useCallback((index: number) => {
-    setMatrixBreadcrumbs(prev => prev.slice(0, index));
-  }, []);
-
-  const clearMatrixBreadcrumbs = useCallback(() => {
-    setMatrixBreadcrumbs([]);
-  }, []);
 
   // Persist active type to localStorage when it changes
   const setActiveConnectionTypeId = useCallback((id: string | null) => {
@@ -123,9 +97,7 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
       activeConnectionTypeId, setActiveConnectionTypeId,
       activeLine, setActiveLine, 
       showContext, setShowContext,
-      hiddenTypes, toggleTypeVisibility,
-      matrixBreadcrumbs, pushMatrixBreadcrumb,
-      popMatrixBreadcrumb, clearMatrixBreadcrumbs
+      hiddenTypes, toggleTypeVisibility
     }}>
       {children}
     </LensContext.Provider>
