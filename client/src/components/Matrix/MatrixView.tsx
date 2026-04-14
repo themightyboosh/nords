@@ -21,8 +21,9 @@ import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
 import { useLens } from '../../context/LensContext';
 import { resolveStageLabel } from '../../utils/stageLabels';
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
-import type { NordEdgeData } from '../../types/canvas';
 import { resolveIcon } from '../../utils/iconRegistry';
+import { NordCard } from '../shared/NordCard';
+import { ChevronRight } from 'lucide-react';
 import './MatrixView.css';
 
 interface MatrixViewProps {
@@ -39,11 +40,15 @@ interface MatrixCard {
   typeIcon: any;
   resolvedLabel: string;
   distance: number;
-  properties: Array<{ key: string; value: string }>;
+  properties: Array<{ key: string; value: string; color?: string }>;
+  jumpBadges: Array<{ typeId: string; typeName: string; typeColor: string; count: number }>;
 }
 
 export function MatrixView({ graph, onNordClick, selectedNord }: MatrixViewProps) {
-  const { activeConnectionTypeId } = useLens();
+  const { 
+    activeConnectionTypeId, setActiveConnectionTypeId, 
+    matrixBreadcrumbs, pushMatrixBreadcrumb, popMatrixBreadcrumb 
+  } = useLens();
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
 
   // Find the active connection type
@@ -61,21 +66,22 @@ export function MatrixView({ graph, onNordClick, selectedNord }: MatrixViewProps
     const labels = activeType.xStageLabels;
     const typeMap = new Map(graph.nord_types.map(t => [t.id, t]));
 
-    // Index connections by source/target for fast lookup
-    const connectionsByNord = new Map<string, { distance_x: number }[]>();
+    // Index ALL connections by source/target for fast lookup
+    const connectionsByNord = new Map<string, { type_id: string; distance_x: number }[]>();
     for (const conn of graph.connections) {
-      if (conn.type_id !== activeType.id) continue;
-      // Source side
       if (!connectionsByNord.has(conn.source_nord_id)) {
         connectionsByNord.set(conn.source_nord_id, []);
       }
-      connectionsByNord.get(conn.source_nord_id)!.push({ distance_x: conn.distance_x });
-      // Target side
+      connectionsByNord.get(conn.source_nord_id)!.push({ type_id: conn.type_id, distance_x: conn.distance_x });
+      
       if (!connectionsByNord.has(conn.target_nord_id)) {
         connectionsByNord.set(conn.target_nord_id, []);
       }
-      connectionsByNord.get(conn.target_nord_id)!.push({ distance_x: conn.distance_x });
+      connectionsByNord.get(conn.target_nord_id)!.push({ type_id: conn.type_id, distance_x: conn.distance_x });
     }
+
+    // Build connection type map for jump badges
+    const connTypeMap = new Map(connectionTypes.map(ct => [ct.id, ct]));
 
     // Build column buckets
     const columnMap = new Map<string, MatrixCard[]>();
@@ -86,29 +92,35 @@ export function MatrixView({ graph, onNordClick, selectedNord }: MatrixViewProps
 
     for (const nord of graph.nords) {
       const nordType = typeMap.get(nord.type_id);
-      const conns = connectionsByNord.get(nord.id);
-
-      const card: MatrixCard = {
-        id: nord.id,
-        title: nord.title || 'Untitled',
-        typeName: nordType?.name || 'Unknown',
-        typeColor: nordType?.accent_color || '#4da6ff',
-        typeIcon: resolveIcon(nordType?.icon || null),
-        resolvedLabel: '',
-        distance: 0.5,
-        properties: Object.entries(nord.properties || {}).slice(0, 2).map(([key, value]) => ({
-          key,
-          value: String(value),
-        })),
       };
 
-      if (!conns || conns.length === 0) {
+      // Compute jump badges (other connection types this nord has)
+      const allConns = connectionsByNord.get(nord.id) || [];
+      const activeConns = allConns.filter(c => c.type_id === activeType.id);
+      
+      const jumpConnCounts = new Map<string, number>();
+      for (const c of allConns) {
+        if (c.type_id !== activeType.id) {
+          jumpConnCounts.set(c.type_id, (jumpConnCounts.get(c.type_id) || 0) + 1);
+        }
+      }
+
+      card.jumpBadges = Array.from(jumpConnCounts.entries())
+        .map(([typeId, count]) => {
+          const ct = connTypeMap.get(typeId);
+          return ct && ct.xStageLabels.length > 0 // Only jump to valid matrix modes
+            ? { typeId, typeName: ct.name, typeColor: ct.color || '#888', count }
+            : null;
+        })
+        .filter(Boolean) as MatrixCard['jumpBadges'];
+
+      if (activeConns.length === 0) {
         unlinkedCards.push(card);
         continue;
       }
 
-      // Average distance across all connections of this type
-      const avgDistance = conns.reduce((sum, c) => sum + c.distance_x, 0) / conns.length;
+      // Average distance across all connections of THIS active type
+      const avgDistance = activeConns.reduce((sum, c) => sum + c.distance_x, 0) / activeConns.length;
       const resolved = resolveStageLabel(avgDistance, labels);
       card.resolvedLabel = resolved || labels[0].label;
       card.distance = avgDistance;
@@ -158,14 +170,88 @@ export function MatrixView({ graph, onNordClick, selectedNord }: MatrixViewProps
 
   const totalCards = columns.reduce((sum, col) => sum + col.cards.length, 0) + unlinked.length;
 
+  const handleJump = (e: React.MouseEvent, card: MatrixCard, targetTypeId: string) => {
+    e.stopPropagation();
+    pushMatrixBreadcrumb({
+      connectionTypeId: activeType.id,
+      connectionTypeName: activeType.name,
+      jumpedFromNordId: card.id,
+      jumpedFromNordTitle: card.title,
+      jumpedFromLabel: card.resolvedLabel || 'Unlinked',
+    });
+    setActiveConnectionTypeId(targetTypeId);
+  };
+
+  const renderCard = (card: MatrixCard, isUnlinked = false) => (
+    <div key={card.id} className="nords-matrix__card-wrapper" onClick={() => onNordClick(card.id)}>
+      <NordCard
+        title={card.title}
+        typeName={card.typeName}
+        typeColor={card.typeColor}
+        typeIcon={card.typeIcon}
+        properties={card.properties}
+        isSelected={selectedNord === card.id}
+        maxProperties={2}
+        className="nords-matrix__nord-card"
+        footer={
+          <div className="nords-matrix__card-footer-content">
+            {!isUnlinked && (
+              <div className="nords-matrix__card-dist">
+                Distance: {card.distance.toFixed(2)}
+              </div>
+            )}
+            {card.jumpBadges.length > 0 && (
+              <div className="nords-matrix__jump-badges">
+                {card.jumpBadges.map(badge => (
+                  <button
+                    key={badge.typeId}
+                    className="nords-matrix__jump-badge"
+                    onClick={(e) => handleJump(e, card, badge.typeId)}
+                    style={{ borderColor: badge.typeColor, color: badge.typeColor }}
+                  >
+                    <span className="nords-matrix__jump-badge-dot" style={{ backgroundColor: badge.typeColor }} />
+                    <span className="nords-matrix__jump-badge-label">{badge.typeName} ({badge.count})</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        }
+      />
+    </div>
+  );
+
   return (
     <div className="nords-matrix">
-      {/* Header bar */}
+      {/* Header bar / Breadcrumbs */}
       <div className="nords-matrix__header">
-        <span className="nords-matrix__header-type" style={{ color: activeType.color }}>
-          {activeType.name}
-        </span>
-        <span className="nords-matrix__header-count">{totalCards} nords</span>
+        {matrixBreadcrumbs.length > 0 ? (
+          <div className="nords-matrix__breadcrumbs">
+            {matrixBreadcrumbs.map((crumb, idx) => (
+              <React.Fragment key={`${crumb.connectionTypeId}-${idx}`}>
+                <button 
+                  className="nords-matrix__breadcrumb-btn"
+                  onClick={() => popMatrixBreadcrumb(idx)}
+                >
+                  <span className="nords-matrix__breadcrumb-type">{crumb.connectionTypeName}</span>
+                  <span className="nords-matrix__breadcrumb-node">› {crumb.jumpedFromNordTitle}</span>
+                  <span className="nords-matrix__breadcrumb-label">({crumb.jumpedFromLabel})</span>
+                </button>
+                <ChevronRight size={14} className="nords-matrix__breadcrumb-sep" />
+              </React.Fragment>
+            ))}
+            <span className="nords-matrix__breadcrumb-current" style={{ color: activeType.color }}>
+              {activeType.name}
+            </span>
+          </div>
+        ) : (
+          <div className="nords-matrix__header-title">
+            <span className="nords-matrix__header-type" style={{ color: activeType.color }}>
+              {activeType.name}
+            </span>
+            <span className="nords-matrix__header-count">{totalCards} nords</span>
+          </div>
+        )}
       </div>
 
       {/* Column scroll container */}
@@ -182,34 +268,7 @@ export function MatrixView({ graph, onNordClick, selectedNord }: MatrixViewProps
               <span className="nords-matrix__column-count">{col.cards.length}</span>
             </div>
             <div className="nords-matrix__column-body">
-              {col.cards.map(card => (
-                <button
-                  key={card.id}
-                  className={`nords-matrix__card ${selectedNord === card.id ? 'is-selected' : ''}`}
-                  onClick={() => onNordClick(card.id)}
-                >
-                  <div className="nords-matrix__card-header">
-                    <span
-                      className="nords-matrix__card-dot"
-                      style={{ backgroundColor: card.typeColor }}
-                    />
-                    <span className="nords-matrix__card-title">{card.title}</span>
-                  </div>
-                  {card.properties.length > 0 && (
-                    <div className="nords-matrix__card-props">
-                      {card.properties.map(p => (
-                        <span key={p.key} className="nords-matrix__card-prop">
-                          {p.value}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <div className="nords-matrix__card-meta">
-                    <span className="nords-matrix__card-type">{card.typeName}</span>
-                    <span className="nords-matrix__card-dist">{card.distance.toFixed(2)}</span>
-                  </div>
-                </button>
-              ))}
+              {col.cards.map(card => renderCard(card))}
               {col.cards.length === 0 && (
                 <div className="nords-matrix__column-empty">No nords</div>
               )}
@@ -227,24 +286,7 @@ export function MatrixView({ graph, onNordClick, selectedNord }: MatrixViewProps
               <span className="nords-matrix__column-count">{unlinked.length}</span>
             </div>
             <div className="nords-matrix__column-body">
-              {unlinked.map(card => (
-                <button
-                  key={card.id}
-                  className={`nords-matrix__card nords-matrix__card--unlinked ${selectedNord === card.id ? 'is-selected' : ''}`}
-                  onClick={() => onNordClick(card.id)}
-                >
-                  <div className="nords-matrix__card-header">
-                    <span
-                      className="nords-matrix__card-dot"
-                      style={{ backgroundColor: card.typeColor }}
-                    />
-                    <span className="nords-matrix__card-title">{card.title}</span>
-                  </div>
-                  <div className="nords-matrix__card-meta">
-                    <span className="nords-matrix__card-type">{card.typeName}</span>
-                  </div>
-                </button>
-              ))}
+              {unlinked.map(card => renderCard(card, true))}
             </div>
           </div>
         )}

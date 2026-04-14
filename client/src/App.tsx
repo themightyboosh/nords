@@ -73,13 +73,6 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
     setSelectedEntity({ id, type: 'connection' });
     setIsDrawerOpen(true);
   };
-
-  // Connections tab: click a connection row → switch to Line Mode
-  const handleSelectConnection = useCallback((connectionId: string) => {
-    setSelectedEntity({ id: connectionId, type: 'connection' });
-    setIsDrawerOpen(true);
-  }, []);
-
   const closeDrawer = () => {
     setIsDrawerOpen(false);
     setSelectedEntity(null);
@@ -116,7 +109,6 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
               entityId={selectedEntity?.id || null}
               entityType={selectedEntity?.type || 'nord'}
               typeSchemas={typeSchemas}
-              onSelectConnection={handleSelectConnection}
             />
             {showManageTypes && (
               <ManageTypes

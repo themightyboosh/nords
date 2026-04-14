@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Handle, Position, useStore } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
 import { MessageSquare } from 'lucide-react';
+import { NordCard } from '../shared/NordCard';
 import './CanvasEngine.css'; // Relies on shared CSS
 
 // Fixed card width — all nords are the same size
@@ -27,25 +28,11 @@ export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<N
   // Capped at 2.5× to prevent absurdly large text at extreme zoom-out
   const textScale = zoom < 0.6 ? Math.min(2.5, 0.6 / zoom) : 1;
 
-  const Icon = data.typeIcon;
-  const visibleProps = data.properties.slice(0, 3);
-  const hiddenCount = Math.max(0, data.properties.length - 3);
   const isGhosted = data.isGhosted === true;
-
-  const containerClasses = [
-    'nords-node',
-    selected ? 'is-selected' : '',
-    isGhosted ? 'nords-node--ghosted' : ''
-  ].filter(Boolean).join(' ');
 
   return (
     <div
-      className={containerClasses}
-      style={{
-        width: `${CARD_WIDTH}px`,
-        backgroundColor: `color-mix(in srgb, ${data.typeColor || '#fff'} 10%, var(--nords-color-bg-surface))`,
-        borderColor: `color-mix(in srgb, ${data.typeColor || '#fff'} 20%, var(--nords-color-border-default))`,
-      }}
+      style={{ width: `${CARD_WIDTH}px` }}
       data-testid={`nord-node-${id}`}
     >
       {/* DROP TARGET — covers entire card so releasing anywhere connects */}
@@ -57,48 +44,19 @@ export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<N
       <Handle type="source" position={Position.Left} id="s-left" className="nords-node__handle--border" isConnectable={isConnectable} />
       <Handle type="source" position={Position.Right} id="s-right" className="nords-node__handle--border" isConnectable={isConnectable} />
 
-      {/* All text content — counter-scales uniformly below 60% zoom */}
-      <div
-        className="nords-node__titlebar"
-        style={textScale > 1 ? { transform: `scale(${textScale})`, transformOrigin: 'top left' } : undefined}
-      >
-        <div className="nords-node__header">
-          {Icon && <Icon size={14} strokeWidth={2} color={data.typeColor} />}
-          <span className="nords-node__type-label" style={{ color: data.typeColor }}>
-            {data.type}
-          </span>
-        </div>
-      </div>
-
-      {/* Title — also counter-scales */}
-      <h3
-        className="nords-node__title"
-        style={textScale > 1 ? { transform: `scale(${textScale})`, transformOrigin: 'top left' } : undefined}
-      >{data.title}</h3>
-
-      {/* Properties */}
-      {visibleProps.length > 0 && (
-        <div className="nords-node__props">
-          {visibleProps.map((p) => (
-            <div key={p.key} className="nords-node__prop">
-              <span className="nords-node__prop-key">{p.key}</span>
-              <span
-                className="nords-node__prop-value"
-                style={p.color ? { color: p.color } : undefined}
-              >
-                {p.value}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="nords-node__footer">
-        {hiddenCount > 0 && (
-          <span className="nords-node__more">+{hiddenCount} more</span>
-        )}
-      </div>
+      <NordCard
+        title={data.title}
+        typeName={data.type}
+        typeColor={data.typeColor}
+        typeIcon={data.typeIcon}
+        properties={data.properties}
+        isSelected={selected}
+        isGhosted={isGhosted}
+        style={{
+          // Counter-scale text at low zoom via CSS custom property
+          '--nord-text-scale': textScale > 1 ? textScale : undefined,
+        } as React.CSSProperties}
+      />
 
       {/* Comment badge */}
       {(data.commentCount || 0) > 0 && !isGhosted && (

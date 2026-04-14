@@ -29,7 +29,7 @@ interface GlobalDockProps {
 }
 
 export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDockProps) {
-  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activeLine, setActiveLine, showContext, setShowContext } = useLens();
+  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activeLine, setActiveLine, showContext, setShowContext, clearMatrixBreadcrumbs } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [snapshotTab, setSnapshotTab] = useState<'take' | 'history'>('take');
 
@@ -71,6 +71,7 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
     setActiveConnectionTypeId(typeId);
     setActiveLine(typeName);
     setOpenPanel(null);
+    clearMatrixBreadcrumbs(); // Hard reset matrix traversal stack
   };
 
   const togglePanel = (panel: string) => {
@@ -184,7 +185,7 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
             {/* All Lines (Relevance) — the native baseline */}
             <div
               className={`nords-flyout__row nords-flyout__row--selectable ${!activeConnectionTypeId ? 'is-active' : ''}`}
-              onClick={() => { setActiveConnectionTypeId(null); setActiveLine('All'); setOpenPanel(null); }}
+              onClick={() => { setActiveConnectionTypeId(null); setActiveLine('All'); setOpenPanel(null); clearMatrixBreadcrumbs(); }}
             >
               <div className="nords-flyout__row-left">
                 <Link2 size={14} strokeWidth={1.6} style={{ color: 'var(--nords-color-text-tertiary)', flexShrink: 0 }} />

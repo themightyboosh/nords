@@ -32,8 +32,6 @@ interface DetailDrawerProps {
     options?: string[];
     card_row?: number;
   }>>;
-  /** Callback when user clicks a connection in the connections tab */
-  onSelectConnection?: (connectionId: string) => void;
 }
 
 // ── Direction Toggle Button Group ──
@@ -76,76 +74,6 @@ function DirectionToggle({
   );
 }
 
-// ── Connections Tab: List all edges for this nord ──
-function ConnectionsList({
-  nordId,
-  color,
-  onSelectConnection,
-}: {
-  nordId: string;
-  color: string;
-  onSelectConnection?: (connectionId: string) => void;
-}) {
-  // Subscribe to all edges that reference this nord
-  const connectedEdges = useStore(
-    (s) => s.edges.filter(e => e.source === nordId || e.target === nordId),
-    (a, b) => a.length === b.length && a.every((e, i) => e.id === b[i]?.id)
-  );
-
-  // Lookup node names
-  const nodeNames = useStore(
-    (s) => {
-      const names: Record<string, string> = {};
-      connectedEdges.forEach(e => {
-        const src = s.nodeLookup.get(e.source);
-        const tgt = s.nodeLookup.get(e.target);
-        if (src) names[e.source] = (src.data?.title as string) || 'Untitled';
-        if (tgt) names[e.target] = (tgt.data?.title as string) || 'Untitled';
-      });
-      return names;
-    },
-    (a, b) => JSON.stringify(a) === JSON.stringify(b)
-  );
-
-  if (connectedEdges.length === 0) {
-    return (
-      <div className="nords-drawer-empty">
-        No connections yet. Draw a line from this nord to another.
-      </div>
-    );
-  }
-
-  return (
-    <div className="nords-connections-list">
-      {connectedEdges.map(edge => {
-        const data = edge.data as any;
-        const isSource = edge.source === nordId;
-        const otherName = isSource ? nodeNames[edge.target] : nodeNames[edge.source];
-        const dirIcon = data?.direction === 'to' ? '→'
-          : data?.direction === 'from' ? '←'
-          : data?.direction === 'both' ? '↔'
-          : '—';
-
-        return (
-          <button
-            key={edge.id}
-            className="nords-connection-row"
-            onClick={() => onSelectConnection?.(edge.id)}
-          >
-            <span
-              className="nords-connection-row__type-dot"
-              style={{ backgroundColor: data?.color || '#888' }}
-            />
-            <span className="nords-connection-row__type">{data?.type || 'Connection'}</span>
-            <span className="nords-connection-row__dir">{dirIcon}</span>
-            <span className="nords-connection-row__target">{otherName || '…'}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 // ── Main Component ──
 const DetailDrawer: React.FC<DetailDrawerProps> = ({
   isOpen,
@@ -153,10 +81,9 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
   entityId,
   entityType,
   typeSchemas,
-  onSelectConnection,
 }) => {
   const { entity, mutations } = useDrawerEntity(entityId, entityType);
-  const [activeTab, setActiveTab] = useState<'properties' | 'connections' | 'comments'>('properties');
+  const [activeTab, setActiveTab] = useState<'properties' | 'comments'>('properties');
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   // Debounced title update
@@ -238,12 +165,6 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
               )}
             </button>
             <button
-              className={`nords-drawer-tab ${activeTab === 'connections' ? 'is-active' : ''}`}
-              onClick={() => setActiveTab('connections')}
-            >
-              Connections
-            </button>
-            <button
               className={`nords-drawer-tab ${activeTab === 'comments' ? 'is-active' : ''}`}
               onClick={() => setActiveTab('comments')}
             >
@@ -275,15 +196,6 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
                 </div>
               )}
             </div>
-          )}
-
-          {/* Connections Tab — Live Edge List */}
-          {activeTab === 'connections' && (
-            <ConnectionsList
-              nordId={entity.id}
-              color={entity.typeColor}
-              onSelectConnection={onSelectConnection}
-            />
           )}
 
           {/* Comments Tab */}
