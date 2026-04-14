@@ -996,8 +996,14 @@
 /* Dragged node lifts off the canvas with elevation + subtle scale */
 .nords-canvas--dragging .react-flow__node.dragging .nords-node {
   box-shadow: var(--nords-shadow-xl), 0 12px 40px rgba(0, 0, 0, 0.2);
-  transform: scale(1.02);
+  transform: scale(1.02) translateZ(0);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
+  will-change: transform;
+}
+
+/* GPU layer promotion for all edges during drag — prevents full SVG repaint */
+.nords-canvas--dragging .react-flow__edge {
+  will-change: opacity;
 }
 
 .nords-canvas--dragging .react-flow__edge:not(.selected):not(.drag-connected) {

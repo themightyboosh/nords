@@ -5,18 +5,27 @@
  * not to fixed handle positions. The Bézier control point is driven by
  * a 1D spring-mass-damper system for the tactile cable-wiggle effect.
  *
+ * PERFORMANCE MODEL (v2):
+ *   - Spring animation runs in a rAF loop but mutates the DOM directly
+ *     via ref.setAttribute('d', ...) instead of calling setCpPos per frame.
+ *   - React re-renders only occur when the spring settles or structural
+ *     data changes (connection type, direction, visibility).
+ *   - Off-canvas guard: animation is paused for edges fully outside the
+ *     visible viewport, resuming when they scroll back in.
+ *
  * Physics tuned for 2x pronounced wiggle — resolves within ~600ms.
  */
 
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, useCallback } from 'react';
 import { useStore } from '@xyflow/react';
 import type { EdgeProps } from '@xyflow/react';
 import { ConnectionLabel } from './ConnectionLabel';
 import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
 import { resolveStageLabel } from '../../utils/stageLabels';
+import type { NordEdgeData } from '../../types/canvas';
 import './CanvasEngine.css';
 
-// ── Spring Physics Constants (more pronounced, longer-lasting) ──
+// ── Spring Physics Constants ──
 const STIFFNESS = 0.03;   // Very low snap → wide oscillation arcs
 const DAMPING   = 0.65;   // Low friction → more bounces before settling
 const THRESHOLD = 0.2;    // Lower threshold → animation runs longer
@@ -33,9 +42,9 @@ interface SpringState {
  * rectangle of a node. Returns the intersection point on the rect edge.
  */
 function rectIntersection(
-  cx: number, cy: number,  // center of THIS node
-  tx: number, ty: number,  // center of OTHER node (line target direction)
-  w: number, h: number     // width and height of THIS node
+  cx: number, cy: number,
+  tx: number, ty: number,
+  w: number, h: number
 ): { x: number; y: number } {
   const dx = tx - cx;
   const dy = ty - cy;
@@ -44,7 +53,6 @@ function rectIntersection(
   const halfW = w / 2;
   const halfH = h / 2;
 
-  // Scale factor to reach rectangle edge
   const scaleX = dx !== 0 ? halfW / Math.abs(dx) : Infinity;
   const scaleY = dy !== 0 ? halfH / Math.abs(dy) : Infinity;
   const scale = Math.min(scaleX, scaleY);
@@ -54,6 +62,51 @@ function rectIntersection(
     y: cy + dy * scale,
   };
 }
+
+/**
+ * Build SVG path string for the edge's current state.
+ * Pure function — no side effects, used from both React render and rAF loop.
+ */
+function buildPathD(
+  sx: number, sy: number, tx: number, ty: number,
+  centerX: number, centerY: number,
+  perpUnitX: number, perpUnitY: number,
+  dx: number, dy: number, len: number,
+  offset: number,
+  srcSplayOffset: number, tgtSplayOffset: number,
+  speed: number
+): string {
+  const midX = (sx + tx) / 2;
+  const midY = (sy + ty) / 2;
+  const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
+  const springAtRest = Math.abs(centerX - midX) < 2 && Math.abs(centerY - midY) < 2 && speed < 0.5;
+  const isFullyAtRest = offset === 0 && springAtRest && !hasSplay;
+
+  if (isFullyAtRest) {
+    return `M ${sx} ${sy} L ${tx} ${ty}`;
+  }
+
+  if (springAtRest && hasSplay && offset === 0) {
+    const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
+    const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
+    const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
+    const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
+    return `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
+  }
+
+  const waveAmp = Math.min(35, speed * 2.5);
+  const cp1x = sx + dx * 0.08 + perpUnitX * (waveAmp * 0.3 + srcSplayOffset);
+  const cp1y = sy + dy * 0.08 + perpUnitY * (waveAmp * 0.3 + srcSplayOffset);
+  const cp2x = (sx + centerX) / 2 + perpUnitX * waveAmp;
+  const cp2y = (sy + centerY) / 2 + perpUnitY * waveAmp;
+  const cp3x = (centerX + tx) / 2 - perpUnitX * waveAmp;
+  const cp3y = (centerY + ty) / 2 - perpUnitY * waveAmp;
+  const cp4x = sx + dx * 0.92 - perpUnitX * (waveAmp * 0.3 + tgtSplayOffset);
+  const cp4y = sy + dy * 0.92 - perpUnitY * (waveAmp * 0.3 + tgtSplayOffset);
+
+  return `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${centerX} ${centerY} C ${cp3x} ${cp3y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
+}
+
 
 const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   id,
@@ -68,6 +121,9 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   markerEnd,
   markerStart,
 }: EdgeProps) {
+  // ── Typed edge data ──
+  const edgeData = data as NordEdgeData | undefined;
+
   // Read node dimensions from React Flow store for bounding-rect computation
   const sourceNode = useStore((s) => s.nodeLookup.get(source));
   const targetNode = useStore((s) => s.nodeLookup.get(target));
@@ -75,13 +131,11 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   // ── Resolve distance to stage label ──
   const { connectionTypes } = useTypeRegistryContext();
   const resolvedLabel = useMemo(() => {
-    const typeId = (data as any)?._typeId;
-    const distanceX = (data as any)?._distanceX;
-    if (!typeId || distanceX == null) return null;
-    const ct = connectionTypes.find(c => c.id === typeId);
+    if (!edgeData?._typeId || edgeData._distanceX == null) return null;
+    const ct = connectionTypes.find(c => c.id === edgeData._typeId);
     if (!ct || ct.xStageLabels.length === 0) return null;
-    return resolveStageLabel(distanceX, ct.xStageLabels);
-  }, [data, connectionTypes]);
+    return resolveStageLabel(edgeData._distanceX, ct.xStageLabels);
+  }, [edgeData?._typeId, edgeData?._distanceX, connectionTypes]);
 
   // Node centers (React Flow positions are top-left, add half dimensions)
   const sW = sourceNode?.measured?.width ?? 200;
@@ -98,13 +152,12 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   const srcPt = rectIntersection(sCx, sCy, tCx, tCy, sW, sH);
   const tgtPt = rectIntersection(tCx, tCy, sCx, sCy, tW, tH);
 
-  // Effective source/target for drawing
   const sx = srcPt.x;
   const sy = srcPt.y;
   const tx = tgtPt.x;
   const ty = tgtPt.y;
 
-  // O(1) re-renders: select ribbon config for parallel edges
+  // ── Ribbon config: O(1) via equality check ──
   const ribbonConfig = useStore((s) => {
     const pairKey = [source, target].sort().join('-');
     const siblings = s.edges.filter(e => [e.source, e.target].sort().join('-') === pairKey);
@@ -113,8 +166,6 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   }, (a, b) => a.count === b.count && a.index === b.index);
 
   // ── Node Degree Splay ──
-  // Compute each node's total connection count and this edge's index among them.
-  // Used to fan out Bézier control points at heavily-connected nodes.
   const sourceSplay = useStore((s) => {
     const conns = s.edges.filter(e => e.source === source || e.target === source);
     const idx = conns.findIndex(e => e.id === id);
@@ -132,7 +183,6 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   const dy = ty - sy;
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
 
-  // Perpendicular unit vector
   const perpUnitX = -dy / len;
   const perpUnitY = dx / len;
 
@@ -147,8 +197,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   const midX = (sx + tx) / 2;
   const midY = (sy + ty) / 2;
 
-  // Degree splay: fan-out control points at each endpoint (±8px per connection, centered)
-  // Only affects curvature near the node — endpoints stay at the intersection point.
+  // Degree splay
   const SPLAY_PX = 8;
   const srcSplayOffset = sourceSplay.degree > 1
     ? (sourceSplay.index - (sourceSplay.degree - 1) / 2) * SPLAY_PX
@@ -161,18 +210,41 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   const targetCpX = midX + perpX * 2;
   const targetCpY = midY + perpY * 2;
 
-  // ── Spring Physics ──
-  const springRef = useRef<SpringState>({
-    x: targetCpX,
-    y: targetCpY,
-    vx: 0,
-    vy: 0,
-  });
+  // ── DOM refs for direct mutation during animation ──
+  const basePathRef = useRef<SVGPathElement>(null);
+  const activePathRef = useRef<SVGPathElement>(null);
+  const hitAreaRef = useRef<SVGPathElement>(null);
+  const springRef = useRef<SpringState>({ x: targetCpX, y: targetCpY, vx: 0, vy: 0 });
   const rafRef = useRef<number>(0);
-  const [cpPos, setCpPos] = useState({ x: targetCpX, y: targetCpY, vx: 0, vy: 0 });
+  // Track settled state for label positioning (only this triggers re-render)
+  const labelPosRef = useRef({ x: midX, y: midY });
+  const [labelPos, setLabelPos] = React.useState({ x: midX, y: midY });
+
+  // ── Off-canvas guard ──
+  // Check if edge midpoint is within the visible viewport (with generous margin)
+  const isVisible = useStore((s) => {
+    const [vpX, vpY, vpZoom] = s.transform;
+    const vpWidth = (s.width || 1200) / vpZoom;
+    const vpHeight = (s.height || 800) / vpZoom;
+    const vpLeft = -vpX / vpZoom;
+    const vpTop = -vpY / vpZoom;
+    const margin = 400; // generous margin to start animation before visible
+    const mx = (sx + tx) / 2;
+    const my = (sy + ty) / 2;
+    return (
+      mx > vpLeft - margin && mx < vpLeft + vpWidth + margin &&
+      my > vpTop - margin && my < vpTop + vpHeight + margin
+    );
+  }, (a, b) => a === b);
+
+  // Update all path refs in one shot (called from rAF loop — no React re-render)
+  const updatePaths = useCallback((pathD: string) => {
+    if (basePathRef.current) basePathRef.current.setAttribute('d', pathD);
+    if (activePathRef.current) activePathRef.current.setAttribute('d', pathD);
+    if (hitAreaRef.current) hitAreaRef.current.setAttribute('d', pathD);
+  }, []);
 
   useEffect(() => {
-    // When target changes, start the spring animation
     const spring = springRef.current;
     let isAnimating = true;
 
@@ -181,102 +253,94 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
       const forceX = (targetCpX - spring.x) * STIFFNESS;
       const forceY = (targetCpY - spring.y) * STIFFNESS;
 
-      // Apply force with damping
       spring.vx = (spring.vx + forceX) * DAMPING;
       spring.vy = (spring.vy + forceY) * DAMPING;
 
-      // Update position
       spring.x += spring.vx;
       spring.y += spring.vy;
 
-      // Check if settled
       const speed = Math.abs(spring.vx) + Math.abs(spring.vy);
       const distToTarget = Math.abs(spring.x - targetCpX) + Math.abs(spring.y - targetCpY);
 
+      // Build path and update DOM directly — NO React re-render
+      const pathD = buildPathD(
+        sx, sy, tx, ty,
+        spring.x, spring.y,
+        perpUnitX, perpUnitY,
+        dx, dy, len,
+        offset, srcSplayOffset, tgtSplayOffset,
+        speed
+      );
+      updatePaths(pathD);
+
+      // Update label position ref (lightweight — no re-render until settled)
+      const stagger = ribbonConfig.count > 1
+        ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20
+        : 0;
+      labelPosRef.current = {
+        x: spring.x + (dx / len) * stagger,
+        y: spring.y + (dy / len) * stagger,
+      };
+
       if (speed < THRESHOLD && distToTarget < 1) {
-        // Stop at current natural position — no hard snap
         spring.vx = 0;
         spring.vy = 0;
-        setCpPos({ x: spring.x, y: spring.y, vx: 0, vy: 0 });
+        // Final sync: update React state once at rest for label positioning
+        setLabelPos({ ...labelPosRef.current });
         isAnimating = false;
         return;
       }
 
-      setCpPos({ x: spring.x, y: spring.y, vx: spring.vx, vy: spring.vy });
+      // During animation, update label position at ~20fps (every 3rd frame)
+      // to keep it roughly tracking without 60fps React re-renders
+      if (isAnimating && rafRef.current % 3 === 0) {
+        setLabelPos({ ...labelPosRef.current });
+      }
 
       if (isAnimating) {
         rafRef.current = requestAnimationFrame(animate);
       }
     };
 
-    rafRef.current = requestAnimationFrame(animate);
+    // Only animate if visible (off-canvas guard)
+    if (isVisible) {
+      rafRef.current = requestAnimationFrame(animate);
+    } else {
+      // Jump to target instantly for off-canvas edges
+      spring.x = targetCpX;
+      spring.y = targetCpY;
+      spring.vx = 0;
+      spring.vy = 0;
+      const pathD = buildPathD(
+        sx, sy, tx, ty,
+        targetCpX, targetCpY,
+        perpUnitX, perpUnitY,
+        dx, dy, len,
+        offset, srcSplayOffset, tgtSplayOffset,
+        0
+      );
+      updatePaths(pathD);
+      setLabelPos({
+        x: targetCpX + (dx / len) * (ribbonConfig.count > 1 ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20 : 0),
+        y: targetCpY + (dy / len) * (ribbonConfig.count > 1 ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20 : 0),
+      });
+    }
 
     return () => {
       isAnimating = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [targetCpX, targetCpY]);
+  }, [targetCpX, targetCpY, isVisible, sx, sy, tx, ty, perpUnitX, perpUnitY, dx, dy, len, offset, srcSplayOffset, tgtSplayOffset, ribbonConfig, updatePaths]);
 
-  // ── Path Construction (Dual Cubic Bézier — label-anchored center + edge splay) ──
-  // Path splits into two segments meeting at the spring-animated center point.
-  // Source → CP1 → [CENTER/LABEL] → CP2 → Target
-  // CP1 hugs the source edge, CP4 hugs the target edge — splay fans out AT the card border.
-  const speed = Math.abs(cpPos.vx) + Math.abs(cpPos.vy);
-  const springAtRest = Math.abs(cpPos.x - midX) < 2 && Math.abs(cpPos.y - midY) < 2 && speed < 0.5;
-  const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
-  const isFullyAtRest = offset === 0 && springAtRest && !hasSplay;
-
-  // Center junction point — this is where the label anchors
-  const centerX = cpPos.x;
-  const centerY = cpPos.y;
-
-  let pathD: string;
-  if (isFullyAtRest) {
-    // No splay, no ribbon, no spring motion — straight line
-    pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
-  } else if (springAtRest && hasSplay && offset === 0) {
-    // Spring settled but has splay — curve departs card edge at an angle
-    // CP1 at 8% from source (right at card border), CP2 at 92% (right at target border)
-    const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
-    const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
-    const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
-    const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
-    pathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
-  } else {
-    // Wave amplitude from spring velocity (clamped)
-    const waveAmp = Math.min(35, speed * 2.5);
-
-    // First half: Source → Center
-    // CP1 at 8% from source — splay fans out right at the card edge
-    const cp1x = sx + dx * 0.08 + perpUnitX * (waveAmp * 0.3 + srcSplayOffset);
-    const cp1y = sy + dy * 0.08 + perpUnitY * (waveAmp * 0.3 + srcSplayOffset);
-
-    // CP2: midpoint of source→center, displaced by wave
-    // Computing relative to center ensures G1 tangent continuity at the junction
-    const cp2x = (sx + centerX) / 2 + perpUnitX * waveAmp;
-    const cp2y = (sy + centerY) / 2 + perpUnitY * waveAmp;
-
-    // Second half: Center → Target
-    // CP3: midpoint of center→target, displaced by opposite wave (creates the S)
-    const cp3x = (centerX + tx) / 2 - perpUnitX * waveAmp;
-    const cp3y = (centerY + ty) / 2 - perpUnitY * waveAmp;
-
-    // CP4 at 92% — splay fans in right at the target card edge
-    const cp4x = sx + dx * 0.92 - perpUnitX * (waveAmp * 0.3 + tgtSplayOffset);
-    const cp4y = sy + dy * 0.92 - perpUnitY * (waveAmp * 0.3 + tgtSplayOffset);
-
-    pathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${centerX} ${centerY} C ${cp3x} ${cp3y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
-  }
-
-  // ── Label Positioning (anchored to spring center) ──
-  const stagger = ribbonConfig.count > 1 
-    ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20 
-    : 0;
-  const staggerX = (dx / len) * stagger;
-  const staggerY = (dy / len) * stagger;
-
-  const labelX = centerX + staggerX;
-  const labelY = centerY + staggerY;
+  // ── Initial path for SSR / first render ──
+  const initialPathD = useMemo(() => buildPathD(
+    sx, sy, tx, ty,
+    targetCpX, targetCpY,
+    perpUnitX, perpUnitY,
+    dx, dy, len,
+    offset, srcSplayOffset, tgtSplayOffset,
+    0
+  ), [sx, sy, tx, ty, targetCpX, targetCpY, perpUnitX, perpUnitY, dx, dy, len, offset, srcSplayOffset, tgtSplayOffset]);
 
   // ── Label Angle ──
   let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
@@ -284,33 +348,28 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   if (angleDeg > 90) { angleDeg -= 180; flipped = true; }
   if (angleDeg < -90) { angleDeg += 180; flipped = true; }
 
-  let visualDirection = (data?.direction as string) || 'none';
+  let visualDirection = edgeData?.direction || 'none';
   if (flipped && visualDirection !== 'none') {
     visualDirection = visualDirection === 'to' ? 'from' : 'to';
   }
 
   // ── Styles ──
-  const isGhosted = data?.ghost === true;
-  const isDimmed = data?.dimmed === true;
-  const direction = (data?.direction as string) || 'none';
+  const isGhosted = edgeData?.ghost === true;
+  const isDimmed = edgeData?.dimmed === true;
+  const direction = edgeData?.direction || 'none';
 
-  // Direction-aware CSS classes for marching ants
   const directionClass = direction === 'to' ? 'nords-connection--march-forward'
     : direction === 'from' ? 'nords-connection--march-reverse'
     : direction === 'both' ? 'nords-connection--march-both'
-    : ''; /* 'none' = static */
+    : '';
 
-  // ── Custom Arrowheads (drawn as SVG polygons at path endpoints) ──
-  // React Flow's marker system has issues with custom edges + markerStart,
-  // so we draw arrowheads manually for reliable bidirectional rendering.
+  // ── Custom Arrowheads ──
   const arrowSize = 10;
-  const originalColor = (data?.color as string) || '#000';
-  // Dimmed edges render in uniform dark gray
+  const originalColor = edgeData?.color || '#000';
   const edgeColor = isDimmed ? '#555' : originalColor;
   const showEndArrow = direction === 'to' || direction === 'both';
   const showStartArrow = direction === 'from' || direction === 'both';
 
-  // Arrow at target (end of line)
   const endAngle = Math.atan2(ty - sy, tx - sx);
   const endArrowPoints = showEndArrow ? [
     [tx, ty],
@@ -318,7 +377,6 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     [tx - arrowSize * Math.cos(endAngle + Math.PI / 6), ty - arrowSize * Math.sin(endAngle + Math.PI / 6)],
   ].map(p => p.join(',')).join(' ') : null;
 
-  // Arrow at source (start of line)
   const startAngle = Math.atan2(sy - ty, sx - tx);
   const startArrowPoints = showStartArrow ? [
     [sx, sy],
@@ -328,14 +386,9 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
 
   // Drag-to-detach: mousedown anywhere on the line detaches from closest endpoint
   const onHitAreaMouseDown = React.useCallback((e: React.MouseEvent<SVGPathElement>) => {
-    // Only primary button
     if (e.button !== 0) return;
-
-    // Find the containing edge group element
     const edgeGroup = (e.currentTarget as SVGElement).closest('.react-flow__edge');
     if (!edgeGroup) return;
-
-    // Convert client coords to SVG coords
     const svg = edgeGroup.closest('svg');
     if (!svg) return;
     const pt = (svg as SVGSVGElement).createSVGPoint();
@@ -345,12 +398,10 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     if (!ctm) return;
     const svgPt = pt.matrixTransform(ctm.inverse());
 
-    // Determine which endpoint is closer to the click
     const distToSource = Math.hypot(svgPt.x - sx, svgPt.y - sy);
     const distToTarget = Math.hypot(svgPt.x - tx, svgPt.y - ty);
     const handleType = distToSource < distToTarget ? 'source' : 'target';
 
-    // Find the EdgeUpdater circle for that endpoint and trigger its mousedown
     const updater = edgeGroup.querySelector(`.react-flow__edgeupdater-${handleType}`);
     if (updater) {
       e.stopPropagation();
@@ -371,7 +422,8 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
       {/* Base path — solid at 50% opacity (visible in dash gaps) */}
       {!isGhosted && (
         <path
-          d={pathD}
+          ref={basePathRef}
+          d={initialPathD}
           className="nords-connection--base"
           stroke={edgeColor}
           fill="none"
@@ -379,7 +431,8 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
       )}
       {/* Top path — dashed, direction-aware marching animation */}
       <path
-        d={pathD}
+        ref={activePathRef}
+        d={initialPathD}
         className={isGhosted ? 'nords-connection--ghost' : `nords-connection--active ${directionClass}`}
         stroke={edgeColor}
         fill="none"
@@ -392,9 +445,10 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
       {!isGhosted && startArrowPoints && (
         <polygon points={startArrowPoints} fill={edgeColor} />
       )}
-      {/* Invisible fat hit-area — drag anywhere on line to detach from closest endpoint */}
+      {/* Invisible fat hit-area */}
       <path
-        d={pathD}
+        ref={hitAreaRef}
+        d={initialPathD}
         stroke="transparent"
         strokeWidth="30"
         fill="none"
@@ -403,15 +457,15 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
         onMouseDown={onHitAreaMouseDown}
       />
       
-      {/* Label — shown for active and dimmed edges, hidden only for ghosted */}
+      {/* Label */}
       {!isGhosted && (
         <ConnectionLabel
-          x={labelX}
-          y={labelY}
+          x={labelPos.x}
+          y={labelPos.y}
           angleDeg={angleDeg}
           direction={visualDirection as any}
-          type={data?.type as string}
-          color={isDimmed ? '#666' : (data?.color as string)}
+          type={edgeData?.type || ''}
+          color={isDimmed ? '#666' : (edgeData?.color || '#888')}
           edgeId={id}
           isDimmed={isDimmed}
           resolvedLabel={resolvedLabel}

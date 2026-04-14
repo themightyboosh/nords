@@ -306,30 +306,35 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     (_event: React.MouseEvent, node: Node) => {
       setIsDragging(false);
       setDragNodeId(null);
-      // Clear drag highlighting
-      setEdges(eds => eds.map(e =>
-        e.className === 'drag-connected' ? { ...e, className: '' } : e
-      ));
       // Save position to the active connection type's cache
       saveNodePosition(node.id, node.position.x, node.position.y, activeConnectionTypeId);
 
-      // Recalculate distance_x for all connected edges and persist
+      // Recalculate distance_x for all connected edges — batched into ONE setEdges call
       const connectedEdges = edges.filter(e => e.source === node.id || e.target === node.id);
       const nodeMap = new Map(nodes.map(n => [n.id, n]));
+      const distanceUpdates = new Map<string, number>();
+
       for (const edge of connectedEdges) {
         const srcNode = edge.source === node.id ? node : nodeMap.get(edge.source);
         const tgtNode = edge.target === node.id ? node : nodeMap.get(edge.target);
         if (!srcNode || !tgtNode) continue;
         const newDist = computeNormalizedDistance(srcNode.position, tgtNode.position);
-        // Update local edge data
-        setEdges(eds => eds.map(e =>
-          e.id === edge.id ? { ...e, data: { ...e.data, _distanceX: newDist } } : e
-        ));
+        distanceUpdates.set(edge.id, newDist);
         // Persist to DB (fire-and-forget)
         updateConnection(edge.id, { distance_x: newDist }).catch(err =>
           console.error('Failed to persist distance:', err)
         );
       }
+
+      // Single batched state update: clear drag class + update distances
+      setEdges(eds => eds.map(e => {
+        const newDist = distanceUpdates.get(e.id);
+        const cleared = e.className === 'drag-connected' ? { ...e, className: '' } : e;
+        if (newDist !== undefined) {
+          return { ...cleared, data: { ...cleared.data, _distanceX: newDist } };
+        }
+        return cleared;
+      }));
     },
     [setEdges, saveNodePosition, activeConnectionTypeId, edges, nodes, updateConnection]
   );
