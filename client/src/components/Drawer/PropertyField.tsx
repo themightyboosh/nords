@@ -14,6 +14,7 @@
  */
 
 import React, { useState, useRef, useCallback } from 'react';
+import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import './PropertyField.css';
 
 export interface PropertyFieldProps {
@@ -58,7 +59,7 @@ export const PropertyField: React.FC<PropertyFieldProps> = ({
 // ── Individual Field Components ──
 
 function StringField({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debouncedChange = useDebouncedCallback(onChange, 400);
   return (
     <div className="nords-pf">
       <label className="nords-pf__label">{name}</label>
@@ -67,17 +68,14 @@ function StringField({ name, value, onChange }: { name: string; value: string; o
         type="text"
         defaultValue={value || ''}
         placeholder={`Enter ${name}…`}
-        onChange={(e) => {
-          if (debounceRef.current) clearTimeout(debounceRef.current);
-          debounceRef.current = setTimeout(() => onChange(e.target.value), 400);
-        }}
+        onChange={(e) => debouncedChange(e.target.value)}
       />
     </div>
   );
 }
 
 function NumberField({ name, value, onChange }: { name: string; value: number; onChange: (v: number) => void }) {
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debouncedChange = useDebouncedCallback((v: string) => onChange(parseFloat(v) || 0), 400);
   return (
     <div className="nords-pf">
       <label className="nords-pf__label">{name}</label>
@@ -86,10 +84,7 @@ function NumberField({ name, value, onChange }: { name: string; value: number; o
         type="number"
         defaultValue={value ?? ''}
         placeholder="0"
-        onChange={(e) => {
-          if (debounceRef.current) clearTimeout(debounceRef.current);
-          debounceRef.current = setTimeout(() => onChange(parseFloat(e.target.value) || 0), 400);
-        }}
+        onChange={(e) => debouncedChange(e.target.value)}
       />
     </div>
   );
@@ -132,7 +127,7 @@ function DateField({ name, value, onChange }: { name: string; value: string; onC
 
 function MarkdownField({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
   const [editing, setEditing] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debouncedChange = useDebouncedCallback(onChange, 500);
 
   return (
     <div className="nords-pf nords-pf--markdown">
@@ -151,10 +146,7 @@ function MarkdownField({ name, value, onChange }: { name: string; value: string;
           defaultValue={value || ''}
           placeholder={`Write ${name} in markdown…`}
           rows={6}
-          onChange={(e) => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-            debounceRef.current = setTimeout(() => onChange(e.target.value), 500);
-          }}
+          onChange={(e) => debouncedChange(e.target.value)}
         />
       ) : (
         <div
@@ -167,7 +159,7 @@ function MarkdownField({ name, value, onChange }: { name: string; value: string;
 }
 
 function UrlField({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debouncedChange = useDebouncedCallback(onChange, 400);
   return (
     <div className="nords-pf nords-pf--url">
       <label className="nords-pf__label">{name}</label>
@@ -177,10 +169,7 @@ function UrlField({ name, value, onChange }: { name: string; value: string; onCh
           type="url"
           defaultValue={value || ''}
           placeholder="https://…"
-          onChange={(e) => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-            debounceRef.current = setTimeout(() => onChange(e.target.value), 400);
-          }}
+          onChange={(e) => debouncedChange(e.target.value)}
         />
         {value && (
           <a

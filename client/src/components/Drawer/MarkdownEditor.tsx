@@ -8,7 +8,8 @@
  *   - Fullscreen-like textarea with resize handle
  */
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
+import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 
 interface MarkdownEditorProps {
   value: string;
@@ -22,12 +23,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   placeholder = 'Write a description…',
 }) => {
   const [editing, setEditing] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
-
-  const handleChange = useCallback((text: string) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => onChange(text), 500);
-  }, [onChange]);
+  const debouncedChange = useDebouncedCallback(onChange, 500);
 
   return (
     <div className="nords-md-editor">
@@ -48,7 +44,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
           placeholder={placeholder}
           rows={8}
           autoFocus
-          onChange={(e) => handleChange(e.target.value)}
+          onChange={(e) => debouncedChange(e.target.value)}
         />
       ) : (
         <div

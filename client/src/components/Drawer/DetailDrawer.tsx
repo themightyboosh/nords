@@ -13,6 +13,7 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { useDrawerEntity } from '../../hooks/useDrawerEntity';
+import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { PropertyField } from './PropertyField';
 import { MarkdownEditor } from './MarkdownEditor';
 import { useStore } from '@xyflow/react';
@@ -157,16 +158,16 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
   const { entity, mutations } = useDrawerEntity(entityId, entityType);
   const [activeTab, setActiveTab] = useState<'properties' | 'connections' | 'comments'>('properties');
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Debounced title update
+  const debouncedTitleUpdate = useDebouncedCallback((text: string) => {
+    if (text) mutations.updateTitle(text);
+  }, 500);
+
   const handleTitleInput = useCallback(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      const text = titleRef.current?.textContent?.trim() || '';
-      if (text) mutations.updateTitle(text);
-    }, 500);
-  }, [mutations]);
+    const text = titleRef.current?.textContent?.trim() || '';
+    debouncedTitleUpdate(text);
+  }, [debouncedTitleUpdate]);
 
   // Get the schema for this entity's type
   const schema = useMemo(() => {
