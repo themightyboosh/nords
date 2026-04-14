@@ -23,6 +23,7 @@ import { resolveStageLabel } from '../../utils/stageLabels';
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import type { NordEdgeData } from '../../types/canvas';
 import { resolveIcon } from '../../utils/iconRegistry';
+import '../Canvas/CanvasEngine.css';
 import './MatrixView.css';
 
 interface MatrixViewProps {
@@ -158,6 +159,61 @@ export function MatrixView({ graph, onNordClick, selectedNord }: MatrixViewProps
 
   const totalCards = columns.reduce((sum, col) => sum + col.cards.length, 0) + unlinked.length;
 
+  // Shared card renderer — uses the same .nords-node DOM structure as the canvas NordNode
+  const renderCard = (card: MatrixCard, isUnlinked = false) => {
+    const Icon = card.typeIcon;
+    const visibleProps = card.properties.slice(0, 3);
+
+    return (
+      <button
+        key={card.id}
+        className="nords-matrix__card-wrapper"
+        onClick={() => onNordClick(card.id)}
+      >
+        <div
+          className={[
+            'nords-node',
+            selectedNord === card.id ? 'is-selected' : '',
+            isUnlinked ? 'nords-node--ghosted' : '',
+          ].filter(Boolean).join(' ')}
+          style={{
+            width: '100%',
+            backgroundColor: `color-mix(in srgb, ${card.typeColor || '#fff'} 10%, var(--nords-color-bg-surface))`,
+            borderColor: `color-mix(in srgb, ${card.typeColor || '#fff'} 20%, var(--nords-color-border-default))`,
+          }}
+        >
+          <div className="nords-node__titlebar">
+            <div className="nords-node__header">
+              {Icon && <Icon size={14} strokeWidth={2} color={card.typeColor} />}
+              <span className="nords-node__type-label" style={{ color: card.typeColor }}>
+                {card.typeName}
+              </span>
+            </div>
+          </div>
+
+          <h3 className="nords-node__title">{card.title}</h3>
+
+          {visibleProps.length > 0 && (
+            <div className="nords-node__props">
+              {visibleProps.map((p) => (
+                <div key={p.key} className="nords-node__prop">
+                  <span className="nords-node__prop-key">{p.key}</span>
+                  <span className="nords-node__prop-value">{p.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isUnlinked && (
+            <div className="nords-node__footer">
+              <span className="nords-matrix__card-dist">{card.distance.toFixed(2)}</span>
+            </div>
+          )}
+        </div>
+      </button>
+    );
+  };
+
   return (
     <div className="nords-matrix">
       {/* Header bar */}
@@ -170,7 +226,7 @@ export function MatrixView({ graph, onNordClick, selectedNord }: MatrixViewProps
 
       {/* Column scroll container */}
       <div className="nords-matrix__columns">
-        {columns.map((col, ci) => (
+        {columns.map((col) => (
           <div key={col.label} className="nords-matrix__column">
             <div className="nords-matrix__column-header">
               <span
@@ -182,34 +238,7 @@ export function MatrixView({ graph, onNordClick, selectedNord }: MatrixViewProps
               <span className="nords-matrix__column-count">{col.cards.length}</span>
             </div>
             <div className="nords-matrix__column-body">
-              {col.cards.map(card => (
-                <button
-                  key={card.id}
-                  className={`nords-matrix__card ${selectedNord === card.id ? 'is-selected' : ''}`}
-                  onClick={() => onNordClick(card.id)}
-                >
-                  <div className="nords-matrix__card-header">
-                    <span
-                      className="nords-matrix__card-dot"
-                      style={{ backgroundColor: card.typeColor }}
-                    />
-                    <span className="nords-matrix__card-title">{card.title}</span>
-                  </div>
-                  {card.properties.length > 0 && (
-                    <div className="nords-matrix__card-props">
-                      {card.properties.map(p => (
-                        <span key={p.key} className="nords-matrix__card-prop">
-                          {p.value}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <div className="nords-matrix__card-meta">
-                    <span className="nords-matrix__card-type">{card.typeName}</span>
-                    <span className="nords-matrix__card-dist">{card.distance.toFixed(2)}</span>
-                  </div>
-                </button>
-              ))}
+              {col.cards.map(card => renderCard(card))}
               {col.cards.length === 0 && (
                 <div className="nords-matrix__column-empty">No nords</div>
               )}
@@ -227,24 +256,7 @@ export function MatrixView({ graph, onNordClick, selectedNord }: MatrixViewProps
               <span className="nords-matrix__column-count">{unlinked.length}</span>
             </div>
             <div className="nords-matrix__column-body">
-              {unlinked.map(card => (
-                <button
-                  key={card.id}
-                  className={`nords-matrix__card nords-matrix__card--unlinked ${selectedNord === card.id ? 'is-selected' : ''}`}
-                  onClick={() => onNordClick(card.id)}
-                >
-                  <div className="nords-matrix__card-header">
-                    <span
-                      className="nords-matrix__card-dot"
-                      style={{ backgroundColor: card.typeColor }}
-                    />
-                    <span className="nords-matrix__card-title">{card.title}</span>
-                  </div>
-                  <div className="nords-matrix__card-meta">
-                    <span className="nords-matrix__card-type">{card.typeName}</span>
-                  </div>
-                </button>
-              ))}
+              {unlinked.map(card => renderCard(card, true))}
             </div>
           </div>
         )}
