@@ -10,11 +10,20 @@
  * - "All Lines (Relevance)" computes AVERAGED positions across all cached types.
  *   If no types have cached positions, the DB positions are used.
  *
- * Animation: Spring physics perfectly synced to EuclideanEdge wiggle (stiffness: 0.03, damping: 0.65).
+ * Animation: cubic ease-in over 200ms via requestAnimationFrame.
  */
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
+
+const ANIM_DURATION = 200; // ms
+
+interface PositionTarget {
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+}
 
 type PositionMap = Map<string, { x: number; y: number }>;
 
@@ -190,15 +199,14 @@ export function useLensLayout(
       }
     }
 
-    // Build animation targets with velocity state
-    const targets = new Map<string, { x: number; y: number; vx: number; vy: number; toX: number; toY: number }>();
+    // Build animation targets
+    const targets = new Map<string, PositionTarget>();
     for (const n of currentNodes) {
       const to = targetPositions.get(n.id);
       if (!to) continue;
       if (Math.abs(n.position.x - to.x) > 1 || Math.abs(n.position.y - to.y) > 1) {
         targets.set(n.id, {
-          x: n.position.x, y: n.position.y,
-          vx: 0, vy: 0,
+          fromX: n.position.x, fromY: n.position.y,
           toX: to.x, toY: to.y,
         });
       }
@@ -206,48 +214,30 @@ export function useLensLayout(
 
     if (targets.size === 0) return;
 
-    // Animate using exact same physics as EuclideanEdge
-    // STIFFNESS = 0.03, DAMPING = 0.65, THRESHOLD = 0.2
+    // Animate
     cancelAnimationFrame(rafRef.current);
+    const startTime = performance.now();
 
     function animate() {
-      let isAnimating = false;
+      const elapsed = performance.now() - startTime;
+      const t = Math.min(1, elapsed / ANIM_DURATION);
+      const ease = t * t * t; // cubic ease-in: starts slow, accelerates
 
       reactFlow.setNodes(nds =>
         nds.map(n => {
           const target = targets.get(n.id);
           if (!target) return n;
-
-          // Spring force toward target
-          const forceX = (target.toX - target.x) * 0.03;
-          const forceY = (target.toY - target.y) * 0.03;
-
-          // Apply force with damping
-          target.vx = (target.vx + forceX) * 0.65;
-          target.vy = (target.vy + forceY) * 0.65;
-
-          // Update position
-          target.x += target.vx;
-          target.y += target.vy;
-
-          const speed = Math.abs(target.vx) + Math.abs(target.vy);
-          const distToTarget = Math.abs(target.x - target.toX) + Math.abs(target.y - target.toY);
-
-          if (speed < 0.2 && distToTarget < 1) {
-            target.x = target.toX;
-            target.y = target.toY;
-            target.vx = 0;
-            target.vy = 0;
-            targets.delete(n.id); // Done animating this node
-          } else {
-            isAnimating = true; // At least one still moving
-          }
-
-          return { ...n, position: { x: target.x, y: target.y } };
+          return {
+            ...n,
+            position: {
+              x: target.fromX + (target.toX - target.fromX) * ease,
+              y: target.fromY + (target.toY - target.fromY) * ease,
+            },
+          };
         })
       );
 
-      if (isAnimating) {
+      if (t < 1) {
         rafRef.current = requestAnimationFrame(animate);
       }
     }
