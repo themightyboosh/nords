@@ -58,22 +58,28 @@ export function useVisibilityCascade() {
       });
     }
 
-    // Hide unconnected nords
-    setNodes((nds) =>
-      nds.map((n) => ({
-        ...n,
-        hidden: !connectedNodeIds.has(n.id),
-      }))
-    );
+    // Hide unconnected nords — only create new objects when hidden state changes
+    setNodes((nds) => {
+      let changed = false;
+      const next = nds.map((n) => {
+        const shouldHide = !connectedNodeIds.has(n.id);
+        if (n.hidden !== shouldHide) { changed = true; }
+        return shouldHide !== n.hidden ? { ...n, hidden: shouldHide } : n;
+      });
+      return changed ? next : nds;
+    });
 
     // Hide non-active edges (only when a specific type is selected)
     if (activeConnectionTypeId) {
-      setEdges((eds) =>
-        eds.map((e) => ({
-          ...e,
-          hidden: (e.data as any)?._typeId !== activeConnectionTypeId,
-        }))
-      );
+      setEdges((eds) => {
+        let changed = false;
+        const next = eds.map((e) => {
+          const shouldHide = (e.data as Record<string, unknown>)?._typeId !== activeConnectionTypeId;
+          if (e.hidden !== shouldHide) { changed = true; }
+          return shouldHide !== e.hidden ? { ...e, hidden: shouldHide } : e;
+        });
+        return changed ? next : eds;
+      });
     }
   }, [activeConnectionTypeId, showContext, setNodes, setEdges, getEdges]);
 }

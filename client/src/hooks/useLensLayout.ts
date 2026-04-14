@@ -214,7 +214,46 @@ export function useLensLayout(
 
     if (targets.size === 0) return;
 
-    // Animate
+    // ── Viewport check: only animate nodes near the visible area ──
+    // Off-screen nodes jump instantly to their target position.
+    const { x: vpX, y: vpY, zoom: vpZoom } = reactFlow.getViewport();
+    const vpWidth = (window.innerWidth || 1200) / vpZoom;
+    const vpHeight = (window.innerHeight || 800) / vpZoom;
+    const vpLeft = -vpX / vpZoom;
+    const vpTop = -vpY / vpZoom;
+    const margin = 500; // generous margin to include nodes about to scroll in
+
+    const visibleTargets = new Map<string, PositionTarget>();
+    const instantTargets = new Map<string, PositionTarget>();
+
+    for (const [id, target] of targets) {
+      const inViewport = (
+        (target.fromX > vpLeft - margin && target.fromX < vpLeft + vpWidth + margin &&
+         target.fromY > vpTop - margin && target.fromY < vpTop + vpHeight + margin) ||
+        (target.toX > vpLeft - margin && target.toX < vpLeft + vpWidth + margin &&
+         target.toY > vpTop - margin && target.toY < vpTop + vpHeight + margin)
+      );
+      if (inViewport) {
+        visibleTargets.set(id, target);
+      } else {
+        instantTargets.set(id, target);
+      }
+    }
+
+    // Jump off-screen nodes instantly (no animation cost)
+    if (instantTargets.size > 0) {
+      reactFlow.setNodes(nds =>
+        nds.map(n => {
+          const target = instantTargets.get(n.id);
+          if (!target) return n;
+          return { ...n, position: { x: target.toX, y: target.toY } };
+        })
+      );
+    }
+
+    // Animate visible nodes
+    if (visibleTargets.size === 0) return;
+
     cancelAnimationFrame(rafRef.current);
     const startTime = performance.now();
 
@@ -228,7 +267,7 @@ export function useLensLayout(
 
       reactFlow.setNodes(nds =>
         nds.map(n => {
-          const target = targets.get(n.id);
+          const target = visibleTargets.get(n.id);
           if (!target) return n;
           return {
             ...n,
