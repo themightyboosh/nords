@@ -33,8 +33,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
   const [showManageTypes, setShowManageTypes] = useState(false);
   
   // Load graph at the shell level so TypeRegistryProvider wraps everything
-  const activeProjectId = projectId || '5413fc94-3245-4153-9641-b9d025367e1d';
-  const { graph, refetch } = useProjectGraph(activeProjectId);
+  const { graph, refetch } = useProjectGraph(projectId || '');
 
   // Build typeSchemas map for DetailDrawer: typeId → PropertySchema[]
   const typeSchemas = useMemo(() => {
@@ -88,7 +87,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
 
   return (
     <ReactFlowProvider>
-      <LensProvider projectId={activeProjectId}>
+      <LensProvider projectId={projectId || ''}>
         <TypeRegistryProvider
           rawNordTypes={graph?.nord_types || []}
           rawConnectionTypes={graph?.connection_types || []}
@@ -121,7 +120,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
             />
             {showManageTypes && (
               <ManageTypes
-                projectId={activeProjectId}
+                projectId={projectId || ''}
                 open={showManageTypes}
                 onClose={() => setShowManageTypes(false)}
                 onTypesChanged={refetch}

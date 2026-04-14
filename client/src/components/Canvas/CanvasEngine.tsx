@@ -643,7 +643,6 @@ interface CanvasEngineProps {
 
 export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph }: CanvasEngineProps) {
   const { lens } = useLens();
-  const activeProjectId = projectId || '5413fc94-3245-4153-9641-b9d025367e1d';
   const noop = async () => {};
 
   if (lens === 'board') {
@@ -658,7 +657,7 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
 
   return (
     <div className="nords-canvas">
-      <InteractiveCanvas projectId={activeProjectId} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} />
+      <InteractiveCanvas projectId={projectId || ''} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} />
     </div>
   );
 }
