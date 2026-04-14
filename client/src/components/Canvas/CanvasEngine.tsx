@@ -26,6 +26,7 @@ import { NodeContextMenu } from './NodeContextMenu';
 import { useNodeSelection } from '../../hooks/useNodeSelection';
 import { GroupToolbar } from './GroupToolbar';
 import { RadialMenu } from './RadialMenu';
+import { MatrixView } from '../Matrix/MatrixView';
 import { useVisibilityCascade } from '../../hooks/useVisibilityCascade';
 import { useSemanticZoom } from '../../hooks/useSemanticZoom';
 import { useSpatialAnimations } from '../../hooks/useSpatialAnimations';
@@ -648,9 +649,11 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
   if (lens === 'board') {
     return (
       <div className="nords-canvas nords-matrix-view">
-        <div className="nords-matrix">
-          <div style={{ color: 'white' }}>Matrix View Placeholder</div>
-        </div>
+        <MatrixView
+          graph={graph ?? null}
+          onNordClick={onNordClick}
+          selectedNord={selectedNord}
+        />
       </div>
     );
   }

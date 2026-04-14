@@ -1,0 +1,274 @@
+/* ═══════════════════════════════════════════════ */
+/* MATRIX VIEW — Column-based label layout         */
+/* ═══════════════════════════════════════════════ */
+
+.nords-matrix {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--nords-color-bg-primary);
+}
+
+/* ── Header Bar ── */
+
+.nords-matrix__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--nords-color-border);
+  backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--nords-color-bg-secondary) 80%, transparent);
+  flex-shrink: 0;
+  z-index: 5;
+}
+
+.nords-matrix__header-type {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nords-matrix__header-count {
+  font-size: 12px;
+  color: var(--nords-color-text-secondary);
+  font-weight: 500;
+}
+
+/* ── Column Container ── */
+
+.nords-matrix__columns {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0;
+  scroll-snap-type: x proximity;
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: thin;
+  scrollbar-color: var(--nords-color-border) transparent;
+}
+
+/* ── Individual Column ── */
+
+.nords-matrix__column {
+  display: flex;
+  flex-direction: column;
+  min-width: 260px;
+  flex: 1;
+  max-width: 400px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: color-mix(in srgb, var(--nords-color-bg-secondary) 40%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--nords-color-border) 40%, transparent);
+}
+
+.nords-matrix__column:last-child {
+  border-right: none;
+}
+
+.nords-matrix__column--unlinked {
+  opacity: 0.6;
+  min-width: 220px;
+  flex: 0.5;
+  background: color-mix(in srgb, var(--nords-color-bg-secondary) 20%, transparent);
+}
+
+/* ── Column Header ── */
+
+.nords-matrix__column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--nords-color-bg-secondary) 70%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--nords-color-border) 30%, transparent);
+}
+
+.nords-matrix__column-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nords-matrix__column-label--muted {
+  color: var(--nords-color-text-disabled) !important;
+}
+
+.nords-matrix__column-count {
+  font-size: 11px;
+  color: var(--nords-color-text-disabled);
+  background: color-mix(in srgb, var(--nords-color-border) 30%, transparent);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Column Body (scrollable card list) ── */
+
+.nords-matrix__column-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--nords-color-border) transparent;
+}
+
+.nords-matrix__column-empty {
+  padding: 24px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--nords-color-text-disabled);
+  font-style: italic;
+}
+
+/* ── Card ── */
+
+.nords-matrix__card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--nords-color-bg-primary);
+  border: 1px solid var(--nords-color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--nords-color-text-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.nords-matrix__card:hover {
+  border-color: var(--nords-color-text-secondary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.nords-matrix__card.is-selected {
+  border-color: var(--nords-color-accent);
+  box-shadow: 0 0 0 1px var(--nords-color-accent), 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+.nords-matrix__card--unlinked {
+  opacity: 0.7;
+  border-style: dashed;
+}
+
+/* Card Header */
+
+.nords-matrix__card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nords-matrix__card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nords-matrix__card-title {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Card Properties (preview) */
+
+.nords-matrix__card-props {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.nords-matrix__card-prop {
+  font-size: 11px;
+  color: var(--nords-color-text-secondary);
+  background: color-mix(in srgb, var(--nords-color-bg-secondary) 60%, transparent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Card Meta */
+
+.nords-matrix__card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nords-matrix__card-type {
+  font-size: 10px;
+  color: var(--nords-color-text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.nords-matrix__card-dist {
+  font-size: 10px;
+  color: var(--nords-color-text-disabled);
+  font-variant-numeric: tabular-nums;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* ── Empty State ── */
+
+.nords-matrix-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--nords-color-text-secondary);
+}
+
+.nords-matrix-empty__icon {
+  font-size: 48px;
+  opacity: 0.3;
+  line-height: 1;
+}
+
+.nords-matrix-empty__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--nords-color-text-primary);
+  margin: 0;
+}
+
+.nords-matrix-empty__desc {
+  font-size: 13px;
+  max-width: 320px;
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+  color: var(--nords-color-text-disabled);
+}
