@@ -9,7 +9,6 @@ import { useProjectGraph } from './hooks/useProjectGraph';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import ViewportHeader from './components/Layout/ViewportHeader';
 import GlobalDock from './components/Layout/GlobalDock';
-import ZoomControls from './components/Canvas/ZoomControls';
 import DetailDrawer from './components/Drawer/DetailDrawer';
 import CanvasEngine from './components/Canvas/CanvasEngine';
 import ProjectDashboard from './components/ProjectDashboard/ProjectDashboard';
@@ -101,7 +100,6 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
               onOpenSettings={() => setShowManageTypes(true)}
             />
             <GlobalDock />
-            <ZoomControls />
             <CanvasEngine
               onNordClick={handleNordClick}
               onEdgeDoubleClick={handleEdgeDoubleClick}
