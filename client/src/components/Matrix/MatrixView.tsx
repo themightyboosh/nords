@@ -72,28 +72,31 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   const { createConnection, deleteConnection } = useConnectionMutations(projectId);
   const { upsertPosition, removePosition } = useBoardPositionMutations(projectId);
 
-  // Option key tracking for clone-vs-move visual indicator
+  // Option key + mouse-held state for drag UX
   const [optionHeld, setOptionHeld] = useState(false);
+  const [mouseHeld, setMouseHeld] = useState(false);
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
   const [isDragCloning, setIsDragCloning] = useState(false);
 
+  // Keyboard listener — also handles Option toggle mid-mousedown
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.altKey) {
         setOptionHeld(true);
-        if (draggingCardId) setIsDragCloning(true);
+        // Toggle clone mode any time Alt is pressed while mouse is held/dragging
+        if (mouseHeld || draggingCardId) setIsDragCloning(true);
       }
     };
     const up = (e: KeyboardEvent) => {
       if (!e.altKey) {
         setOptionHeld(false);
-        setIsDragCloning(false);
+        if (mouseHeld || draggingCardId) setIsDragCloning(false);
       }
     };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
-  }, [draggingCardId]); // re-bind when draggingCardId changes so mid-drag Alt works
+  }, [mouseHeld, draggingCardId]); // re-bind when either changes
 
   // Find the active connection type
   const activeType = useMemo(() => {
@@ -328,16 +331,69 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     });
   }, [activeType]);
 
-  const handleCellDrop = useCallback(async (e: React.DragEvent, targetPositionX: number, targetPositionY?: number) => {
+  /**
+   * Smart positional drop handler.
+   *
+   * Reads the drop y-position relative to sibling card wrappers in the column
+   * body to determine WHERE in the sorted order the card was dropped, then
+   * interpolates a distance_x between the two neighbouring cards.
+   *
+   * If dropped above all cards → distance slightly below lowest neighbour.
+   * If dropped below all cards → distance slightly above highest neighbour.
+   * If dropped between two cards → midpoint of their distances.
+   * If column is empty → use the column's staged position value.
+   */
+  const handleCellDrop = useCallback(async (
+    e: React.DragEvent,
+    columnPosition: number,       // the stage label's 0-1 position
+    columnCards: MatrixCard[],    // current sorted cards in this column
+    targetPositionY?: number
+  ) => {
     e.preventDefault();
     const data = getDragData(e);
     if (!data || !activeType) return;
 
-    // Always upsert the board position (works for orphans and placed cards alike)
+    let newDistX = columnPosition; // fallback: column's nominal position
+
+    if (columnCards.length > 0) {
+      // Find sibling card wrappers by reading their DOM positions
+      const colBody = (e.currentTarget as HTMLElement);
+      const cardEls = Array.from(colBody.querySelectorAll<HTMLElement>(':scope > .nords-matrix__card-wrapper'));
+
+      if (cardEls.length > 0) {
+        const dropY = e.clientY;
+
+        // Map each card element to its centre Y and its distance value
+        const sorted = cardEls.map((el, i) => ({
+          midY: el.getBoundingClientRect().top + el.getBoundingClientRect().height / 2,
+          distance: columnCards[i]?.distance ?? columnPosition,
+        }));
+
+        if (dropY < sorted[0].midY) {
+          // Dropped above the first card — go slightly lower than it
+          newDistX = Math.max(0, sorted[0].distance - 0.05);
+        } else if (dropY > sorted[sorted.length - 1].midY) {
+          // Dropped below the last card — go slightly higher than it
+          newDistX = Math.min(1, sorted[sorted.length - 1].distance + 0.05);
+        } else {
+          // Find the pair the drop falls between
+          for (let i = 0; i < sorted.length - 1; i++) {
+            if (dropY >= sorted[i].midY && dropY <= sorted[i + 1].midY) {
+              newDistX = (sorted[i].distance + sorted[i + 1].distance) / 2;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Clamp to [0, 1]
+    newDistX = Math.max(0, Math.min(1, newDistX));
+
     await upsertPosition({
       nord_id: data.nordId,
       type_id: activeType.id,
-      distance_x: targetPositionX,
+      distance_x: newDistX,
       distance_y: targetPositionY ?? 0.5,
     });
 
@@ -387,6 +443,14 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   const renderCard = (card: MatrixCard) => {
     const isDraggingThis = draggingCardId === card.id;
+
+    const handleCardMouseDown = () => {
+      setMouseHeld(true);
+    };
+
+    const handleCardMouseUp = () => {
+      setMouseHeld(false);
+    };
 
     const handleCardDragStart = (e: React.DragEvent<HTMLDivElement>) => {
       const isCloning = e.altKey || optionHeld;
@@ -444,12 +508,14 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const handleCardDragEnd = () => {
       setDraggingCardId(null);
       setIsDragCloning(false);
+      setMouseHeld(false);
     };
 
     const wrapperClass = [
       'nords-matrix__card-wrapper',
       isDraggingThis ? 'is-dragging' : '',
       isDraggingThis && isDragCloning ? 'is-clone-dragging' : '',
+      !isDraggingThis && mouseHeld && draggingCardId === null ? 'is-mouse-held' : '',
     ].filter(Boolean).join(' ');
 
     return (
@@ -457,6 +523,8 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         key={card.id}
         className={wrapperClass}
         draggable
+        onMouseDown={handleCardMouseDown}
+        onMouseUp={handleCardMouseUp}
         onDragStart={handleCardDragStart}
         onDragEnd={handleCardDragEnd}
         onClick={() => onNordClick(card.id)}
@@ -576,11 +644,12 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                 const cellCards = gridCells.get(cellKey) || [];
                 return (
                   <div
-                    key={cellKey}
-                    className="nords-matrix__grid-cell"
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleCellDrop(e, col.position, yl.position)}
-                  >
+              key={cellKey}
+              className="nords-matrix__grid-cell"
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleCellDrop(e, col.position, gridCells.get(cellKey) || [], yl.position)}
+            >
+
                     {cellCards.map(card => renderCard(card))}
                     {cellCards.length === 0 && (
                       <div className="nords-matrix__column-empty">—</div>
@@ -641,8 +710,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
             <div
               key={col.label}
               className="nords-matrix__column"
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleCellDrop(e, col.position)}
             >
               <div className="nords-matrix__column-header">
                 <span className="nords-matrix__column-label" style={{ color: activeType.color }}>
@@ -650,7 +717,11 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                 </span>
                 <span className="nords-matrix__column-count">{col.cards.length}</span>
               </div>
-              <div className="nords-matrix__column-body">
+              <div
+                className="nords-matrix__column-body"
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleCellDrop(e, col.position, col.cards)}
+              >
                 {col.cards.map(card => renderCard(card))}
                 {col.cards.length === 0 && (
                   <div className="nords-matrix__column-empty">No nords</div>
