@@ -455,7 +455,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       {isQuadrant ? (() => {
         const hasOrphans = boardSettings?.showOrphans;
         const hasConnections = connectionEntries.length > 0;
-        const extraCols = (hasOrphans ? 1 : 0) + (hasConnections ? 1 : 0);
         const totalRows = yLabels.length;
         return (
         /* ── Quadrant Mode: CSS Grid with swimlane rows ── */
