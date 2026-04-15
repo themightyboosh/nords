@@ -9,8 +9,9 @@
   flex-direction: column;
   overflow: hidden;
   background: var(--nords-color-bg-primary);
-  /* Extra bottom padding so content scrolls above the dock */
-  padding-bottom: 64px;
+  /* Offset for viewport header at top + breathing room for dock at bottom */
+  padding-top: var(--nords-header-height);
+  padding-bottom: 0;
 }
 
 /* ── Header Bar ── */

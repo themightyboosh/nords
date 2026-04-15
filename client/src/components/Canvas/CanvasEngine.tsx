@@ -31,6 +31,7 @@ import { useVisibilityCascade } from '../../hooks/useVisibilityCascade';
 import { useSemanticZoom } from '../../hooks/useSemanticZoom';
 import { useSpatialAnimations } from '../../hooks/useSpatialAnimations';
 import { useLensLayout } from '../../hooks/useLensLayout';
+import ZoomControls from './ZoomControls';
 import './CanvasEngine.css';
 
 const nodeTypes = {
@@ -627,6 +628,9 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
           </button>
         </div>
       )}
+
+      {/* Zoom controls — graph mode only (inside ReactFlow context) */}
+      <ZoomControls />
     </>
   );
 }
