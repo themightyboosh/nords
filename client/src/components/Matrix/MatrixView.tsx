@@ -256,24 +256,53 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   const renderCard = (card: MatrixCard) => {
     const handleCardDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-      const el = e.currentTarget;
-      el.setAttribute('data-dragging', 'true');
       handleDragStart(e, card);
 
-      // Listen for alt/option key changes during drag
-      const onKey = (ke: KeyboardEvent) => {
-        el.setAttribute('data-add-mode', ke.altKey ? 'true' : 'false');
-      };
-      window.addEventListener('keydown', onKey);
-      window.addEventListener('keyup', onKey);
+      // Create a tilted ghost for the drag image
+      const cardEl = e.currentTarget.querySelector('.nords-node') as HTMLElement;
+      if (cardEl) {
+        const ghost = cardEl.cloneNode(true) as HTMLElement;
+        ghost.style.transform = 'rotate(-3deg)';
+        ghost.style.width = `${cardEl.offsetWidth}px`;
+        ghost.style.position = 'absolute';
+        ghost.style.top = '-9999px';
+        ghost.style.left = '-9999px';
+        ghost.style.zIndex = '9999';
+        ghost.style.pointerEvents = 'none';
+        ghost.style.opacity = '0.92';
 
-      const cleanup = () => {
-        el.removeAttribute('data-dragging');
-        el.removeAttribute('data-add-mode');
-        window.removeEventListener('keydown', onKey);
-        window.removeEventListener('keyup', onKey);
-      };
-      el.addEventListener('dragend', cleanup, { once: true });
+        // If Option key held at drag start, add a stacked card behind
+        if (e.altKey) {
+          const wrapper = document.createElement('div');
+          wrapper.style.position = 'absolute';
+          wrapper.style.top = '-9999px';
+          wrapper.style.left = '-9999px';
+
+          const bgCard = cardEl.cloneNode(true) as HTMLElement;
+          bgCard.style.position = 'absolute';
+          bgCard.style.top = '6px';
+          bgCard.style.left = '6px';
+          bgCard.style.transform = 'rotate(-1deg)';
+          bgCard.style.opacity = '0.5';
+          bgCard.style.width = `${cardEl.offsetWidth}px`;
+
+          ghost.style.position = 'relative';
+          ghost.style.top = '0';
+          ghost.style.left = '0';
+
+          wrapper.style.width = `${cardEl.offsetWidth + 10}px`;
+          wrapper.style.height = `${cardEl.offsetHeight + 10}px`;
+          wrapper.appendChild(bgCard);
+          wrapper.appendChild(ghost);
+          document.body.appendChild(wrapper);
+          e.dataTransfer.setDragImage(wrapper, cardEl.offsetWidth / 2, 20);
+          requestAnimationFrame(() => document.body.removeChild(wrapper));
+        } else {
+          document.body.appendChild(ghost);
+          e.dataTransfer.setDragImage(ghost, cardEl.offsetWidth / 2, 20);
+          requestAnimationFrame(() => document.body.removeChild(ghost));
+        }
+      }
     };
 
     return (

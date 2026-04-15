@@ -91,15 +91,6 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
           {/* ═══ Lens Toggle ═══ */}
           <div className="nords-lens-toggle">
             <button
-              className={`nords-lens-toggle__btn ${lens === 'canvas' ? 'is-active' : ''}`}
-              onClick={() => { setLens('canvas'); setOpenPanel(null); }}
-              title="Canvas — spatial graph view"
-              data-testid="lens-canvas"
-            >
-              <Eye size={14} strokeWidth={1.6} />
-              <span>Canvas</span>
-            </button>
-            <button
               className={`nords-lens-toggle__btn ${lens === 'board' ? 'is-active' : ''}`}
               onClick={() => {
                 setLens('board');
@@ -109,11 +100,20 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
                   setActiveLine(visibleConnectionTypes[0].name);
                 }
               }}
-              title="Board — spatial pivot table"
+              title="Board — kanban view by connection type"
               data-testid="lens-board"
             >
               <LayoutGrid size={14} strokeWidth={1.6} />
               <span>Board</span>
+            </button>
+            <button
+              className={`nords-lens-toggle__btn ${lens === 'canvas' ? 'is-active' : ''}`}
+              onClick={() => { setLens('canvas'); setOpenPanel(null); }}
+              title="Graph — spatial graph view"
+              data-testid="lens-canvas"
+            >
+              <Eye size={14} strokeWidth={1.6} />
+              <span>Graph</span>
             </button>
           </div>
 

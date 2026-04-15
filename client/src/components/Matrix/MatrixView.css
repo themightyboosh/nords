@@ -267,25 +267,6 @@
   transform: translateY(-1px);
 }
 
-/* Drag tilt — card angles slightly when being dragged */
-.nords-matrix__card-wrapper[data-dragging="true"] .nords-node {
-  transform: rotate(-2deg) scale(1.03);
-  box-shadow: var(--nords-shadow-lg), 0 8px 24px rgba(0, 0, 0, 0.25);
-  opacity: 0.9;
-  z-index: 100;
-}
-
-/* Option key stacked look — shows "add" intent with a shadow stack */
-.nords-matrix__card-wrapper[data-add-mode="true"] .nords-node {
-  transform: rotate(-1.5deg) scale(1.02);
-  box-shadow:
-    var(--nords-shadow-md),
-    4px 4px 0 -1px var(--nords-color-bg-surface),
-    4px 4px 0 0 var(--nords-color-border),
-    8px 8px 0 -1px var(--nords-color-bg-surface),
-    8px 8px 0 0 var(--nords-color-border);
-}
-
 /* ── Connection Entries (🔗 column) ── */
 
 .nords-matrix__connection-entry {
