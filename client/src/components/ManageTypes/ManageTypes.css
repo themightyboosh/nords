@@ -494,6 +494,56 @@
   font-weight: 600;
 }
 
+/* ── Direction Prepositions ── */
+.manage-types__prepositions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.manage-types__prep-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.manage-types__prep-arrow {
+  font-size: 1.1rem;
+  font-weight: 700;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.manage-types__prep-input {
+  flex: 1;
+  padding: 5px 10px;
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-sm);
+  background: var(--nords-color-bg-surface);
+  color: var(--nords-color-text-primary);
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-sm);
+  outline: none;
+  transition: border-color 0.15s ease;
+  max-width: 120px;
+}
+
+.manage-types__prep-input:focus {
+  border-color: var(--nords-color-accent);
+}
+
+.manage-types__prep-row--fixed {
+  opacity: 0.5;
+}
+
+.manage-types__prep-fixed {
+  font-size: var(--nords-font-size-sm);
+  color: var(--nords-color-text-disabled);
+  font-style: italic;
+  padding: 5px 10px;
+}
+
 
 /* ── Empty state ── */
 .manage-types__empty {

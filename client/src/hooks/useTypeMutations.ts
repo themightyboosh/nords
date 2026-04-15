@@ -31,11 +31,17 @@ export interface ConnectionTypeData {
   stroke_style: string;
   measurement_mode: 'spectrum' | 'quadrant' | 'none';
   default_direction: string;
+  direction_filter: 'all' | 'forward' | 'reverse' | 'both' | 'none';
+  direction_prepositions: {
+    forward: string;  // default: 'from'
+    reverse: string;  // default: 'to'
+    both: string;     // default: 'together'
+    // neither/none: fixed as 'related', not stored
+  };
   x_stage_labels: StageLabel[];
   y_stage_labels: StageLabel[];
   properties_schema: PropertySchema[];
   verb: string | null;
-  direction_filter: 'all' | 'forward' | 'reverse' | 'both' | 'none';
   is_system: boolean;
   sort_order: number;
 }
@@ -92,7 +98,7 @@ export function useTypeMutations(projectId: string | null) {
 
   const updateConnectionType = useCallback(async (
     typeId: string,
-    updates: Partial<Pick<ConnectionTypeData, 'name' | 'accent_color' | 'stroke_style' | 'default_direction' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'verb' | 'direction_filter' | 'sort_order'>>
+    updates: Partial<Pick<ConnectionTypeData, 'name' | 'verb' | 'accent_color' | 'stroke_style' | 'default_direction' | 'direction_filter' | 'direction_prepositions' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>
   ): Promise<ConnectionTypeData> => {
     return api.put<ConnectionTypeData>(`/api/connection-types/${typeId}`, updates);
   }, []);

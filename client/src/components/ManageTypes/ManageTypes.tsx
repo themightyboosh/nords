@@ -340,6 +340,60 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged }: Manage
                       />
                     </div>
 
+                    {/* Direction Prepositions */}
+                    <div className="manage-types__field">
+                      <label className="manage-types__field-label">Arrow Labels
+                        <span className="manage-types__field-hint">One word per direction — paired with the verb to form readable labels</span>
+                      </label>
+                      <div className="manage-types__prepositions">
+                        {([
+                          { dir: 'forward', arrow: '→', placeholder: 'from' },
+                          { dir: 'reverse', arrow: '←', placeholder: 'to' },
+                          { dir: 'both',    arrow: '↔', placeholder: 'together' },
+                        ] as const).map(({ dir, arrow, placeholder }) => {
+                          const preps = (selected as ConnectionTypeData).direction_prepositions || { forward: 'from', reverse: 'to', both: 'together' };
+                          return (
+                            <div key={dir} className="manage-types__prep-row">
+                              <span
+                                className="manage-types__prep-arrow"
+                                style={{ color: currentColor }}
+                              >{arrow}</span>
+                              <input
+                                type="text"
+                                className="manage-types__prep-input"
+                                placeholder={placeholder}
+                                value={preps[dir] ?? placeholder}
+                                onChange={(e) => {
+                                  // Strip spaces — single word only
+                                  const word = e.target.value.replace(/\s+/g, '');
+                                  handleUpdateField('direction_prepositions', {
+                                    ...preps,
+                                    [dir]: word,
+                                  });
+                                }}
+                                onBlur={(e) => {
+                                  // On blur, fall back to the default if empty
+                                  if (!e.target.value.trim()) {
+                                    handleUpdateField('direction_prepositions', {
+                                      ...preps,
+                                      [dir]: placeholder,
+                                    });
+                                  }
+                                }}
+                                maxLength={24}
+                              />
+                            </div>
+                          );
+                        })}
+                        {/* Fixed: neither/none = 'related' */}
+                        <div className="manage-types__prep-row manage-types__prep-row--fixed">
+                          <span className="manage-types__prep-arrow" style={{ opacity: 0.35 }}>—</span>
+                          <span className="manage-types__prep-fixed">related</span>
+                        </div>
+                      </div>
+                    </div>
+
+
                     {/* Direction Filter */}
                     <div className="manage-types__field">
                       <label className="manage-types__field-label">Direction Filter

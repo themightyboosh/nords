@@ -131,9 +131,16 @@ export interface ConnectionType {
   id: string;
   user_id: string;
   name: string;
+  verb: string | null;
   accent_color: string;
   stroke_style: string;
   default_direction: string;
+  direction_filter: string;
+  direction_prepositions: {
+    forward: string;
+    reverse: string;
+    both: string;
+  };
   x_stage_labels: string[];
   y_stage_labels: string[];
   properties_schema: Record<string, unknown>[];
@@ -212,21 +219,22 @@ export const connectionTypesRepo = {
     return result!;
   },
 
-  async update(id: string, updates: Partial<Pick<ConnectionType, 'name' | 'accent_color' | 'stroke_style' | 'default_direction' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order' | 'verb' | 'direction_filter'>>): Promise<ConnectionType | null> {
+  async update(id: string, updates: Partial<Pick<ConnectionType, 'name' | 'verb' | 'accent_color' | 'stroke_style' | 'default_direction' | 'direction_filter' | 'direction_prepositions' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>): Promise<ConnectionType | null> {
     const setClauses: string[] = [];
     const values: unknown[] = [];
     let idx = 1;
 
     if (updates.name !== undefined) { setClauses.push(`name = $${idx++}`); values.push(updates.name); }
+    if (updates.verb !== undefined) { setClauses.push(`verb = $${idx++}`); values.push(updates.verb); }
     if (updates.accent_color !== undefined) { setClauses.push(`accent_color = $${idx++}`); values.push(updates.accent_color); }
     if (updates.stroke_style !== undefined) { setClauses.push(`stroke_style = $${idx++}`); values.push(updates.stroke_style); }
     if (updates.default_direction !== undefined) { setClauses.push(`default_direction = $${idx++}`); values.push(updates.default_direction); }
+    if (updates.direction_filter !== undefined) { setClauses.push(`direction_filter = $${idx++}`); values.push(updates.direction_filter); }
+    if (updates.direction_prepositions !== undefined) { setClauses.push(`direction_prepositions = $${idx++}`); values.push(JSON.stringify(updates.direction_prepositions)); }
     if (updates.x_stage_labels !== undefined) { setClauses.push(`x_stage_labels = $${idx++}`); values.push(JSON.stringify(updates.x_stage_labels)); }
     if (updates.y_stage_labels !== undefined) { setClauses.push(`y_stage_labels = $${idx++}`); values.push(JSON.stringify(updates.y_stage_labels)); }
     if (updates.properties_schema !== undefined) { setClauses.push(`properties_schema = $${idx++}`); values.push(JSON.stringify(updates.properties_schema)); }
     if (updates.sort_order !== undefined) { setClauses.push(`sort_order = $${idx++}`); values.push(updates.sort_order); }
-    if (updates.verb !== undefined) { setClauses.push(`verb = $${idx++}`); values.push(updates.verb); }
-    if (updates.direction_filter !== undefined) { setClauses.push(`direction_filter = $${idx++}`); values.push(updates.direction_filter); }
 
     if (setClauses.length === 0) return this.findById(id);
 
