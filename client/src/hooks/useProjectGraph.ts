@@ -62,6 +62,11 @@ export interface ConnectionType {
   properties_schema: PropertySchema[];
   verb: string | null;
   direction_filter: 'all' | 'forward' | 'reverse' | 'both' | 'none';
+  direction_prepositions: {
+    forward: string;  // default 'from'
+    reverse: string;  // default 'to'
+    both: string;     // default 'together'
+  };
   is_system: boolean;
   sort_order: number;
 }

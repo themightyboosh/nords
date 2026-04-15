@@ -39,6 +39,7 @@ interface ConnectionEntity {
   id: string;
   type: string;
   verb: string | null;
+  prepositions: { forward: string; reverse: string; both: string };
   typeColor: string;
   typeId: string;
   direction: string;
@@ -114,6 +115,7 @@ export function useDrawerEntity(
       id: edge.id,
       type: (data as any)?.type || 'Connection',
       verb: (data as any)?._verb || null,
+      prepositions: (data as any)?._prepositions ?? { forward: 'from', reverse: 'to', both: 'together' },
       typeColor: (data as any)?.color || '#888',
       typeId: (data as any)?._typeId || '',
       direction: (data as any)?.direction || 'none',

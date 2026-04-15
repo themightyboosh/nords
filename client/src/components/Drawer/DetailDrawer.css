@@ -181,7 +181,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   padding: 16px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.03);
@@ -198,6 +198,25 @@
   font-size: 1.4rem;
   font-weight: 700;
 }
+
+/* Relationship sentence: "Auth Service blocks from API Gateway" */
+.nords-drawer-relationship {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  opacity: 0.75;
+  margin-bottom: 20px;
+  padding: 0 16px;
+  line-height: 1.5;
+}
+
+.nords-drawer-relationship em {
+  font-style: italic;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
 
 /* ── Direction Toggle ── */
 .nords-direction-toggle {

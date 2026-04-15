@@ -351,7 +351,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
         </header>
 
         <div className="nords-drawer-content">
-          {/* Endpoints line */}
+          {/* Endpoints + verb sentence */}
           <div className="nords-drawer-line-header">
             <span className="nords-drawer-endpoint">{entity.sourceName}</span>
             <span className="nords-drawer-direction" style={{ color: entity.typeColor }}>
@@ -359,6 +359,17 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
             </span>
             <span className="nords-drawer-endpoint">{entity.targetName}</span>
           </div>
+          {entity.verb && (
+            <div className="nords-drawer-relationship" style={{ color: entity.typeColor }}>
+              {entity.sourceName}{' '}
+              <em>{entity.verb}</em>{' '}
+              {entity.direction === 'to' ? entity.prepositions.forward
+                : entity.direction === 'from' ? entity.prepositions.reverse
+                : entity.direction === 'both' ? entity.prepositions.both
+                : 'related to'}{' '}
+              {entity.targetName}
+            </div>
+          )}
 
           {/* Direction Toggle */}
           <div className="nords-drawer-section">

@@ -29,6 +29,14 @@ export interface NordEdgeData {
   type: string;
   color: string;
   direction: 'to' | 'from' | 'both' | 'none';
+  /** The verb for this connection type (e.g. 'blocks') */
+  _verb: string | null;
+  /** Per-direction preposition words */
+  _prepositions: {
+    forward: string;  // e.g. 'from'
+    reverse: string;  // e.g. 'to'
+    both: string;     // e.g. 'together'
+  };
   /** Internal: connection_type UUID */
   _typeId: string;
   /** Internal: normalized 0-1 distance on X axis */

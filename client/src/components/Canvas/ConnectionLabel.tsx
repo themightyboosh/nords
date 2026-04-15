@@ -10,19 +10,23 @@ interface ConnectionLabelProps {
   color: string;
   edgeId: string;
   isDimmed?: boolean;
+  /** Resolved stage label from the spectrum (e.g. 'HIGH', 'DONE') */
   resolvedLabel?: string | null;
+  /** Verb + preposition (e.g. 'blocks from', 'depends on together') */
+  relationshipLabel?: string | null;
 }
 
-export const ConnectionLabel = React.memo(function ConnectionLabel({ x, y, angleDeg, direction, type, color, edgeId, isDimmed, resolvedLabel }: ConnectionLabelProps) {
+export const ConnectionLabel = React.memo(function ConnectionLabel({
+  x, y, angleDeg, direction, type, color, edgeId, isDimmed,
+  resolvedLabel, relationshipLabel,
+}: ConnectionLabelProps) {
   const zoom = useStore((s) => s.transform[2]);
   // Unified text scaling — same formula as NordNode textScale
-  // Below 60% zoom: counter-scale up (capped at 2.5×)
-  // Above 60% zoom: gentle inverse scale 0.5–0.8
   const inverseScale = zoom < 0.6
     ? Math.min(2.5, 0.6 / zoom)
     : Math.min(0.8, Math.max(0.5, 1 / zoom));
 
-  // Drag-isolation: check if this label's edge is connected to the dragged node
+  // Drag-isolation: fade edges not connected to the dragged node
   const isDragFaded = useStore((s) => {
     let draggedId: string | null = null;
     for (const [, node] of s.nodeLookup) {
@@ -56,8 +60,11 @@ export const ConnectionLabel = React.memo(function ConnectionLabel({ x, y, angle
           zIndex: isDimmed ? 0 : 10,
         } as React.CSSProperties}
       >
+        {/* Priority: resolved spectrum label > relationship label > type name */}
         {resolvedLabel ? (
           <span className="nords-connection-label__resolved">{resolvedLabel}</span>
+        ) : relationshipLabel ? (
+          <span className="nords-connection-label__relationship">{relationshipLabel}</span>
         ) : (
           <span className="nords-connection-label__type">{type}</span>
         )}

@@ -137,6 +137,20 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     return resolveStageLabel(edgeData._distanceX, ct.xStageLabels);
   }, [edgeData?._typeId, edgeData?._distanceX, connectionTypes]);
 
+  // ── Resolve relationship label: verb + preposition ──
+  // e.g. direction=to, verb='blocks', prepositions.forward='from' → 'blocks from'
+  // neither/none → 'related' (when verb set) or type name
+  const relationshipLabel = useMemo(() => {
+    const verb = edgeData?._verb;
+    const preps = edgeData?._prepositions as { forward: string; reverse: string; both: string } | undefined;
+    const dir = edgeData?.direction;
+    if (!verb) return null;
+    if (dir === 'to') return `${verb} ${preps?.forward ?? 'from'}`;
+    if (dir === 'from') return `${verb} ${preps?.reverse ?? 'to'}`;
+    if (dir === 'both') return `${verb} ${preps?.both ?? 'together'}`;
+    return 'related'; // neither / none
+  }, [edgeData?._verb, edgeData?._prepositions, edgeData?.direction]);
+
   // Node centers (React Flow positions are top-left, add half dimensions)
   const sW = sourceNode?.measured?.width ?? 200;
   const sH = sourceNode?.measured?.height ?? 60;
@@ -468,6 +482,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
           edgeId={id}
           isDimmed={isDimmed}
           resolvedLabel={resolvedLabel}
+          relationshipLabel={relationshipLabel}
         />
       )}
     </>

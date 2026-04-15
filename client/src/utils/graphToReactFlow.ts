@@ -100,6 +100,8 @@ export function graphToEdges(
         type: typeName,
         color: typeColor,
         direction: visualDirection,
+        _verb: type?.verb ?? null,
+        _prepositions: type?.direction_prepositions ?? { forward: 'from', reverse: 'to', both: 'together' },
         _typeId: conn.type_id,
         _distanceX: conn.distance_x,
         _distanceY: conn.distance_y,
