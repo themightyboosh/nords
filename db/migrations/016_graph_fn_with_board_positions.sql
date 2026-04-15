@@ -11,8 +11,7 @@ AS $$
       COALESCE(
         (SELECT json_agg(row_to_json(t))
          FROM nord_types t
-         JOIN project_types pt ON pt.type_id = t.id AND pt.type_kind = 'nord'
-         WHERE pt.project_id = p_project_id AND t.deleted_at IS NULL),
+         WHERE t.project_id = p_project_id AND t.deleted_at IS NULL),
         '[]'::json
       ),
     'nords',
@@ -26,8 +25,7 @@ AS $$
       COALESCE(
         (SELECT json_agg(row_to_json(ct))
          FROM connection_types ct
-         JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind = 'connection'
-         WHERE pt.project_id = p_project_id AND ct.deleted_at IS NULL),
+         WHERE ct.project_id = p_project_id AND ct.deleted_at IS NULL),
         '[]'::json
       ),
     'connections',
@@ -48,3 +46,4 @@ AS $$
       )
   )
 $$;
+
