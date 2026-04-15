@@ -169,17 +169,16 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
     debouncedTitleUpdate(text);
   }, [debouncedTitleUpdate]);
 
-  // Get the schema for this entity's type
+  // Get the schema for this entity's type (works for both nord and connection)
   const schema = useMemo(() => {
-    if (entity?.kind !== 'nord' || !typeSchemas) return [];
+    if (!typeSchemas || !entity) return [];
     return typeSchemas.get(entity.typeId) || [];
   }, [entity, typeSchemas]);
 
-  // Build properties with schema info for rendering
+  // Nord properties
   const schemaProperties = useMemo(() => {
     if (entity?.kind !== 'nord') return [];
     const propsMap = new Map(entity.properties.map(p => [p.key, p.value]));
-
     return schema.map(s => ({
       name: s.name,
       type: s.type as any,
@@ -188,6 +187,33 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
       cardRow: s.card_row,
     }));
   }, [entity, schema]);
+
+  // Connection properties
+  const connectionProperties = useMemo(() => {
+    if (entity?.kind !== 'connection') return [];
+    const propsMap = new Map(entity.properties.map(p => [p.key, p.value]));
+    return schema.map(s => ({
+      name: s.name,
+      type: s.type as any,
+      value: propsMap.get(s.name) ?? '',
+      options: s.options,
+    }));
+  }, [entity, schema]);
+
+  // Resolve closest spectrum label for a connection
+  const resolvedSpectrumLabel = useMemo(() => {
+    if (entity?.kind !== 'connection') return null;
+    const labels = entity.xStageLabels;
+    if (!labels || labels.length === 0) return null;
+    const dx = entity.distanceX;
+    let closest = labels[0];
+    let minDist = Math.abs(dx - labels[0].position);
+    for (const l of labels) {
+      const d = Math.abs(dx - l.position);
+      if (d < minDist) { minDist = d; closest = l; }
+    }
+    return closest.label;
+  }, [entity]);
 
   // Handle description update
   const handleDescriptionChange = useCallback((text: string) => {
@@ -308,6 +334,10 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
 
   // ── Line Mode (Connection) ──
   if (entity?.kind === 'connection') {
+    const headerLabel = entity.verb
+      ? `${entity.type.toUpperCase()}: ${entity.verb}`
+      : entity.type.toUpperCase();
+
     return (
       <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
         <header className="nords-drawer-header">
@@ -315,13 +345,13 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
             color: entity.typeColor,
             borderColor: entity.typeColor,
           }}>
-            {entity.type}
+            {headerLabel}
           </div>
           <button className="nords-close-btn" onClick={onClose} aria-label="Close">×</button>
         </header>
 
         <div className="nords-drawer-content">
-          {/* Endpoints */}
+          {/* Endpoints line */}
           <div className="nords-drawer-line-header">
             <span className="nords-drawer-endpoint">{entity.sourceName}</span>
             <span className="nords-drawer-direction" style={{ color: entity.typeColor }}>
@@ -340,42 +370,45 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
             />
           </div>
 
-          {/* Distance — Read-Only (derived from position) */}
-          <div className="nords-drawer-section">
-            <h3 className="nords-drawer-section-title">Distance</h3>
-            <div className="nords-distance-display">
-              <div className="nords-distance-display__row">
-                <span className="nords-distance-display__label">X</span>
-                <div className="nords-distance-display__bar">
-                  <div
-                    className="nords-distance-display__fill"
-                    style={{
-                      width: `${(entity.distanceX * 100).toFixed(0)}%`,
-                      backgroundColor: entity.typeColor,
-                    }}
-                  />
-                </div>
-                <span className="nords-distance-display__value">{entity.distanceX.toFixed(2)}</span>
-              </div>
-              <div className="nords-distance-display__row">
-                <span className="nords-distance-display__label">Y</span>
-                <div className="nords-distance-display__bar">
-                  <div
-                    className="nords-distance-display__fill"
-                    style={{
-                      width: `${(entity.distanceY * 100).toFixed(0)}%`,
-                      backgroundColor: entity.typeColor,
-                    }}
-                  />
-                </div>
-                <span className="nords-distance-display__value">{entity.distanceY.toFixed(2)}</span>
+          {/* Spectrum Position — closest label, read-only */}
+          {resolvedSpectrumLabel && (
+            <div className="nords-drawer-section">
+              <h3 className="nords-drawer-section-title">Position</h3>
+              <div className="nords-spectrum-label" style={{ borderColor: entity.typeColor }}>
+                <span className="nords-spectrum-label__value" style={{ color: entity.typeColor }}>
+                  {resolvedSpectrumLabel}
+                </span>
+                <span className="nords-spectrum-label__hint">
+                  Drag on the board to reposition
+                </span>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Properties — schema-driven values (schema defined at type level) */}
+          {connectionProperties.length > 0 && (
+            <div className="nords-drawer-section">
+              <h3 className="nords-drawer-section-title">Properties</h3>
+              <div className="nords-properties-list">
+                {connectionProperties.map((p) => (
+                  <PropertyField
+                    key={p.name}
+                    name={p.name}
+                    type={p.type}
+                    value={p.value}
+                    options={p.options}
+                    color={entity.typeColor}
+                    onChange={(v) => mutations.updateConnectionProperty(p.name, v as string)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </FloatingPanel>
     );
   }
+
 
   // Entity not found (loading or stale ID)
   return (

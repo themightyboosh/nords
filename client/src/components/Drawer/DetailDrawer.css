@@ -326,6 +326,29 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Spectrum Position Label (connection drawer) ── */
+.nords-spectrum-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  border-radius: var(--nords-radius-md);
+  border-left: 3px solid;
+  background: color-mix(in srgb, var(--nords-color-bg-hover) 60%, transparent);
+}
+
+.nords-spectrum-label__value {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.nords-spectrum-label__hint {
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-text-disabled);
+}
+
+
 /* ── Connections List ── */
 .nords-connections-list {
   display: flex;

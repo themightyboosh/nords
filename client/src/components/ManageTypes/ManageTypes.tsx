@@ -147,6 +147,10 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged }: Manage
   const addProperty = useCallback(() => {
     if (!selected) return;
     const currentSchema = (selected as any).properties_schema || [];
+    if (currentSchema.length >= 6) {
+      alert('Maximum of 6 properties per type. Remove an existing property to add a new one.');
+      return;
+    }
     const newProp: PropertySchema = { name: 'New Property', type: 'string' };
     handleUpdateField('properties_schema', [...currentSchema, newProp]);
   }, [selected, handleUpdateField]);

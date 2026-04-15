@@ -38,21 +38,25 @@ interface ConnectionEntity {
   kind: 'connection';
   id: string;
   type: string;
+  verb: string | null;
   typeColor: string;
   typeId: string;
   direction: string;
   distanceX: number;
   distanceY: number;
+  xStageLabels: Array<{ label: string; position: number }>;
   sourceId: string;
   targetId: string;
   sourceName: string;
   targetName: string;
+  properties: Array<{ key: string; value: string }>;
   edge: Edge;
 }
 
 interface DrawerMutations {
   updateTitle: (title: string) => void;
   updateProperty: (key: string, value: string) => void;
+  updateConnectionProperty: (key: string, value: string) => void;
   updateDirection: (direction: 'forward' | 'reverse' | 'both' | 'neither') => void;
   updateDistance: (axis: 'x' | 'y', value: number) => void;
 }
@@ -109,15 +113,18 @@ export function useDrawerEntity(
       kind: 'connection',
       id: edge.id,
       type: (data as any)?.type || 'Connection',
+      verb: (data as any)?._verb || null,
       typeColor: (data as any)?.color || '#888',
       typeId: (data as any)?._typeId || '',
       direction: (data as any)?.direction || 'none',
       distanceX: (data as any)?._distanceX ?? 0.5,
       distanceY: (data as any)?._distanceY ?? 0.5,
+      xStageLabels: (data as any)?._xStageLabels || [],
       sourceId: edge.source,
       targetId: edge.target,
       sourceName: (sourceNode?.data?.title as string) || 'Source',
       targetName: (targetNode?.data?.title as string) || 'Target',
+      properties: (data as any)?._properties || [],
       edge,
     };
   }
@@ -178,8 +185,27 @@ export function useDrawerEntity(
     });
   }, [entityId, entityType, setEdges]);
 
+  const updateConnectionProperty = useCallback((key: string, value: string) => {
+    if (!entityId || entityType !== 'connection') return;
+    setEdges(eds => eds.map(e => {
+      if (e.id !== entityId) return e;
+      const props = (((e.data as any)?._properties as any[]) || []).map((p: any) =>
+        p.key === key ? { ...p, value } : p
+      );
+      // If prop doesn't exist yet, add it
+      const exists = props.some((p: any) => p.key === key);
+      const finalProps = exists ? props : [...props, { key, value }];
+      return { ...e, data: { ...e.data, _properties: finalProps } };
+    }));
+    api.put(`/api/connections/${entityId}`, {
+      properties: { [key]: value },
+    }).catch(err => {
+      console.error('Failed to persist connection property:', err);
+    });
+  }, [entityId, entityType, setEdges]);
+
   return {
     entity,
-    mutations: { updateTitle, updateProperty, updateDirection, updateDistance },
+    mutations: { updateTitle, updateProperty, updateConnectionProperty, updateDirection, updateDistance },
   };
 }

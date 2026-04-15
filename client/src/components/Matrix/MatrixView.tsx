@@ -453,7 +453,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
             <span style={{ color: activeType.color }}>{activeType.name}</span>
             {activeType.verb && (
               <span className="nords-matrix__title-verb">
-                <span className="nords-matrix__title-sep">·</span>
+                <span className="nords-matrix__title-sep">:</span>
                 {activeType.verb}
               </span>
             )}
