@@ -254,25 +254,48 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   // ── Render helpers ──
 
-  const renderCard = (card: MatrixCard) => (
-    <div
-      key={card.id}
-      className="nords-matrix__card-wrapper"
-      draggable
-      onDragStart={(e) => handleDragStart(e, card)}
-      onClick={() => onNordClick(card.id)}
-    >
-      <NordCard
-        title={card.title}
-        typeName={card.typeName}
-        typeColor={card.typeColor}
-        typeIcon={card.typeIcon}
-        properties={card.properties}
-        isSelected={selectedNord === card.id}
-        style={{ width: '100%' }}
-      />
-    </div>
-  );
+  const renderCard = (card: MatrixCard) => {
+    const handleCardDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+      const el = e.currentTarget;
+      el.setAttribute('data-dragging', 'true');
+      handleDragStart(e, card);
+
+      // Listen for alt/option key changes during drag
+      const onKey = (ke: KeyboardEvent) => {
+        el.setAttribute('data-add-mode', ke.altKey ? 'true' : 'false');
+      };
+      window.addEventListener('keydown', onKey);
+      window.addEventListener('keyup', onKey);
+
+      const cleanup = () => {
+        el.removeAttribute('data-dragging');
+        el.removeAttribute('data-add-mode');
+        window.removeEventListener('keydown', onKey);
+        window.removeEventListener('keyup', onKey);
+      };
+      el.addEventListener('dragend', cleanup, { once: true });
+    };
+
+    return (
+      <div
+        key={card.id}
+        className="nords-matrix__card-wrapper"
+        draggable
+        onDragStart={handleCardDragStart}
+        onClick={() => onNordClick(card.id)}
+      >
+        <NordCard
+          title={card.title}
+          typeName={card.typeName}
+          typeColor={card.typeColor}
+          typeIcon={card.typeIcon}
+          properties={card.properties}
+          isSelected={selectedNord === card.id}
+          style={{ width: '100%' }}
+        />
+      </div>
+    );
+  };
 
   // ── No active type state ──
   if (!activeType) {
@@ -416,13 +439,14 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
               <span className="nords-matrix__column-count">{connectionEntries.length}</span>
             </div>
             <div className="nords-matrix__column-body">
+              <span className="nords-matrix__connection-hint">drop card or click to pivot</span>
               {connectionEntries.map(entry => (
                 <div
                   key={entry.typeId}
                   className="nords-matrix__connection-entry"
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
-                  onDoubleClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
+                  onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
                 >
                   <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
                   <span className="nords-matrix__connection-name">{entry.typeName}</span>

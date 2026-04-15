@@ -154,18 +154,20 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
             </button>
           </div>
 
-          {/* Show/Hide toggle — hides non-active connectors (or orphans in All view) */}
-          <div className="nords-dock__section">
-            <button
-              className={`nords-dock__item ${showContext ? 'is-active' : ''}`}
-              onClick={() => setShowContext(!showContext)}
-              data-testid="dock-toggle-context"
-              title={activeConnectionTypeId ? 'Show/hide other connection types' : 'Show/hide orphaned nords'}
-            >
-              {showContext ? <EyeIcon size={15} strokeWidth={1.6} /> : <EyeOff size={15} strokeWidth={1.6} />}
-              <span className="nords-dock__label">{activeConnectionTypeId ? 'Others' : 'Orphans'}</span>
-            </button>
-          </div>
+          {/* Show/Hide toggle — hidden in board mode (board has its own filter controls) */}
+          {lens !== 'board' && (
+            <div className="nords-dock__section">
+              <button
+                className={`nords-dock__item ${showContext ? 'is-active' : ''}`}
+                onClick={() => setShowContext(!showContext)}
+                data-testid="dock-toggle-context"
+                title={activeConnectionTypeId ? 'Show/hide other connection types' : 'Show/hide orphaned nords'}
+              >
+                {showContext ? <EyeIcon size={15} strokeWidth={1.6} /> : <EyeOff size={15} strokeWidth={1.6} />}
+                <span className="nords-dock__label">{activeConnectionTypeId ? 'Others' : 'Orphans'}</span>
+              </button>
+            </div>
+          )}
 
         </nav>
 

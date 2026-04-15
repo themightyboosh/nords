@@ -9,6 +9,8 @@
   flex-direction: column;
   overflow: hidden;
   background: var(--nords-color-bg-primary);
+  /* Extra bottom padding so content scrolls above the dock */
+  padding-bottom: 64px;
 }
 
 /* ── Header Bar ── */
@@ -145,7 +147,7 @@
   padding: 0;
   scroll-snap-type: x proximity;
   scrollbar-width: thin;
-  scrollbar-color: var(--nords-color-border) transparent;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
 
 /* ── Individual Column ── */
@@ -232,7 +234,7 @@
   flex-direction: column;
   gap: 6px;
   scrollbar-width: thin;
-  scrollbar-color: var(--nords-color-border) transparent;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
 
 .nords-matrix__column-empty {
@@ -265,6 +267,25 @@
   transform: translateY(-1px);
 }
 
+/* Drag tilt — card angles slightly when being dragged */
+.nords-matrix__card-wrapper[data-dragging="true"] .nords-node {
+  transform: rotate(-2deg) scale(1.03);
+  box-shadow: var(--nords-shadow-lg), 0 8px 24px rgba(0, 0, 0, 0.25);
+  opacity: 0.9;
+  z-index: 100;
+}
+
+/* Option key stacked look — shows "add" intent with a shadow stack */
+.nords-matrix__card-wrapper[data-add-mode="true"] .nords-node {
+  transform: rotate(-1.5deg) scale(1.02);
+  box-shadow:
+    var(--nords-shadow-md),
+    4px 4px 0 -1px var(--nords-color-bg-surface),
+    4px 4px 0 0 var(--nords-color-border),
+    8px 8px 0 -1px var(--nords-color-bg-surface),
+    8px 8px 0 0 var(--nords-color-border);
+}
+
 /* ── Connection Entries (🔗 column) ── */
 
 .nords-matrix__connection-entry {
@@ -273,16 +294,40 @@
   gap: 8px;
   padding: 10px 12px;
   background: var(--nords-color-bg-primary);
-  border: 1px solid var(--nords-color-border);
+  border: 1px dashed var(--nords-color-border);
   border-radius: 8px;
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease, background-color 0.15s ease;
+  position: relative;
+}
+
+.nords-matrix__connection-entry::after {
+  content: '→';
+  font-size: 14px;
+  color: var(--nords-color-text-disabled);
+  transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .nords-matrix__connection-entry:hover {
   border-color: var(--nords-color-text-secondary);
+  border-style: solid;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   transform: translateY(-1px);
+  background: color-mix(in srgb, var(--nords-color-bg-secondary) 40%, transparent);
+}
+
+.nords-matrix__connection-entry:hover::after {
+  color: var(--nords-color-accent);
+  transform: translateX(2px);
+}
+
+/* Drop target hint text */
+.nords-matrix__connection-hint {
+  font-size: 9px;
+  color: var(--nords-color-text-disabled);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .nords-matrix__connection-swatch {
