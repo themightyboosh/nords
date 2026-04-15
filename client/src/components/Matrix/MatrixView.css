@@ -426,6 +426,42 @@
   transform: translateY(-1px);
 }
 
+/* ── Drag states ── */
+
+.nords-matrix__card-wrapper.is-dragging {
+  cursor: grabbing;
+}
+
+.nords-matrix__card-wrapper.is-dragging .nords-node {
+  transform: rotate(-3deg) scale(0.97);
+  opacity: 0.4;
+  box-shadow: none;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+/* Clone mode: ::after pseudo-element creates the stacked second card shadow */
+.nords-matrix__card-wrapper.is-clone-dragging {
+  position: relative;
+}
+
+.nords-matrix__card-wrapper.is-clone-dragging .nords-node {
+  transform: rotate(-3deg) scale(0.97);
+  opacity: 0.35;
+}
+
+.nords-matrix__card-wrapper.is-clone-dragging::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--nords-radius-md, 10px);
+  border: 1px solid color-mix(in srgb, var(--nords-color-border) 60%, transparent);
+  background: color-mix(in srgb, var(--nords-color-bg-surface) 80%, transparent);
+  transform: rotate(-1.5deg) translate(4px, 5px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+
 /* ── Connection Entries (🔗 column) ── */
 
 .nords-matrix__connection-entry {

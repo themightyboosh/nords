@@ -21,7 +21,9 @@ export interface BoardSettings {
   boards: Record<string, PerBoardSettings>;
 }
 
-const STORAGE_PREFIX = 'nords-board-settings-';
+// v2: reset to clear stale showOrphans:true from old sessions
+const STORAGE_PREFIX = 'nords-board-settings-v2-';
+
 
 function loadSettings(projectId: string): BoardSettings {
   try {

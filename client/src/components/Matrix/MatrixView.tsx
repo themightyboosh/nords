@@ -74,9 +74,22 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   // Option key tracking for clone-vs-move visual indicator
   const [optionHeld, setOptionHeld] = useState(false);
+  const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
+  const [isDragCloning, setIsDragCloning] = useState(false);
+
   React.useEffect(() => {
-    const down = (e: KeyboardEvent) => { if (e.altKey) setOptionHeld(true); };
-    const up = (e: KeyboardEvent) => { if (!e.altKey) setOptionHeld(false); };
+    const down = (e: KeyboardEvent) => {
+      if (e.altKey) {
+        setOptionHeld(true);
+        if (draggingCardId) setIsDragCloning(true);
+      }
+    };
+    const up = (e: KeyboardEvent) => {
+      if (!e.altKey) {
+        setOptionHeld(false);
+        setIsDragCloning(false);
+      }
+    };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
@@ -344,7 +357,11 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   // ── Render helpers ──
 
   const renderCard = (card: MatrixCard) => {
+    const isDraggingThis = draggingCardId === card.id;
+
     const handleCardDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+      setDraggingCardId(card.id);
+      setIsDragCloning(e.altKey);
       handleDragStart(e, card);
 
       // Create a tilted ghost for the drag image
@@ -394,12 +411,24 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       }
     };
 
+    const handleCardDragEnd = () => {
+      setDraggingCardId(null);
+      setIsDragCloning(false);
+    };
+
+    const wrapperClass = [
+      'nords-matrix__card-wrapper',
+      isDraggingThis ? 'is-dragging' : '',
+      isDraggingThis && isDragCloning ? 'is-clone-dragging' : '',
+    ].filter(Boolean).join(' ');
+
     return (
       <div
         key={card.id}
-        className="nords-matrix__card-wrapper"
+        className={wrapperClass}
         draggable
         onDragStart={handleCardDragStart}
+        onDragEnd={handleCardDragEnd}
         onClick={() => onNordClick(card.id)}
       >
         <NordCard
