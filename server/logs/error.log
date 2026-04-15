@@ -1720,3 +1720,43 @@ error: relation "project_types" does not exist
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
     at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
     at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":199,"error":"relation \"project_types\" does not exist"}
+08:52:06.576 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":13,"error":"read ECONNRESET"}
+08:52:06.578 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":92,"error":"read ECONNRESET"}
+08:53:53.480 [31merror[39m: React Error Boundary caught error
+ReferenceError: useBoardPositionMutations is not defined
+    at MatrixView (http://localhost:5174/src/components/Matrix/MatrixView.tsx?t=1776257611053:43:45)
+    at Object.react_stack_bottom_frame (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:12867:12)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4212:19)
+    at updateFunctionComponent (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:5568:16)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:6139:20)
+    at runWithFiberInDEV (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:850:66)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:8428:92)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:8324:37)
+    at renderRootSync (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:8308:6)
+    at performWorkOnRoot (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:7993:27) {"service":"nords-client","clientTimestamp":"2026-04-15T12:53:31.466Z","errorMessage":"useBoardPositionMutations is not defined","componentStack":"\n    at MatrixView (http://localhost:5174/src/components/Matrix/MatrixView.tsx?t=1776257611053:37:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1776257546367:680:40)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5174/src/context/TypeRegistryContext.tsx?t=1776224260740:19:40)\n    at LensProvider (http://localhost:5174/src/context/LensContext.tsx:35:32)\n    at BatchProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5174/src/App.tsx?t=1776257526336:30:27)\n    at ProtectedRoute (http://localhost:5174/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5174/src/context/AuthContext.tsx:10:32)\n    at App (http://localhost:5174/src/App.tsx?t=1776257526336:173:42)\n    at Router (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5174/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+08:54:15.589 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":104,"error":"read ECONNRESET"}
+08:54:15.624 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"error":"read ECONNRESET"}

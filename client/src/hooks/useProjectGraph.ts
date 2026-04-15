@@ -79,11 +79,22 @@ export interface Connection {
   created_at: string;
 }
 
+export interface NordBoardPosition {
+  id: string;
+  nord_id: string;
+  type_id: string;
+  distance_x: number;
+  distance_y: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ProjectGraph {
   nord_types: NordType[];
   nords: Nord[];
   connection_types: ConnectionType[];
   connections: Connection[];
+  board_positions: NordBoardPosition[];
 }
 
 interface UseProjectGraphResult {

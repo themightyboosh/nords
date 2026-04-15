@@ -90,3 +90,26 @@ export function useConnectionTypeMutations() {
 
   return { updateConnectionType };
 }
+
+// ── Board Position Mutations ──
+
+export function useBoardPositionMutations(projectId: string | null) {
+  const upsertPosition = useCallback(async (data: {
+    nord_id: string;
+    type_id: string;
+    distance_x: number;
+    distance_y?: number;
+  }): Promise<unknown> => {
+    if (!projectId) throw new Error('No project selected');
+    return api.put(`/api/projects/${projectId}/board-position`, {
+      ...data,
+      distance_y: data.distance_y ?? 0.5,
+    });
+  }, [projectId]);
+
+  const removePosition = useCallback(async (nordId: string, typeId: string): Promise<void> => {
+    return api.delete(`/api/board-position/${nordId}/${typeId}`);
+  }, []);
+
+  return { upsertPosition, removePosition };
+}

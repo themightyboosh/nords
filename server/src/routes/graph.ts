@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { query, queryOne } from '../db.js';
 import * as nordsRepo from '../repositories/nords.js';
 import * as connectionsRepo from '../repositories/connections.js';
+import * as boardPositionsRepo from '../repositories/boardPositions.js';
 
 export const graphRouter = Router();
 
@@ -356,5 +357,50 @@ graphRouter.put('/projects/:id/positions', async (req: Request, res: Response) =
     res.json({ updated: result?.fn_batch_update_positions ?? 0 });
   } catch (err) {
     res.status(500).json({ error: 'Failed to batch update positions' });
+  }
+});
+
+/** PUT /api/projects/:id/board-position — upsert a nord's position on a board */
+graphRouter.put('/projects/:id/board-position', async (req: Request, res: Response) => {
+  try {
+    const { nord_id, type_id, distance_x, distance_y } = req.body;
+    if (!nord_id || !type_id) {
+      res.status(400).json({ error: 'nord_id and type_id are required' });
+      return;
+    }
+    const position = await boardPositionsRepo.upsert({
+      nord_id,
+      type_id,
+      distance_x: distance_x ?? 0.5,
+      distance_y: distance_y ?? 0.5,
+    });
+    res.json(position);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to upsert board position' });
+  }
+});
+
+/** PUT /api/projects/:id/board-position/batch — batch upsert positions */
+graphRouter.put('/projects/:id/board-position/batch', async (req: Request, res: Response) => {
+  try {
+    const { positions } = req.body;
+    if (!Array.isArray(positions)) {
+      res.status(400).json({ error: 'positions array is required' });
+      return;
+    }
+    const results = await boardPositionsRepo.batchUpsert(positions);
+    res.json({ updated: results.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to batch upsert board positions' });
+  }
+});
+
+/** DELETE /api/board-position/:nordId/:typeId — remove a nord from a board */
+graphRouter.delete('/board-position/:nordId/:typeId', async (req: Request, res: Response) => {
+  try {
+    await boardPositionsRepo.remove(req.params.nordId, req.params.typeId);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to remove board position' });
   }
 });

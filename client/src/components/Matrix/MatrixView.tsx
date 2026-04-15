@@ -28,7 +28,7 @@ import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { useBoardSettings } from '../../hooks/useBoardSettings';
 import { setDragData, getDragData, isAddLinkMode, type BoardDragData } from '../../hooks/useBoardDragDrop';
-import { useConnectionMutations } from '../../hooks/useNordMutations';
+import { useConnectionMutations, useBoardPositionMutations } from '../../hooks/useNordMutations';
 import { NordCard } from '../shared/NordCard';
 import { Link2, Unlink } from 'lucide-react';
 import '../Canvas/CanvasEngine.css';
@@ -69,7 +69,8 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   const { activeConnectionTypeId, setActiveConnectionTypeId } = useLens();
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
   const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, ensureNordTypeVisible } = useBoardSettings(projectId);
-  const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
+  const { createConnection, deleteConnection } = useConnectionMutations(projectId);
+  const { upsertPosition, removePosition } = useBoardPositionMutations(projectId);
 
   // Option key tracking for clone-vs-move visual indicator
   const [optionHeld, setOptionHeld] = useState(false);
@@ -121,35 +122,31 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const labels = activeType.xStageLabels;
     const typeMap = new Map(graph.nord_types.map(t => [t.id, t]));
 
-    // Index connections per-nord for position resolution.
-    // Each connection contributes its distance values to BOTH endpoints,
-    // but each endpoint gets its OWN copy of the connection ID so that
-    // updating one card's position doesn't "kick" the other card.
-    // A nord may have multiple connections of this type — we use the
-    // FIRST connection per-nord for position (no averaging that could drift).
-    const connectionsByNord = new Map<string, { connectionId: string; distance_x: number; distance_y: number; direction: string }[]>();
-    const nordConnectionIds = new Map<string, Set<string>>(); // dedup guard
+    // Board positions: nord_id → position record for this connection type
+    const positionByNord = new Map<string, { distance_x: number; distance_y: number }>();
+    for (const pos of (graph.board_positions || [])) {
+      if (pos.type_id === activeType.id) {
+        positionByNord.set(pos.nord_id, { distance_x: pos.distance_x, distance_y: pos.distance_y });
+      }
+    }
 
+    // True orphans: nords with ZERO connections of ANY kind
+    const nordsWithAnyConnection = new Set<string>();
+    for (const conn of graph.connections) {
+      nordsWithAnyConnection.add(conn.source_nord_id);
+      nordsWithAnyConnection.add(conn.target_nord_id);
+    }
+
+    // Connection IDs per nord for this type (for canvas/drawer context only)
+    const connectionsByNord = new Map<string, string[]>();
     for (const conn of graph.connections) {
       if (conn.type_id !== activeType.id) continue;
-      // Apply direction filter
       if (directionFilter !== 'all' && conn.direction !== directionFilter) continue;
-
       for (const nordId of [conn.source_nord_id, conn.target_nord_id]) {
-        // Deduplicate: each connection only gets added once per nord
-        if (!nordConnectionIds.has(nordId)) nordConnectionIds.set(nordId, new Set());
-        if (nordConnectionIds.get(nordId)!.has(conn.id)) continue;
-        nordConnectionIds.get(nordId)!.add(conn.id);
-
-        if (!connectionsByNord.has(nordId)) {
-          connectionsByNord.set(nordId, []);
+        if (!connectionsByNord.has(nordId)) connectionsByNord.set(nordId, []);
+        if (!connectionsByNord.get(nordId)!.includes(conn.id)) {
+          connectionsByNord.get(nordId)!.push(conn.id);
         }
-        connectionsByNord.get(nordId)!.push({
-          connectionId: conn.id,
-          distance_x: conn.distance_x,
-          distance_y: conn.distance_y ?? 0.5,
-          direction: conn.direction,
-        });
       }
     }
 
@@ -179,9 +176,19 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       // Apply nord type filter
       if (!isNordTypeVisible(activeType.id, nord.type_id)) continue;
 
+      const isOrphan = !nordsWithAnyConnection.has(nord.id);
+      const pos = positionByNord.get(nord.id);
+
+      // Hidden rule: nords with connections but no position on this board → skip entirely
+      if (!isOrphan && !pos) continue;
+
       visibleNordIds.add(nord.id);
 
-      const conns = connectionsByNord.get(nord.id);
+      const connIds = connectionsByNord.get(nord.id) || [];
+      const firstConn = graph.connections.find(c =>
+        c.type_id === activeType.id &&
+        (c.source_nord_id === nord.id || c.target_nord_id === nord.id)
+      );
 
       const card: MatrixCard = {
         id: nord.id,
@@ -192,26 +199,25 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         typeId: nord.type_id,
         resolvedLabel: '',
         resolvedYLabel: '',
-        distance: 0.5,
-        distanceY: 0.5,
-        connectionIds: conns?.map(c => c.connectionId) || [],
-        connectionDirection: conns?.[0]?.direction || 'forward',
+        distance: pos?.distance_x ?? 0.5,
+        distanceY: pos?.distance_y ?? 0.5,
+        connectionIds: connIds,
+        connectionDirection: firstConn?.direction || 'forward',
         properties: Object.entries(nord.properties || {}).slice(0, 3).map(([key, value]) => ({
           key,
           value: String(value),
         })),
       };
 
-      if (!conns || conns.length === 0) {
+      if (isOrphan) {
+        // True orphan: no connections anywhere — show in orphan column on every board
         unlinkedCards.push(card);
         continue;
       }
 
-      // Use FIRST connection's distance for positioning (not average).
-      // Averaging across multiple connections causes drift and makes
-      // cards jump to unexpected cells when other connections change.
-      const distX = conns[0].distance_x;
-      const distY = conns[0].distance_y;
+      // Placed nord: use board position for column
+      const distX = pos!.distance_x;
+      const distY = pos!.distance_y;
       const resolved = resolveStageLabel(distX, labels);
       card.resolvedLabel = resolved || labels[0].label;
       card.distance = distX;
@@ -227,11 +233,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         } else {
           unlinkedCards.push(card);
         }
-        // Quadrant: also push to columnMap for header counts only
         const col = columnMap.get(card.resolvedLabel);
         if (col) col.push(card);
       } else {
-        // Flat mode: columnMap only
         const col = columnMap.get(card.resolvedLabel);
         if (col) {
           col.push(card);
@@ -287,31 +291,16 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const data = getDragData(e);
     if (!data || !activeType) return;
 
-    if (data.sourceConnectionIds.length > 0) {
-      // Card has connections — update distance_x (and distance_y if swimlane)
-      const patch: Record<string, number> = { distance_x: targetPositionX };
-      if (targetPositionY !== undefined) {
-        patch.distance_y = targetPositionY;
-      }
-      await Promise.all(
-        data.sourceConnectionIds.map(cid =>
-          updateConnection(cid, patch)
-        )
-      );
-    } else {
-      // Orphan drag: create a self-connection (source=target=nordId)
-      // at the target cell's position
-      await createConnection({
-        type_id: activeType.id,
-        source_nord_id: data.nordId,
-        target_nord_id: data.nordId,
-        direction: activeType.defaultDirection as any || 'forward',
-        distance_x: targetPositionX,
-        distance_y: targetPositionY ?? 0.5,
-      });
-    }
+    // Always upsert the board position (works for orphans and placed cards alike)
+    await upsertPosition({
+      nord_id: data.nordId,
+      type_id: activeType.id,
+      distance_x: targetPositionX,
+      distance_y: targetPositionY ?? 0.5,
+    });
+
     await refetchGraph();
-  }, [activeType, updateConnection, createConnection, refetchGraph]);
+  }, [activeType, upsertPosition, refetchGraph]);
 
   const handleConnectionEntryDrop = useCallback(async (e: React.DragEvent, targetTypeId: string) => {
     e.preventDefault();
@@ -321,35 +310,27 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const addMode = isAddLinkMode(e);
 
     if (!addMode) {
-      // MOVE mode: delink from current board, create link on target type, switch board
-      // Delete existing connections from this board
-      if (data.sourceConnectionIds.length > 0) {
-        await Promise.all(
-          data.sourceConnectionIds.map(cid => deleteConnection(cid))
-        );
-      }
-      // Create a connection on the target type at midpoint (0.5)
-      await createConnection({
+      // MOVE mode: remove position from current board, create position on target, switch board
+      await removePosition(data.nordId, activeType?.id || '');
+      await upsertPosition({
+        nord_id: data.nordId,
         type_id: targetTypeId,
-        source_nord_id: data.nordId,
-        target_nord_id: data.nordId,
         distance_x: 0.5,
         distance_y: 0.5,
       });
       await refetchGraph();
       setActiveConnectionTypeId(targetTypeId);
     } else {
-      // CLONE mode (Option held): create link on target type, STAY on current board
-      await createConnection({
+      // CLONE mode (Option held): create position on target type, STAY on current board
+      await upsertPosition({
+        nord_id: data.nordId,
         type_id: targetTypeId,
-        source_nord_id: data.nordId,
-        target_nord_id: data.nordId,
         distance_x: 0.5,
         distance_y: 0.5,
       });
       await refetchGraph();
     }
-  }, [createConnection, deleteConnection, refetchGraph, setActiveConnectionTypeId]);
+  }, [upsertPosition, removePosition, activeType, refetchGraph, setActiveConnectionTypeId]);
 
   const handleConnectionEntryDoubleClick = useCallback((typeId: string) => {
     setActiveConnectionTypeId(typeId);
