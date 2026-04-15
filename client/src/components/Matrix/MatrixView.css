@@ -40,17 +40,88 @@
   gap: 8px;
 }
 
-.nords-matrix__header-type {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+/* ── Large Title (matches products page) ── */
+.nords-matrix__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.nords-matrix__verb {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--nords-color-text-disabled);
+  font-style: italic;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--nords-color-border) 20%, transparent);
 }
 
 .nords-matrix__header-count {
   font-size: 12px;
   color: var(--nords-color-text-secondary);
   font-weight: 500;
+}
+
+/* ── Direction Filter ── */
+.nords-matrix__direction-filter {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: color-mix(in srgb, var(--nords-color-bg-secondary) 50%, transparent);
+  border-radius: var(--nords-radius-pill);
+  border: 1px solid color-mix(in srgb, var(--nords-color-border) 40%, transparent);
+}
+
+.nords-matrix__direction-btn {
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--nords-radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--nords-font-primary);
+  color: var(--nords-color-text-disabled);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.nords-matrix__direction-btn:hover {
+  color: var(--nords-color-text-secondary);
+  background: color-mix(in srgb, var(--nords-color-border) 20%, transparent);
+}
+
+.nords-matrix__direction-btn.is-active {
+  color: var(--nords-color-text-primary);
+  background: color-mix(in srgb, var(--nords-color-accent) 15%, var(--nords-color-bg-secondary));
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* ── Bottom Toolbar ── */
+.nords-matrix__bottom-bar {
+  position: absolute;
+  bottom: 56px; /* just above the dock */
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+  padding: 0 24px;
+}
+
+.nords-matrix__bottom-bar .nords-matrix__type-pills {
+  pointer-events: auto;
+  background: var(--nords-glass-bg);
+  backdrop-filter: blur(var(--nords-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nords-glass-blur));
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: var(--nords-radius-pill);
+  padding: 4px 8px;
+  box-shadow: var(--nords-shadow-lg);
 }
 
 /* ── Type Pill Strip (segmented control) ── */

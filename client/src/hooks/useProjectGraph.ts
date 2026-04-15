@@ -60,6 +60,7 @@ export interface ConnectionType {
   x_stage_labels: StageLabel[];
   y_stage_labels: StageLabel[];
   properties_schema: PropertySchema[];
+  verb: string | null;
   is_system: boolean;
   sort_order: number;
 }

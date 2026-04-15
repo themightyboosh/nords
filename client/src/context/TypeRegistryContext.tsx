@@ -32,6 +32,7 @@ export interface ResolvedConnectionType {
   defaultDirection: string;
   xStageLabels: StageLabel[];
   yStageLabels: StageLabel[];
+  verb: string | null;
   isSystem: boolean;
   count: number;
 }
@@ -101,6 +102,7 @@ export function TypeRegistryProvider({
       defaultDirection: t.default_direction || 'none',
       xStageLabels: normalizeStageLabels(t.x_stage_labels),
       yStageLabels: normalizeStageLabels(t.y_stage_labels),
+      verb: t.verb || null,
       isSystem: t.is_system || false,
       count: connCountMap.get(t.id) || 0,
     })),

@@ -71,6 +71,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, ensureNordTypeVisible } = useBoardSettings(projectId);
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
 
+  // Direction filter: 'all' | 'forward' | 'reverse' | 'both' | 'none'
+  const [directionFilter, setDirectionFilter] = useState<string>('all');
+
   // Find the active connection type
   const activeType = useMemo(() => {
     if (!activeConnectionTypeId) return null;
@@ -104,6 +107,8 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const connectionsByNord = new Map<string, { connectionId: string; distance_x: number; distance_y: number; direction: string }[]>();
     for (const conn of graph.connections) {
       if (conn.type_id !== activeType.id) continue;
+      // Apply direction filter
+      if (directionFilter !== 'all' && conn.direction !== directionFilter) continue;
       for (const nordId of [conn.source_nord_id, conn.target_nord_id]) {
         if (!connectionsByNord.has(nordId)) {
           connectionsByNord.set(nordId, []);
@@ -225,7 +230,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     }));
 
     return { columns, unlinked: unlinkedCards, connectionEntries: entries, gridCells: cells };
-  }, [graph, activeType, boardCapableTypes, isNordTypeVisible, isQuadrant, yLabels]);
+  }, [graph, activeType, boardCapableTypes, isNordTypeVisible, isQuadrant, yLabels, directionFilter]);
 
   // ── Drag handlers ──
 
@@ -389,42 +394,31 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   return (
     <div className="nords-matrix">
-      {/* Board header — connection name title + segmented nord type control */}
+      {/* Board header — large title + direction filter */}
       <div className="nords-matrix__header">
         <div className="nords-matrix__header-left">
-          <span className="nords-matrix__header-type" style={{ color: activeType.color }}>
+          <h1 className="nords-matrix__title" style={{ color: activeType.color }}>
             {activeType.name}
-          </span>
+          </h1>
+          {activeType.verb && (
+            <span className="nords-matrix__verb">{activeType.verb}</span>
+          )}
           <span className="nords-matrix__header-count">{totalCards} nords</span>
         </div>
 
         <div className="nords-matrix__header-right">
-          {/* Segmented control for nord type visibility */}
-          <div className="nords-matrix__type-pills">
-            {nordTypes.map(nt => {
-              const visible = isNordTypeVisible(activeType.id, nt.id);
-              const NtIcon = nt.icon;
-              return (
-                <button
-                  key={nt.id}
-                  className={`nords-matrix__type-pill ${visible ? 'is-active' : ''}`}
-                  onClick={() => toggleNordTypeFilter(activeType.id, nt.id)}
-                  title={`${visible ? 'Hide' : 'Show'} ${nt.name}`}
-                  style={visible ? { borderColor: nt.color, color: nt.color } : undefined}
-                >
-                  <NtIcon size={12} strokeWidth={1.8} />
-                  <span>{nt.name}</span>
-                </button>
-              );
-            })}
-            <button
-              className={`nords-matrix__type-pill nords-matrix__type-pill--orphans ${boardSettings?.showOrphans ? 'is-active' : ''}`}
-              onClick={() => toggleOrphans(activeType.id)}
-              title={boardSettings?.showOrphans ? 'Hide orphans' : 'Show orphans'}
-            >
-              <Unlink size={12} strokeWidth={1.8} />
-              <span>Orphans</span>
-            </button>
+          {/* Direction filter segmented control */}
+          <div className="nords-matrix__direction-filter">
+            {(['all', 'forward', 'reverse', 'both', 'none'] as const).map(dir => (
+              <button
+                key={dir}
+                className={`nords-matrix__direction-btn ${directionFilter === dir ? 'is-active' : ''}`}
+                onClick={() => setDirectionFilter(dir)}
+                title={`Show ${dir === 'all' ? 'all directions' : dir + ' connections'}`}
+              >
+                {dir === 'all' ? 'All' : dir === 'forward' ? '→ From' : dir === 'reverse' ? '← To' : dir === 'both' ? '↔ Both' : '⊘ None'}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -452,12 +446,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
           {/* Row headers + cells */}
           {yLabels.map(yl => (
             <React.Fragment key={yl.label}>
-              {/* Y-axis row header */}
               <div className="nords-matrix__grid-row-header" style={{ color: activeType.color }}>
                 {yl.label}
               </div>
-
-              {/* Grid cells for this row */}
               {columns.map(col => {
                 const cellKey = `${col.label}|${yl.label}`;
                 const cellCards = gridCells.get(cellKey) || [];
@@ -548,50 +539,36 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         </div>
       )}
 
-      {/* Orphans + Connections below grid in quadrant mode */}
-      {isQuadrant && (boardSettings?.showOrphans && unlinked.length > 0 || connectionEntries.length > 0) && (
-        <div className="nords-matrix__columns nords-matrix__grid-extras">
-          {boardSettings?.showOrphans && unlinked.length > 0 && (
-            <div className="nords-matrix__column nords-matrix__column--orphans">
-              <div className="nords-matrix__column-header">
-                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
-                  <Unlink size={12} /> Orphans
-                </span>
-                <span className="nords-matrix__column-count">{unlinked.length}</span>
-              </div>
-              <div className="nords-matrix__column-body">
-                {unlinked.map(card => renderCard(card))}
-              </div>
-            </div>
-          )}
-          {connectionEntries.length > 0 && (
-            <div className="nords-matrix__column nords-matrix__column--connections">
-              <div className="nords-matrix__column-header">
-                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
-                  <Link2 size={12} /> Connections
-                </span>
-                <span className="nords-matrix__column-count">{connectionEntries.length}</span>
-              </div>
-              <div className="nords-matrix__column-body">
-                <span className="nords-matrix__connection-hint">drop card or click to pivot</span>
-                {connectionEntries.map(entry => (
-                  <div
-                    key={entry.typeId}
-                    className="nords-matrix__connection-entry"
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
-                    onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
-                  >
-                    <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
-                    <span className="nords-matrix__connection-name">{entry.typeName}</span>
-                    <span className="nords-matrix__connection-count">{entry.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+      {/* ── Bottom toolbar: type pills + orphans toggle ── */}
+      <div className="nords-matrix__bottom-bar">
+        <div className="nords-matrix__type-pills">
+          {nordTypes.map(nt => {
+            const visible = isNordTypeVisible(activeType.id, nt.id);
+            const NtIcon = nt.icon;
+            return (
+              <button
+                key={nt.id}
+                className={`nords-matrix__type-pill ${visible ? 'is-active' : ''}`}
+                onClick={() => toggleNordTypeFilter(activeType.id, nt.id)}
+                title={`${visible ? 'Hide' : 'Show'} ${nt.name}`}
+                style={visible ? { borderColor: nt.color, color: nt.color } : undefined}
+              >
+                <NtIcon size={12} strokeWidth={1.8} />
+                <span>{nt.name}</span>
+              </button>
+            );
+          })}
+          <button
+            className={`nords-matrix__type-pill nords-matrix__type-pill--orphans ${boardSettings?.showOrphans ? 'is-active' : ''}`}
+            onClick={() => toggleOrphans(activeType.id)}
+            title={boardSettings?.showOrphans ? 'Hide orphans' : 'Show orphans'}
+          >
+            <Unlink size={12} strokeWidth={1.8} />
+            <span>Orphans</span>
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
+
