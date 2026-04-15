@@ -261,8 +261,8 @@
   min-height: 80px;
   background: color-mix(in srgb, var(--nords-color-bg-secondary) 25%, transparent);
   transition: background-color 0.15s ease;
-  border-right: 1px solid color-mix(in srgb, var(--nords-color-border) 25%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--nords-color-border) 25%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--nords-color-border) 70%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--nords-color-border) 50%, transparent);
 }
 
 /* Full row-span cells (orphans, connections in grid) */
@@ -317,7 +317,7 @@
   overflow: hidden;
   scroll-snap-align: start;
   background: color-mix(in srgb, var(--nords-color-bg-secondary) 40%, transparent);
-  border-right: 1px solid color-mix(in srgb, var(--nords-color-border) 40%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--nords-color-border) 70%, transparent);
 }
 
 .nords-matrix__column:last-child {
