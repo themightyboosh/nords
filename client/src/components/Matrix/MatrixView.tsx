@@ -431,6 +431,8 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         onDragEnd={handleCardDragEnd}
         onClick={() => onNordClick(card.id)}
       >
+        {/* + COPY badge — visible only when Option is held (is-clone-dragging) */}
+        <span className="nords-matrix__clone-badge">+ COPY</span>
         <NordCard
           title={card.title}
           typeName={card.typeName}
