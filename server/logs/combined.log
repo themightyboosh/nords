@@ -4223,3 +4223,94 @@ Error: read ECONNRESET
     at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
     at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":82,"error":"read ECONNRESET"}
+09:19:30.834 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+09:19:30.838 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+09:19:30.838 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+09:19:41.479 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:19:41.556 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":205,"rows":1}
+10:10:33.905 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:10:33.935 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":150,"rows":1}
+10:10:33.965 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":28,"rows":1}
+10:10:44.004 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":99,"rows":1}
+10:10:44.045 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":39,"rows":1}
+10:13:53.951 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:13:53.984 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":157,"rows":1}
+10:13:54.097 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":109,"rows":1}
+10:14:28.788 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:14:28.821 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":159,"rows":1}
+10:14:28.936 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":112,"rows":1}
+10:14:59.325 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:14:59.356 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":152,"rows":1}
+10:14:59.461 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":102,"rows":1}
+10:35:04.079 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:35:04.080 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:35:04.082 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:35:04.083 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:35:04.121 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":169,"rows":1}
+10:35:04.122 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":171,"rows":1}
+10:35:04.122 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":168,"rows":1}
+10:35:04.123 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":174,"rows":1}
+10:35:06.176 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":34,"rows":1}
+10:35:06.178 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+10:35:06.179 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":35,"rows":1}
+10:35:06.180 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":35,"rows":1}
+10:35:06.208 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":30,"rows":1}
+10:35:06.270 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:35:06.273 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:35:06.305 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":157,"rows":1}
+10:35:06.306 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":160,"rows":1}
+10:35:07.460 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":50,"rows":1}
+10:35:07.461 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":52,"rows":1}
+10:35:07.462 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":55,"rows":1}
+10:35:07.463 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":54,"rows":1}
+10:35:49.457 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:35:49.463 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:35:49.464 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:35:49.488 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":156,"rows":0}
+10:35:49.497 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":163,"rows":0}
+10:35:49.497 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":162,"rows":0}
+10:35:56.998 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET direction = $1\n    WHERE id = $2 AND deleted_at ","duration":35,"rows":0}
+10:35:58.105 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET direction = $1\n    WHERE id = $2 AND deleted_at ","duration":29,"rows":0}
+10:35:58.864 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET direction = $1\n    WHERE id = $2 AND deleted_at ","duration":29,"rows":0}
+10:36:01.081 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET direction = $1\n    WHERE id = $2 AND deleted_at ","duration":30,"rows":0}
+10:36:01.888 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET direction = $1\n    WHERE id = $2 AND deleted_at ","duration":29,"rows":0}
+10:36:02.563 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET direction = $1\n    WHERE id = $2 AND deleted_at ","duration":36,"rows":0}
+10:36:03.171 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET direction = $1\n    WHERE id = $2 AND deleted_at ","duration":36,"rows":0}
+10:36:10.718 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":0}
+10:36:10.810 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:36:10.814 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:36:10.844 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":161,"rows":0}
+10:36:10.846 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":162,"rows":0}
+10:36:14.642 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":32,"rows":0}
+10:36:14.645 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":35,"rows":0}
+10:36:14.646 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":0}
+10:36:14.671 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":27,"rows":0}
+10:36:14.678 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":30,"rows":0}
+10:36:14.682 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":30,"rows":0}
+10:36:14.732 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:36:14.737 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:36:14.738 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:36:14.765 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":153,"rows":0}
+10:36:14.768 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":154,"rows":0}
+10:36:14.769 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":154,"rows":0}
+10:36:16.602 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":32,"rows":0}
+10:36:16.603 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":32,"rows":0}
+10:36:16.603 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":30,"rows":0}
+10:36:16.604 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":30,"rows":0}
+10:36:16.605 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":30,"rows":0}
+10:36:16.605 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":31,"rows":0}
+10:36:16.636 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":30,"rows":0}
+10:36:20.811 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":40,"rows":1}
+10:36:20.911 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":95,"rows":1}
+10:36:22.794 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":33,"rows":1}
+10:36:22.823 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":29,"rows":1}
+10:36:31.294 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":43,"rows":1}
+10:36:31.336 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":41,"rows":1}
+10:38:27.505 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:38:27.539 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":157,"rows":1}
+10:38:27.635 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":93,"rows":1}
+10:39:43.013 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+10:39:43.047 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":162,"rows":1}
+10:39:43.144 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":93,"rows":1}
+10:39:51.651 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":37,"rows":1}
+10:39:51.694 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":40,"rows":1}
