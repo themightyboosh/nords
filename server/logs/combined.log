@@ -4089,3 +4089,43 @@ Error: Connection terminated due to connection timeout
 17:25:40.406 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
 17:25:40.409 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
 17:25:40.409 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+23:16:23.361 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+23:16:23.365 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+23:16:23.365 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+23:16:23.361 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+23:16:23.364 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+23:16:23.364 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+23:33:37.277 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:33:37.279 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:33:37.309 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":201,"error":"relation \"project_types\" does not exist"}
+23:33:37.311 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":206,"error":"relation \"project_types\" does not exist"}
+23:33:37.481 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:33:37.481 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:33:37.512 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":199,"error":"relation \"project_types\" does not exist"}
+23:33:37.512 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":199,"error":"relation \"project_types\" does not exist"}
+23:37:40.962 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:37:41.034 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":233,"rows":1}
+23:37:41.063 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+23:37:41.129 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":233,"rows":1}

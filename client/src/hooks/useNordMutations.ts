@@ -77,3 +77,16 @@ export function useConnectionMutations(projectId: string | null) {
 
   return { createConnection, updateConnection, deleteConnection };
 }
+
+// ── Connection Type Mutations ──
+
+export function useConnectionTypeMutations() {
+  const updateConnectionType = useCallback(async (
+    typeId: string,
+    updates: Partial<{ direction_filter: string; verb: string; name: string; accent_color: string }>
+  ): Promise<unknown> => {
+    return api.put(`/api/connection-types/${typeId}`, updates);
+  }, []);
+
+  return { updateConnectionType };
+}

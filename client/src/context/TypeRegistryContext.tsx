@@ -33,6 +33,7 @@ export interface ResolvedConnectionType {
   xStageLabels: StageLabel[];
   yStageLabels: StageLabel[];
   verb: string | null;
+  directionFilter: 'all' | 'forward' | 'reverse' | 'both' | 'none';
   isSystem: boolean;
   count: number;
 }
@@ -103,6 +104,7 @@ export function TypeRegistryProvider({
       xStageLabels: normalizeStageLabels(t.x_stage_labels),
       yStageLabels: normalizeStageLabels(t.y_stage_labels),
       verb: t.verb || null,
+      directionFilter: (t.direction_filter as ResolvedConnectionType['directionFilter']) || 'all',
       isSystem: t.is_system || false,
       count: connCountMap.get(t.id) || 0,
     })),

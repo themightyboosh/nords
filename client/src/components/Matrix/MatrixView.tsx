@@ -28,7 +28,7 @@ import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { useBoardSettings } from '../../hooks/useBoardSettings';
 import { setDragData, getDragData, isAddLinkMode, type BoardDragData } from '../../hooks/useBoardDragDrop';
-import { useConnectionMutations } from '../../hooks/useNordMutations';
+import { useConnectionMutations, useConnectionTypeMutations } from '../../hooks/useNordMutations';
 import { NordCard } from '../shared/NordCard';
 import { Link2, Unlink } from 'lucide-react';
 import '../Canvas/CanvasEngine.css';
@@ -70,15 +70,32 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
   const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, ensureNordTypeVisible } = useBoardSettings(projectId);
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
+  const { updateConnectionType } = useConnectionTypeMutations();
 
-  // Direction filter: 'all' | 'forward' | 'reverse' | 'both' | 'none'
-  const [directionFilter, setDirectionFilter] = useState<string>('all');
+  // Option key tracking for clone-vs-move visual indicator
+  const [optionHeld, setOptionHeld] = useState(false);
+  React.useEffect(() => {
+    const down = (e: KeyboardEvent) => { if (e.altKey) setOptionHeld(true); };
+    const up = (e: KeyboardEvent) => { if (!e.altKey) setOptionHeld(false); };
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+  }, []);
 
   // Find the active connection type
   const activeType = useMemo(() => {
     if (!activeConnectionTypeId) return null;
     return connectionTypes.find(ct => ct.id === activeConnectionTypeId) || null;
   }, [activeConnectionTypeId, connectionTypes]);
+
+  // Direction filter: read from the connection type (type-level DB setting)
+  const directionFilter = activeType?.directionFilter || 'all';
+
+  const setDirectionFilter = useCallback(async (dir: string) => {
+    if (!activeType) return;
+    await updateConnectionType(activeType.id, { direction_filter: dir });
+    await refetchGraph();
+  }, [activeType, updateConnectionType, refetchGraph]);
 
   const boardSettings = activeType ? getBoard(activeType.id) : null;
 
@@ -270,7 +287,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     if (!data || !activeType) return;
 
     if (data.sourceConnectionIds.length > 0) {
-      // Update distance_x (and distance_y if in swimlane mode)
+      // Card has connections — update distance_x (and distance_y if swimlane)
       const patch: Record<string, number> = { distance_x: targetPositionX };
       if (targetPositionY !== undefined) {
         patch.distance_y = targetPositionY;
@@ -280,9 +297,20 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
           updateConnection(cid, patch)
         )
       );
+    } else {
+      // Orphan drag: create a self-connection (source=target=nordId)
+      // at the target cell's position
+      await createConnection({
+        type_id: activeType.id,
+        source_nord_id: data.nordId,
+        target_nord_id: data.nordId,
+        direction: activeType.defaultDirection as any || 'forward',
+        distance_x: targetPositionX,
+        distance_y: targetPositionY ?? 0.5,
+      });
     }
     await refetchGraph();
-  }, [activeType, updateConnection, refetchGraph]);
+  }, [activeType, updateConnection, createConnection, refetchGraph]);
 
   const handleConnectionEntryDrop = useCallback(async (e: React.DragEvent, targetTypeId: string) => {
     e.preventDefault();
@@ -291,19 +319,36 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
     const addMode = isAddLinkMode(e);
 
-    if (!addMode && data.sourceConnectionIds.length > 0) {
-      // Move mode: delink ALL from source, open target board
-      await Promise.all(
-        data.sourceConnectionIds.map(cid => deleteConnection(cid))
-      );
+    if (!addMode) {
+      // MOVE mode: delink from current board, create link on target type, switch board
+      // Delete existing connections from this board
+      if (data.sourceConnectionIds.length > 0) {
+        await Promise.all(
+          data.sourceConnectionIds.map(cid => deleteConnection(cid))
+        );
+      }
+      // Create a connection on the target type at midpoint (0.5)
+      await createConnection({
+        type_id: targetTypeId,
+        source_nord_id: data.nordId,
+        target_nord_id: data.nordId,
+        distance_x: 0.5,
+        distance_y: 0.5,
+      });
       await refetchGraph();
       setActiveConnectionTypeId(targetTypeId);
-    } else if (addMode) {
-      // Add mode: create link to target, stay on current board
-      // TODO: create connection on target type at midpoint
+    } else {
+      // CLONE mode (Option held): create link on target type, STAY on current board
+      await createConnection({
+        type_id: targetTypeId,
+        source_nord_id: data.nordId,
+        target_nord_id: data.nordId,
+        distance_x: 0.5,
+        distance_y: 0.5,
+      });
       await refetchGraph();
     }
-  }, [deleteConnection, refetchGraph, setActiveConnectionTypeId]);
+  }, [createConnection, deleteConnection, refetchGraph, setActiveConnectionTypeId]);
 
   const handleConnectionEntryDoubleClick = useCallback((typeId: string) => {
     setActiveConnectionTypeId(typeId);
@@ -444,7 +489,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                 onClick={() => setDirectionFilter(dir)}
                 title={`Show ${dir === 'all' ? 'all directions' : dir + ' connections'}`}
               >
-                {dir === 'all' ? 'All' : dir === 'forward' ? '→ From' : dir === 'reverse' ? '← To' : dir === 'both' ? '↔ Both' : '⊘ None'}
+                {dir === 'all' ? 'All' : dir === 'forward' ? '→ From' : dir === 'reverse' ? '← To' : dir === 'both' ? '↔ Bi' : '⊘ None'}
               </button>
             ))}
           </div>
@@ -535,11 +580,13 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                   className="nords-matrix__grid-cell nords-matrix__grid-cell--span nords-matrix__grid-cell--connections"
                   style={{ gridRow: `2 / ${totalRows + 2}` }}
                 >
-                  <span className="nords-matrix__connection-hint">drop or click to pivot</span>
+                  <span className={`nords-matrix__connection-hint ${optionHeld ? 'is-clone' : ''}`}>
+                    {optionHeld ? '⌥ Clone + stay on board' : 'Drop to swap board'}
+                  </span>
                   {connectionEntries.map(entry => (
                     <div
                       key={entry.typeId}
-                      className="nords-matrix__connection-entry"
+                      className={`nords-matrix__connection-entry ${optionHeld ? 'is-clone-mode' : ''}`}
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
                       onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
@@ -547,6 +594,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                       <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
                       <span className="nords-matrix__connection-name">{entry.typeName}</span>
                       <span className="nords-matrix__connection-count">{entry.count}</span>
+                      <span className={`nords-matrix__connection-mode ${optionHeld ? 'is-clone' : ''}`}>
+                        {optionHeld ? '+ clone' : '→ move'}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -609,11 +659,13 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                 <span className="nords-matrix__column-count">{connectionEntries.length}</span>
               </div>
               <div className="nords-matrix__column-body">
-                <span className="nords-matrix__connection-hint">drop card or click to pivot</span>
+                <span className={`nords-matrix__connection-hint ${optionHeld ? 'is-clone' : ''}`}>
+                  {optionHeld ? '⌥ Clone + stay on board' : 'Drop to swap board'}
+                </span>
                 {connectionEntries.map(entry => (
                   <div
                     key={entry.typeId}
-                    className="nords-matrix__connection-entry"
+                    className={`nords-matrix__connection-entry ${optionHeld ? 'is-clone-mode' : ''}`}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
                     onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
@@ -621,6 +673,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                     <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
                     <span className="nords-matrix__connection-name">{entry.typeName}</span>
                     <span className="nords-matrix__connection-count">{entry.count}</span>
+                    <span className={`nords-matrix__connection-mode ${optionHeld ? 'is-clone' : ''}`}>
+                      {optionHeld ? '+ clone' : '→ move'}
+                    </span>
                   </div>
                 ))}
               </div>

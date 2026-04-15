@@ -61,6 +61,7 @@ export interface ConnectionType {
   y_stage_labels: StageLabel[];
   properties_schema: PropertySchema[];
   verb: string | null;
+  direction_filter: 'all' | 'forward' | 'reverse' | 'both' | 'none';
   is_system: boolean;
   sort_order: number;
 }

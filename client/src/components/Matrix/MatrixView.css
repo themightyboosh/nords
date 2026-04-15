@@ -465,6 +465,12 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+/* ⌥ Option held = clone mode */
+.nords-matrix__connection-hint.is-clone {
+  color: #34d399;  /* emerald green */
 }
 
 .nords-matrix__connection-swatch {
@@ -489,6 +495,30 @@
   border-radius: 10px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+/* Mode badge: shows → move or + clone */
+.nords-matrix__connection-mode {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--nords-color-text-disabled);
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--nords-color-border) 20%, transparent);
+  transition: all 0.15s ease;
+}
+
+.nords-matrix__connection-mode.is-clone {
+  color: #34d399;
+  background: color-mix(in srgb, #34d399 15%, transparent);
+}
+
+/* Clone mode: entry gets a green left accent */
+.nords-matrix__connection-entry.is-clone-mode {
+  border-left-color: #34d399;
+  background: color-mix(in srgb, #34d399 5%, var(--nords-color-bg-surface));
 }
 
 /* ── Empty State ── */

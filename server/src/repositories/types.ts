@@ -212,7 +212,7 @@ export const connectionTypesRepo = {
     return result!;
   },
 
-  async update(id: string, updates: Partial<Pick<ConnectionType, 'name' | 'accent_color' | 'stroke_style' | 'default_direction' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>): Promise<ConnectionType | null> {
+  async update(id: string, updates: Partial<Pick<ConnectionType, 'name' | 'accent_color' | 'stroke_style' | 'default_direction' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order' | 'verb' | 'direction_filter'>>): Promise<ConnectionType | null> {
     const setClauses: string[] = [];
     const values: unknown[] = [];
     let idx = 1;
@@ -225,6 +225,8 @@ export const connectionTypesRepo = {
     if (updates.y_stage_labels !== undefined) { setClauses.push(`y_stage_labels = $${idx++}`); values.push(JSON.stringify(updates.y_stage_labels)); }
     if (updates.properties_schema !== undefined) { setClauses.push(`properties_schema = $${idx++}`); values.push(JSON.stringify(updates.properties_schema)); }
     if (updates.sort_order !== undefined) { setClauses.push(`sort_order = $${idx++}`); values.push(updates.sort_order); }
+    if (updates.verb !== undefined) { setClauses.push(`verb = $${idx++}`); values.push(updates.verb); }
+    if (updates.direction_filter !== undefined) { setClauses.push(`direction_filter = $${idx++}`); values.push(updates.direction_filter); }
 
     if (setClauses.length === 0) return this.findById(id);
 
