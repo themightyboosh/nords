@@ -135,11 +135,11 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const labels = activeType.xStageLabels;
     const typeMap = new Map(graph.nord_types.map(t => [t.id, t]));
 
-    // Board positions: nord_id → position record for this connection type
-    const positionByNord = new Map<string, { distance_x: number; distance_y: number }>();
+    // Explicit board positions (user drag overrides): nord_id → position
+    const explicitPositionByNord = new Map<string, { distance_x: number; distance_y: number }>();
     for (const pos of (graph.board_positions || [])) {
       if (pos.type_id === activeType.id) {
-        positionByNord.set(pos.nord_id, { distance_x: pos.distance_x, distance_y: pos.distance_y });
+        explicitPositionByNord.set(pos.nord_id, { distance_x: pos.distance_x, distance_y: pos.distance_y });
       }
     }
 
@@ -150,18 +150,47 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       nordsWithAnyConnection.add(conn.target_nord_id);
     }
 
-    // Connection IDs per nord for this type (for canvas/drawer context only)
+    // Auto-derive board position from connection distances for this type.
+    // Accumulate sum of distance_x and count per nord, then average.
+    const derivedDistX = new Map<string, { sum: number; count: number }>();
+    const derivedDistY = new Map<string, { sum: number; count: number }>();
     const connectionsByNord = new Map<string, string[]>();
+
     for (const conn of graph.connections) {
       if (conn.type_id !== activeType.id) continue;
       if (directionFilter !== 'all' && conn.direction !== directionFilter) continue;
+
       for (const nordId of [conn.source_nord_id, conn.target_nord_id]) {
+        // Track connection IDs per nord
         if (!connectionsByNord.has(nordId)) connectionsByNord.set(nordId, []);
         if (!connectionsByNord.get(nordId)!.includes(conn.id)) {
           connectionsByNord.get(nordId)!.push(conn.id);
         }
+        // Accumulate distance_x
+        const xAcc = derivedDistX.get(nordId) ?? { sum: 0, count: 0 };
+        xAcc.sum += conn.distance_x ?? 0.5;
+        xAcc.count++;
+        derivedDistX.set(nordId, xAcc);
+        // Accumulate distance_y
+        const yAcc = derivedDistY.get(nordId) ?? { sum: 0, count: 0 };
+        yAcc.sum += conn.distance_y ?? 0.5;
+        yAcc.count++;
+        derivedDistY.set(nordId, yAcc);
       }
     }
+
+    // Resolve final position for a nord: explicit override > derived > null (orphan)
+    const resolvePosition = (nordId: string): { distance_x: number; distance_y: number } | null => {
+      const explicit = explicitPositionByNord.get(nordId);
+      if (explicit) return explicit;
+      const xAcc = derivedDistX.get(nordId);
+      if (!xAcc) return null; // no connections of this type → not on this board
+      const yAcc = derivedDistY.get(nordId) ?? { sum: 0.5, count: 1 };
+      return {
+        distance_x: xAcc.sum / xAcc.count,
+        distance_y: yAcc.sum / yAcc.count,
+      };
+    };
 
     // Build column buckets
     const columnMap = new Map<string, MatrixCard[]>();
@@ -190,9 +219,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       if (!isNordTypeVisible(activeType.id, nord.type_id)) continue;
 
       const isOrphan = !nordsWithAnyConnection.has(nord.id);
-      const pos = positionByNord.get(nord.id);
+      const pos = resolvePosition(nord.id);
 
-      // Hidden rule: nords with connections but no position on this board → skip entirely
+      // Nord has no connections of this type AND is not a true orphan → skip (belongs only on other boards)
       if (!isOrphan && !pos) continue;
 
       visibleNordIds.add(nord.id);
@@ -223,12 +252,12 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       };
 
       if (isOrphan) {
-        // True orphan: no connections anywhere — show in orphan column on every board
+        // True orphan: no connections anywhere — show in orphan section on every board
         unlinkedCards.push(card);
         continue;
       }
 
-      // Placed nord: use board position for column
+      // Place card: use resolved position (derived or explicit override)
       const distX = pos!.distance_x;
       const distY = pos!.distance_y;
       const resolved = resolveStageLabel(distX, labels);
@@ -256,7 +285,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
           unlinkedCards.push(card);
         }
       }
-    }
+    } // end for nord
 
     // Build 🔗 connection entries scoped to visible nords
     const entries: ConnectionEntry[] = [];

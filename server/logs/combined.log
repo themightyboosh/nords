@@ -4540,3 +4540,31 @@ Error: Should have a queue. You are likely calling Hooks conditionally, which is
 16:17:28.229 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 16:17:28.265 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":163,"rows":1}
 16:17:28.368 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":100,"rows":1}
+16:33:50.159 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+16:33:50.192 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":164,"rows":1}
+16:33:50.296 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":98,"rows":1}
+16:33:50.497 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":35,"rows":1}
+16:33:50.539 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":37,"rows":1}
+16:33:51.863 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":37,"rows":1}
+16:33:51.911 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+16:33:54.036 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":37,"rows":1}
+16:33:54.073 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+16:33:55.055 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":40,"rows":1}
+16:33:55.098 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+16:33:56.308 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":38,"rows":1}
+16:33:56.348 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+16:33:57.922 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":38,"rows":1}
+16:33:57.965 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+17:08:20.275 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+17:08:20.316 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":168,"rows":1}
+17:08:20.420 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":99,"rows":1}
+17:08:23.178 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":33,"rows":1}
+17:08:23.243 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":63,"rows":1}
+17:08:26.696 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":33,"rows":1}
+17:08:26.735 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+17:08:27.955 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":38,"rows":1}
+17:08:27.999 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+17:08:29.570 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":33,"rows":1}
+17:08:29.616 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":37,"rows":1}
+17:08:31.282 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":35,"rows":1}
+17:08:31.319 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
