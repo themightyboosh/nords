@@ -30,9 +30,10 @@ interface GlobalDockProps {
   projectId?: string;
   onOpenManageTypes?: () => void;
   onCreateNord?: (typeId: string, position?: { x: number; y: number }) => void;
+  refetchGraph?: () => Promise<void>;
 }
 
-export default function GlobalDock({ projectId, onOpenManageTypes, onCreateNord }: GlobalDockProps) {
+export default function GlobalDock({ projectId, onOpenManageTypes, onCreateNord, refetchGraph }: GlobalDockProps) {
   const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activeLine, setActiveLine, showContext, setShowContext } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [snapshotTab, setSnapshotTab] = useState<'take' | 'history'>('take');
@@ -211,8 +212,8 @@ export default function GlobalDock({ projectId, onOpenManageTypes, onCreateNord 
                       onClick={async () => {
                         if (!activeConnectionTypeId) return;
                         await updateConnectionType(activeConnectionTypeId, { direction_filter: dir });
-                        // Trigger a graph reload by dispatching a custom event that MatrixView listens for
-                        window.dispatchEvent(new CustomEvent('nords:refetch'));
+                        // Refetch graph so TypeRegistryContext updates and the active button re-highlights
+                        await refetchGraph?.();
                       }}
                     >
                       {dir === 'all' ? 'All'

@@ -34,6 +34,8 @@ export interface ConnectionTypeData {
   x_stage_labels: StageLabel[];
   y_stage_labels: StageLabel[];
   properties_schema: PropertySchema[];
+  verb: string | null;
+  direction_filter: 'all' | 'forward' | 'reverse' | 'both' | 'none';
   is_system: boolean;
   sort_order: number;
 }
@@ -90,7 +92,7 @@ export function useTypeMutations(projectId: string | null) {
 
   const updateConnectionType = useCallback(async (
     typeId: string,
-    updates: Partial<Pick<ConnectionTypeData, 'name' | 'accent_color' | 'stroke_style' | 'default_direction' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>
+    updates: Partial<Pick<ConnectionTypeData, 'name' | 'accent_color' | 'stroke_style' | 'default_direction' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'verb' | 'direction_filter' | 'sort_order'>>
   ): Promise<ConnectionTypeData> => {
     return api.put<ConnectionTypeData>(`/api/connection-types/${typeId}`, updates);
   }, []);

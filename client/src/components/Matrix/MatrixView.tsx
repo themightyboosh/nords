@@ -447,15 +447,17 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   return (
     <div className="nords-matrix">
-      {/* Board header — title only, direction filter is in the dock */}
       <div className="nords-matrix__header">
         <div className="nords-matrix__header-left">
-          <h1 className="nords-matrix__title" style={{ color: activeType.color }}>
-            {activeType.name}
+          <h1 className="nords-matrix__title">
+            <span style={{ color: activeType.color }}>{activeType.name}</span>
+            {activeType.verb && (
+              <span className="nords-matrix__title-verb">
+                <span className="nords-matrix__title-sep">·</span>
+                {activeType.verb}
+              </span>
+            )}
           </h1>
-          {activeType.verb && (
-            <span className="nords-matrix__verb">{activeType.verb}</span>
-          )}
           <span className="nords-matrix__header-count">
             {totalCards} nords{hiddenCount > 0 && <span className="nords-matrix__hidden-count"> ({hiddenCount} hidden)</span>}
           </span>

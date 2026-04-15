@@ -443,6 +443,58 @@
   margin-top: 0;
 }
 
+/* ── Field hint (inline sub-label) ── */
+.manage-types__field-hint {
+  display: block;
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-normal);
+  color: var(--nords-color-text-disabled);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-top: 2px;
+}
+
+/* ── Direction Filter (inline in editor) ── */
+.manage-types__dir-filter {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  background: var(--nords-color-bg-deep);
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-pill);
+  width: fit-content;
+}
+
+.manage-types__dir-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--nords-radius-pill);
+  background: transparent;
+  color: var(--nords-color-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--nords-font-primary);
+}
+
+.manage-types__dir-btn:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+
+.manage-types__dir-btn--active {
+  background: var(--dir-color, var(--nords-color-accent));
+  color: #fff;
+  font-weight: 600;
+}
+
+
 /* ── Empty state ── */
 .manage-types__empty {
   display: flex;

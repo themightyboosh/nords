@@ -319,16 +319,63 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged }: Manage
                   </div>
                 </div>
 
-                {/* Connection-specific: Stage Labels */}
+                {/* Connection-specific fields */}
                 {!isNordType && (
-                  <div className="manage-types__field">
-                    <label className="manage-types__field-label">Stage Labels</label>
-                    <SpectrumEditor
-                      labels={normalizeStageLabels((selected as ConnectionTypeData).x_stage_labels)}
-                      color={currentColor}
-                      onChange={(labels) => handleUpdateField('x_stage_labels', labels)}
-                    />
-                  </div>
+                  <>
+                    {/* Verb */}
+                    <div className="manage-types__field">
+                      <label className="manage-types__field-label">Verb
+                        <span className="manage-types__field-hint">Used in board title — e.g. "blocks", "depends on"</span>
+                      </label>
+                      <input
+                        type="text"
+                        className="manage-types__input"
+                        placeholder="e.g. blocks, depends on, relates to"
+                        value={(selected as ConnectionTypeData).verb || ''}
+                        onChange={(e) => handleUpdateField('verb', e.target.value)}
+                      />
+                    </div>
+
+                    {/* Direction Filter */}
+                    <div className="manage-types__field">
+                      <label className="manage-types__field-label">Direction Filter
+                        <span className="manage-types__field-hint">Which directions show on the board by default</span>
+                      </label>
+                      <div className="manage-types__dir-filter">
+                        {(['all', 'forward', 'reverse', 'both', 'none'] as const).map(dir => (
+                          <button
+                            key={dir}
+                            type="button"
+                            className={`manage-types__dir-btn ${
+                              ((selected as ConnectionTypeData).direction_filter || 'all') === dir
+                                ? 'manage-types__dir-btn--active'
+                                : ''
+                            }`}
+                            style={{
+                              '--dir-color': currentColor,
+                            } as React.CSSProperties}
+                            onClick={() => handleUpdateField('direction_filter', dir)}
+                          >
+                            {dir === 'all' ? 'All'
+                              : dir === 'forward' ? '→'
+                              : dir === 'reverse' ? '←'
+                              : dir === 'both' ? '↔'
+                              : '⊘'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Stage Labels */}
+                    <div className="manage-types__field">
+                      <label className="manage-types__field-label">Stage Labels</label>
+                      <SpectrumEditor
+                        labels={normalizeStageLabels((selected as ConnectionTypeData).x_stage_labels)}
+                        color={currentColor}
+                        onChange={(labels) => handleUpdateField('x_stage_labels', labels)}
+                      />
+                    </div>
+                  </>
                 )}
 
                 {/* Properties Schema */}

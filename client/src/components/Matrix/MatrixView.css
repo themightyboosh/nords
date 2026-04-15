@@ -48,14 +48,17 @@
   margin: 0;
 }
 
-.nords-matrix__verb {
-  font-size: 12px;
-  font-weight: 500;
+.nords-matrix__title-verb {
+  font-size: inherit;
+  font-weight: 400;
+  color: var(--nords-color-text-secondary);
+  letter-spacing: -0.01em;
+}
+
+.nords-matrix__title-sep {
+  margin: 0 0.35em;
   color: var(--nords-color-text-disabled);
-  font-style: italic;
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--nords-color-border) 20%, transparent);
+  font-weight: 300;
 }
 
 .nords-matrix__header-count {
