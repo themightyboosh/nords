@@ -14,8 +14,8 @@
 export interface BoardDragData {
   nordId: string;
   nordTitle: string;
-  /** null when dragging from orphans (no existing connection) */
-  sourceConnectionId: string | null;
+  /** empty when dragging from orphans (no existing connections) */
+  sourceConnectionIds: string[];
   sourceConnectionTypeId: string;
   sourceDirection: string;
 }

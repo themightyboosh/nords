@@ -53,7 +53,7 @@ interface MatrixCard {
   resolvedYLabel: string;
   distance: number;
   distanceY: number;
-  connectionId: string | null;
+  connectionIds: string[];
   connectionDirection: string;
   properties: Array<{ key: string; value: string; color?: string }>;
 }
@@ -163,7 +163,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         resolvedYLabel: '',
         distance: 0.5,
         distanceY: 0.5,
-        connectionId: conns?.[0]?.connectionId || null,
+        connectionIds: conns?.map(c => c.connectionId) || [],
         connectionDirection: conns?.[0]?.direction || 'forward',
         properties: Object.entries(nord.properties || {}).slice(0, 3).map(([key, value]) => ({
           key,
@@ -238,7 +238,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     setDragData(e, {
       nordId: card.id,
       nordTitle: card.title,
-      sourceConnectionId: card.connectionId,
+      sourceConnectionIds: card.connectionIds,
       sourceConnectionTypeId: activeType?.id || '',
       sourceDirection: card.connectionDirection,
     });
@@ -249,15 +249,13 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const data = getDragData(e);
     if (!data || !activeType) return;
 
-    if (data.sourceConnectionId) {
-      // Move within board — update distance_x
-      await updateConnection(data.sourceConnectionId, { distance_x: targetPosition });
-    } else {
-      // Orphan → column — create new connection
-      // Need a partner nord — for now just update the position.
-      // The connection needs source and target, so this creates a self-reference
-      // which isn't ideal. We'll handle this properly when we have a target picker.
-      // For now, orphan drag creates a connection with the nord as both endpoints.
+    if (data.sourceConnectionIds.length > 0) {
+      // Move within board — update distance_x on ALL connections for this nord
+      await Promise.all(
+        data.sourceConnectionIds.map(cid =>
+          updateConnection(cid, { distance_x: targetPosition })
+        )
+      );
     }
     await refetchGraph();
   }, [activeType, updateConnection, refetchGraph]);
@@ -269,10 +267,11 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
     const addMode = isAddLinkMode(e);
 
-    if (!addMode && data.sourceConnectionId) {
-      // Move mode: delink from source, relink to target, open target board
-      await deleteConnection(data.sourceConnectionId);
-      // TODO: create connection on target type at midpoint when we have full context
+    if (!addMode && data.sourceConnectionIds.length > 0) {
+      // Move mode: delink ALL from source, open target board
+      await Promise.all(
+        data.sourceConnectionIds.map(cid => deleteConnection(cid))
+      );
       await refetchGraph();
       setActiveConnectionTypeId(targetTypeId);
     } else if (addMode) {

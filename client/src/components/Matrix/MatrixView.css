@@ -122,6 +122,14 @@
   border-radius: var(--nords-radius-pill);
   padding: 4px 8px;
   box-shadow: var(--nords-shadow-lg);
+  max-width: min(90vw, 800px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;         /* Firefox */
+  -ms-overflow-style: none;      /* IE */
+}
+.nords-matrix__bottom-bar .nords-matrix__type-pills::-webkit-scrollbar {
+  display: none;                  /* Chrome/Safari */
 }
 
 /* ── Type Pill Strip (segmented control) ── */
