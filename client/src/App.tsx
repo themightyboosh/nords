@@ -99,7 +99,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
               onThemeChange={onThemeChange}
               onOpenSettings={() => setShowManageTypes(true)}
             />
-            <GlobalDock />
+            <GlobalDock projectId={projectId} />
             <CanvasEngine
               onNordClick={handleNordClick}
               onEdgeDoubleClick={handleEdgeDoubleClick}

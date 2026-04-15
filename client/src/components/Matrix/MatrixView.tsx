@@ -193,13 +193,17 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         } else {
           unlinkedCards.push(card);
         }
-      }
-
-      const col = columnMap.get(card.resolvedLabel);
-      if (col) {
-        col.push(card);
-      } else if (!isQuadrant) {
-        unlinkedCards.push(card);
+        // Quadrant: also push to columnMap for header counts only
+        const col = columnMap.get(card.resolvedLabel);
+        if (col) col.push(card);
+      } else {
+        // Flat mode: columnMap only
+        const col = columnMap.get(card.resolvedLabel);
+        if (col) {
+          col.push(card);
+        } else {
+          unlinkedCards.push(card);
+        }
       }
     }
 
@@ -537,36 +541,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
           )}
         </div>
       )}
-
-      {/* ── Bottom toolbar: type pills + orphans toggle ── */}
-      <div className="nords-matrix__bottom-bar">
-        <div className="nords-matrix__type-pills">
-          {nordTypes.map(nt => {
-            const visible = isNordTypeVisible(activeType.id, nt.id);
-            const NtIcon = nt.icon;
-            return (
-              <button
-                key={nt.id}
-                className={`nords-matrix__type-pill ${visible ? 'is-active' : ''}`}
-                onClick={() => toggleNordTypeFilter(activeType.id, nt.id)}
-                title={`${visible ? 'Hide' : 'Show'} ${nt.name}`}
-                style={visible ? { borderColor: nt.color, color: nt.color } : undefined}
-              >
-                <NtIcon size={12} strokeWidth={1.8} />
-                <span>{nt.name}</span>
-              </button>
-            );
-          })}
-          <button
-            className={`nords-matrix__type-pill nords-matrix__type-pill--orphans ${boardSettings?.showOrphans ? 'is-active' : ''}`}
-            onClick={() => toggleOrphans(activeType.id)}
-            title={boardSettings?.showOrphans ? 'Hide orphans' : 'Show orphans'}
-          >
-            <Unlink size={12} strokeWidth={1.8} />
-            <span>Orphans</span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

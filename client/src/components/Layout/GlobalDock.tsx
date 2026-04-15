@@ -14,26 +14,32 @@ import { useState } from 'react';
 import {
   Eye, Link2, LayoutGrid,
   MessageSquare, Plus, Camera,
-  EyeIcon, EyeOff, ChevronDown, ArrowLeftRight,
+  EyeIcon, EyeOff, ChevronDown, ArrowLeftRight, Unlink, Filter,
   Bug, User, FileText, Target, Lightbulb, Layers, AlertTriangle,
   Square, Settings2,
 } from 'lucide-react';
 import { useLens } from '../../context/LensContext';
 import { useReactFlow } from '@xyflow/react';
 import { useTypeVisibility } from '../../hooks/useTypeVisibility';
+import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
+import { useBoardSettings } from '../../hooks/useBoardSettings';
 import './GlobalDock.css';
 
 interface GlobalDockProps {
+  projectId?: string;
   onOpenManageTypes?: () => void;
   onCreateNord?: (typeId: string, position?: { x: number; y: number }) => void;
 }
 
-export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDockProps) {
+export default function GlobalDock({ projectId, onOpenManageTypes, onCreateNord }: GlobalDockProps) {
   const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activeLine, setActiveLine, showContext, setShowContext } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [snapshotTab, setSnapshotTab] = useState<'take' | 'history'>('take');
 
   const { visibleNodeTypes, visibleConnectionTypes, toggleNodeType } = useTypeVisibility();
+  const { nordTypes } = useTypeRegistryContext();
+  const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans } = useBoardSettings(projectId || null);
+  const boardSettings = activeConnectionTypeId ? getBoard(activeConnectionTypeId) : null;
 
   // React Flow for adding nodes
   const { addNodes, screenToFlowPosition } = useReactFlow();
@@ -154,7 +160,7 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
             </button>
           </div>
 
-          {/* Show/Hide toggle — hidden in board mode (board has its own filter controls) */}
+          {/* Show/Hide toggle — graph mode */}
           {lens !== 'board' && (
             <div className="nords-dock__section">
               <button
@@ -165,6 +171,22 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
               >
                 {showContext ? <EyeIcon size={15} strokeWidth={1.6} /> : <EyeOff size={15} strokeWidth={1.6} />}
                 <span className="nords-dock__label">{activeConnectionTypeId ? 'Others' : 'Orphans'}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Filter button — board mode: opens Nord Viewer flyout */}
+          {lens === 'board' && (
+            <div className="nords-dock__section">
+              <button
+                className={`nords-dock__item ${openPanel === 'filter' ? 'is-active' : ''}`}
+                onClick={() => togglePanel('filter')}
+                data-testid="dock-filter"
+                title="Filter visible nord types & orphans"
+              >
+                <Filter size={15} strokeWidth={1.6} />
+                <span className="nords-dock__label">Filter</span>
+                <ChevronDown size={10} className="nords-dock__chevron" />
               </button>
             </div>
           )}
@@ -239,6 +261,53 @@ export default function GlobalDock({ onOpenManageTypes, onCreateNord }: GlobalDo
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Nord Viewer / Filter Flyout (board mode) */}
+        <div className={`nords-flyout nords-glass ${openPanel === 'filter' ? 'is-open' : ''}`} data-testid="flyout-filter">
+          <div className="nords-flyout__header">
+            <h3 className="nords-flyout__title">Nord Visibility</h3>
+            <span className="nords-flyout__count">{nordTypes.length} types</span>
+          </div>
+          <div className="nords-flyout__list">
+            {nordTypes.map(nt => {
+              const visible = activeConnectionTypeId ? isNordTypeVisible(activeConnectionTypeId, nt.id) : true;
+              return (
+                <div
+                  key={nt.id}
+                  className={`nords-flyout__row nords-flyout__row--selectable ${visible ? 'is-active' : ''}`}
+                  onClick={() => activeConnectionTypeId && toggleNordTypeFilter(activeConnectionTypeId, nt.id)}
+                >
+                  <div className="nords-flyout__row-left">
+                    <nt.icon size={14} strokeWidth={1.8} style={{ color: nt.color, flexShrink: 0 }} />
+                    <span className="nords-flyout__row-name">{nt.name}</span>
+                    <span className="nords-flyout__row-count">{nt.count}</span>
+                  </div>
+                  <div className="nords-flyout__row-right">
+                    {visible ? <EyeIcon size={13} style={{ color: nt.color }} /> : <EyeOff size={13} style={{ opacity: 0.3 }} />}
+                  </div>
+                </div>
+              );
+            })}
+            {/* Orphans toggle */}
+            <div
+              className={`nords-flyout__row nords-flyout__row--selectable ${boardSettings?.showOrphans ? 'is-active' : ''}`}
+              onClick={() => activeConnectionTypeId && toggleOrphans(activeConnectionTypeId)}
+            >
+              <div className="nords-flyout__row-left">
+                <Unlink size={14} strokeWidth={1.8} style={{ color: 'var(--nords-color-text-tertiary)', flexShrink: 0 }} />
+                <span className="nords-flyout__row-name">Orphans</span>
+              </div>
+              <div className="nords-flyout__row-right">
+                {boardSettings?.showOrphans ? <EyeIcon size={13} /> : <EyeOff size={13} style={{ opacity: 0.3 }} />}
+              </div>
+            </div>
+          </div>
+          <div className="nords-flyout__footer">
+            <span className="nords-flyout__footer-hint">
+              Toggle visibility of nord types on this board
+            </span>
           </div>
         </div>
 
