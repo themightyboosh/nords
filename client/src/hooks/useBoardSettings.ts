@@ -113,11 +113,35 @@ export function useBoardSettings(projectId: string | null) {
     });
   }, []);
 
+  /** Force a nord type to be visible on a board (for auto-show on drag/create) */
+  const ensureNordTypeVisible = useCallback((connectionTypeId: string, nordTypeId: string) => {
+    setSettings(prev => {
+      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, showOrphans: false };
+      if (board.nordTypeFilters[nordTypeId] === false) {
+        return {
+          ...prev,
+          boards: {
+            ...prev.boards,
+            [connectionTypeId]: {
+              ...board,
+              nordTypeFilters: {
+                ...board.nordTypeFilters,
+                [nordTypeId]: true,
+              },
+            },
+          },
+        };
+      }
+      return prev; // already visible or unset (defaults to visible)
+    });
+  }, []);
+
   return {
     settings,
     getBoard,
     isNordTypeVisible,
     toggleNordTypeFilter,
+    ensureNordTypeVisible,
     toggleOrphans,
   };
 }

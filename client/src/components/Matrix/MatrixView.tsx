@@ -30,7 +30,7 @@ import { useBoardSettings } from '../../hooks/useBoardSettings';
 import { setDragData, getDragData, isAddLinkMode, type BoardDragData } from '../../hooks/useBoardDragDrop';
 import { useConnectionMutations } from '../../hooks/useNordMutations';
 import { NordCard } from '../shared/NordCard';
-import { ChevronDown, Eye, EyeOff, Link2, Unlink } from 'lucide-react';
+import { Link2, Unlink } from 'lucide-react';
 import '../Canvas/CanvasEngine.css';
 import './MatrixView.css';
 
@@ -66,9 +66,8 @@ interface ConnectionEntry {
 export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetchGraph }: MatrixViewProps) {
   const { activeConnectionTypeId, setActiveConnectionTypeId } = useLens();
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
-  const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans } = useBoardSettings(projectId);
+  const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, ensureNordTypeVisible } = useBoardSettings(projectId);
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
-  const [filterOpen, setFilterOpen] = useState(false);
 
   // Find the active connection type
   const activeType = useMemo(() => {
@@ -234,14 +233,17 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const addMode = isAddLinkMode(e);
 
     if (!addMode && data.sourceConnectionId) {
+      // Move mode: delink from source, relink to target, open target board
       await deleteConnection(data.sourceConnectionId);
+      // TODO: create connection on target type at midpoint when we have full context
+      await refetchGraph();
+      setActiveConnectionTypeId(targetTypeId);
+    } else if (addMode) {
+      // Add mode: create link to target, stay on current board
+      // TODO: create connection on target type at midpoint
+      await refetchGraph();
     }
-
-    // Create connection on target type at midpoint, inherit direction
-    // Need source+target — use the nord as source, we need context for target
-    // For cross-type linking, we create at midpoint
-    await refetchGraph();
-  }, [deleteConnection, refetchGraph]);
+  }, [deleteConnection, refetchGraph, setActiveConnectionTypeId]);
 
   const handleConnectionEntryDoubleClick = useCallback((typeId: string) => {
     setActiveConnectionTypeId(typeId);
@@ -355,7 +357,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   return (
     <div className="nords-matrix">
-      {/* Board header */}
+      {/* Board header — connection name title + segmented nord type control */}
       <div className="nords-matrix__header">
         <div className="nords-matrix__header-left">
           <span className="nords-matrix__header-type" style={{ color: activeType.color }}>
@@ -365,56 +367,32 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         </div>
 
         <div className="nords-matrix__header-right">
-          {/* Nord type filter dropdown */}
-          <div className="nords-matrix__filter" style={{ position: 'relative' }}>
+          {/* Segmented control for nord type visibility */}
+          <div className="nords-matrix__type-pills">
+            {nordTypes.map(nt => {
+              const visible = isNordTypeVisible(activeType.id, nt.id);
+              const NtIcon = nt.icon;
+              return (
+                <button
+                  key={nt.id}
+                  className={`nords-matrix__type-pill ${visible ? 'is-active' : ''}`}
+                  onClick={() => toggleNordTypeFilter(activeType.id, nt.id)}
+                  title={`${visible ? 'Hide' : 'Show'} ${nt.name}`}
+                  style={visible ? { borderColor: nt.color, color: nt.color } : undefined}
+                >
+                  <NtIcon size={12} strokeWidth={1.8} />
+                  <span>{nt.name}</span>
+                </button>
+              );
+            })}
             <button
-              className="nords-matrix__filter-btn"
-              onClick={() => setFilterOpen(!filterOpen)}
+              className={`nords-matrix__type-pill nords-matrix__type-pill--orphans ${boardSettings?.showOrphans ? 'is-active' : ''}`}
+              onClick={() => toggleOrphans(activeType.id)}
+              title={boardSettings?.showOrphans ? 'Hide orphans' : 'Show orphans'}
             >
-              <Eye size={13} strokeWidth={1.6} />
-              <span>Filter</span>
-              <ChevronDown size={10} />
+              <Unlink size={12} strokeWidth={1.8} />
+              <span>Orphans</span>
             </button>
-
-            {filterOpen && (
-              <>
-                <div
-                  style={{ position: 'fixed', inset: 0, zIndex: 99 }}
-                  onClick={() => setFilterOpen(false)}
-                />
-                <div className="nords-matrix__filter-dropdown">
-                  {nordTypes.map(nt => {
-                    const visible = isNordTypeVisible(activeType.id, nt.id);
-                    return (
-                      <button
-                        key={nt.id}
-                        className={`nords-matrix__filter-item ${visible ? 'is-active' : ''}`}
-                        onClick={() => toggleNordTypeFilter(activeType.id, nt.id)}
-                      >
-                        <span className="nords-matrix__filter-swatch" style={{ backgroundColor: nt.color }} />
-                        <span className="nords-matrix__filter-name">{nt.name}</span>
-                        {visible
-                          ? <Eye size={12} className="nords-matrix__filter-icon" />
-                          : <EyeOff size={12} className="nords-matrix__filter-icon" />
-                        }
-                      </button>
-                    );
-                  })}
-                  <div className="nords-matrix__filter-divider" />
-                  <button
-                    className={`nords-matrix__filter-item ${boardSettings?.showOrphans ? 'is-active' : ''}`}
-                    onClick={() => toggleOrphans(activeType.id)}
-                  >
-                    <Unlink size={12} />
-                    <span className="nords-matrix__filter-name">Show Orphans</span>
-                    {boardSettings?.showOrphans
-                      ? <Eye size={12} className="nords-matrix__filter-icon" />
-                      : <EyeOff size={12} className="nords-matrix__filter-icon" />
-                    }
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
