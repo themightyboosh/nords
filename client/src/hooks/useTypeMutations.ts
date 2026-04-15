@@ -16,6 +16,7 @@ export interface NordTypeData {
   id: string;
   user_id: string;
   name: string;
+  description: string | null;
   icon: string;
   accent_color: string;
   properties_schema: PropertySchema[];
@@ -27,10 +28,10 @@ export interface ConnectionTypeData {
   id: string;
   user_id: string;
   name: string;
+  description: string | null;
   accent_color: string;
   stroke_style: string;
   measurement_mode: 'spectrum' | 'quadrant' | 'none';
-  default_direction: string;
   direction_filter: 'all' | 'forward' | 'reverse' | 'both' | 'none';
   direction_prepositions: {
     forward: string;  // default: 'from'
@@ -48,7 +49,7 @@ export interface ConnectionTypeData {
 
 export interface PropertySchema {
   name: string;
-  type: 'string' | 'number' | 'select' | 'date' | 'markdown' | 'url' | 'spectrum_1d' | 'tags';
+  type: 'string' | 'number' | 'select' | 'date' | 'markdown' | 'url' | 'tags';
   options?: string[];
   card_row?: number; // 1 or 2 — which row on the collapsed card
 }
@@ -72,7 +73,7 @@ export function useTypeMutations(projectId: string | null) {
 
   const updateNordType = useCallback(async (
     typeId: string,
-    updates: Partial<Pick<NordTypeData, 'name' | 'icon' | 'accent_color' | 'properties_schema' | 'scale_property' | 'sort_order'>>
+    updates: Partial<Pick<NordTypeData, 'name' | 'description' | 'icon' | 'accent_color' | 'properties_schema' | 'scale_property' | 'sort_order'>>
   ): Promise<NordTypeData> => {
     return api.put<NordTypeData>(`/api/nord-types/${typeId}`, updates);
   }, []);
@@ -98,7 +99,7 @@ export function useTypeMutations(projectId: string | null) {
 
   const updateConnectionType = useCallback(async (
     typeId: string,
-    updates: Partial<Pick<ConnectionTypeData, 'name' | 'verb' | 'accent_color' | 'stroke_style' | 'default_direction' | 'direction_filter' | 'direction_prepositions' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>
+    updates: Partial<Pick<ConnectionTypeData, 'name' | 'description' | 'verb' | 'accent_color' | 'stroke_style' | 'direction_filter' | 'direction_prepositions' | 'measurement_mode' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>
   ): Promise<ConnectionTypeData> => {
     return api.put<ConnectionTypeData>(`/api/connection-types/${typeId}`, updates);
   }, []);

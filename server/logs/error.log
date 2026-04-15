@@ -1850,3 +1850,147 @@ Error: Should have a queue. You are likely calling Hooks conditionally, which is
     at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:5568:16)
     at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:6139:20)
     at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:850:66) {"service":"nords-client","clientTimestamp":"2026-04-15T16:59:42.673Z","errorMessage":"Should have a queue. You are likely calling Hooks conditionally, which is not allowed. (https://react.dev/link/invalid-hook-call)","componentStack":"\n    at DetailDrawer (http://localhost:5173/src/components/Drawer/DetailDrawer.tsx?t=1776272382632:160:25)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5173/src/context/TypeRegistryContext.tsx?t=1776224260740:19:40)\n    at LensProvider (http://localhost:5173/src/context/LensContext.tsx?t=1776189589078:35:32)\n    at BatchProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5173/src/App.tsx?t=1776267893749:30:27)\n    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx?t=1776110049189:10:34)\n    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5173/src/context/AuthContext.tsx?t=1776110049189:10:32)\n    at App (http://localhost:5173/src/App.tsx?t=1776267893749:176:42)\n    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5173/src/components/ErrorBoundary.tsx?t=1776110049189:11:3)","userId":"dev-user-000"}
+19:12:50.218 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":166,"error":"relation \"project_types\" does not exist"}
+19:12:50.219 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":169,"error":"relation \"project_types\" does not exist"}
+19:12:50.376 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":157,"error":"relation \"project_types\" does not exist"}
+19:12:50.377 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":157,"error":"relation \"project_types\" does not exist"}
+19:12:52.102 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:59:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n       VALUES ","duration":163,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+19:12:53.003 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:59:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n       VALUES ","duration":173,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+19:14:23.787 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":163,"error":"relation \"project_types\" does not exist"}
+19:14:23.787 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":163,"error":"relation \"project_types\" does not exist"}
+19:14:23.937 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":149,"error":"relation \"project_types\" does not exist"}
+19:14:23.940 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":152,"error":"relation \"project_types\" does not exist"}
+19:14:36.093 [31merror[39m: Query failed
+error: column "user_id" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:189:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:115:18) {"service":"nords-server","text":"INSERT INTO connection_types (user_id, name, accent_color, stroke_style, default_direction, x_stage_labels, y_stage_labe","duration":161,"error":"column \"user_id\" of relation \"connection_types\" does not exist"}
+19:15:15.945 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:59:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n       VALUES ","duration":162,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+19:15:47.543 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":29,"error":"relation \"project_types\" does not exist"}
+19:15:47.672 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":158,"error":"relation \"project_types\" does not exist"}
+19:16:11.804 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":153,"error":"relation \"project_types\" does not exist"}
+19:16:11.804 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":153,"error":"relation \"project_types\" does not exist"}
+19:19:45.176 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n       ORDER BY sort_order","duration":5001,"error":"Connection terminated due to connection timeout"}
+19:19:45.178 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0) {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n       ORDER BY sort_order","duration":5006,"error":"Connection terminated due to connection timeout"}
+19:21:54.698 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "seed-user"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/seed.ts:48:19) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n  ","duration":1,"error":"invalid input syntax for type uuid: \"seed-user\""}
+19:22:34.215 [31merror[39m: Query failed
+error: insert or update on table "nord_types" violates foreign key constraint "nord_types_project_id_fkey"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/seed.ts:48:19) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n  ","duration":18,"error":"insert or update on table \"nord_types\" violates foreign key constraint \"nord_types_project_id_fkey\""}
+19:23:20.407 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "TASK_ID"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/seed.ts:100:19) {"service":"nords-server","text":"INSERT INTO nords (project_id, type_id, title, description, properties, position_x, position_y, scale)\n         VALUES (","duration":0,"error":"invalid input syntax for type uuid: \"TASK_ID\""}

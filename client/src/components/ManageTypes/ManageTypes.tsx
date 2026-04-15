@@ -298,6 +298,20 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged }: Manage
                   />
                 </div>
 
+                {/* Description */}
+                <div className="manage-types__field">
+                  <label className="manage-types__field-label">Description
+                    <span className="manage-types__field-hint">Used by AI for semantic traversal and context</span>
+                  </label>
+                  <textarea
+                    className="manage-types__textarea"
+                    placeholder="Describe what this type represents…"
+                    value={(selected as any).description || ''}
+                    onChange={(e) => handleUpdateField('description', e.target.value)}
+                    rows={2}
+                  />
+                </div>
+
                 {/* Color (Hue slider) */}
                 <div className="manage-types__field">
                   <label className="manage-types__field-label">Color</label>
@@ -426,13 +440,57 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged }: Manage
 
                     {/* Stage Labels */}
                     <div className="manage-types__field">
-                      <label className="manage-types__field-label">Stage Labels</label>
-                      <SpectrumEditor
-                        labels={normalizeStageLabels((selected as ConnectionTypeData).x_stage_labels)}
-                        color={currentColor}
-                        onChange={(labels) => handleUpdateField('x_stage_labels', labels)}
-                      />
+                      <label className="manage-types__field-label">Position System
+                        <span className="manage-types__field-hint">How connections of this type are plotted on the board</span>
+                      </label>
+                      <div className="manage-types__mode-selector">
+                        {(['spectrum', 'quadrant', 'none'] as const).map(mode => (
+                          <button
+                            key={mode}
+                            type="button"
+                            className={`manage-types__mode-btn ${
+                              ((selected as ConnectionTypeData).measurement_mode || 'spectrum') === mode
+                                ? 'manage-types__mode-btn--active'
+                                : ''
+                            }`}
+                            style={{
+                              '--mode-color': currentColor,
+                            } as React.CSSProperties}
+                            onClick={() => handleUpdateField('measurement_mode', mode)}
+                          >
+                            {mode === 'spectrum' ? 'Spectrum (1D)'
+                              : mode === 'quadrant' ? 'Quadrant (2D)'
+                              : 'Unranked'}
+                          </button>
+                        ))}
+                      </div>
                     </div>
+
+                    {/* X-axis Stage Labels — shown for spectrum or quadrant */}
+                    {((selected as ConnectionTypeData).measurement_mode || 'spectrum') !== 'none' && (
+                      <div className="manage-types__field">
+                        <label className="manage-types__field-label">
+                          {((selected as ConnectionTypeData).measurement_mode || 'spectrum') === 'quadrant' ? 'X-Axis Labels' : 'Stage Labels'}
+                        </label>
+                        <SpectrumEditor
+                          labels={normalizeStageLabels((selected as ConnectionTypeData).x_stage_labels)}
+                          color={currentColor}
+                          onChange={(labels) => handleUpdateField('x_stage_labels', labels)}
+                        />
+                      </div>
+                    )}
+
+                    {/* Y-axis Stage Labels — shown only for quadrant */}
+                    {(selected as ConnectionTypeData).measurement_mode === 'quadrant' && (
+                      <div className="manage-types__field">
+                        <label className="manage-types__field-label">Y-Axis Labels</label>
+                        <SpectrumEditor
+                          labels={normalizeStageLabels((selected as ConnectionTypeData).y_stage_labels)}
+                          color={currentColor}
+                          onChange={(labels) => handleUpdateField('y_stage_labels', labels)}
+                        />
+                      </div>
+                    )}
                   </>
                 )}
 
@@ -472,7 +530,6 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged }: Manage
                           <option value="date">Date</option>
                           <option value="markdown">Markdown</option>
                           <option value="url">URL</option>
-                          <option value="spectrum_1d">Spectrum</option>
                           <option value="tags">Tags</option>
                         </select>
                         <select

@@ -4638,3 +4638,326 @@ Error: Should have a queue. You are likely calling Hooks conditionally, which is
 18:57:04.147 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":109,"rows":1}
 18:57:12.505 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":32,"rows":1}
 18:57:12.535 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":29,"rows":1}
+19:12:14.137 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:12:14.242 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":231,"rows":1}
+19:12:14.304 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":61,"rows":1}
+19:12:30.189 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:12:30.287 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":223,"rows":1}
+19:12:30.351 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":63,"rows":1}
+19:12:50.183 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:12:50.184 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:12:50.218 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":166,"error":"relation \"project_types\" does not exist"}
+19:12:50.219 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":169,"error":"relation \"project_types\" does not exist"}
+19:12:50.345 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:12:50.345 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:12:50.376 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":157,"error":"relation \"project_types\" does not exist"}
+19:12:50.377 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":157,"error":"relation \"project_types\" does not exist"}
+19:12:52.070 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:12:52.102 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:59:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n       VALUES ","duration":163,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+19:12:52.973 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:12:53.003 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:59:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n       VALUES ","duration":173,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+19:14:00.936 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:00.968 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":156,"rows":1}
+19:14:01.001 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":32,"rows":1}
+19:14:10.184 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":99,"rows":1}
+19:14:10.250 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":65,"rows":1}
+19:14:23.753 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:23.753 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:23.787 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":163,"error":"relation \"project_types\" does not exist"}
+19:14:23.787 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":163,"error":"relation \"project_types\" does not exist"}
+19:14:23.909 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:23.911 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:23.937 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":149,"error":"relation \"project_types\" does not exist"}
+19:14:23.940 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":152,"error":"relation \"project_types\" does not exist"}
+19:14:36.060 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:36.093 [31merror[39m: Query failed
+error: column "user_id" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:189:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:115:18) {"service":"nords-server","text":"INSERT INTO connection_types (user_id, name, accent_color, stroke_style, default_direction, x_stage_labels, y_stage_labe","duration":161,"error":"column \"user_id\" of relation \"connection_types\" does not exist"}
+19:15:15.911 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:15:15.945 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:59:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n       VALUES ","duration":162,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+19:15:43.237 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:15:43.270 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":154,"rows":1}
+19:15:47.543 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":29,"error":"relation \"project_types\" does not exist"}
+19:15:47.643 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:15:47.672 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":158,"error":"relation \"project_types\" does not exist"}
+19:15:47.695 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:15:47.799 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":230,"rows":1}
+19:16:11.773 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:16:11.773 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:16:11.804 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT nt.*, pt.sort_order FROM nord_types nt\n       JOIN project_types pt ON pt.type_id = nt.id AND pt.type_kind = 'nor","duration":153,"error":"relation \"project_types\" does not exist"}
+19:16:11.804 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1) {"service":"nords-server","text":"SELECT ct.*, pt.sort_order FROM connection_types ct\n       JOIN project_types pt ON pt.type_id = ct.id AND pt.type_kind ","duration":153,"error":"relation \"project_types\" does not exist"}
+19:17:40.091 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:17:40.091 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:17:40.095 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:17:40.095 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:17:40.095 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:17:40.096 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:18:01.541 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:18:01.545 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:18:01.545 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:18:01.541 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:18:01.545 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:18:01.545 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:18:21.852 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:18:21.857 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:18:21.857 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:18:21.854 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:18:21.857 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:18:21.857 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:18:28.083 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:18:28.087 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:18:28.087 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:18:28.089 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:18:28.093 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:18:28.094 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:18:51.797 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:18:51.800 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:18:51.801 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:18:51.798 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:18:51.802 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:18:51.802 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:19:03.483 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:19:03.483 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:19:03.485 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:19:03.486 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:19:03.486 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:19:03.486 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:19:30.877 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:19:30.880 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:19:30.881 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:19:45.176 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 1)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:24:42) {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n       ORDER BY sort_order","duration":5001,"error":"Connection terminated due to connection timeout"}
+19:19:45.178 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async Promise.all (index 0) {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n       ORDER BY sort_order","duration":5006,"error":"Connection terminated due to connection timeout"}
+19:20:14.816 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:20:14.818 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:20:14.819 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:20:17.337 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:20:17.338 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:20:17.340 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":33,"rows":0}
+19:20:17.340 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":32,"rows":0}
+19:20:24.317 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":10,"rows":1}
+19:21:21.692 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:21:21.697 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:21:21.697 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:21:21.694 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:21:21.697 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:21:21.697 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:21:34.169 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:21:34.173 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:21:34.173 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:21:36.693 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:21:36.694 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:21:36.695 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":45,"rows":0}
+19:21:36.696 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":44,"rows":0}
+19:21:54.694 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:21:54.695 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":40,"rows":0}
+19:21:54.698 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "seed-user"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/seed.ts:48:19) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n  ","duration":1,"error":"invalid input syntax for type uuid: \"seed-user\""}
+19:22:34.196 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:22:34.197 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":40,"rows":0}
+19:22:34.215 [31merror[39m: Query failed
+error: insert or update on table "nord_types" violates foreign key constraint "nord_types_project_id_fkey"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/seed.ts:48:19) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n  ","duration":18,"error":"insert or update on table \"nord_types\" violates foreign key constraint \"nord_types_project_id_fkey\""}
+19:23:20.396 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:23:20.397 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":38,"rows":0}
+19:23:20.399 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, propertie","duration":1,"rows":1}
+19:23:20.400 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":1,"rows":0}
+19:23:20.401 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, propertie","duration":1,"rows":1}
+19:23:20.401 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":0,"rows":0}
+19:23:20.401 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, propertie","duration":0,"rows":1}
+19:23:20.402 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":1,"rows":0}
+19:23:20.402 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, propertie","duration":0,"rows":1}
+19:23:20.403 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":0,"rows":0}
+19:23:20.403 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, propertie","duration":0,"rows":1}
+19:23:20.404 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM connection_types\n         WHERE project_id = $1 AND name = $2 AND","duration":1,"rows":0}
+19:23:20.405 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO connection_types (user_id, project_id, name, accent_color, stroke_st","duration":1,"rows":1}
+19:23:20.405 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM connection_types\n         WHERE project_id = $1 AND name = $2 AND","duration":0,"rows":0}
+19:23:20.405 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO connection_types (user_id, project_id, name, accent_color, stroke_st","duration":0,"rows":1}
+19:23:20.406 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM connection_types\n         WHERE project_id = $1 AND name = $2 AND","duration":0,"rows":0}
+19:23:20.406 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO connection_types (user_id, project_id, name, accent_color, stroke_st","duration":0,"rows":1}
+19:23:20.406 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM connection_types\n         WHERE project_id = $1 AND name = $2 AND","duration":0,"rows":0}
+19:23:20.407 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO connection_types (user_id, project_id, name, accent_color, stroke_st","duration":1,"rows":1}
+19:23:20.407 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM connection_types\n         WHERE project_id = $1 AND name = $2 AND","duration":0,"rows":0}
+19:23:20.407 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO connection_types (user_id, project_id, name, accent_color, stroke_st","duration":0,"rows":1}
+19:23:20.407 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "TASK_ID"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/seed.ts:100:19) {"service":"nords-server","text":"INSERT INTO nords (project_id, type_id, title, description, properties, position_x, position_y, scale)\n         VALUES (","duration":0,"error":"invalid input syntax for type uuid: \"TASK_ID\""}
+19:23:32.053 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:23:32.054 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":40,"rows":1}
+19:23:32.054 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":0,"rows":1}
+19:23:32.054 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":0,"rows":1}
+19:23:32.055 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":1,"rows":1}
+19:23:32.055 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM nord_types\n         WHERE project_id = $1 AND name = $2 AND delet","duration":0,"rows":1}
+19:23:32.055 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM connection_types\n         WHERE project_id = $1 AND name = $2 AND","duration":0,"rows":1}
+19:23:32.055 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM connection_types\n         WHERE project_id = $1 AND name = $2 AND","duration":0,"rows":1}
+19:23:32.056 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM connection_types\n         WHERE project_id = $1 AND name = $2 AND","duration":1,"rows":1}
+19:23:32.056 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM connection_types\n         WHERE project_id = $1 AND name = $2 AND","duration":0,"rows":1}
+19:23:32.056 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT id FROM connection_types\n         WHERE project_id = $1 AND name = $2 AND","duration":0,"rows":1}
+19:24:01.951 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:24:01.953 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":40,"rows":1}
+19:24:01.965 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":1,"rows":5}
+19:24:01.987 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:24:01.988 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":24,"rows":5}
+19:26:16.392 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:26:16.392 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:26:16.396 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:26:16.396 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:26:16.395 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:26:16.395 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:26:42.042 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:26:42.044 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":39,"rows":1}
+19:26:42.045 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"rows":1}
+19:26:51.757 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5,"rows":1}
+19:26:51.761 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+19:27:24.134 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:24.135 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:24.136 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":40,"rows":5}
+19:27:24.137 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":42,"rows":5}
+19:27:24.139 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":0,"rows":5}
+19:27:24.140 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":1,"rows":5}
+19:28:06.858 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:06.860 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at I","duration":39,"rows":1}
+19:28:07.153 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":6,"rows":1}
+19:28:29.332 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:29.335 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+19:28:29.338 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"rows":1}
+19:30:24.200 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:30:24.202 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":37,"rows":1}
+19:30:24.203 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"rows":1}
+19:30:35.307 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:30:35.312 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":37,"rows":1}
+19:30:35.315 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+19:30:45.866 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:30:45.870 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":37,"rows":1}
+19:31:25.290 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:31:25.293 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+19:31:36.272 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:31:36.276 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":30,"rows":1}
+19:31:46.148 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+19:31:59.328 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:31:59.332 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":33,"rows":1}
+19:32:34.042 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:32:34.045 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+19:32:52.870 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:32:52.872 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
+19:33:09.928 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:33:09.929 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":34,"rows":1}
+19:33:09.930 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"rows":1}
+19:33:24.823 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:33:24.827 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
+19:33:24.829 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}

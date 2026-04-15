@@ -37,9 +37,8 @@ seedRouter.post('/seed', async (req: Request, res: Response) => {
     for (let i = 0; i < nord_types.length; i++) {
       const t = nord_types[i];
       const existing = await queryOne<{ id: string }>(
-        `SELECT nt.id FROM nord_types nt
-         JOIN project_types pt ON pt.type_id = nt.id
-         WHERE pt.project_id = $1 AND nt.name = $2 AND nt.deleted_at IS NULL`,
+        `SELECT id FROM nord_types
+         WHERE project_id = $1 AND name = $2 AND deleted_at IS NULL`,
         [project_id, t.name]
       );
       if (existing) {
@@ -47,11 +46,12 @@ seedRouter.post('/seed', async (req: Request, res: Response) => {
         continue;
       }
       const row = await queryOne<{ id: string }>(
-        `INSERT INTO nord_types (user_id, name, icon, accent_color, properties_schema, scale_property, sort_order)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING *`,
         [
           user_id,
+          project_id,
           t.name,
           t.icon || 'Square',
           t.accent_color || '#888888',
@@ -60,13 +60,6 @@ seedRouter.post('/seed', async (req: Request, res: Response) => {
           i + 1,
         ]
       );
-      if (row) {
-        await queryOne(
-          `INSERT INTO project_types (project_id, type_id, type_kind, sort_order)
-           VALUES ($1, $2, 'nord', $3) ON CONFLICT DO NOTHING`,
-          [project_id, row.id, i + 1]
-        );
-      }
       results.nord_types.push(row);
     }
 
@@ -74,9 +67,8 @@ seedRouter.post('/seed', async (req: Request, res: Response) => {
     for (let i = 0; i < connection_types.length; i++) {
       const t = connection_types[i];
       const existing = await queryOne<{ id: string }>(
-        `SELECT ct.id FROM connection_types ct
-         JOIN project_types pt ON pt.type_id = ct.id
-         WHERE pt.project_id = $1 AND ct.name = $2 AND ct.deleted_at IS NULL`,
+        `SELECT id FROM connection_types
+         WHERE project_id = $1 AND name = $2 AND deleted_at IS NULL`,
         [project_id, t.name]
       );
       if (existing) {
@@ -84,15 +76,15 @@ seedRouter.post('/seed', async (req: Request, res: Response) => {
         continue;
       }
       const row = await queryOne<{ id: string }>(
-        `INSERT INTO connection_types (user_id, name, accent_color, stroke_style, default_direction, x_stage_labels, y_stage_labels, properties_schema, is_system, sort_order)
+        `INSERT INTO connection_types (user_id, project_id, name, accent_color, stroke_style, x_stage_labels, y_stage_labels, properties_schema, is_system, sort_order)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          RETURNING *`,
         [
           user_id,
+          project_id,
           t.name,
           t.accent_color || '#888888',
           t.stroke_style || 'solid',
-          t.default_direction || 'none',
           JSON.stringify(t.x_stage_labels || []),
           JSON.stringify(t.y_stage_labels || []),
           JSON.stringify(t.properties_schema || []),
@@ -100,13 +92,6 @@ seedRouter.post('/seed', async (req: Request, res: Response) => {
           i + 1,
         ]
       );
-      if (row) {
-        await queryOne(
-          `INSERT INTO project_types (project_id, type_id, type_kind, sort_order)
-           VALUES ($1, $2, 'connection', $3) ON CONFLICT DO NOTHING`,
-          [project_id, row.id, i + 1]
-        );
-      }
       results.connection_types.push(row);
     }
 
