@@ -141,14 +141,13 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   );
 
   // Sync when graph data changes (initial load or refetch)
+  // Note: do NOT guard on length > 0 — an empty project should clear stale nodes
   React.useEffect(() => {
-    if (lensNodes.length > 0) {
-      setNodes(lensNodes);
-    }
+    setNodes(lensNodes);
   }, [lensNodes, setNodes]);
 
   React.useEffect(() => {
-    if (lensEdges.length > 0) setEdges(lensEdges);
+    setEdges(lensEdges);
   }, [lensEdges, setEdges]);
 
   useSemanticZoom();

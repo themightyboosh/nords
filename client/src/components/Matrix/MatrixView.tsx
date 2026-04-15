@@ -93,7 +93,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
-  }, []);
+  }, [draggingCardId]); // re-bind when draggingCardId changes so mid-drag Alt works
 
   // Find the active connection type
   const activeType = useMemo(() => {
@@ -360,8 +360,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const isDraggingThis = draggingCardId === card.id;
 
     const handleCardDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+      const isCloning = e.altKey || optionHeld;
       setDraggingCardId(card.id);
-      setIsDragCloning(e.altKey);
+      setIsDragCloning(isCloning);
       handleDragStart(e, card);
 
       // Create a tilted ghost for the drag image
@@ -378,7 +379,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         ghost.style.opacity = '0.92';
 
         // If Option key held at drag start, add a stacked card behind
-        if (e.altKey) {
+        if (isCloning) {
           const wrapper = document.createElement('div');
           wrapper.style.position = 'absolute';
           wrapper.style.top = '-9999px';
