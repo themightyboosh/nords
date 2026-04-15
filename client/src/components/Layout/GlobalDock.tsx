@@ -23,6 +23,7 @@ import { useReactFlow } from '@xyflow/react';
 import { useTypeVisibility } from '../../hooks/useTypeVisibility';
 import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
 import { useBoardSettings } from '../../hooks/useBoardSettings';
+import { useConnectionTypeMutations } from '../../hooks/useNordMutations';
 import './GlobalDock.css';
 
 interface GlobalDockProps {
@@ -37,9 +38,13 @@ export default function GlobalDock({ projectId, onOpenManageTypes, onCreateNord 
   const [snapshotTab, setSnapshotTab] = useState<'take' | 'history'>('take');
 
   const { visibleNodeTypes, visibleConnectionTypes, toggleNodeType } = useTypeVisibility();
-  const { nordTypes } = useTypeRegistryContext();
+  const { nordTypes, connectionTypes } = useTypeRegistryContext();
   const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans } = useBoardSettings(projectId || null);
+  const { updateConnectionType } = useConnectionTypeMutations();
   const boardSettings = activeConnectionTypeId ? getBoard(activeConnectionTypeId) : null;
+
+  // Full resolved connection type (has directionFilter)
+  const activeFullType = connectionTypes.find(ct => ct.id === activeConnectionTypeId) ?? null;
 
   // React Flow for adding nodes
   const { addNodes, screenToFlowPosition } = useReactFlow();
@@ -189,6 +194,37 @@ export default function GlobalDock({ projectId, onOpenManageTypes, onCreateNord 
                 <ChevronDown size={10} className="nords-dock__chevron" />
               </button>
             </div>
+          )}
+
+          {/* Direction filter — board mode only, inline segmented control */}
+          {lens === 'board' && activeConnectionTypeId && (
+            <>
+              <div className="nords-dock__separator" />
+              <div className="nords-dock__direction-filter">
+                {(['all', 'forward', 'reverse', 'both', 'none'] as const).map(dir => {
+                  const isActive = (activeFullType?.directionFilter ?? 'all') === dir;
+                  return (
+                    <button
+                      key={dir}
+                      className={`nords-dock__dir-btn ${isActive ? 'is-active' : ''}`}
+                      title={dir === 'all' ? 'Show all directions' : `Show ${dir} connections`}
+                      onClick={async () => {
+                        if (!activeConnectionTypeId) return;
+                        await updateConnectionType(activeConnectionTypeId, { direction_filter: dir });
+                        // Trigger a graph reload by dispatching a custom event that MatrixView listens for
+                        window.dispatchEvent(new CustomEvent('nords:refetch'));
+                      }}
+                    >
+                      {dir === 'all' ? 'All'
+                        : dir === 'forward' ? '→'
+                        : dir === 'reverse' ? '←'
+                        : dir === 'both' ? '↔'
+                        : '⊘'}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
 
         </nav>

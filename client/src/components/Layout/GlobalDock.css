@@ -109,6 +109,46 @@
   flex-shrink: 0;
 }
 
+/* ── Direction filter: inline segmented control in dock ── */
+.nords-dock__direction-filter {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: color-mix(in srgb, var(--nords-color-bg-secondary) 60%, transparent);
+  border-radius: 8px;
+  padding: 3px;
+  border: 1px solid var(--nords-color-border-default);
+}
+
+.nords-dock__dir-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 8px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--nords-color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.nords-dock__dir-btn:hover {
+  background: color-mix(in srgb, var(--nords-color-accent) 12%, transparent);
+  color: var(--nords-color-text-primary);
+}
+
+.nords-dock__dir-btn.is-active {
+  background: var(--nords-color-accent);
+  color: #fff;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--nords-color-accent) 40%, transparent);
+}
+
 .nords-dock__item {
   display: flex;
   align-items: center;

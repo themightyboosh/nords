@@ -28,7 +28,7 @@ import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { useBoardSettings } from '../../hooks/useBoardSettings';
 import { setDragData, getDragData, isAddLinkMode, type BoardDragData } from '../../hooks/useBoardDragDrop';
-import { useConnectionMutations, useConnectionTypeMutations } from '../../hooks/useNordMutations';
+import { useConnectionMutations } from '../../hooks/useNordMutations';
 import { NordCard } from '../shared/NordCard';
 import { Link2, Unlink } from 'lucide-react';
 import '../Canvas/CanvasEngine.css';
@@ -70,7 +70,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
   const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, ensureNordTypeVisible } = useBoardSettings(projectId);
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
-  const { updateConnectionType } = useConnectionTypeMutations();
 
   // Option key tracking for clone-vs-move visual indicator
   const [optionHeld, setOptionHeld] = useState(false);
@@ -91,11 +90,13 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   // Direction filter: read from the connection type (type-level DB setting)
   const directionFilter = activeType?.directionFilter || 'all';
 
-  const setDirectionFilter = useCallback(async (dir: string) => {
-    if (!activeType) return;
-    await updateConnectionType(activeType.id, { direction_filter: dir });
-    await refetchGraph();
-  }, [activeType, updateConnectionType, refetchGraph]);
+  // setDirectionFilter is no longer needed in MatrixView — handled by GlobalDock
+  // Listen for refetch events dispatched by GlobalDock when filter changes
+  React.useEffect(() => {
+    const handler = () => { refetchGraph(); };
+    window.addEventListener('nords:refetch', handler);
+    return () => window.removeEventListener('nords:refetch', handler);
+  }, [refetchGraph]);
 
   const boardSettings = activeType ? getBoard(activeType.id) : null;
 
@@ -465,7 +466,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   return (
     <div className="nords-matrix">
-      {/* Board header — large title + direction filter */}
+      {/* Board header — title only, direction filter is in the dock */}
       <div className="nords-matrix__header">
         <div className="nords-matrix__header-left">
           <h1 className="nords-matrix__title" style={{ color: activeType.color }}>
@@ -477,22 +478,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
           <span className="nords-matrix__header-count">
             {totalCards} nords{hiddenCount > 0 && <span className="nords-matrix__hidden-count"> ({hiddenCount} hidden)</span>}
           </span>
-        </div>
-
-        <div className="nords-matrix__header-right">
-          {/* Direction filter segmented control */}
-          <div className="nords-matrix__direction-filter">
-            {(['all', 'forward', 'reverse', 'both', 'none'] as const).map(dir => (
-              <button
-                key={dir}
-                className={`nords-matrix__direction-btn ${directionFilter === dir ? 'is-active' : ''}`}
-                onClick={() => setDirectionFilter(dir)}
-                title={`Show ${dir === 'all' ? 'all directions' : dir + ' connections'}`}
-              >
-                {dir === 'all' ? 'All' : dir === 'forward' ? '→ From' : dir === 'reverse' ? '← To' : dir === 'both' ? '↔ Bi' : '⊘ None'}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
