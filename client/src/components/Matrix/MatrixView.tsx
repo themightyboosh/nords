@@ -452,13 +452,18 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       </div>
 
       {/* Render swimlane grid OR flat columns */}
-      {isQuadrant ? (
+      {isQuadrant ? (() => {
+        const hasOrphans = boardSettings?.showOrphans;
+        const hasConnections = connectionEntries.length > 0;
+        const extraCols = (hasOrphans ? 1 : 0) + (hasConnections ? 1 : 0);
+        const totalRows = yLabels.length;
+        return (
         /* ── Quadrant Mode: CSS Grid with swimlane rows ── */
         <div className="nords-matrix__grid" style={{
-          gridTemplateColumns: `80px repeat(${columns.length}, 1fr)`,
-          gridTemplateRows: `auto repeat(${yLabels.length}, 1fr)`,
+          gridTemplateColumns: `80px repeat(${columns.length}, 1fr)${hasOrphans ? ' minmax(200px, 260px)' : ''}${hasConnections ? ' minmax(180px, 220px)' : ''}`,
+          gridTemplateRows: `auto repeat(${totalRows}, minmax(80px, auto))`,
         }}>
-          {/* Top-left corner (empty) */}
+          {/* Top-left corner */}
           <div className="nords-matrix__grid-corner" />
 
           {/* Column headers (x-axis) */}
@@ -471,8 +476,24 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
             </div>
           ))}
 
+          {/* Orphans column header */}
+          {hasOrphans && (
+            <div className="nords-matrix__grid-col-header nords-matrix__grid-col-header--muted">
+              <Unlink size={12} /> Orphans
+              <span className="nords-matrix__column-count">{unlinked.length}</span>
+            </div>
+          )}
+
+          {/* Connections column header */}
+          {hasConnections && (
+            <div className="nords-matrix__grid-col-header nords-matrix__grid-col-header--muted">
+              <Link2 size={12} /> Connections
+              <span className="nords-matrix__column-count">{connectionEntries.length}</span>
+            </div>
+          )}
+
           {/* Row headers + cells */}
-          {yLabels.map(yl => (
+          {yLabels.map((yl, rowIdx) => (
             <React.Fragment key={yl.label}>
               <div className="nords-matrix__grid-row-header" style={{ color: activeType.color }}>
                 {yl.label}
@@ -494,10 +515,48 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                   </div>
                 );
               })}
+
+              {/* Orphans: only render content in the FIRST row, with row span */}
+              {hasOrphans && rowIdx === 0 && (
+                <div
+                  className="nords-matrix__grid-cell nords-matrix__grid-cell--span"
+                  style={{ gridRow: `2 / ${totalRows + 2}` }}
+                >
+                  {unlinked.length > 0 ? (
+                    unlinked.map(card => renderCard(card))
+                  ) : (
+                    <div className="nords-matrix__column-empty">No orphans</div>
+                  )}
+                </div>
+              )}
+
+              {/* Connections: only render content in the FIRST row, with row span */}
+              {hasConnections && rowIdx === 0 && (
+                <div
+                  className="nords-matrix__grid-cell nords-matrix__grid-cell--span nords-matrix__grid-cell--connections"
+                  style={{ gridRow: `2 / ${totalRows + 2}` }}
+                >
+                  <span className="nords-matrix__connection-hint">drop or click to pivot</span>
+                  {connectionEntries.map(entry => (
+                    <div
+                      key={entry.typeId}
+                      className="nords-matrix__connection-entry"
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
+                      onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
+                    >
+                      <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
+                      <span className="nords-matrix__connection-name">{entry.typeName}</span>
+                      <span className="nords-matrix__connection-count">{entry.count}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </React.Fragment>
           ))}
         </div>
-      ) : (
+        );
+      })() : (
         /* ── Flat Column Mode ── */
         <div className="nords-matrix__columns">
           {columns.map((col) => (
@@ -571,54 +630,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         </div>
       )}
 
-      {/* ── Orphans + Connections strip for SWIMLANE mode ── */}
-      {isQuadrant && (boardSettings?.showOrphans || connectionEntries.length > 0) && (
-        <div className="nords-matrix__columns nords-matrix__grid-extras">
-          {boardSettings?.showOrphans && (
-            <div className="nords-matrix__column nords-matrix__column--orphans">
-              <div className="nords-matrix__column-header">
-                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
-                  <Unlink size={12} /> Orphans
-                </span>
-                <span className="nords-matrix__column-count">{unlinked.length}</span>
-              </div>
-              <div className="nords-matrix__column-body">
-                {unlinked.length > 0 ? (
-                  unlinked.map(card => renderCard(card))
-                ) : (
-                  <div className="nords-matrix__column-empty">No orphans</div>
-                )}
-              </div>
-            </div>
-          )}
-          {connectionEntries.length > 0 && (
-            <div className="nords-matrix__column nords-matrix__column--connections">
-              <div className="nords-matrix__column-header">
-                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
-                  <Link2 size={12} /> Connections
-                </span>
-                <span className="nords-matrix__column-count">{connectionEntries.length}</span>
-              </div>
-              <div className="nords-matrix__column-body">
-                <span className="nords-matrix__connection-hint">drop card or click to pivot</span>
-                {connectionEntries.map(entry => (
-                  <div
-                    key={entry.typeId}
-                    className="nords-matrix__connection-entry"
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
-                    onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
-                  >
-                    <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
-                    <span className="nords-matrix__connection-name">{entry.typeName}</span>
-                    <span className="nords-matrix__connection-count">{entry.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

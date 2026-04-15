@@ -265,6 +265,22 @@
   border-bottom: 1px solid color-mix(in srgb, var(--nords-color-border) 25%, transparent);
 }
 
+/* Full row-span cells (orphans, connections in grid) */
+.nords-matrix__grid-cell--span {
+  overflow-y: auto;
+  border-left: 2px dashed color-mix(in srgb, var(--nords-color-border) 60%, transparent);
+  background: color-mix(in srgb, var(--nords-color-bg-secondary) 15%, transparent);
+}
+
+.nords-matrix__grid-col-header--muted {
+  color: var(--nords-color-text-disabled) !important;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  gap: 4px;
+  border-left: 2px dashed color-mix(in srgb, var(--nords-color-border) 60%, transparent);
+}
+
 .nords-matrix__grid-cell.is-drag-over {
   background: color-mix(in srgb, var(--nords-color-accent) 8%, var(--nords-color-bg-secondary));
 }
