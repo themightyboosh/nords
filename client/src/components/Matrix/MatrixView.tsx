@@ -103,13 +103,26 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const labels = activeType.xStageLabels;
     const typeMap = new Map(graph.nord_types.map(t => [t.id, t]));
 
-    // Index connections by source/target for active type
+    // Index connections per-nord for position resolution.
+    // Each connection contributes its distance values to BOTH endpoints,
+    // but each endpoint gets its OWN copy of the connection ID so that
+    // updating one card's position doesn't "kick" the other card.
+    // A nord may have multiple connections of this type — we use the
+    // FIRST connection per-nord for position (no averaging that could drift).
     const connectionsByNord = new Map<string, { connectionId: string; distance_x: number; distance_y: number; direction: string }[]>();
+    const nordConnectionIds = new Map<string, Set<string>>(); // dedup guard
+
     for (const conn of graph.connections) {
       if (conn.type_id !== activeType.id) continue;
       // Apply direction filter
       if (directionFilter !== 'all' && conn.direction !== directionFilter) continue;
+
       for (const nordId of [conn.source_nord_id, conn.target_nord_id]) {
+        // Deduplicate: each connection only gets added once per nord
+        if (!nordConnectionIds.has(nordId)) nordConnectionIds.set(nordId, new Set());
+        if (nordConnectionIds.get(nordId)!.has(conn.id)) continue;
+        nordConnectionIds.get(nordId)!.add(conn.id);
+
         if (!connectionsByNord.has(nordId)) {
           connectionsByNord.set(nordId, []);
         }
@@ -176,15 +189,18 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         continue;
       }
 
-      const avgDistanceX = conns.reduce((sum, c) => sum + c.distance_x, 0) / conns.length;
-      const avgDistanceY = conns.reduce((sum, c) => sum + c.distance_y, 0) / conns.length;
-      const resolved = resolveStageLabel(avgDistanceX, labels);
+      // Use FIRST connection's distance for positioning (not average).
+      // Averaging across multiple connections causes drift and makes
+      // cards jump to unexpected cells when other connections change.
+      const distX = conns[0].distance_x;
+      const distY = conns[0].distance_y;
+      const resolved = resolveStageLabel(distX, labels);
       card.resolvedLabel = resolved || labels[0].label;
-      card.distance = avgDistanceX;
-      card.distanceY = avgDistanceY;
+      card.distance = distX;
+      card.distanceY = distY;
 
       if (isQuadrant && yLabels.length > 0) {
-        const resolvedY = resolveStageLabel(avgDistanceY, yLabels);
+        const resolvedY = resolveStageLabel(distY, yLabels);
         card.resolvedYLabel = resolvedY || yLabels[0].label;
         const cellKey = `${card.resolvedLabel}|${card.resolvedYLabel}`;
         const cell = cells.get(cellKey);
@@ -248,16 +264,20 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     });
   }, [activeType]);
 
-  const handleColumnDrop = useCallback(async (e: React.DragEvent, targetPosition: number) => {
+  const handleCellDrop = useCallback(async (e: React.DragEvent, targetPositionX: number, targetPositionY?: number) => {
     e.preventDefault();
     const data = getDragData(e);
     if (!data || !activeType) return;
 
     if (data.sourceConnectionIds.length > 0) {
-      // Move within board — update distance_x on ALL connections for this nord
+      // Update distance_x (and distance_y if in swimlane mode)
+      const patch: Record<string, number> = { distance_x: targetPositionX };
+      if (targetPositionY !== undefined) {
+        patch.distance_y = targetPositionY;
+      }
       await Promise.all(
         data.sourceConnectionIds.map(cid =>
-          updateConnection(cid, { distance_x: targetPosition })
+          updateConnection(cid, patch)
         )
       );
     }
@@ -395,6 +415,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   const totalCards = columns.reduce((sum, col) => sum + col.cards.length, 0) + unlinked.length;
 
+  // Count hidden nords (those filtering out by type visibility)
+  const hiddenCount = graph ? graph.nords.filter(n => !isNordTypeVisible(activeType.id, n.type_id)).length : 0;
+
   return (
     <div className="nords-matrix">
       {/* Board header — large title + direction filter */}
@@ -406,7 +429,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
           {activeType.verb && (
             <span className="nords-matrix__verb">{activeType.verb}</span>
           )}
-          <span className="nords-matrix__header-count">{totalCards} nords</span>
+          <span className="nords-matrix__header-count">
+            {totalCards} nords{hiddenCount > 0 && <span className="nords-matrix__hidden-count"> ({hiddenCount} hidden)</span>}
+          </span>
         </div>
 
         <div className="nords-matrix__header-right">
@@ -460,7 +485,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                     key={cellKey}
                     className="nords-matrix__grid-cell"
                     onDragOver={handleDragOver}
-                    onDrop={(e) => handleColumnDrop(e, col.position)}
+                    onDrop={(e) => handleCellDrop(e, col.position, yl.position)}
                   >
                     {cellCards.map(card => renderCard(card))}
                     {cellCards.length === 0 && (
@@ -480,7 +505,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
               key={col.label}
               className="nords-matrix__column"
               onDragOver={handleDragOver}
-              onDrop={(e) => handleColumnDrop(e, col.position)}
+              onDrop={(e) => handleCellDrop(e, col.position)}
             >
               <div className="nords-matrix__column-header">
                 <span className="nords-matrix__column-label" style={{ color: activeType.color }}>
@@ -497,8 +522,8 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
             </div>
           ))}
 
-          {/* 👻 Orphans column */}
-          {boardSettings?.showOrphans && unlinked.length > 0 && (
+          {/* 👻 Orphans column — always present in flat mode */}
+          {boardSettings?.showOrphans && (
             <div className="nords-matrix__column nords-matrix__column--orphans">
               <div className="nords-matrix__column-header">
                 <span className="nords-matrix__column-label nords-matrix__column-label--muted">
@@ -507,12 +532,65 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                 <span className="nords-matrix__column-count">{unlinked.length}</span>
               </div>
               <div className="nords-matrix__column-body">
-                {unlinked.map(card => renderCard(card))}
+                {unlinked.length > 0 ? (
+                  unlinked.map(card => renderCard(card))
+                ) : (
+                  <div className="nords-matrix__column-empty">No orphans</div>
+                )}
               </div>
             </div>
           )}
 
           {/* 🔗 Connections column */}
+          {connectionEntries.length > 0 && (
+            <div className="nords-matrix__column nords-matrix__column--connections">
+              <div className="nords-matrix__column-header">
+                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
+                  <Link2 size={12} /> Connections
+                </span>
+                <span className="nords-matrix__column-count">{connectionEntries.length}</span>
+              </div>
+              <div className="nords-matrix__column-body">
+                <span className="nords-matrix__connection-hint">drop card or click to pivot</span>
+                {connectionEntries.map(entry => (
+                  <div
+                    key={entry.typeId}
+                    className="nords-matrix__connection-entry"
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
+                    onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
+                  >
+                    <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
+                    <span className="nords-matrix__connection-name">{entry.typeName}</span>
+                    <span className="nords-matrix__connection-count">{entry.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Orphans + Connections strip for SWIMLANE mode ── */}
+      {isQuadrant && (boardSettings?.showOrphans || connectionEntries.length > 0) && (
+        <div className="nords-matrix__columns nords-matrix__grid-extras">
+          {boardSettings?.showOrphans && (
+            <div className="nords-matrix__column nords-matrix__column--orphans">
+              <div className="nords-matrix__column-header">
+                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
+                  <Unlink size={12} /> Orphans
+                </span>
+                <span className="nords-matrix__column-count">{unlinked.length}</span>
+              </div>
+              <div className="nords-matrix__column-body">
+                {unlinked.length > 0 ? (
+                  unlinked.map(card => renderCard(card))
+                ) : (
+                  <div className="nords-matrix__column-empty">No orphans</div>
+                )}
+              </div>
+            </div>
+          )}
           {connectionEntries.length > 0 && (
             <div className="nords-matrix__column nords-matrix__column--connections">
               <div className="nords-matrix__column-header">

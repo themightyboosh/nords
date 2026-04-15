@@ -64,6 +64,11 @@
   font-weight: 500;
 }
 
+.nords-matrix__hidden-count {
+  color: var(--nords-color-text-disabled);
+  font-style: italic;
+}
+
 /* ── Direction Filter ── */
 .nords-matrix__direction-filter {
   display: flex;
@@ -191,11 +196,10 @@
   display: grid;
   flex: 1;
   overflow: auto;
-  gap: 1px;
+  gap: 0;
   padding: 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.15) transparent;
-  background: color-mix(in srgb, var(--nords-color-border) 15%, transparent);
 }
 
 .nords-matrix__grid-corner {
@@ -204,6 +208,8 @@
   top: 0;
   left: 0;
   z-index: 3;
+  border-right: 1px solid color-mix(in srgb, var(--nords-color-border) 50%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--nords-color-border) 50%, transparent);
 }
 
 .nords-matrix__grid-col-header {
@@ -220,6 +226,12 @@
   position: sticky;
   top: 0;
   z-index: 2;
+  border-bottom: 1px solid color-mix(in srgb, var(--nords-color-border) 50%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--nords-color-border) 25%, transparent);
+}
+
+.nords-matrix__grid-col-header:last-child {
+  border-right: none;
 }
 
 .nords-matrix__grid-row-header {
@@ -237,6 +249,8 @@
   position: sticky;
   left: 0;
   z-index: 1;
+  border-right: 1px solid color-mix(in srgb, var(--nords-color-border) 50%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--nords-color-border) 25%, transparent);
 }
 
 .nords-matrix__grid-cell {
@@ -247,6 +261,8 @@
   min-height: 80px;
   background: color-mix(in srgb, var(--nords-color-bg-secondary) 25%, transparent);
   transition: background-color 0.15s ease;
+  border-right: 1px solid color-mix(in srgb, var(--nords-color-border) 25%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--nords-color-border) 25%, transparent);
 }
 
 .nords-matrix__grid-cell.is-drag-over {
