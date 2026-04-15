@@ -50,7 +50,9 @@ interface MatrixCard {
   typeIcon: any;
   typeId: string;
   resolvedLabel: string;
+  resolvedYLabel: string;
   distance: number;
+  distanceY: number;
   connectionId: string | null;
   connectionDirection: string;
   properties: Array<{ key: string; value: string; color?: string }>;
@@ -86,17 +88,20 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     );
   }, [connectionTypes, activeConnectionTypeId]);
 
-  // Build columns + cards
-  const { columns, unlinked, connectionEntries } = useMemo(() => {
+  // Build columns + cards (+ swimlane grid for quadrant mode)
+  const isQuadrant = activeType?.yStageLabels && activeType.yStageLabels.length > 0;
+  const yLabels = isQuadrant ? activeType!.yStageLabels : [];
+
+  const { columns, unlinked, connectionEntries, gridCells } = useMemo(() => {
     if (!graph || !activeType || activeType.xStageLabels.length === 0) {
-      return { columns: [], unlinked: [], connectionEntries: [] };
+      return { columns: [], unlinked: [], connectionEntries: [], gridCells: new Map<string, MatrixCard[]>() };
     }
 
     const labels = activeType.xStageLabels;
     const typeMap = new Map(graph.nord_types.map(t => [t.id, t]));
 
     // Index connections by source/target for active type
-    const connectionsByNord = new Map<string, { connectionId: string; distance_x: number; direction: string }[]>();
+    const connectionsByNord = new Map<string, { connectionId: string; distance_x: number; distance_y: number; direction: string }[]>();
     for (const conn of graph.connections) {
       if (conn.type_id !== activeType.id) continue;
       for (const nordId of [conn.source_nord_id, conn.target_nord_id]) {
@@ -106,6 +111,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         connectionsByNord.get(nordId)!.push({
           connectionId: conn.id,
           distance_x: conn.distance_x,
+          distance_y: conn.distance_y ?? 0.5,
           direction: conn.direction,
         });
       }
@@ -117,6 +123,16 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       columnMap.set(lbl.label, []);
     }
     const unlinkedCards: MatrixCard[] = [];
+
+    // Grid cells for quadrant mode: key = "xLabel|yLabel"
+    const cells = new Map<string, MatrixCard[]>();
+    if (isQuadrant) {
+      for (const xl of labels) {
+        for (const yl of yLabels) {
+          cells.set(`${xl.label}|${yl.label}`, []);
+        }
+      }
+    }
 
     // Track visible nord IDs for scoping 🔗 column
     const visibleNordIds = new Set<string>();
@@ -139,7 +155,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         typeIcon: resolveIcon(nordType?.icon || null),
         typeId: nord.type_id,
         resolvedLabel: '',
+        resolvedYLabel: '',
         distance: 0.5,
+        distanceY: 0.5,
         connectionId: conns?.[0]?.connectionId || null,
         connectionDirection: conns?.[0]?.direction || 'forward',
         properties: Object.entries(nord.properties || {}).slice(0, 3).map(([key, value]) => ({
@@ -153,15 +171,29 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         continue;
       }
 
-      const avgDistance = conns.reduce((sum, c) => sum + c.distance_x, 0) / conns.length;
-      const resolved = resolveStageLabel(avgDistance, labels);
+      const avgDistanceX = conns.reduce((sum, c) => sum + c.distance_x, 0) / conns.length;
+      const avgDistanceY = conns.reduce((sum, c) => sum + c.distance_y, 0) / conns.length;
+      const resolved = resolveStageLabel(avgDistanceX, labels);
       card.resolvedLabel = resolved || labels[0].label;
-      card.distance = avgDistance;
+      card.distance = avgDistanceX;
+      card.distanceY = avgDistanceY;
+
+      if (isQuadrant && yLabels.length > 0) {
+        const resolvedY = resolveStageLabel(avgDistanceY, yLabels);
+        card.resolvedYLabel = resolvedY || yLabels[0].label;
+        const cellKey = `${card.resolvedLabel}|${card.resolvedYLabel}`;
+        const cell = cells.get(cellKey);
+        if (cell) {
+          cell.push(card);
+        } else {
+          unlinkedCards.push(card);
+        }
+      }
 
       const col = columnMap.get(card.resolvedLabel);
       if (col) {
         col.push(card);
-      } else {
+      } else if (!isQuadrant) {
         unlinkedCards.push(card);
       }
     }
@@ -192,8 +224,8 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       cards: (columnMap.get(lbl.label) || []).sort((a, b) => a.distance - b.distance),
     }));
 
-    return { columns, unlinked: unlinkedCards, connectionEntries: entries };
-  }, [graph, activeType, boardCapableTypes, isNordTypeVisible]);
+    return { columns, unlinked: unlinkedCards, connectionEntries: entries, gridCells: cells };
+  }, [graph, activeType, boardCapableTypes, isNordTypeVisible, isQuadrant, yLabels]);
 
   // ── Drag handlers ──
 
@@ -397,73 +429,169 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         </div>
       </div>
 
-      {/* Column scroll container */}
-      <div className="nords-matrix__columns">
-        {columns.map((col) => (
-          <div
-            key={col.label}
-            className="nords-matrix__column"
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleColumnDrop(e, col.position)}
-          >
-            <div className="nords-matrix__column-header">
-              <span className="nords-matrix__column-label" style={{ color: activeType.color }}>
-                {col.label}
-              </span>
-              <span className="nords-matrix__column-count">{col.cards.length}</span>
-            </div>
-            <div className="nords-matrix__column-body">
-              {col.cards.map(card => renderCard(card))}
-              {col.cards.length === 0 && (
-                <div className="nords-matrix__column-empty">No nords</div>
-              )}
-            </div>
-          </div>
-        ))}
+      {/* Render swimlane grid OR flat columns */}
+      {isQuadrant ? (
+        /* ── Quadrant Mode: CSS Grid with swimlane rows ── */
+        <div className="nords-matrix__grid" style={{
+          gridTemplateColumns: `80px repeat(${columns.length}, 1fr)`,
+          gridTemplateRows: `auto repeat(${yLabels.length}, 1fr)`,
+        }}>
+          {/* Top-left corner (empty) */}
+          <div className="nords-matrix__grid-corner" />
 
-        {/* 👻 Orphans column */}
-        {boardSettings?.showOrphans && unlinked.length > 0 && (
-          <div className="nords-matrix__column nords-matrix__column--orphans">
-            <div className="nords-matrix__column-header">
-              <span className="nords-matrix__column-label nords-matrix__column-label--muted">
-                <Unlink size={12} /> Orphans
+          {/* Column headers (x-axis) */}
+          {columns.map(col => (
+            <div key={col.label} className="nords-matrix__grid-col-header" style={{ color: activeType.color }}>
+              {col.label}
+              <span className="nords-matrix__column-count">
+                {col.cards.length}
               </span>
-              <span className="nords-matrix__column-count">{unlinked.length}</span>
             </div>
-            <div className="nords-matrix__column-body">
-              {unlinked.map(card => renderCard(card))}
-            </div>
-          </div>
-        )}
+          ))}
 
-        {/* 🔗 Connections column */}
-        {connectionEntries.length > 0 && (
-          <div className="nords-matrix__column nords-matrix__column--connections">
-            <div className="nords-matrix__column-header">
-              <span className="nords-matrix__column-label nords-matrix__column-label--muted">
-                <Link2 size={12} /> Connections
-              </span>
-              <span className="nords-matrix__column-count">{connectionEntries.length}</span>
+          {/* Row headers + cells */}
+          {yLabels.map(yl => (
+            <React.Fragment key={yl.label}>
+              {/* Y-axis row header */}
+              <div className="nords-matrix__grid-row-header" style={{ color: activeType.color }}>
+                {yl.label}
+              </div>
+
+              {/* Grid cells for this row */}
+              {columns.map(col => {
+                const cellKey = `${col.label}|${yl.label}`;
+                const cellCards = gridCells.get(cellKey) || [];
+                return (
+                  <div
+                    key={cellKey}
+                    className="nords-matrix__grid-cell"
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleColumnDrop(e, col.position)}
+                  >
+                    {cellCards.map(card => renderCard(card))}
+                    {cellCards.length === 0 && (
+                      <div className="nords-matrix__column-empty">—</div>
+                    )}
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
+      ) : (
+        /* ── Flat Column Mode ── */
+        <div className="nords-matrix__columns">
+          {columns.map((col) => (
+            <div
+              key={col.label}
+              className="nords-matrix__column"
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleColumnDrop(e, col.position)}
+            >
+              <div className="nords-matrix__column-header">
+                <span className="nords-matrix__column-label" style={{ color: activeType.color }}>
+                  {col.label}
+                </span>
+                <span className="nords-matrix__column-count">{col.cards.length}</span>
+              </div>
+              <div className="nords-matrix__column-body">
+                {col.cards.map(card => renderCard(card))}
+                {col.cards.length === 0 && (
+                  <div className="nords-matrix__column-empty">No nords</div>
+                )}
+              </div>
             </div>
-            <div className="nords-matrix__column-body">
-              <span className="nords-matrix__connection-hint">drop card or click to pivot</span>
-              {connectionEntries.map(entry => (
-                <div
-                  key={entry.typeId}
-                  className="nords-matrix__connection-entry"
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
-                  onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
-                >
-                  <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
-                  <span className="nords-matrix__connection-name">{entry.typeName}</span>
-                  <span className="nords-matrix__connection-count">{entry.count}</span>
-                </div>
-              ))}
+          ))}
+
+          {/* 👻 Orphans column */}
+          {boardSettings?.showOrphans && unlinked.length > 0 && (
+            <div className="nords-matrix__column nords-matrix__column--orphans">
+              <div className="nords-matrix__column-header">
+                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
+                  <Unlink size={12} /> Orphans
+                </span>
+                <span className="nords-matrix__column-count">{unlinked.length}</span>
+              </div>
+              <div className="nords-matrix__column-body">
+                {unlinked.map(card => renderCard(card))}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+
+          {/* 🔗 Connections column */}
+          {connectionEntries.length > 0 && (
+            <div className="nords-matrix__column nords-matrix__column--connections">
+              <div className="nords-matrix__column-header">
+                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
+                  <Link2 size={12} /> Connections
+                </span>
+                <span className="nords-matrix__column-count">{connectionEntries.length}</span>
+              </div>
+              <div className="nords-matrix__column-body">
+                <span className="nords-matrix__connection-hint">drop card or click to pivot</span>
+                {connectionEntries.map(entry => (
+                  <div
+                    key={entry.typeId}
+                    className="nords-matrix__connection-entry"
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
+                    onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
+                  >
+                    <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
+                    <span className="nords-matrix__connection-name">{entry.typeName}</span>
+                    <span className="nords-matrix__connection-count">{entry.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Orphans + Connections below grid in quadrant mode */}
+      {isQuadrant && (boardSettings?.showOrphans && unlinked.length > 0 || connectionEntries.length > 0) && (
+        <div className="nords-matrix__columns nords-matrix__grid-extras">
+          {boardSettings?.showOrphans && unlinked.length > 0 && (
+            <div className="nords-matrix__column nords-matrix__column--orphans">
+              <div className="nords-matrix__column-header">
+                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
+                  <Unlink size={12} /> Orphans
+                </span>
+                <span className="nords-matrix__column-count">{unlinked.length}</span>
+              </div>
+              <div className="nords-matrix__column-body">
+                {unlinked.map(card => renderCard(card))}
+              </div>
+            </div>
+          )}
+          {connectionEntries.length > 0 && (
+            <div className="nords-matrix__column nords-matrix__column--connections">
+              <div className="nords-matrix__column-header">
+                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
+                  <Link2 size={12} /> Connections
+                </span>
+                <span className="nords-matrix__column-count">{connectionEntries.length}</span>
+              </div>
+              <div className="nords-matrix__column-body">
+                <span className="nords-matrix__connection-hint">drop card or click to pivot</span>
+                {connectionEntries.map(entry => (
+                  <div
+                    key={entry.typeId}
+                    className="nords-matrix__connection-entry"
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
+                    onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
+                  >
+                    <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
+                    <span className="nords-matrix__connection-name">{entry.typeName}</span>
+                    <span className="nords-matrix__connection-count">{entry.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

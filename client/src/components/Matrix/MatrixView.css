@@ -105,6 +105,82 @@
 }
 
 /* ── Column Container ── */
+/* ── Swimlane Grid (quadrant mode) ── */
+
+.nords-matrix__grid {
+  display: grid;
+  flex: 1;
+  overflow: auto;
+  gap: 1px;
+  padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+  background: color-mix(in srgb, var(--nords-color-border) 15%, transparent);
+}
+
+.nords-matrix__grid-corner {
+  background: var(--nords-color-bg-primary);
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 3;
+}
+
+.nords-matrix__grid-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--nords-color-bg-primary);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.nords-matrix__grid-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  background: var(--nords-color-bg-primary);
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.nords-matrix__grid-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  min-height: 80px;
+  background: color-mix(in srgb, var(--nords-color-bg-secondary) 25%, transparent);
+  transition: background-color 0.15s ease;
+}
+
+.nords-matrix__grid-cell.is-drag-over {
+  background: color-mix(in srgb, var(--nords-color-accent) 8%, var(--nords-color-bg-secondary));
+}
+
+.nords-matrix__grid-extras {
+  flex: none;
+  max-height: 180px;
+  overflow-y: auto;
+  border-top: 1px solid var(--nords-color-border);
+}
+
+/* ── Column Container (flat mode) ── */
 
 .nords-matrix__columns {
   display: flex;
