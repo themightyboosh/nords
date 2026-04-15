@@ -56,9 +56,10 @@ export const ConnectionLabel = React.memo(function ConnectionLabel({ x, y, angle
           zIndex: isDimmed ? 0 : 10,
         } as React.CSSProperties}
       >
-        <span className="nords-connection-label__type">{type}</span>
-        {resolvedLabel && (
+        {resolvedLabel ? (
           <span className="nords-connection-label__resolved">{resolvedLabel}</span>
+        ) : (
+          <span className="nords-connection-label__type">{type}</span>
         )}
       </div>
     </EdgeLabelRenderer>

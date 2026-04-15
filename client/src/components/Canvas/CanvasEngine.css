@@ -204,7 +204,7 @@
 
 .nords-connection-label__type {
   font-family: var(--nords-font-primary);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: var(--nords-font-weight-bold);
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -213,18 +213,11 @@
 
 .nords-connection-label__resolved {
   font-family: var(--nords-font-primary);
-  font-size: 8px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--nords-color-label-on-color);
-  opacity: 0.8;
-  margin-left: 4px;
-}
-
-.nords-connection-label__resolved::before {
-  content: '·';
-  margin-right: 3px;
-  opacity: 0.5;
+  text-transform: uppercase;
 }
 
 /* ── Directional Chevron Labels ──
