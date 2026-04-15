@@ -444,6 +444,10 @@
 }
 
 /* ── Clone mode (Option held) ── */
+.nords-matrix__card-wrapper.is-clone-dragging {
+  cursor: copy;
+}
+
 .nords-matrix__card-wrapper.is-clone-dragging .nords-node {
   opacity: 0.2;
   transform: none !important;
