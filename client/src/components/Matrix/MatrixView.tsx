@@ -69,7 +69,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   const { activeConnectionTypeId, setActiveConnectionTypeId } = useLens();
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
   const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, ensureNordTypeVisible } = useBoardSettings(projectId);
-  const { createConnection, deleteConnection } = useConnectionMutations(projectId);
+  const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
   const { upsertPosition, removePosition } = useBoardPositionMutations(projectId);
 
   // ── Drag interaction state ──
@@ -182,17 +182,24 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       }
     }
 
-    // Resolve final position for a nord: explicit override > derived > null (orphan)
+    // Resolve final position for a nord:
+    //   1. Derived from connection distances (source of truth)
+    //   2. Fallback: explicit board_position (for nords not yet connected on this type)
+    //   3. null → orphan, not on this board
     const resolvePosition = (nordId: string): { distance_x: number; distance_y: number } | null => {
+      const xAcc = derivedDistX.get(nordId);
+      if (xAcc) {
+        // Has connections of this type — use derived (average of connection distances)
+        const yAcc = derivedDistY.get(nordId) ?? { sum: 0.5, count: 1 };
+        return {
+          distance_x: xAcc.sum / xAcc.count,
+          distance_y: yAcc.sum / yAcc.count,
+        };
+      }
+      // No connections of this type — fall back to explicit board position
       const explicit = explicitPositionByNord.get(nordId);
       if (explicit) return explicit;
-      const xAcc = derivedDistX.get(nordId);
-      if (!xAcc) return null; // no connections of this type → not on this board
-      const yAcc = derivedDistY.get(nordId) ?? { sum: 0.5, count: 1 };
-      return {
-        distance_x: xAcc.sum / xAcc.count,
-        distance_y: yAcc.sum / yAcc.count,
-      };
+      return null; // not on this board
     };
 
     // Build column buckets
@@ -334,14 +341,13 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   /**
    * Data-driven positional drop handler.
    *
-   * Computes the new distance_x purely from the card data — no DOM queries.
-   * The dragged card is excluded from the neighbour list to prevent the
-   * index-mismatch bug that caused "moving one card moves two."
+   * When a card is dropped on a column, the source of truth
+   * (connections.distance_x) is updated — NOT a separate override table.
+   * This ensures the graph view reflects the same values as the board.
    *
-   * Strategy:
-   *   - Empty column → use column's nominal position
-   *   - Has neighbours → use drop-Y ratio within the column body to
-   *     interpolate between sorted neighbour distances
+   * Updates ALL of the nord's connections of the active type to the new
+   * distance_x. The board derives position from connection averages,
+   * so updating every connection keeps both views in sync.
    */
   const handleCellDrop = useCallback(async (
     e: React.DragEvent,
@@ -363,42 +369,47 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     let newDistX: number;
 
     if (neighbours.length === 0) {
-      // Empty column (or only the dragged card was here) → use column position
       newDistX = columnPosition;
     } else {
-      // Compute visual drop index from Y position within the column body
       const colBody = e.currentTarget as HTMLElement;
       const rect = colBody.getBoundingClientRect();
       const relativeY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-      // Map relativeY [0,1] to an insertion index [0, neighbours.length]
       const insertIdx = Math.round(relativeY * neighbours.length);
 
       if (insertIdx === 0) {
-        // Dropped above all neighbours → go slightly before the first
         newDistX = Math.max(0, neighbours[0].distance - 0.02);
       } else if (insertIdx >= neighbours.length) {
-        // Dropped below all neighbours → go slightly after the last
         newDistX = Math.min(1, neighbours[neighbours.length - 1].distance + 0.02);
       } else {
-        // Dropped between two neighbours → midpoint
         const above = neighbours[insertIdx - 1].distance;
         const below = neighbours[insertIdx].distance;
         newDistX = (above + below) / 2;
       }
     }
 
-    // Clamp to [0, 1]
     newDistX = Math.max(0, Math.min(1, newDistX));
+    const newDistY = targetPositionY ?? 0.5;
 
-    await upsertPosition({
-      nord_id: data.nordId,
-      type_id: activeType.id,
-      distance_x: newDistX,
-      distance_y: targetPositionY ?? 0.5,
-    });
+    // Update the SOURCE OF TRUTH: all connections of this type for this nord
+    const connectionIds = data.sourceConnectionIds;
+    if (connectionIds.length > 0) {
+      await Promise.all(
+        connectionIds.map(connId =>
+          updateConnection(connId, { distance_x: newDistX, distance_y: newDistY })
+        )
+      );
+    } else {
+      // Nord has no connections of this type yet — use board position as fallback
+      await upsertPosition({
+        nord_id: data.nordId,
+        type_id: activeType.id,
+        distance_x: newDistX,
+        distance_y: newDistY,
+      });
+    }
 
     await refetchGraph();
-  }, [activeType, upsertPosition, refetchGraph]);
+  }, [activeType, updateConnection, upsertPosition, refetchGraph]);
 
   const handleConnectionEntryDrop = useCallback(async (e: React.DragEvent, targetTypeId: string) => {
     e.preventDefault();
