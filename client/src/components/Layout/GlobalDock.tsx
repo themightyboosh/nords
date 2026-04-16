@@ -13,13 +13,13 @@
 import { useState } from 'react';
 import {
   Eye, Link2, LayoutGrid,
-  MessageSquare, Plus, Camera,
+  MessageSquare, Camera,
   EyeIcon, EyeOff, ChevronDown, ArrowLeftRight, Unlink, Filter,
   Bug, User, FileText, Target, Lightbulb, Layers, AlertTriangle,
   Square, Settings2,
 } from 'lucide-react';
 import { useLens } from '../../context/LensContext';
-import { useReactFlow } from '@xyflow/react';
+
 import { useTypeVisibility } from '../../hooks/useTypeVisibility';
 import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
 import { useBoardSettings } from '../../hooks/useBoardSettings';
@@ -29,11 +29,10 @@ import './GlobalDock.css';
 interface GlobalDockProps {
   projectId?: string;
   onOpenManageTypes?: () => void;
-  onCreateNord?: (typeId: string, position?: { x: number; y: number }) => void;
   refetchGraph?: () => Promise<void>;
 }
 
-export default function GlobalDock({ projectId, onOpenManageTypes, onCreateNord, refetchGraph }: GlobalDockProps) {
+export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph }: GlobalDockProps) {
   const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activeLine, setActiveLine, showContext, setShowContext } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [snapshotTab, setSnapshotTab] = useState<'take' | 'history'>('take');
@@ -47,37 +46,6 @@ export default function GlobalDock({ projectId, onOpenManageTypes, onCreateNord,
   // Full resolved connection type (has directionFilter)
   const activeFullType = connectionTypes.find(ct => ct.id === activeConnectionTypeId) ?? null;
 
-  // React Flow for adding nodes
-  const { addNodes, screenToFlowPosition } = useReactFlow();
-
-  const handleAddNord = (typeInfo: any) => {
-    // Enter click-to-place mode — no position means the canvas
-    // shows a crosshair and waits for the user to click to place
-    if (onCreateNord && typeInfo.id) {
-      onCreateNord(typeInfo.id);
-      setOpenPanel(null);
-      return;
-    }
-
-    // Fallback: add node locally (for when API is not wired)
-    const fallbackPos = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
-    const newNode = {
-      id: crypto.randomUUID(),
-      position: fallbackPos,
-      type: 'nordNode',
-      data: {
-        title: `New ${typeInfo.name}`,
-        type: typeInfo.name,
-        typeColor: typeInfo.color,
-        typeIcon: typeInfo.icon,
-        size: 0.5,
-        hasScale: true,
-        properties: [],
-      }
-    };
-    addNodes(newNode);
-    setOpenPanel(null);
-  };
 
   const handleSelectConnectionType = (typeId: string, typeName: string) => {
     setActiveConnectionTypeId(typeId);
@@ -132,17 +100,6 @@ export default function GlobalDock({ projectId, onOpenManageTypes, onCreateNord,
           <div className="nords-dock__separator" />
 
           {/* ═══ SHARED TOOLS (all lens modes) ═══ */}
-
-          {/* + Nord */}
-          <div className="nords-dock__section">
-            <button className={`nords-dock__item ${openPanel === 'add' ? 'is-active' : ''}`} onClick={() => togglePanel('add')} data-testid="dock-add">
-              <Plus size={15} strokeWidth={2} />
-              <span className="nords-dock__label">Nord</span>
-              <ChevronDown size={10} className="nords-dock__chevron" />
-            </button>
-          </div>
-
-          <div className="nords-dock__separator" />
 
           {/* Connection Type Switcher — single dropdown, scales to unlimited types */}
           <div className="nords-dock__section">
@@ -276,28 +233,6 @@ export default function GlobalDock({ projectId, onOpenManageTypes, onCreateNord,
               <ArrowLeftRight size={10} />
               Selecting a type focuses the canvas on that relationship
             </span>
-          </div>
-        </div>
-
-        {/* Add Nord Flyout */}
-        <div className={`nords-flyout nords-glass ${openPanel === 'add' ? 'is-open' : ''}`} data-testid="flyout-add">
-          <div className="nords-flyout__header">
-            <h3 className="nords-flyout__title">Add Nord</h3>
-          </div>
-          <div className="nords-flyout__list">
-            <div className="nords-flyout__create-grid">
-              {visibleNodeTypes.map((type) => (
-                <button 
-                  key={type.name} 
-                  className="nords-flyout__create-btn" 
-                  title={`Add a ${type.name}`}
-                  onClick={() => handleAddNord(type)}
-                >
-                  <type.icon size={16} strokeWidth={1.8} color={type.color} />
-                  <span>{type.name}</span>
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
