@@ -5269,3 +5269,28 @@ ReferenceError: BoardCard is not defined
 11:07:36.090 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 11:07:36.092 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2\n    WHERE id = ","duration":34,"rows":1}
 11:07:36.097 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+11:51:37.250 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:51:37.253 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":41,"rows":1}
+11:51:37.254 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+15:11:39.402 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+15:11:39.405 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":69,"rows":1}
+15:11:39.419 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+15:11:39.421 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":86,"rows":1}
+15:11:39.434 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+15:11:39.435 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":103,"rows":1}
+15:11:42.664 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":3,"rows":1}
+15:17:41.969 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+15:17:41.973 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+15:49:09.976 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+15:49:09.980 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
+15:49:09.982 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+17:00:37.780 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+17:00:37.813 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO nords (project_id, type_id, title, description, properties, pos","duration":75,"rows":1}
+17:00:41.575 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO nords (project_id, type_id, title, description, properties, pos","duration":2,"rows":1}
+17:00:45.441 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO nords (project_id, type_id, title, description, properties, pos","duration":1,"rows":1}
+17:00:56.630 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+17:00:56.634 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO nords (project_id, type_id, title, description, properties, pos","duration":40,"rows":1}
+17:00:59.896 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO nords (project_id, type_id, title, description, properties, pos","duration":3,"rows":1}
+17:03:40.967 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+17:03:40.971 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
+17:03:40.973 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
