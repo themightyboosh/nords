@@ -4961,3 +4961,146 @@ error: invalid input syntax for type uuid: "TASK_ID"
 19:33:24.823 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 19:33:24.827 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":34,"rows":1}
 19:33:24.829 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+07:02:55.557 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:02:55.561 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":43,"rows":1}
+07:03:01.139 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":3,"rows":1}
+07:03:01.141 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:03:01.171 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:03:01.173 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":35,"rows":1}
+07:03:03.231 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:03:03.232 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:03:03.265 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:03:03.267 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+07:03:08.528 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:03:08.528 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:03:08.529 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:18:02.318 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:18:02.320 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:18:02.321 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:18:02.322 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":45,"rows":1}
+07:18:02.323 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":47,"rows":1}
+07:18:02.324 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":51,"rows":1}
+07:18:05.049 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":3,"rows":1}
+07:18:05.050 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":3,"rows":1}
+07:18:05.051 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":3,"rows":1}
+07:18:05.052 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:18:08.294 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":8,"rows":1}
+07:18:08.304 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5,"rows":1}
+07:18:13.038 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":1,"rows":1}
+07:18:13.047 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:18:14.910 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":3,"rows":1}
+07:18:14.917 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:18:16.440 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":2,"rows":1}
+07:18:16.449 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:18:18.559 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":3,"rows":1}
+07:18:18.567 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:18:19.952 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":2,"rows":1}
+07:18:19.960 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:18:21.276 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":2,"rows":1}
+07:18:21.285 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+07:18:24.225 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":2,"rows":1}
+07:18:24.233 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:18:27.040 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":1,"rows":1}
+07:18:27.053 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:18:28.286 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":2,"rows":1}
+07:18:28.292 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:18:29.903 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":1,"rows":1}
+07:18:29.911 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:18:39.366 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":2,"rows":1}
+07:18:39.371 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+07:18:40.315 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":3,"rows":1}
+07:18:40.321 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:18:41.168 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":3,"rows":1}
+07:18:41.172 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+07:18:42.047 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connection_types SET direction_filter = $1 WHERE id = $2 AND deleted_at I","duration":2,"rows":1}
+07:18:42.051 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+07:18:48.319 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:18:57.842 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":3,"rows":1}
+07:18:57.874 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:18:57.875 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:18:57.876 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":35,"rows":1}
+07:18:57.877 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+07:18:59.032 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:18:59.033 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:18:59.033 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:19:02.356 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:19:02.358 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":3,"rows":1}
+07:19:02.359 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:19:02.360 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:19:05.988 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:19:07.616 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:19:07.616 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:26:25.567 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:26:25.568 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+07:26:27.393 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":3,"rows":1}
+07:26:27.426 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:26:27.427 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:26:27.428 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+07:26:27.429 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+07:26:31.241 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:26:31.241 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:26:32.926 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":3,"rows":1}
+07:26:32.926 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:26:32.927 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
+07:26:32.929 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:26:34.050 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:26:38.134 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:26:46.329 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+07:26:48.499 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":3,"rows":1}
+07:26:48.535 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:26:48.536 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:26:48.538 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+07:26:48.539 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":42,"rows":1}
+07:26:53.370 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":4,"rows":1}
+07:26:53.381 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5,"rows":1}
+07:26:54.559 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":3,"rows":1}
+07:26:54.567 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+07:26:56.144 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":1,"rows":1}
+07:26:56.154 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:26:57.604 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":2,"rows":1}
+07:26:57.610 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:27:01.380 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":3,"rows":1}
+07:27:01.388 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+07:27:03.298 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":2,"rows":1}
+07:27:03.307 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+07:27:18.088 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:27:18.091 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":42,"rows":1}
+07:27:18.101 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":4,"rows":1}
+07:27:44.133 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:27:44.135 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":44,"rows":1}
+07:27:44.144 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":4,"rows":1}
+07:27:48.257 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":2,"rows":1}
+07:27:48.266 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+07:27:49.881 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":2,"rows":1}
+07:27:49.891 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:27:58.567 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":3,"rows":1}
+07:27:58.575 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:42:05.297 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:42:05.300 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+07:42:05.301 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"rows":1}
+07:42:09.791 [31merror[39m: React Error Boundary caught error
+ReferenceError: BoardCard is not defined
+    at http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1776339700156:819:67
+    at Array.map (<anonymous>)
+    at http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1776339700156:819:29
+    at Array.map (<anonymous>)
+    at MatrixView (http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1776339700156:789:14)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:12867:12)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4212:19)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:5568:16)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:6139:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:850:66) {"service":"nords-client","clientTimestamp":"2026-04-16T11:41:40.193Z","errorMessage":"BoardCard is not defined","componentStack":"\n    at MatrixView (http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1776339700156:37:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5173/src/components/Canvas/CanvasEngine.tsx?t=1776293940846:679:40)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5173/src/context/TypeRegistryContext.tsx?t=1776224260740:19:40)\n    at LensProvider (http://localhost:5173/src/context/LensContext.tsx?t=1776189589078:35:32)\n    at BatchProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5173/src/App.tsx?t=1776295551791:30:27)\n    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx?t=1776110049189:10:34)\n    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5173/src/context/AuthContext.tsx?t=1776110049189:10:32)\n    at App (http://localhost:5173/src/App.tsx?t=1776295551791:176:42)\n    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5173/src/components/ErrorBoundary.tsx?t=1776110049189:11:3)","userId":"dev-user-000"}
+07:43:54.694 [31merror[39m: Email sign-in failed {"service":"nords-client","clientTimestamp":"2026-04-16T11:43:40.209Z","errorMessage":"Firebase: Error (auth/invalid-email).","clientStack":"FirebaseError: Firebase: Error (auth/invalid-email).\n    at createErrorInternal (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:415:35)\n    at _fail (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:392:8)\n    at _performFetchWithErrorHandling (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:722:9)\n    at async _performSignInRequest (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:730:25)\n    at async _signInWithCredential (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:4452:19)\n    at async signInEmail (http://localhost:5173/src/lib/firebase.ts?t=1776110049189:25:18)\n    at async handleLogin (http://localhost:5173/src/components/Auth/LoginScreen.tsx?t=1776110049189:31:4)","userId":"dev-user-000"}
+07:44:05.741 [31merror[39m: Email sign-in failed {"service":"nords-client","clientTimestamp":"2026-04-16T11:43:59.622Z","errorMessage":"Firebase: Error (auth/invalid-email).","clientStack":"FirebaseError: Firebase: Error (auth/invalid-email).\n    at createErrorInternal (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:415:35)\n    at _fail (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:392:8)\n    at _performFetchWithErrorHandling (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:722:9)\n    at async _performSignInRequest (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:730:25)\n    at async _signInWithCredential (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:4452:19)\n    at async signInEmail (http://localhost:5173/src/lib/firebase.ts?t=1776110049189:25:18)\n    at async handleLogin (http://localhost:5173/src/components/Auth/LoginScreen.tsx?t=1776110049189:31:4)","userId":"dev-user-000"}
+07:44:34.837 [31merror[39m: Email sign-in failed {"service":"nords-client","clientTimestamp":"2026-04-16T11:44:28.597Z","errorMessage":"Firebase: Error (auth/invalid-credential).","clientStack":"FirebaseError: Firebase: Error (auth/invalid-credential).\n    at createErrorInternal (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:415:35)\n    at _fail (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:392:8)\n    at _performFetchWithErrorHandling (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:722:9)\n    at async _performSignInRequest (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:730:25)\n    at async _signInWithCredential (http://localhost:5173/node_modules/.vite/deps/firebase_auth.js?v=d45501da:4452:19)\n    at async signInEmail (http://localhost:5173/src/lib/firebase.ts?t=1776110049189:25:18)\n    at async handleLogin (http://localhost:5173/src/components/Auth/LoginScreen.tsx?t=1776110049189:31:4)","userId":"dev-user-000"}
+07:44:34.991 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:44:34.992 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":34,"rows":1}
+07:44:34.993 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"rows":1}
+07:44:41.779 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":4,"rows":1}
+07:44:41.782 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+07:45:11.415 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:45:11.417 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":34,"rows":1}
+07:45:11.423 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":4,"rows":1}
+07:45:22.571 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+07:45:22.572 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":28,"rows":1}
+07:45:22.578 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}

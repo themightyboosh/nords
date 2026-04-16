@@ -20,7 +20,7 @@
  *   - Connection type switching via dock OR 🔗 double-click
  */
 
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, memo } from 'react';
 import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
 import { useLens } from '../../context/LensContext';
 import { resolveStageLabel } from '../../utils/stageLabels';
@@ -72,31 +72,31 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   const { createConnection, deleteConnection } = useConnectionMutations(projectId);
   const { upsertPosition, removePosition } = useBoardPositionMutations(projectId);
 
-  // Option key + mouse-held state for drag UX
+  // ── Drag interaction state ──
   const [optionHeld, setOptionHeld] = useState(false);
-  const [mouseHeld, setMouseHeld] = useState(false);
+  const [mouseHeldCardId, setMouseHeldCardId] = useState<string | null>(null); // Phase 1: track WHICH card is held
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
   const [isDragCloning, setIsDragCloning] = useState(false);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null); // Phase 3: visual drop target
 
-  // Keyboard listener — also handles Option toggle mid-mousedown
+  // Keyboard listener — also handles Option toggle mid-drag
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.altKey) {
         setOptionHeld(true);
-        // Toggle clone mode any time Alt is pressed while mouse is held/dragging
-        if (mouseHeld || draggingCardId) setIsDragCloning(true);
+        if (mouseHeldCardId || draggingCardId) setIsDragCloning(true);
       }
     };
     const up = (e: KeyboardEvent) => {
       if (!e.altKey) {
         setOptionHeld(false);
-        if (mouseHeld || draggingCardId) setIsDragCloning(false);
+        if (mouseHeldCardId || draggingCardId) setIsDragCloning(false);
       }
     };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
-  }, [mouseHeld, draggingCardId]); // re-bind when either changes
+  }, [mouseHeldCardId, draggingCardId]);
 
   // Find the active connection type
   const activeType = useMemo(() => {
@@ -332,16 +332,16 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   }, [activeType]);
 
   /**
-   * Smart positional drop handler.
+   * Data-driven positional drop handler.
    *
-   * Reads the drop y-position relative to sibling card wrappers in the column
-   * body to determine WHERE in the sorted order the card was dropped, then
-   * interpolates a distance_x between the two neighbouring cards.
+   * Computes the new distance_x purely from the card data — no DOM queries.
+   * The dragged card is excluded from the neighbour list to prevent the
+   * index-mismatch bug that caused "moving one card moves two."
    *
-   * If dropped above all cards → distance slightly below lowest neighbour.
-   * If dropped below all cards → distance slightly above highest neighbour.
-   * If dropped between two cards → midpoint of their distances.
-   * If column is empty → use the column's staged position value.
+   * Strategy:
+   *   - Empty column → use column's nominal position
+   *   - Has neighbours → use drop-Y ratio within the column body to
+   *     interpolate between sorted neighbour distances
    */
   const handleCellDrop = useCallback(async (
     e: React.DragEvent,
@@ -350,40 +350,40 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     targetPositionY?: number
   ) => {
     e.preventDefault();
+    setDragOverColumn(null);
     const data = getDragData(e);
-    if (!data || !activeType) return;
+    if (!data || !activeType) {
+      console.warn('[Board] Drop ignored — no drag data or no active type');
+      return;
+    }
 
-    let newDistX = columnPosition; // fallback: column's nominal position
+    // Exclude the dragged card from neighbour calculations
+    const neighbours = columnCards.filter(c => c.id !== data.nordId);
 
-    if (columnCards.length > 0) {
-      // Find sibling card wrappers by reading their DOM positions
-      const colBody = (e.currentTarget as HTMLElement);
-      const cardEls = Array.from(colBody.querySelectorAll<HTMLElement>(':scope > .nords-matrix__card-wrapper'));
+    let newDistX: number;
 
-      if (cardEls.length > 0) {
-        const dropY = e.clientY;
+    if (neighbours.length === 0) {
+      // Empty column (or only the dragged card was here) → use column position
+      newDistX = columnPosition;
+    } else {
+      // Compute visual drop index from Y position within the column body
+      const colBody = e.currentTarget as HTMLElement;
+      const rect = colBody.getBoundingClientRect();
+      const relativeY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+      // Map relativeY [0,1] to an insertion index [0, neighbours.length]
+      const insertIdx = Math.round(relativeY * neighbours.length);
 
-        // Map each card element to its centre Y and its distance value
-        const sorted = cardEls.map((el, i) => ({
-          midY: el.getBoundingClientRect().top + el.getBoundingClientRect().height / 2,
-          distance: columnCards[i]?.distance ?? columnPosition,
-        }));
-
-        if (dropY < sorted[0].midY) {
-          // Dropped above the first card — go slightly lower than it
-          newDistX = Math.max(0, sorted[0].distance - 0.05);
-        } else if (dropY > sorted[sorted.length - 1].midY) {
-          // Dropped below the last card — go slightly higher than it
-          newDistX = Math.min(1, sorted[sorted.length - 1].distance + 0.05);
-        } else {
-          // Find the pair the drop falls between
-          for (let i = 0; i < sorted.length - 1; i++) {
-            if (dropY >= sorted[i].midY && dropY <= sorted[i + 1].midY) {
-              newDistX = (sorted[i].distance + sorted[i + 1].distance) / 2;
-              break;
-            }
-          }
-        }
+      if (insertIdx === 0) {
+        // Dropped above all neighbours → go slightly before the first
+        newDistX = Math.max(0, neighbours[0].distance - 0.02);
+      } else if (insertIdx >= neighbours.length) {
+        // Dropped below all neighbours → go slightly after the last
+        newDistX = Math.min(1, neighbours[neighbours.length - 1].distance + 0.02);
+      } else {
+        // Dropped between two neighbours → midpoint
+        const above = neighbours[insertIdx - 1].distance;
+        const below = neighbours[insertIdx].distance;
+        newDistX = (above + below) / 2;
       }
     }
 
@@ -439,110 +439,20 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     e.dataTransfer.dropEffect = 'move';
   }, []);
 
-  // ── Render helpers ──
+  const handleColumnDragEnter = useCallback((columnLabel: string) => {
+    setDragOverColumn(columnLabel);
+  }, []);
 
-  const renderCard = (card: MatrixCard) => {
-    const isDraggingThis = draggingCardId === card.id;
+  const handleColumnDragLeave = useCallback((e: React.DragEvent) => {
+    // Only clear if we actually left the column (not entering a child)
+    const related = e.relatedTarget as HTMLElement | null;
+    if (!related || !(e.currentTarget as HTMLElement).contains(related)) {
+      setDragOverColumn(null);
+    }
+  }, []);
 
-    const handleCardMouseDown = () => {
-      setMouseHeld(true);
-    };
-
-    const handleCardMouseUp = () => {
-      setMouseHeld(false);
-    };
-
-    const handleCardDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-      const isCloning = e.altKey || optionHeld;
-      setDraggingCardId(card.id);
-      setIsDragCloning(isCloning);
-      handleDragStart(e, card);
-
-      // Create a tilted ghost for the drag image
-      const cardEl = e.currentTarget.querySelector('.nords-node') as HTMLElement;
-      if (cardEl) {
-        const ghost = cardEl.cloneNode(true) as HTMLElement;
-        ghost.style.transform = 'rotate(-3deg)';
-        ghost.style.width = `${cardEl.offsetWidth}px`;
-        ghost.style.position = 'absolute';
-        ghost.style.top = '-9999px';
-        ghost.style.left = '-9999px';
-        ghost.style.zIndex = '9999';
-        ghost.style.pointerEvents = 'none';
-        ghost.style.opacity = '0.92';
-
-        // If Option key held at drag start, add a stacked card behind
-        if (isCloning) {
-          const wrapper = document.createElement('div');
-          wrapper.style.position = 'absolute';
-          wrapper.style.top = '-9999px';
-          wrapper.style.left = '-9999px';
-
-          const bgCard = cardEl.cloneNode(true) as HTMLElement;
-          bgCard.style.position = 'absolute';
-          bgCard.style.top = '6px';
-          bgCard.style.left = '6px';
-          bgCard.style.transform = 'rotate(-1deg)';
-          bgCard.style.opacity = '0.5';
-          bgCard.style.width = `${cardEl.offsetWidth}px`;
-
-          ghost.style.position = 'relative';
-          ghost.style.top = '0';
-          ghost.style.left = '0';
-
-          wrapper.style.width = `${cardEl.offsetWidth + 10}px`;
-          wrapper.style.height = `${cardEl.offsetHeight + 10}px`;
-          wrapper.appendChild(bgCard);
-          wrapper.appendChild(ghost);
-          document.body.appendChild(wrapper);
-          e.dataTransfer.setDragImage(wrapper, cardEl.offsetWidth / 2, 20);
-          requestAnimationFrame(() => document.body.removeChild(wrapper));
-        } else {
-          document.body.appendChild(ghost);
-          e.dataTransfer.setDragImage(ghost, cardEl.offsetWidth / 2, 20);
-          requestAnimationFrame(() => document.body.removeChild(ghost));
-        }
-      }
-    };
-
-    const handleCardDragEnd = () => {
-      setDraggingCardId(null);
-      setIsDragCloning(false);
-      setMouseHeld(false);
-    };
-
-    const wrapperClass = [
-      'nords-matrix__card-wrapper',
-      isDraggingThis ? 'is-dragging' : '',
-      isDraggingThis && isDragCloning ? 'is-clone-dragging' : '',
-      !isDraggingThis && mouseHeld && draggingCardId === null ? 'is-mouse-held' : '',
-    ].filter(Boolean).join(' ');
-
-    return (
-      <div
-        key={card.id}
-        className={wrapperClass}
-        draggable
-        onMouseDown={handleCardMouseDown}
-        onMouseUp={handleCardMouseUp}
-        onDragStart={handleCardDragStart}
-        onDragEnd={handleCardDragEnd}
-        onClick={() => onNordClick(card.id)}
-      >
-        {/* + COPY badge — visible only when Option is held (is-clone-dragging) */}
-        <span className="nords-matrix__clone-badge">+ COPY</span>
-        <NordCard
-          title={card.title}
-          typeName={card.typeName}
-          typeColor={card.typeColor}
-          typeIcon={card.typeIcon}
-          properties={card.properties}
-          isSelected={selectedNord === card.id}
-          style={{ width: '100%' }}
-        />
-      </div>
-    );
-  };
+  // ── Render ──
+  // BoardCard is defined below as a React.memo component to prevent N² re-renders.
 
   // ── No active type state ──
   if (!activeType) {
@@ -645,12 +555,38 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                 return (
                   <div
               key={cellKey}
-              className="nords-matrix__grid-cell"
+              className={`nords-matrix__grid-cell ${dragOverColumn === cellKey ? 'is-drag-over' : ''}`}
               onDragOver={handleDragOver}
+              onDragEnter={() => handleColumnDragEnter(cellKey)}
+              onDragLeave={handleColumnDragLeave}
               onDrop={(e) => handleCellDrop(e, col.position, gridCells.get(cellKey) || [], yl.position)}
             >
 
-                    {cellCards.map(card => renderCard(card))}
+                    {cellCards.map(card => (
+                      <BoardCard
+                        key={card.id}
+                        card={card}
+                        isSelected={selectedNord === card.id}
+                        isDragging={draggingCardId === card.id}
+                        isCloneDragging={draggingCardId === card.id && isDragCloning}
+                        isMouseHeld={mouseHeldCardId === card.id}
+                        optionHeld={optionHeld}
+                        onMouseDown={setMouseHeldCardId}
+                        onMouseUp={() => setMouseHeldCardId(null)}
+                        onDragStart={(e, c) => {
+                          setDraggingCardId(c.id);
+                          setIsDragCloning(e.altKey || optionHeld);
+                          handleDragStart(e, c);
+                        }}
+                        onDragEnd={() => {
+                          setDraggingCardId(null);
+                          setIsDragCloning(false);
+                          setMouseHeldCardId(null);
+                          setDragOverColumn(null);
+                        }}
+                        onClick={onNordClick}
+                      />
+                    ))}
                     {cellCards.length === 0 && (
                       <div className="nords-matrix__column-empty">—</div>
                     )}
@@ -665,7 +601,30 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                   style={{ gridRow: `2 / ${totalRows + 2}` }}
                 >
                   {unlinked.length > 0 ? (
-                    unlinked.map(card => renderCard(card))
+                    unlinked.map(card => (
+                      <BoardCard
+                        key={card.id}
+                        card={card}
+                        isSelected={selectedNord === card.id}
+                        isDragging={draggingCardId === card.id}
+                        isCloneDragging={draggingCardId === card.id && isDragCloning}
+                        isMouseHeld={mouseHeldCardId === card.id}
+                        optionHeld={optionHeld}
+                        onMouseDown={setMouseHeldCardId}
+                        onMouseUp={() => setMouseHeldCardId(null)}
+                        onDragStart={(e, c) => {
+                          setDraggingCardId(c.id);
+                          setIsDragCloning(e.altKey || optionHeld);
+                          handleDragStart(e, c);
+                        }}
+                        onDragEnd={() => {
+                          setDraggingCardId(null);
+                          setIsDragCloning(false);
+                          setMouseHeldCardId(null);
+                        }}
+                        onClick={onNordClick}
+                      />
+                    ))
                   ) : (
                     <div className="nords-matrix__column-empty">No orphans</div>
                   )}
@@ -709,7 +668,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
           {columns.map((col) => (
             <div
               key={col.label}
-              className="nords-matrix__column"
+              className={`nords-matrix__column ${dragOverColumn === col.label ? 'is-drag-over' : ''}`}
             >
               <div className="nords-matrix__column-header">
                 <span className="nords-matrix__column-label" style={{ color: activeType.color }}>
@@ -720,9 +679,35 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
               <div
                 className="nords-matrix__column-body"
                 onDragOver={handleDragOver}
+                onDragEnter={() => handleColumnDragEnter(col.label)}
+                onDragLeave={handleColumnDragLeave}
                 onDrop={(e) => handleCellDrop(e, col.position, col.cards)}
               >
-                {col.cards.map(card => renderCard(card))}
+                {col.cards.map(card => (
+                  <BoardCard
+                    key={card.id}
+                    card={card}
+                    isSelected={selectedNord === card.id}
+                    isDragging={draggingCardId === card.id}
+                    isCloneDragging={draggingCardId === card.id && isDragCloning}
+                    isMouseHeld={mouseHeldCardId === card.id}
+                    optionHeld={optionHeld}
+                    onMouseDown={setMouseHeldCardId}
+                    onMouseUp={() => setMouseHeldCardId(null)}
+                    onDragStart={(e, c) => {
+                      setDraggingCardId(c.id);
+                      setIsDragCloning(e.altKey || optionHeld);
+                      handleDragStart(e, c);
+                    }}
+                    onDragEnd={() => {
+                      setDraggingCardId(null);
+                      setIsDragCloning(false);
+                      setMouseHeldCardId(null);
+                      setDragOverColumn(null);
+                    }}
+                    onClick={onNordClick}
+                  />
+                ))}
                 {col.cards.length === 0 && (
                   <div className="nords-matrix__column-empty">No nords</div>
                 )}
@@ -741,7 +726,30 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
               </div>
               <div className="nords-matrix__column-body">
                 {unlinked.length > 0 ? (
-                  unlinked.map(card => renderCard(card))
+                  unlinked.map(card => (
+                    <BoardCard
+                      key={card.id}
+                      card={card}
+                      isSelected={selectedNord === card.id}
+                      isDragging={draggingCardId === card.id}
+                      isCloneDragging={draggingCardId === card.id && isDragCloning}
+                      isMouseHeld={mouseHeldCardId === card.id}
+                      optionHeld={optionHeld}
+                      onMouseDown={setMouseHeldCardId}
+                      onMouseUp={() => setMouseHeldCardId(null)}
+                      onDragStart={(e, c) => {
+                        setDraggingCardId(c.id);
+                        setIsDragCloning(e.altKey || optionHeld);
+                        handleDragStart(e, c);
+                      }}
+                      onDragEnd={() => {
+                        setDraggingCardId(null);
+                        setIsDragCloning(false);
+                        setMouseHeldCardId(null);
+                      }}
+                      onClick={onNordClick}
+                    />
+                  ))
                 ) : (
                   <div className="nords-matrix__column-empty">No orphans</div>
                 )}
@@ -788,3 +796,119 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   );
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// BoardCard — Memoized card wrapper for the board view.
+//
+// Extracted from the inline `renderCard` to prevent N² re-renders.
+// Each card only re-renders when its own prop values change.
+// ═══════════════════════════════════════════════════════════
+
+interface BoardCardProps {
+  card: MatrixCard;
+  isSelected: boolean;
+  isDragging: boolean;
+  isCloneDragging: boolean;
+  isMouseHeld: boolean;
+  optionHeld: boolean;
+  onMouseDown: (cardId: string) => void;
+  onMouseUp: () => void;
+  onDragStart: (e: React.DragEvent<HTMLDivElement>, card: MatrixCard) => void;
+  onDragEnd: () => void;
+  onClick: (cardId: string) => void;
+}
+
+const BoardCard = memo(function BoardCard({
+  card,
+  isSelected,
+  isDragging,
+  isCloneDragging,
+  isMouseHeld,
+  optionHeld,
+  onMouseDown,
+  onMouseUp,
+  onDragStart,
+  onDragEnd,
+  onClick,
+}: BoardCardProps) {
+
+  const handleDragStart = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    onDragStart(e, card);
+
+    // Create a tilted ghost for the drag image
+    const cardEl = e.currentTarget.querySelector('.nords-node') as HTMLElement;
+    if (cardEl) {
+      const isCloning = e.altKey || optionHeld;
+      const ghost = cardEl.cloneNode(true) as HTMLElement;
+      ghost.style.transform = 'rotate(-3deg)';
+      ghost.style.width = `${cardEl.offsetWidth}px`;
+      ghost.style.position = 'absolute';
+      ghost.style.top = '-9999px';
+      ghost.style.left = '-9999px';
+      ghost.style.zIndex = '9999';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.opacity = '0.92';
+
+      if (isCloning) {
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'absolute';
+        wrapper.style.top = '-9999px';
+        wrapper.style.left = '-9999px';
+
+        const bgCard = cardEl.cloneNode(true) as HTMLElement;
+        bgCard.style.position = 'absolute';
+        bgCard.style.top = '6px';
+        bgCard.style.left = '6px';
+        bgCard.style.transform = 'rotate(-1deg)';
+        bgCard.style.opacity = '0.5';
+        bgCard.style.width = `${cardEl.offsetWidth}px`;
+
+        ghost.style.position = 'relative';
+        ghost.style.top = '0';
+        ghost.style.left = '0';
+
+        wrapper.style.width = `${cardEl.offsetWidth + 10}px`;
+        wrapper.style.height = `${cardEl.offsetHeight + 10}px`;
+        wrapper.appendChild(bgCard);
+        wrapper.appendChild(ghost);
+        document.body.appendChild(wrapper);
+        e.dataTransfer.setDragImage(wrapper, cardEl.offsetWidth / 2, 20);
+        requestAnimationFrame(() => document.body.removeChild(wrapper));
+      } else {
+        document.body.appendChild(ghost);
+        e.dataTransfer.setDragImage(ghost, cardEl.offsetWidth / 2, 20);
+        requestAnimationFrame(() => document.body.removeChild(ghost));
+      }
+    }
+  }, [card, optionHeld, onDragStart]);
+
+  const wrapperClass = [
+    'nords-matrix__card-wrapper',
+    isDragging ? 'is-dragging' : '',
+    isCloneDragging ? 'is-clone-dragging' : '',
+    isMouseHeld ? 'is-mouse-held' : '',
+  ].filter(Boolean).join(' ');
+
+  return (
+    <div
+      className={wrapperClass}
+      draggable
+      onMouseDown={() => onMouseDown(card.id)}
+      onMouseUp={onMouseUp}
+      onDragStart={handleDragStart}
+      onDragEnd={onDragEnd}
+      onClick={() => onClick(card.id)}
+    >
+      <span className="nords-matrix__clone-badge">+ COPY</span>
+      <NordCard
+        title={card.title}
+        typeName={card.typeName}
+        typeColor={card.typeColor}
+        typeIcon={card.typeIcon}
+        properties={card.properties}
+        isSelected={isSelected}
+        style={{ width: '100%' }}
+      />
+    </div>
+  );
+});

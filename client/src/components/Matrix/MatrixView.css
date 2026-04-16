@@ -637,7 +637,24 @@
 /* ── Drop Target Highlights ── */
 
 .nords-matrix__column.is-drag-over {
+  background: color-mix(in srgb, var(--nords-color-accent) 6%, var(--nords-color-bg-secondary));
+  transition: background-color 0.15s ease;
+}
+
+.nords-matrix__column.is-drag-over .nords-matrix__column-body {
+  outline: 2px dashed color-mix(in srgb, var(--nords-color-accent) 40%, transparent);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+.nords-matrix__column.is-drag-over .nords-matrix__column-header {
   background: color-mix(in srgb, var(--nords-color-accent) 8%, var(--nords-color-bg-secondary));
+}
+
+.nords-matrix__grid-cell.is-drag-over {
+  background: color-mix(in srgb, var(--nords-color-accent) 10%, var(--nords-color-bg-secondary));
+  outline: 2px dashed color-mix(in srgb, var(--nords-color-accent) 35%, transparent);
+  outline-offset: -2px;
 }
 
 .nords-matrix__connection-entry.is-drag-over {
