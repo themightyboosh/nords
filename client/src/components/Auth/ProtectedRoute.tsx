@@ -30,7 +30,7 @@ export function ProtectedRoute({ children, requireVerification = true }: Protect
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requireVerification && !isEmailVerified) {
+  if (requireVerification && !isEmailVerified && !config.skipEmailVerification) {
     return <Navigate to="/verify-email" replace />;
   }
 

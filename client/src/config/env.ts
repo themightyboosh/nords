@@ -39,4 +39,7 @@ export const config = {
   },
   isDev: import.meta.env.DEV,
   isProd: import.meta.env.PROD,
+  // Set VITE_SKIP_EMAIL_VERIFICATION=true in .env.local to bypass
+  // the email verification gate during local development/testing.
+  skipEmailVerification: import.meta.env.VITE_SKIP_EMAIL_VERIFICATION === 'true',
 };
