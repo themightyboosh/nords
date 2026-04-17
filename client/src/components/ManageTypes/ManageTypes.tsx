@@ -19,7 +19,7 @@
  * "Add Property" exists ONLY here, never on a nord card.
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { X, Plus, Trash2, GripVertical, ChevronRight } from 'lucide-react';
 import { useTypeMutations, type NordTypeData, type ConnectionTypeData, type PropertySchema } from '../../hooks/useTypeMutations';
 import { resolveIcon } from '../../utils/iconRegistry';
@@ -38,6 +38,51 @@ interface ManageTypesProps {
 }
 
 type Tab = 'nord' | 'connection';
+
+// ── Options Editor — inline pill editor for 'select' property options ──
+function OptionsEditor({ options, onChange }: { options: string[]; onChange: (opts: string[]) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const addOption = (raw: string) => {
+    const val = raw.trim();
+    if (val && !options.includes(val)) onChange([...options, val]);
+  };
+
+  const removeOption = (idx: number) => onChange(options.filter((_, i) => i !== idx));
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const input = inputRef.current;
+      if (input?.value.trim()) { addOption(input.value); input.value = ''; }
+    }
+    if (e.key === 'Backspace' && !inputRef.current?.value && options.length > 0) {
+      removeOption(options.length - 1);
+    }
+  };
+
+  return (
+    <div className="manage-types__options-editor">
+      <span className="manage-types__options-label">Options</span>
+      <div className="manage-types__options-pills">
+        {options.map((opt, i) => (
+          <span key={opt} className="manage-types__option-pill">
+            {opt}
+            <button onClick={() => removeOption(i)} title="Remove">×</button>
+          </span>
+        ))}
+        <input
+          ref={inputRef}
+          className="manage-types__options-input"
+          placeholder={options.length === 0 ? 'Type an option, press Enter…' : ''}
+          onKeyDown={handleKeyDown}
+          onBlur={(e) => { if (e.target.value.trim()) { addOption(e.target.value); e.target.value = ''; } }}
+        />
+      </div>
+    </div>
+  );
+}
+
 
 export function ManageTypes({ projectId, open, onClose, onTypesChanged }: ManageTypesProps) {
   const mutations = useTypeMutations(projectId);
@@ -512,44 +557,54 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged }: Manage
                       <span></span>
                     </div>
                     {((selected as any).properties_schema || []).map((prop: PropertySchema, i: number) => (
-                      <div key={i} className="manage-types__props-row">
-                        <input
-                          type="text"
-                          className="manage-types__prop-input"
-                          value={prop.name}
-                          onChange={(e) => updateProperty(i, { name: e.target.value })}
-                        />
-                        <select
-                          className="manage-types__prop-select"
-                          value={prop.type}
-                          onChange={(e) => updateProperty(i, { type: e.target.value as PropertySchema['type'] })}
-                        >
-                          <option value="string">String</option>
-                          <option value="number">Number</option>
-                          <option value="select">Select</option>
-                          <option value="date">Date</option>
-                          <option value="markdown">Markdown</option>
-                          <option value="url">URL</option>
-                          <option value="tags">Tags</option>
-                        </select>
-                        <select
-                          className="manage-types__prop-select"
-                          value={prop.card_row || ''}
-                          onChange={(e) => updateProperty(i, { card_row: e.target.value ? parseInt(e.target.value) : undefined })}
-                        >
-                          <option value="">Hidden</option>
-                          <option value="1">Row 1</option>
-                          <option value="2">Row 2</option>
-                        </select>
-                        <button
-                          className="manage-types__prop-delete"
-                          onClick={() => removeProperty(i)}
-                          title="Remove property"
-                        >
-                          <Trash2 size={12} />
-                        </button>
+                      <div key={i} className="manage-types__props-row-group">
+                        <div className="manage-types__props-row">
+                          <input
+                            type="text"
+                            className="manage-types__prop-input"
+                            value={prop.name}
+                            onChange={(e) => updateProperty(i, { name: e.target.value })}
+                          />
+                          <select
+                            className="manage-types__prop-select"
+                            value={prop.type}
+                            onChange={(e) => updateProperty(i, { type: e.target.value as PropertySchema['type'] })}
+                          >
+                            <option value="string">Text</option>
+                            <option value="number">Number</option>
+                            <option value="select">Select</option>
+                            <option value="date">Date</option>
+                            <option value="markdown">Markdown</option>
+                            <option value="url">URL</option>
+                            <option value="tags">Tags</option>
+                          </select>
+                          <select
+                            className="manage-types__prop-select"
+                            value={prop.card_row || ''}
+                            onChange={(e) => updateProperty(i, { card_row: e.target.value ? parseInt(e.target.value) : undefined })}
+                          >
+                            <option value="">Hidden</option>
+                            <option value="1">Row 1</option>
+                            <option value="2">Row 2</option>
+                          </select>
+                          <button
+                            className="manage-types__prop-delete"
+                            onClick={() => removeProperty(i)}
+                            title="Remove property"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                        {/* Inline options editor — shown only for select type */}
+                        {prop.type === 'select' && (
+                          <OptionsEditor
+                            options={prop.options || []}
+                            onChange={(opts) => updateProperty(i, { options: opts })}
+                          />
+                        )}
                       </div>
                     ))}
+
                     {((selected as any).properties_schema || []).length === 0 && (
                       <div className="manage-types__props-empty">
                         No properties defined. Click "Add Property" to create one.

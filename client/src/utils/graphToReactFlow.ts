@@ -25,27 +25,28 @@ export function graphToNodes(
     const typeIcon = resolveIcon(type?.icon || null);
 
     // Convert 0-1 normalized positions to canvas pixel coordinates
-    // Using a 2000x2000 canvas space (plenty of room)
     const canvasX = nord.position_x * 2000 - 1000;
     const canvasY = nord.position_y * 2000 - 1000;
 
-    // Build properties array from JSONB, ordered by card_row
-    // Only include properties with card_row 1 or 2 on the card face
     const schema = type?.properties_schema || [];
-    const propsEntries = Object.entries(nord.properties || {});
-    
-    const properties = propsEntries
-      .map(([key, value]) => {
-        const schemaDef = schema.find((s: any) => s.name === key);
-        return {
-          key,
-          value: String(value),
-          cardRow: (schemaDef as any)?.card_row as number | undefined,
-        };
-      })
-      .filter(p => p.cardRow === 1 || p.cardRow === 2)
-      .sort((a, b) => (a.cardRow || 999) - (b.cardRow || 999))
-      .map(({ key, value, cardRow }) => ({ key, value, cardRow }));
+    const propsObj = nord.properties || {};
+
+    // All properties as {key, value} — used by the Detail Drawer forms
+    const allProperties = Object.entries(propsObj).map(([key, value]) => ({
+      key,
+      value: String(value ?? ''),
+    }));
+
+    // Card-face properties: only schema entries with card_row 1 or 2,
+    // sorted by row then schema order, value resolved from the properties JSONB.
+    const cardProperties = schema
+      .filter((s: any) => s.card_row === 1 || s.card_row === 2)
+      .sort((a: any, b: any) => (a.card_row || 999) - (b.card_row || 999))
+      .map((s: any) => ({
+        key: s.name,
+        value: String((propsObj as any)[s.name] ?? ''),
+      }))
+      .filter(p => p.value !== '');
 
     return {
       id: nord.id,
@@ -56,7 +57,8 @@ export function graphToNodes(
         type: typeName,
         typeIcon,
         typeColor,
-        properties,
+        properties: cardProperties,    // card face preview
+        _allProperties: allProperties, // full set for the drawer
         isGhosted: false,
         _typeId: nord.type_id,
       },
@@ -75,18 +77,21 @@ export function graphToEdges(
     const typeName = type?.name || 'Unknown';
     const typeColor = type?.accent_color || '#a78bfa';
 
-    // Arrowhead markers based on direction (4-state model)
     const arrowMarker = { type: MarkerType.ArrowClosed, color: typeColor, width: 16, height: 16 };
     const isForward = conn.direction === 'forward';
     const isReverse = conn.direction === 'reverse';
     const isBoth = conn.direction === 'both';
-    const isNeither = conn.direction === 'neither';
 
-    // Direction for visual rendering: to/from/both/none
     const visualDirection = isForward ? 'to'
       : isReverse ? 'from'
       : isBoth ? 'both'
-      : 'none'; // 'neither' and 'none' both render without chevrons
+      : 'none';
+
+    // Connection properties as {key, value} array for the Detail Drawer
+    const connProperties = Object.entries(conn.properties || {}).map(([key, value]) => ({
+      key,
+      value: String(value ?? ''),
+    }));
 
     return {
       id: conn.id,
@@ -105,6 +110,8 @@ export function graphToEdges(
         _typeId: conn.type_id,
         _distanceX: conn.distance_x,
         _distanceY: conn.distance_y,
+        _xStageLabels: type?.x_stage_labels ?? [],
+        _properties: connProperties,
       },
     };
   });

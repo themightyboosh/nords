@@ -508,6 +508,90 @@
   margin-top: 0;
 }
 
+/* ── Props row group (row + optional options sub-row) */
+.manage-types__props-row-group {
+  border-top: 1px solid var(--nords-color-border-subtle);
+}
+
+.manage-types__props-row-group .manage-types__props-row {
+  border-top: none;
+}
+
+/* ── Inline options editor for select-type properties ── */
+.manage-types__options-editor {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 12px 8px 12px;
+  background: color-mix(in srgb, var(--nords-color-accent) 4%, var(--nords-color-bg-deep));
+  border-top: 1px dashed color-mix(in srgb, var(--nords-color-border-subtle) 60%, transparent);
+}
+
+.manage-types__options-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--nords-color-text-tertiary);
+  padding-top: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 46px;
+}
+
+.manage-types__options-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  flex: 1;
+}
+
+.manage-types__option-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 10px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--nords-color-accent) 15%, var(--nords-color-bg-surface));
+  border: 1px solid color-mix(in srgb, var(--nords-color-accent) 30%, transparent);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--nords-color-text-primary);
+}
+
+.manage-types__option-pill button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--nords-color-text-tertiary);
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.1s ease;
+}
+
+.manage-types__option-pill button:hover {
+  color: var(--nords-color-danger);
+}
+
+.manage-types__options-input {
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 12px;
+  color: var(--nords-color-text-primary);
+  font-family: var(--nords-font-primary);
+  min-width: 120px;
+  padding: 2px 0;
+}
+
+.manage-types__options-input::placeholder {
+  color: var(--nords-color-text-disabled);
+  font-style: italic;
+}
+
 /* ── Field hint (inline sub-label) ── */
 .manage-types__field-hint {
   display: block;

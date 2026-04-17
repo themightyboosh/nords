@@ -104,7 +104,8 @@ export function useDrawerEntity(
       typeColor: (node.data?.typeColor as string) || '#4da6ff',
       typeIcon: node.data?.typeIcon,
       typeId: (node.data?._typeId as string) || '',
-      properties: (node.data?.properties as any[]) || [],
+      // Use _allProperties (all values) for the drawer, not the card-face slice
+      properties: (node.data?._allProperties as any[]) || (node.data?.properties as any[]) || [],
       position: node.position,
       node,
     };
@@ -147,12 +148,18 @@ export function useDrawerEntity(
     if (!entityId || entityType !== 'nord') return;
     setNodes(nds => nds.map(n => {
       if (n.id !== entityId) return n;
-      const props = ((n.data?.properties as any[]) || []).map(p =>
+      // Patch _allProperties (used by the drawer)
+      const allProps = ((n.data?._allProperties as any[]) || []);
+      const exists = allProps.some((p: any) => p.key === key);
+      const newAllProps = exists
+        ? allProps.map((p: any) => p.key === key ? { ...p, value } : p)
+        : [...allProps, { key, value }];
+      // Also patch card-face properties if the key appears there
+      const cardProps = ((n.data?.properties as any[]) || []).map((p: any) =>
         p.key === key ? { ...p, value } : p
       );
-      return { ...n, data: { ...n.data, properties: props } };
+      return { ...n, data: { ...n.data, _allProperties: newAllProps, properties: cardProps } };
     }));
-    // Persist: we need to transform the flat key/value into the properties JSONB
     api.put(`/api/nords/${entityId}`, {
       properties: { [key]: value },
     }).catch(err => {
