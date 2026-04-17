@@ -184,14 +184,11 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     }
 
     // Resolve final position for a nord:
-    //   1. Explicit board_position (user-placed override from board drag)
-    //   2. Derived from connection distances (auto-placement)
+    //   1. Derived from connection distances (source of truth for spectrum/grid values)
+    //   2. Explicit board_position (fallback for orphans with no connections of this type)
     //   3. null → not on this board
     const resolvePosition = (nordId: string): { distance_x: number; distance_y: number } | null => {
-      // Prefer explicit board position — board drag writes here, NOT to connections
-      const explicit = explicitPositionByNord.get(nordId);
-      if (explicit) return explicit;
-      // Fall back to derived from connection distances
+      // Connections are the source of truth — they carry the real spectrum value
       const xAcc = derivedDistX.get(nordId);
       if (xAcc) {
         const yAcc = derivedDistY.get(nordId) ?? { sum: 0.5, count: 1 };
@@ -200,6 +197,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
           distance_y: yAcc.sum / yAcc.count,
         };
       }
+      // No connections of this type — fallback to explicit board_position (orphan placement)
+      const explicit = explicitPositionByNord.get(nordId);
+      if (explicit) return explicit;
       return null; // not on this board
     };
 
@@ -360,11 +360,14 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   }, [activeType]);
 
   /**
-   * Board drop handler — cosmetic only.
+   * Board drop handler.
    *
-   * Board drag writes ONLY to board_positions (per-nord),
-   * NEVER to connections.distance_x (shared between two nords).
-   * This prevents moving one card from dragging connected cards along.
+   * Cross-column/swimlane drag: writes connections.distance_x = column canonical center.
+   * This is intentional — the connection carries the real spectrum/grid value, and
+   * all nords on that connection move to the same column together (correct semantics).
+   *
+   * Within-column ordering: writes connections.sort_order (LexoRank bisect).
+   * board_positions is only used as fallback for orphan nords with no connections.
    */
   const handleCellDrop = useCallback(async (
     e: React.DragEvent,
@@ -385,16 +388,51 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const bounds = getColumnBounds(targetLabel, labels);
     const newDistY = targetPositionY ?? 0.5;
 
-    // Write ONLY to board_positions — per-nord, never shared
-    await upsertPosition({
-      nord_id: data.nordId,
-      type_id: activeType.id,
-      distance_x: bounds.center,
-      distance_y: newDistY,
-    });
+    // ── Within-column sort order (LexoRank bisect) ──
+    const existingCards = columnCards.filter(c => c.id !== data.nordId);
+    let newSortOrder: number;
+    if (existingCards.length === 0) {
+      newSortOrder = 1000;
+    } else {
+      const colBody = e.currentTarget as HTMLElement;
+      const rect = colBody.getBoundingClientRect();
+      const relativeY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+      const insertIdx = Math.round(relativeY * existingCards.length);
+      if (insertIdx === 0) {
+        newSortOrder = existingCards[0].sortOrder - 1000;
+      } else if (insertIdx >= existingCards.length) {
+        newSortOrder = existingCards[existingCards.length - 1].sortOrder + 1000;
+      } else {
+        const above = existingCards[insertIdx - 1].sortOrder;
+        const below = existingCards[insertIdx].sortOrder;
+        newSortOrder = Math.round((above + below) / 2);
+      }
+    }
+
+    const connectionIds = data.sourceConnectionIds;
+    if (connectionIds.length > 0) {
+      // Write canonical column position + sort order to all connections of this type
+      await Promise.all(
+        connectionIds.map(connId =>
+          updateConnection(connId, {
+            distance_x: bounds.center,
+            distance_y: newDistY,
+            sort_order: newSortOrder,
+          })
+        )
+      );
+    } else {
+      // Orphan: no connections yet — use board_positions fallback
+      await upsertPosition({
+        nord_id: data.nordId,
+        type_id: activeType.id,
+        distance_x: bounds.center,
+        distance_y: newDistY,
+      });
+    }
 
     await refetchGraph();
-  }, [activeType, upsertPosition, refetchGraph]);
+  }, [activeType, updateConnection, upsertPosition, refetchGraph]);
 
   const handleConnectionEntryDrop = useCallback(async (e: React.DragEvent, targetTypeId: string) => {
     e.preventDefault();
