@@ -10,15 +10,13 @@ interface ConnectionLabelProps {
   color: string;
   edgeId: string;
   isDimmed?: boolean;
-  /** Resolved stage label from the spectrum (e.g. 'HIGH', 'DONE') */
+  /** Composite label: verb + stage value(s), or verb + preposition, or null */
   resolvedLabel?: string | null;
-  /** Verb + preposition (e.g. 'blocks from', 'depends on together') */
-  relationshipLabel?: string | null;
 }
 
 export const ConnectionLabel = React.memo(function ConnectionLabel({
   x, y, angleDeg, direction, type, color, edgeId, isDimmed,
-  resolvedLabel, relationshipLabel,
+  resolvedLabel,
 }: ConnectionLabelProps) {
   const zoom = useStore((s) => s.transform[2]);
   // Unified text scaling — same formula as NordNode textScale
@@ -60,11 +58,9 @@ export const ConnectionLabel = React.memo(function ConnectionLabel({
           zIndex: isDimmed ? 0 : 10,
         } as React.CSSProperties}
       >
-        {/* Priority: resolved spectrum label > relationship label > type name */}
+        {/* Priority: composite label > type name */}
         {resolvedLabel ? (
           <span className="nords-connection-label__resolved">{resolvedLabel}</span>
-        ) : relationshipLabel ? (
-          <span className="nords-connection-label__relationship">{relationshipLabel}</span>
         ) : (
           <span className="nords-connection-label__type">{type}</span>
         )}

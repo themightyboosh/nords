@@ -23,7 +23,7 @@
 import React, { useMemo, useState, useCallback, memo } from 'react';
 import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
 import { useLens } from '../../context/LensContext';
-import { resolveStageLabel } from '../../utils/stageLabels';
+import { resolveStageLabel, getColumnBounds } from '../../utils/stageLabels';
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { useBoardSettings } from '../../hooks/useBoardSettings';
@@ -53,6 +53,7 @@ interface MatrixCard {
   resolvedYLabel: string;
   distance: number;
   distanceY: number;
+  sortOrder: number;
   connectionIds: string[];
   connectionDirection: string;
   properties: Array<{ key: string; value: string; color?: string }>;
@@ -253,6 +254,15 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         resolvedYLabel: '',
         distance: pos?.distance_x ?? 0.5,
         distanceY: pos?.distance_y ?? 0.5,
+        sortOrder: (() => {
+          // Min sort_order across this nord's connections of this type
+          if (connIds.length === 0) return 0;
+          const orders = connIds.map(cid => {
+            const c = graph.connections.find(cc => cc.id === cid);
+            return c?.sort_order ?? 0;
+          });
+          return Math.min(...orders);
+        })(),
         connectionIds: connIds,
         connectionDirection: firstConn?.direction || 'forward',
         properties: (() => {
@@ -327,7 +337,11 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const columns = labels.map(lbl => ({
       label: lbl.label,
       position: lbl.position,
-      cards: (columnMap.get(lbl.label) || []).sort((a, b) => a.distance - b.distance),
+      cards: (columnMap.get(lbl.label) || []).sort((a, b) => {
+        // Primary: sort_order (Trello-style), secondary: title
+        if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+        return a.title.localeCompare(b.title);
+      }),
     }));
 
     return { columns, unlinked: unlinkedCards, connectionEntries: entries, gridCells: cells };
@@ -346,15 +360,13 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   }, [activeType]);
 
   /**
-   * Data-driven positional drop handler.
+   * Board drop handler — simplified positional model.
    *
-   * When a card is dropped on a column, the source of truth
-   * (connections.distance_x) is updated — NOT a separate override table.
-   * This ensures the graph view reflects the same values as the board.
-   *
-   * Updates ALL of the nord's connections of the active type to the new
-   * distance_x. The board derives position from connection averages,
-   * so updating every connection keeps both views in sync.
+   * 1. Determine target column from the drop event
+   * 2. Compute sort_order via LexoRank-style bisect
+   * 3. Write distance_x + sort_order to the dragged card's connections
+   * 4. Equalize: redistribute all cards in the target column evenly
+   *    across the column's Voronoi range so the graph view looks clean
    */
   const handleCellDrop = useCallback(async (
     e: React.DragEvent,
@@ -370,53 +382,91 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       return;
     }
 
-    // Exclude the dragged card from neighbour calculations
-    const neighbours = columnCards.filter(c => c.id !== data.nordId);
+    const labels = activeType.xStageLabels;
+    const targetLabel = resolveStageLabel(columnPosition, labels) || labels[0]?.label || '';
+    const bounds = getColumnBounds(targetLabel, labels);
 
-    let newDistX: number;
+    // ── Sort order: determine where in the column the card was dropped ──
+    const existingCards = columnCards.filter(c => c.id !== data.nordId);
+    let newSortOrder: number;
 
-    if (neighbours.length === 0) {
-      newDistX = columnPosition;
+    if (existingCards.length === 0) {
+      newSortOrder = 1000;
     } else {
       const colBody = e.currentTarget as HTMLElement;
       const rect = colBody.getBoundingClientRect();
       const relativeY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-      const insertIdx = Math.round(relativeY * neighbours.length);
+      const insertIdx = Math.round(relativeY * existingCards.length);
 
       if (insertIdx === 0) {
-        newDistX = Math.max(0, neighbours[0].distance - 0.02);
-      } else if (insertIdx >= neighbours.length) {
-        newDistX = Math.min(1, neighbours[neighbours.length - 1].distance + 0.02);
+        newSortOrder = existingCards[0].sortOrder - 1000;
+      } else if (insertIdx >= existingCards.length) {
+        newSortOrder = existingCards[existingCards.length - 1].sortOrder + 1000;
       } else {
-        const above = neighbours[insertIdx - 1].distance;
-        const below = neighbours[insertIdx].distance;
-        newDistX = (above + below) / 2;
+        const above = existingCards[insertIdx - 1].sortOrder;
+        const below = existingCards[insertIdx].sortOrder;
+        newSortOrder = Math.round((above + below) / 2);
       }
     }
 
-    newDistX = Math.max(0, Math.min(1, newDistX));
     const newDistY = targetPositionY ?? 0.5;
 
-    // Update the SOURCE OF TRUTH: all connections of this type for this nord
+    // ── Write: update the dragged card's connections ──
     const connectionIds = data.sourceConnectionIds;
     if (connectionIds.length > 0) {
       await Promise.all(
         connectionIds.map(connId =>
-          updateConnection(connId, { distance_x: newDistX, distance_y: newDistY })
+          updateConnection(connId, {
+            distance_x: bounds.center,
+            distance_y: newDistY,
+            sort_order: newSortOrder,
+          })
         )
       );
     } else {
-      // Nord has no connections of this type yet — use board position as fallback
+      // No connections yet — use board position fallback
       await upsertPosition({
         nord_id: data.nordId,
         type_id: activeType.id,
-        distance_x: newDistX,
+        distance_x: bounds.center,
         distance_y: newDistY,
       });
     }
 
+    // ── Equalize: redistribute all cards in this column evenly ──
+    // Includes the card we just dropped. Grab fresh column after our write.
+    if (graph && connectionIds.length > 0) {
+      const allCardsInCol = [...existingCards];
+      // Add the dragged card to proper sort position
+      const draggedCard = columns.flatMap(c => c.cards).find(c => c.id === data.nordId)
+        || { id: data.nordId, sortOrder: newSortOrder, connectionIds };
+      allCardsInCol.push(draggedCard as MatrixCard);
+      allCardsInCol.sort((a, b) => a.sortOrder - b.sortOrder);
+
+      const n = allCardsInCol.length;
+      if (n > 1) {
+        // Evenly space within the column's Voronoi range with small padding
+        const pad = (bounds.max - bounds.min) * 0.05;
+        const rangeMin = bounds.min + pad;
+        const rangeMax = bounds.max - pad;
+        const step = (rangeMax - rangeMin) / (n - 1);
+
+        const equalizePromises: Promise<any>[] = [];
+        allCardsInCol.forEach((card, i) => {
+          const targetDist = n === 1 ? bounds.center : rangeMin + step * i;
+          // Update all connections for this nord to the equalized distance
+          for (const cid of card.connectionIds) {
+            equalizePromises.push(
+              updateConnection(cid, { distance_x: targetDist })
+            );
+          }
+        });
+        await Promise.all(equalizePromises);
+      }
+    }
+
     await refetchGraph();
-  }, [activeType, updateConnection, upsertPosition, refetchGraph]);
+  }, [activeType, graph, columns, updateConnection, upsertPosition, refetchGraph]);
 
   const handleConnectionEntryDrop = useCallback(async (e: React.DragEvent, targetTypeId: string) => {
     e.preventDefault();

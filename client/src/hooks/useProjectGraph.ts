@@ -80,6 +80,7 @@ export interface Connection {
   direction: 'forward' | 'reverse' | 'both' | 'neither' | 'none';
   distance_x: number;
   distance_y: number;
+  sort_order: number;
   properties: Record<string, unknown>;
   created_at: string;
 }

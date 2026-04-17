@@ -66,7 +66,7 @@ export function useConnectionMutations(projectId: string | null) {
 
   const updateConnection = useCallback(async (
     connectionId: string,
-    updates: Partial<Pick<Connection, 'source_nord_id' | 'target_nord_id' | 'direction' | 'distance_x' | 'distance_y' | 'properties'>>
+    updates: Partial<Pick<Connection, 'source_nord_id' | 'target_nord_id' | 'direction' | 'distance_x' | 'distance_y' | 'sort_order' | 'properties'>>
   ): Promise<Connection> => {
     return api.put<Connection>(`/api/connections/${connectionId}`, updates);
   }, []);

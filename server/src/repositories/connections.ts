@@ -26,7 +26,7 @@ export async function create(connection: Omit<Connection, 'id' | 'created_at' | 
   ]) as Promise<Connection>;
 }
 
-export async function update(id: string, updates: Partial<Pick<Connection, 'source_nord_id' | 'target_nord_id' | 'direction' | 'distance_x' | 'distance_y' | 'properties'>>): Promise<Connection | null> {
+export async function update(id: string, updates: Partial<Pick<Connection, 'source_nord_id' | 'target_nord_id' | 'direction' | 'distance_x' | 'distance_y' | 'sort_order' | 'properties'>>): Promise<Connection | null> {
   const setClauses: string[] = [];
   const values: unknown[] = [];
   let paramIdx = 1;

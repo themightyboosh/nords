@@ -111,6 +111,7 @@ export function graphToEdges(
         _distanceX: conn.distance_x,
         _distanceY: conn.distance_y,
         _xStageLabels: type?.x_stage_labels ?? [],
+        _yStageLabels: type?.y_stage_labels ?? [],
         _properties: connProperties,
       },
     };

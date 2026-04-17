@@ -47,3 +47,27 @@ export function resolveStageLabel(distance: number, labels: StageLabel[]): strin
 
   return sorted[sorted.length - 1].label;
 }
+
+/**
+ * Get the Voronoi [min, max] bounds for a column identified by its label.
+ * The range extends from the midpoint between this label and its left neighbour
+ * to the midpoint between this label and its right neighbour.
+ * Edge columns extend to 0 or 1.
+ */
+export function getColumnBounds(label: string, labels: StageLabel[]): { min: number; max: number; center: number } {
+  if (labels.length === 0) return { min: 0, max: 1, center: 0.5 };
+
+  const sorted = [...labels].sort((a, b) => a.position - b.position);
+  const idx = sorted.findIndex(l => l.label === label);
+  if (idx === -1) return { min: 0, max: 1, center: 0.5 };
+
+  const center = sorted[idx].position;
+  const min = idx === 0
+    ? 0
+    : (sorted[idx - 1].position + center) / 2;
+  const max = idx === sorted.length - 1
+    ? 1
+    : (center + sorted[idx + 1].position) / 2;
+
+  return { min, max, center };
+}

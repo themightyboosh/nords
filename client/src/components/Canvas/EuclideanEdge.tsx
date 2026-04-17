@@ -128,7 +128,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   const sourceNode = useStore((s) => s.nodeLookup.get(source));
   const targetNode = useStore((s) => s.nodeLookup.get(target));
 
-  // ── Resolve distance to stage label ──
+  // ── Resolve distance to stage labels ──
   const { connectionTypes } = useTypeRegistryContext();
   const resolvedLabel = useMemo(() => {
     if (!edgeData?._typeId || edgeData._distanceX == null) return null;
@@ -137,19 +137,43 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     return resolveStageLabel(edgeData._distanceX, ct.xStageLabels);
   }, [edgeData?._typeId, edgeData?._distanceX, connectionTypes]);
 
-  // ── Resolve relationship label: verb + preposition ──
-  // e.g. direction=to, verb='blocks', prepositions.forward='from' → 'blocks from'
-  // neither/none → 'related' (when verb set) or type name
-  const relationshipLabel = useMemo(() => {
+  const resolvedYLabel = useMemo(() => {
+    if (!edgeData?._typeId || edgeData._distanceY == null) return null;
+    const ct = connectionTypes.find(c => c.id === edgeData._typeId);
+    if (!ct || ct.yStageLabels.length === 0) return null;
+    return resolveStageLabel(edgeData._distanceY, ct.yStageLabels);
+  }, [edgeData?._typeId, edgeData?._distanceY, connectionTypes]);
+
+  // ── Composite label: verb + measurement (spectrum or grid) ──
+  // Priority: composite (verb + stage) > verb+preposition > type name
+  const compositeLabel = useMemo(() => {
     const verb = edgeData?._verb;
     const preps = edgeData?._prepositions as { forward: string; reverse: string; both: string } | undefined;
     const dir = edgeData?.direction;
-    if (!verb) return null;
-    if (dir === 'to') return `${verb} ${preps?.forward ?? 'from'}`;
-    if (dir === 'from') return `${verb} ${preps?.reverse ?? 'to'}`;
-    if (dir === 'both') return `${verb} ${preps?.both ?? 'together'}`;
-    return 'related'; // neither / none
-  }, [edgeData?._verb, edgeData?._prepositions, edgeData?.direction]);
+    const hasX = resolvedLabel != null;
+    const hasY = resolvedYLabel != null;
+
+    // Build relationship verb phrase (verb + preposition)
+    let verbPhrase: string | null = null;
+    if (verb) {
+      if (dir === 'to') verbPhrase = `${verb} ${preps?.forward ?? 'from'}`;
+      else if (dir === 'from') verbPhrase = `${verb} ${preps?.reverse ?? 'to'}`;
+      else if (dir === 'both') verbPhrase = `${verb} ${preps?.both ?? 'together'}`;
+      else verbPhrase = 'related';
+    }
+
+    if (hasX && hasY) {
+      // Grid mode: verb + x / y
+      const position = `${resolvedLabel} / ${resolvedYLabel}`;
+      return verb ? `${verb} ${position}` : position;
+    }
+    if (hasX) {
+      // Spectrum mode: verb + stage-label
+      return verb ? `${verb} ${resolvedLabel}` : resolvedLabel;
+    }
+    // No measurement — fall through to verb phrase or type name
+    return verbPhrase;
+  }, [resolvedLabel, resolvedYLabel, edgeData?._verb, edgeData?._prepositions, edgeData?.direction]);
 
   // Node centers (React Flow positions are top-left, add half dimensions)
   const sW = sourceNode?.measured?.width ?? 200;
@@ -481,8 +505,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
           color={isDimmed ? '#666' : (edgeData?.color || '#888')}
           edgeId={id}
           isDimmed={isDimmed}
-          resolvedLabel={resolvedLabel}
-          relationshipLabel={relationshipLabel}
+          resolvedLabel={compositeLabel}
         />
       )}
     </>
