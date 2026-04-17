@@ -255,10 +255,17 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         distanceY: pos?.distance_y ?? 0.5,
         connectionIds: connIds,
         connectionDirection: firstConn?.direction || 'forward',
-        properties: Object.entries(nord.properties || {}).slice(0, 3).map(([key, value]) => ({
-          key,
-          value: String(value),
-        })),
+        properties: (() => {
+          // Schema-ordered card preview: same logic as graphToReactFlow.
+          // Show only properties with card_row 1 or 2, sorted by row.
+          const schema = nordType?.properties_schema || [];
+          const propsObj = nord.properties || {};
+          return schema
+            .filter((s: any) => s.card_row === 1 || s.card_row === 2)
+            .sort((a: any, b: any) => (a.card_row || 999) - (b.card_row || 999))
+            .map((s: any) => ({ key: s.name, value: String((propsObj as any)[s.name] ?? '') }))
+            .filter(p => p.value !== '');
+        })(),
       };
 
       if (isOrphan) {

@@ -148,17 +148,20 @@ export function useDrawerEntity(
     if (!entityId || entityType !== 'nord') return;
     setNodes(nds => nds.map(n => {
       if (n.id !== entityId) return n;
-      // Patch _allProperties (used by the drawer)
+      // Patch _allProperties (full set — used by the drawer forms)
       const allProps = ((n.data?._allProperties as any[]) || []);
-      const exists = allProps.some((p: any) => p.key === key);
-      const newAllProps = exists
+      const allExists = allProps.some((p: any) => p.key === key);
+      const newAllProps = allExists
         ? allProps.map((p: any) => p.key === key ? { ...p, value } : p)
         : [...allProps, { key, value }];
-      // Also patch card-face properties if the key appears there
-      const cardProps = ((n.data?.properties as any[]) || []).map((p: any) =>
-        p.key === key ? { ...p, value } : p
-      );
-      return { ...n, data: { ...n.data, _allProperties: newAllProps, properties: cardProps } };
+      // Patch card-face properties: upsert so new values appear immediately
+      // (schema-based filtering happens at load time in graphToReactFlow)
+      const cardProps = ((n.data?.properties as any[]) || []);
+      const cardExists = cardProps.some((p: any) => p.key === key);
+      const newCardProps = cardExists
+        ? cardProps.map((p: any) => p.key === key ? { ...p, value } : p)
+        : value ? [...cardProps, { key, value }] : cardProps;
+      return { ...n, data: { ...n.data, _allProperties: newAllProps, properties: newCardProps } };
     }));
     api.put(`/api/nords/${entityId}`, {
       properties: { [key]: value },

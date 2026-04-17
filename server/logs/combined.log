@@ -5318,3 +5318,153 @@ ReferenceError: BoardCard is not defined
 18:10:54.603 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
 18:10:54.604 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":2,"rows":1}
 18:10:54.605 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+22:36:36.818 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:36:36.820 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":54,"rows":1}
+22:36:36.820 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"rows":1}
+22:36:45.621 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":8,"rows":1}
+22:36:45.624 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+22:36:52.102 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":1,"rows":5}
+22:36:52.131 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:36:52.133 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":32,"rows":5}
+22:36:52.135 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":1,"rows":5}
+22:36:52.136 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":2,"rows":5}
+22:37:03.312 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:03.314 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":36,"rows":1}
+22:37:03.328 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+22:37:09.282 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET accent_color = $1 WHERE id = $2 AND deleted_at IS NULL RET","duration":1,"rows":1}
+22:37:09.325 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:37:18.287 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":2,"rows":1}
+22:37:18.292 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:37:24.819 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:37:24.823 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:37:30.140 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:37:30.143 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:37:30.173 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:30.173 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:30.175 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":35,"rows":1}
+22:37:30.176 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":36,"rows":1}
+22:37:30.270 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+22:37:30.272 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:37:42.487 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:42.487 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:42.488 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":34,"rows":1}
+22:37:42.489 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":36,"rows":1}
+22:37:42.499 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+22:37:42.501 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:37:58.135 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:58.137 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":39,"rows":1}
+22:37:58.137 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:58.138 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":34,"rows":1}
+22:37:58.139 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:58.139 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:58.139 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":33,"rows":1}
+22:37:58.140 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":31,"rows":1}
+22:37:58.142 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:58.142 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:37:58.144 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":28,"rows":1}
+22:37:58.144 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":27,"rows":1}
+22:37:58.165 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+22:37:58.168 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:37:58.170 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:37:58.171 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:37:58.172 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:37:58.173 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"rows":1}
+22:38:10.800 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:38:10.803 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":32,"rows":1}
+22:38:10.816 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":4,"rows":1}
+22:39:02.044 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:39:02.045 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":34,"rows":1}
+22:39:17.704 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:39:17.705 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:39:17.706 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":38,"rows":5}
+22:39:17.706 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":38,"rows":5}
+22:39:17.708 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":1,"rows":5}
+22:39:17.708 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":1,"rows":5}
+22:39:26.783 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":2,"rows":1}
+22:39:26.789 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+22:39:27.281 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:39:27.284 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:39:27.786 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":0,"rows":1}
+22:39:27.790 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:39:27.813 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:39:27.815 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":29,"rows":1}
+22:39:27.825 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+22:39:34.391 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:39:34.395 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+22:39:36.643 [31merror[39m: Uncaught error Uncaught TypeError: Cannot set properties of null (setting 'value') {"service":"nords-client","clientTimestamp":"2026-04-17T02:39:28.285Z","filename":"","lineno":29,"colno":30,"userId":"dev-user-000"}
+22:39:42.356 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":2,"rows":1}
+22:39:42.357 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:39:42.362 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:39:42.364 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:39:42.383 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:39:42.385 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":30,"rows":1}
+22:39:42.399 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":4,"rows":1}
+22:39:50.955 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:39:50.956 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:39:50.963 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:39:50.991 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:39:58.149 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:39:58.150 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":2,"rows":1}
+22:39:58.153 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:39:58.181 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+22:40:04.943 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:40:04.947 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:40:06.642 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-17T02:39:51.111Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+22:40:49.178 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:40:49.178 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:40:49.179 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:40:49.179 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:40:49.179 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":35,"rows":1}
+22:40:49.180 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":35,"rows":1}
+22:40:49.180 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":41,"rows":1}
+22:40:49.180 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":33,"rows":1}
+22:40:49.180 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:40:49.180 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:40:49.181 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":32,"rows":1}
+22:40:49.182 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":31,"rows":1}
+22:40:49.203 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+22:40:49.204 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"rows":1}
+22:40:49.206 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:40:49.207 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:40:49.208 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:40:49.210 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:40:57.506 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":2,"rows":1}
+22:40:57.507 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":2,"rows":1}
+22:40:57.507 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:40:57.512 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":4,"rows":1}
+22:40:57.541 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:40:57.543 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:41:06.312 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:41:06.313 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:41:06.318 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+22:41:06.349 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:41:14.403 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":1,"rows":1}
+22:41:14.407 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:41:40.539 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:41:40.540 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:41:40.541 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":41,"rows":5}
+22:41:40.541 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":41,"rows":5}
+22:41:40.542 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":0,"rows":5}
+22:41:40.542 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":0,"rows":5}
+22:42:03.930 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:42:03.934 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":45,"rows":1}
+22:42:03.935 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:42:03.936 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:42:03.936 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:42:03.938 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":42,"rows":1}
+22:42:03.938 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":43,"rows":1}
+22:42:03.939 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":40,"rows":1}
+22:42:03.942 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:42:03.943 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:42:03.944 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":42,"rows":1}
+22:42:03.944 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":40,"rows":1}
+22:42:03.965 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+22:42:03.967 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:42:03.970 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:42:03.972 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:42:03.974 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:42:03.979 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+22:42:38.302 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:42:38.304 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":35,"rows":1}
+22:43:25.818 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:43:25.821 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":30,"rows":1}
