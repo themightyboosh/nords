@@ -5721,3 +5721,132 @@ ReferenceError: relationshipLabel is not defined
 10:57:03.498 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $","duration":46,"rows":1}
 10:57:03.498 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $","duration":45,"rows":1}
 10:57:03.503 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+13:41:28.269 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:267:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":8,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:41:28.273 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:267:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":13,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:41:30.152 [31merror[39m: Unhandled promise rejection
+ApiError: Failed to update connection
+    at request (http://localhost:5173/src/api/client.ts:42:9)
+    at async Promise.all (index 0)
+    at async http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1776438995783:368:4 {"service":"nords-client","clientTimestamp":"2026-04-17T17:41:28.273Z","reason":"Failed to update connection","userId":"dev-user-000"}
+13:41:30.312 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:41:30.313 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:41:38.723 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:41:38.724 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:42:34.259 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:42:59.818 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:42:59.821 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:42:59.821 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:43:11.365 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:43:11.368 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:43:11.368 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:43:11.433 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:43:11.437 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:43:11.437 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:43:11.460 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:43:11.464 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:43:11.465 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:43:20.054 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:43:33.930 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:43:52.168 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:43:57.893 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:43:57.897 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:43:57.897 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:43:57.894 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:43:57.896 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:43:57.897 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:43:57.896 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:43:57.900 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:43:57.900 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:44:01.216 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:44:39.663 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:44:39.663 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:44:39.666 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:44:39.666 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:44:39.667 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:44:39.667 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:44:39.664 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:44:39.666 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:44:39.667 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:44:47.111 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:44:47.114 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:44:47.114 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:44:58.245 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:44:58.346 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":227,"rows":1}
+13:45:08.785 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:45:08.789 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:45:08.789 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:45:08.792 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:45:08.795 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:45:08.796 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:45:08.792 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:45:08.795 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:45:08.796 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+13:45:08.799 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+13:45:08.803 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+13:45:08.803 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}

@@ -2037,3 +2037,85 @@ ReferenceError: relationshipLabel is not defined
     at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:8324:37)
     at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:8308:6)
     at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=d45501da:7993:27) {"service":"nords-client","clientTimestamp":"2026-04-17T14:27:14.805Z","errorMessage":"relationshipLabel is not defined","componentStack":"\n    at EuclideanEdge (http://localhost:5173/src/components/Canvas/EuclideanEdge.tsx?t=1776436034769:83:75)\n    at g (<anonymous>)\n    at svg (<anonymous>)\n    at EdgeWrapper (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:8852:24)\n    at div (<anonymous>)\n    at EdgeRendererComponent (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9037:34)\n    at div (<anonymous>)\n    at Viewport (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9073:21)\n    at div (<anonymous>)\n    at Pane (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:7266:17)\n    at div (<anonymous>)\n    at ZoomPane (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:7135:21)\n    at FlowRendererComponent (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:7835:34)\n    at GraphViewComponent (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9270:31)\n    at Wrapper (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9772:20)\n    at div (<anonymous>)\n    at ReactFlow (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9798:22)\n    at InteractiveCanvas (http://localhost:5173/src/components/Canvas/CanvasEngine.tsx?t=1776435837903:27:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5173/src/components/Canvas/CanvasEngine.tsx?t=1776435837903:679:40)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5173/src/context/TypeRegistryContext.tsx?t=1776435732377:19:40)\n    at LensProvider (http://localhost:5173/src/context/LensContext.tsx:35:32)\n    at BatchProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5173/src/App.tsx?t=1776435732377:30:27)\n    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5173/src/context/AuthContext.tsx:10:32)\n    at App (http://localhost:5173/src/App.tsx?t=1776435732377:176:42)\n    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5173/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+13:41:28.269 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:267:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":8,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:41:28.273 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:267:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":13,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:41:30.152 [31merror[39m: Unhandled promise rejection
+ApiError: Failed to update connection
+    at request (http://localhost:5173/src/api/client.ts:42:9)
+    at async Promise.all (index 0)
+    at async http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1776438995783:368:4 {"service":"nords-client","clientTimestamp":"2026-04-17T17:41:28.273Z","reason":"Failed to update connection","userId":"dev-user-000"}
+13:41:30.312 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:41:30.313 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:41:38.723 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:41:38.724 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:42:34.259 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:43:20.054 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:43:33.930 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:43:52.168 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5432"}
+13:44:01.216 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:28:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:48:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5432"}

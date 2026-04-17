@@ -2,11 +2,15 @@ import pg from 'pg';
 import logger from './lib/logger.js';
 const { Pool } = pg;
 
+if (!process.env.DATABASE_URL) {
+  throw new Error('[db] DATABASE_URL is not set. Cloud DB connection is required.');
+}
+
 // Connection limits strict for serverless/Cloud Run environments
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgres://danielcrowder@127.0.0.1:5432/nords_dev',
+  connectionString: process.env.DATABASE_URL,
   max: 20,
-  idleTimeoutMillis: 10000, // Reduced to 10s as per DBA notes for Cloud Run
+  idleTimeoutMillis: 10000,
   connectionTimeoutMillis: 5000,
 });
 

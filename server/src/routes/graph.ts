@@ -43,7 +43,8 @@ graphRouter.get('/projects/:id/graph', async (req: Request, res: Response) => {
       return;
     }
     res.json(result.fn_load_project_graph);
-  } catch (err) {
+  } catch (err: any) {
+    console.error('[graph] fn_load_project_graph error:', err.message, err.code);
     res.status(500).json({ error: 'Failed to load project graph' });
   }
 });
