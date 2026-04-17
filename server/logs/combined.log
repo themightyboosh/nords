@@ -5468,3 +5468,42 @@ ReferenceError: BoardCard is not defined
 22:42:38.304 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":35,"rows":1}
 22:43:25.818 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 22:43:25.821 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":30,"rows":1}
+22:56:39.128 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:56:39.131 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":35,"rows":1}
+22:56:41.321 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":1,"rows":1}
+22:57:00.069 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:57:00.071 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":30,"rows":1}
+22:57:02.275 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":2,"rows":1}
+22:57:22.279 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:57:22.281 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":30,"rows":1}
+22:57:26.185 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET properties = $1, updated_at = CURRENT_TIMESTAMP\n    WH","duration":1,"rows":1}
+22:58:48.451 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+22:58:48.451 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+22:58:48.455 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+22:58:48.455 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+22:58:48.455 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+22:58:48.455 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+22:58:52.389 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:58:52.391 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+22:58:55.765 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+22:58:58.880 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+22:59:00.362 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":1,"rows":1}
+22:59:10.949 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+22:59:10.952 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2\n    WHERE id = ","duration":36,"rows":1}
+22:59:10.958 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":3,"rows":1}
+22:59:13.917 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2\n    WHERE id = ","duration":1,"rows":1}
+22:59:13.923 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:59:15.518 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2\n    WHERE id = ","duration":1,"rows":1}
+22:59:15.526 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:59:16.659 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+22:59:16.663 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+22:59:16.663 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+22:59:16.660 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+22:59:16.664 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+22:59:16.665 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+22:59:17.475 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2\n    WHERE id = ","duration":1,"rows":1}
+22:59:17.480 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}
+22:59:19.249 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2\n    WHERE id = ","duration":1,"rows":1}
+22:59:19.255 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":2,"rows":1}
+22:59:20.388 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2\n    WHERE id = ","duration":1,"rows":1}
+22:59:20.394 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":1,"rows":1}

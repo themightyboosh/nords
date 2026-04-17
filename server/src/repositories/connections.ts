@@ -32,8 +32,14 @@ export async function update(id: string, updates: Partial<Pick<Connection, 'sour
   let paramIdx = 1;
 
   for (const [key, value] of Object.entries(updates)) {
-    setClauses.push(`${key} = $${paramIdx}`);
-    values.push(value);
+    if (key === 'properties') {
+      // Merge into existing JSONB instead of replacing — preserves all other saved keys
+      setClauses.push(`properties = properties || $${paramIdx}::jsonb`);
+      values.push(JSON.stringify(value));
+    } else {
+      setClauses.push(`${key} = $${paramIdx}`);
+      values.push(value);
+    }
     paramIdx++;
   }
 
