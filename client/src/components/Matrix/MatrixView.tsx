@@ -184,22 +184,22 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     }
 
     // Resolve final position for a nord:
-    //   1. Derived from connection distances (source of truth)
-    //   2. Fallback: explicit board_position (for nords not yet connected on this type)
-    //   3. null → orphan, not on this board
+    //   1. Explicit board_position (user-placed override from board drag)
+    //   2. Derived from connection distances (auto-placement)
+    //   3. null → not on this board
     const resolvePosition = (nordId: string): { distance_x: number; distance_y: number } | null => {
+      // Prefer explicit board position — board drag writes here, NOT to connections
+      const explicit = explicitPositionByNord.get(nordId);
+      if (explicit) return explicit;
+      // Fall back to derived from connection distances
       const xAcc = derivedDistX.get(nordId);
       if (xAcc) {
-        // Has connections of this type — use derived (average of connection distances)
         const yAcc = derivedDistY.get(nordId) ?? { sum: 0.5, count: 1 };
         return {
           distance_x: xAcc.sum / xAcc.count,
           distance_y: yAcc.sum / yAcc.count,
         };
       }
-      // No connections of this type — fall back to explicit board position
-      const explicit = explicitPositionByNord.get(nordId);
-      if (explicit) return explicit;
       return null; // not on this board
     };
 
@@ -360,13 +360,11 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   }, [activeType]);
 
   /**
-   * Board drop handler — simplified positional model.
+   * Board drop handler — cosmetic only.
    *
-   * 1. Determine target column from the drop event
-   * 2. Compute sort_order via LexoRank-style bisect
-   * 3. Write distance_x + sort_order to the dragged card's connections
-   * 4. Equalize: redistribute all cards in the target column evenly
-   *    across the column's Voronoi range so the graph view looks clean
+   * Board drag writes ONLY to board_positions (per-nord),
+   * NEVER to connections.distance_x (shared between two nords).
+   * This prevents moving one card from dragging connected cards along.
    */
   const handleCellDrop = useCallback(async (
     e: React.DragEvent,
@@ -385,88 +383,18 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const labels = activeType.xStageLabels;
     const targetLabel = resolveStageLabel(columnPosition, labels) || labels[0]?.label || '';
     const bounds = getColumnBounds(targetLabel, labels);
-
-    // ── Sort order: determine where in the column the card was dropped ──
-    const existingCards = columnCards.filter(c => c.id !== data.nordId);
-    let newSortOrder: number;
-
-    if (existingCards.length === 0) {
-      newSortOrder = 1000;
-    } else {
-      const colBody = e.currentTarget as HTMLElement;
-      const rect = colBody.getBoundingClientRect();
-      const relativeY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-      const insertIdx = Math.round(relativeY * existingCards.length);
-
-      if (insertIdx === 0) {
-        newSortOrder = existingCards[0].sortOrder - 1000;
-      } else if (insertIdx >= existingCards.length) {
-        newSortOrder = existingCards[existingCards.length - 1].sortOrder + 1000;
-      } else {
-        const above = existingCards[insertIdx - 1].sortOrder;
-        const below = existingCards[insertIdx].sortOrder;
-        newSortOrder = Math.round((above + below) / 2);
-      }
-    }
-
     const newDistY = targetPositionY ?? 0.5;
 
-    // ── Write: update the dragged card's connections ──
-    const connectionIds = data.sourceConnectionIds;
-    if (connectionIds.length > 0) {
-      await Promise.all(
-        connectionIds.map(connId =>
-          updateConnection(connId, {
-            distance_x: bounds.center,
-            distance_y: newDistY,
-            sort_order: newSortOrder,
-          })
-        )
-      );
-    } else {
-      // No connections yet — use board position fallback
-      await upsertPosition({
-        nord_id: data.nordId,
-        type_id: activeType.id,
-        distance_x: bounds.center,
-        distance_y: newDistY,
-      });
-    }
-
-    // ── Equalize: redistribute all cards in this column evenly ──
-    // Includes the card we just dropped. Grab fresh column after our write.
-    if (graph && connectionIds.length > 0) {
-      const allCardsInCol = [...existingCards];
-      // Add the dragged card to proper sort position
-      const draggedCard = columns.flatMap(c => c.cards).find(c => c.id === data.nordId)
-        || { id: data.nordId, sortOrder: newSortOrder, connectionIds };
-      allCardsInCol.push(draggedCard as MatrixCard);
-      allCardsInCol.sort((a, b) => a.sortOrder - b.sortOrder);
-
-      const n = allCardsInCol.length;
-      if (n > 1) {
-        // Evenly space within the column's Voronoi range with small padding
-        const pad = (bounds.max - bounds.min) * 0.05;
-        const rangeMin = bounds.min + pad;
-        const rangeMax = bounds.max - pad;
-        const step = (rangeMax - rangeMin) / (n - 1);
-
-        const equalizePromises: Promise<any>[] = [];
-        allCardsInCol.forEach((card, i) => {
-          const targetDist = n === 1 ? bounds.center : rangeMin + step * i;
-          // Update all connections for this nord to the equalized distance
-          for (const cid of card.connectionIds) {
-            equalizePromises.push(
-              updateConnection(cid, { distance_x: targetDist })
-            );
-          }
-        });
-        await Promise.all(equalizePromises);
-      }
-    }
+    // Write ONLY to board_positions — per-nord, never shared
+    await upsertPosition({
+      nord_id: data.nordId,
+      type_id: activeType.id,
+      distance_x: bounds.center,
+      distance_y: newDistY,
+    });
 
     await refetchGraph();
-  }, [activeType, graph, columns, updateConnection, upsertPosition, refetchGraph]);
+  }, [activeType, upsertPosition, refetchGraph]);
 
   const handleConnectionEntryDrop = useCallback(async (e: React.DragEvent, targetTypeId: string) => {
     e.preventDefault();
