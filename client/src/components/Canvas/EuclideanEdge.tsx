@@ -1,14 +1,19 @@
 /**
- * EuclideanEdge.tsx — Custom edge renderer (v4 — performance-first).
+ * EuclideanEdge.tsx — Custom edge renderer (v5 — performance-first).
  *
  * Lines connect to the nearest point on each card's bounding rectangle.
  * Edges are rendered as static SVG paths — NO spring animation, NO rAF loops.
  *
- * PERFORMANCE MODEL (v4):
+ * PERFORMANCE MODEL (v5):
  *   - Zero requestAnimationFrame loops. Paths are pure functions of node positions.
- *   - Labels are only rendered for ACTIVE edges (not dimmed/ghosted).
+ *   - Labels are LAZY: only mounted when the edge midpoint is within the viewport.
+ *     Off-screen active edges render paths but skip label React components entirely.
+ *   - Labels are stripped from dimmed/ghosted edges (never mounted).
  *   - Dimmed edges render as simple gray lines — no dash animation, no labels,
  *     no arrowheads. This reduces DOM elements by ~75% when a lens is active.
+ *   - CSS dash-march animations are paused during drag/zoom via
+ *     [data-interacting] attribute on the root — zero GPU composite work
+ *     during interaction.
  *   - Node positions extracted via custom equality selector (re-render only
  *     when actual coordinates change).
  *   - Ribbon splay and degree splay use cached edge selectors (O(1) during drag).
@@ -89,6 +94,27 @@ function useCachedEdgeSelector<T>(
     cacheRef.current = { edgesRef: s.edges, result };
     return result;
   }, equalityFn);
+}
+
+// ── Viewport visibility check for lazy labels ──
+// Returns true when the given point is within the visible viewport (+margin).
+// Uses a quantized check (boolean) to minimize re-renders.
+function useIsPointInViewport(px: number, py: number): boolean {
+  return useStore(
+    (s) => {
+      const [vpX, vpY, vpZoom] = s.transform;
+      const vpWidth = (s.width || 1200) / vpZoom;
+      const vpHeight = (s.height || 800) / vpZoom;
+      const vpLeft = -vpX / vpZoom;
+      const vpTop = -vpY / vpZoom;
+      const margin = 200;
+      return (
+        px > vpLeft - margin && px < vpLeft + vpWidth + margin &&
+        py > vpTop - margin && py < vpTop + vpHeight + margin
+      );
+    },
+    (a, b) => a === b,
+  );
 }
 
 
@@ -457,19 +483,47 @@ const ActiveEdge = React.memo(function ActiveEdge({
         style={{ pointerEvents: 'stroke', cursor: 'grab' }}
         onMouseDown={onHitAreaMouseDown}
       />
-      {/* Label */}
-      <ConnectionLabel
-        x={labelX}
-        y={labelY}
+      {/* Label — lazy loaded: only mounts when edge is in viewport */}
+      <LazyLabel
+        labelX={labelX}
+        labelY={labelY}
         angleDeg={angleDeg}
-        direction={visualDirection as any}
-        type={edgeData?.type || ''}
-        color={edgeData?.color || '#888'}
+        visualDirection={visualDirection}
+        edgeData={edgeData}
         edgeId={id}
-        isDimmed={false}
-        resolvedLabel={compositeLabel}
+        compositeLabel={compositeLabel}
       />
     </>
+  );
+});
+
+
+// ── Lazy label wrapper: only renders ConnectionLabel when edge midpoint is visible ──
+const LazyLabel = React.memo(function LazyLabel({
+  labelX, labelY, angleDeg, visualDirection, edgeData, edgeId, compositeLabel,
+}: {
+  labelX: number;
+  labelY: number;
+  angleDeg: number;
+  visualDirection: string;
+  edgeData: NordEdgeData | undefined;
+  edgeId: string;
+  compositeLabel: string | null;
+}) {
+  const isInView = useIsPointInViewport(labelX, labelY);
+  if (!isInView) return null;
+  return (
+    <ConnectionLabel
+      x={labelX}
+      y={labelY}
+      angleDeg={angleDeg}
+      direction={visualDirection as any}
+      type={edgeData?.type || ''}
+      color={edgeData?.color || '#888'}
+      edgeId={edgeId}
+      isDimmed={false}
+      resolvedLabel={compositeLabel}
+    />
   );
 });
 

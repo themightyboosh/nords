@@ -129,6 +129,9 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const [radialMenuPos, setRadialMenuPos] = React.useState<{ x: number, y: number } | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragNodeId, setDragNodeId] = React.useState<string | null>(null);
+  // Track camera movement (pan/zoom) to pause CSS animations during interaction
+  const [isCameraMoving, setIsCameraMoving] = React.useState(false);
+  const cameraIdleTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isConnecting, setIsConnecting] = React.useState(false);
   // Track which edge is being reconnected for the onReconnect handler
   const reconnectingRef = React.useRef<{ edgeId: string; handleType: 'source' | 'target' } | null>(null);
@@ -497,6 +500,19 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const closeEdgeMenu = useCallback(() => setEdgeMenuConfig(null), []);
   const closeRadialMenu = useCallback(() => setRadialMenuPos(null), []);
 
+  // Camera move handlers — detect pan/zoom to pause animations
+  // Must be declared before early return to satisfy React hooks rules
+  const onMoveStart = React.useCallback(() => {
+    if (cameraIdleTimer.current) clearTimeout(cameraIdleTimer.current);
+    setIsCameraMoving(true);
+  }, []);
+
+  const onMoveEnd = React.useCallback(() => {
+    // Debounce: wait 150ms of no camera movement before resuming animations
+    if (cameraIdleTimer.current) clearTimeout(cameraIdleTimer.current);
+    cameraIdleTimer.current = setTimeout(() => setIsCameraMoving(false), 150);
+  }, []);
+
   // Loading state
   if (!graph && nodes.length === 0) {
     return (
@@ -514,8 +530,13 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     placingTypeId ? 'nords-canvas--placing' : '',
   ].filter(Boolean).join(' ');
 
+  // Idle-only animation: pause dash-march CSS when interacting
+  const isInteracting = isDragging || isCameraMoving;
+
+
   return (
     <>
+      <div data-interacting={isInteracting ? '' : undefined} style={{ width: '100%', height: '100%' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -527,6 +548,8 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         onNodeClick={onNodeClick}
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
+        onMoveStart={onMoveStart}
+        onMoveEnd={onMoveEnd}
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
         onEdgeClick={(_event, edge) => onEdgeDoubleClick(edge.id)}
@@ -578,6 +601,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         <Background id="dots" variant={BackgroundVariant.Dots} gap={32} size={2.5} color="var(--nords-color-grid-dot)" />
         <Background id="cross" variant={BackgroundVariant.Cross} gap={200} size={0.5} color="var(--nords-color-grid-dot)" style={{ opacity: 0.4 }} />
       </ReactFlow>
+      </div>
 
       {/* Click-to-place indicator */}
       {placingTypeId && (

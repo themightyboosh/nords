@@ -6565,3 +6565,138 @@ ReferenceError: config is not defined
 18:46:22.380 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 18:46:22.417 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":176,"rows":1}
 18:46:22.419 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":176,"rows":1}
+18:47:46.913 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:47:46.918 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:47:46.953 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":172,"rows":1}
+18:47:46.954 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":172,"rows":1}
+18:48:03.069 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:48:03.071 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:48:03.084 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:48:03.084 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:48:03.084 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:48:03.084 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:48:03.107 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":181,"rows":1}
+18:48:03.107 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+18:48:03.123 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":194,"rows":1}
+18:48:03.123 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":194,"rows":1}
+18:48:03.123 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":196,"rows":1}
+18:48:03.124 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":193,"rows":1}
+18:48:08.811 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+18:48:08.813 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+18:48:08.814 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":41,"rows":1}
+18:48:08.815 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":41,"rows":1}
+18:48:08.815 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":43,"rows":1}
+18:48:08.816 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":43,"rows":1}
+19:05:12.495 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:05:12.496 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:05:12.500 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:05:12.500 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:05:12.557 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":200,"rows":1}
+19:05:12.558 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":200,"rows":1}
+19:05:12.558 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":202,"rows":1}
+19:05:12.558 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":204,"rows":1}
+19:08:33.813 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:08:33.817 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:08:33.818 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:08:33.852 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":182,"rows":1}
+19:08:33.853 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":183,"rows":1}
+19:08:33.854 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":186,"rows":1}
+19:08:45.268 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:08:45.270 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:08:45.270 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:08:45.304 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":180,"rows":1}
+19:08:45.305 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":182,"rows":1}
+19:08:45.306 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":181,"rows":1}
+19:08:53.908 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":156,"rows":1}
+19:08:53.960 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":49,"rows":1}
+19:09:05.496 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:08:53.721Z","userId":"dev-user-000"}
+19:09:05.497 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:08:53.721Z","userId":"dev-user-000"}
+19:09:05.497 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:08:53.763Z","userId":"dev-user-000"}
+19:09:05.497 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:08:53.763Z","userId":"dev-user-000"}
+19:09:05.497 [31merror[39m: React Error Boundary caught error
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4326:12)
+    at updateCallback (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4920:15)
+    at Object.useCallback (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:13242:12)
+    at exports.useCallback (http://localhost:5174/node_modules/.vite/deps/react-BB3LFtmO.js?v=d45501da:732:31)
+    at InteractiveCanvas (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:506:28)
+    at Object.react_stack_bottom_frame (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:12867:12)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4212:19)
+    at updateFunctionComponent (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:5568:16)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:6139:20)
+    at runWithFiberInDEV (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:850:66) {"service":"nords-client","clientTimestamp":"2026-04-28T23:08:53.938Z","errorMessage":"Rendered more hooks than during the previous render.","componentStack":"\n    at InteractiveCanvas (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:27:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:707:40)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5174/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5174/src/context/LensContext.tsx:35:32)\n    at BatchProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5174/src/App.tsx?t=1777417700210:30:27)\n    at ProtectedRoute (http://localhost:5174/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5174/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5174/src/App.tsx?t=1777417700210:176:42)\n    at Router (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5174/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+19:09:05.680 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:09:05.822 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":273,"rows":1}
+19:09:05.864 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":41,"rows":1}
+19:09:26.405 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:05.532Z","userId":"dev-user-000"}
+19:09:26.405 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:05.532Z","userId":"dev-user-000"}
+19:09:26.405 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:05.548Z","userId":"dev-user-000"}
+19:09:26.405 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:05.548Z","userId":"dev-user-000"}
+19:09:26.405 [31merror[39m: React Error Boundary caught error
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4326:12)
+    at updateCallback (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4920:15)
+    at Object.useCallback (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:13242:12)
+    at exports.useCallback (http://localhost:5174/node_modules/.vite/deps/react-BB3LFtmO.js?v=d45501da:732:31)
+    at InteractiveCanvas (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:506:28)
+    at Object.react_stack_bottom_frame (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:12867:12)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4212:19)
+    at updateFunctionComponent (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:5568:16)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:6139:20)
+    at runWithFiberInDEV (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:850:66) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:05.847Z","errorMessage":"Rendered more hooks than during the previous render.","componentStack":"\n    at InteractiveCanvas (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:27:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:707:40)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5174/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5174/src/context/LensContext.tsx:35:32)\n    at BatchProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5174/src/App.tsx?t=1777417700210:30:27)\n    at ProtectedRoute (http://localhost:5174/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5174/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5174/src/App.tsx?t=1777417700210:176:42)\n    at Router (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5174/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+19:09:27.020 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:09:27.056 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":172,"rows":1}
+19:09:27.089 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":32,"rows":1}
+19:09:37.237 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:09:37.377 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":273,"rows":1}
+19:09:37.431 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":53,"rows":1}
+19:09:55.198 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:26.873Z","userId":"dev-user-000"}
+19:09:55.198 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:26.873Z","userId":"dev-user-000"}
+19:09:55.199 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:26.887Z","userId":"dev-user-000"}
+19:09:55.199 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:26.887Z","userId":"dev-user-000"}
+19:09:55.199 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:37.088Z","userId":"dev-user-000"}
+19:09:55.199 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:37.088Z","userId":"dev-user-000"}
+19:09:55.199 [31merror[39m: React Error Boundary caught error
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4326:12)
+    at updateCallback (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4920:15)
+    at Object.useCallback (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:13242:12)
+    at exports.useCallback (http://localhost:5174/node_modules/.vite/deps/react-BB3LFtmO.js?v=d45501da:732:31)
+    at InteractiveCanvas (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:506:28)
+    at Object.react_stack_bottom_frame (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:12867:12)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4212:19)
+    at updateFunctionComponent (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:5568:16)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:6139:20)
+    at runWithFiberInDEV (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:850:66) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:37.399Z","errorMessage":"Rendered more hooks than during the previous render.","componentStack":"\n    at InteractiveCanvas (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:27:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:707:40)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5174/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5174/src/context/LensContext.tsx:35:32)\n    at BatchProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5174/src/App.tsx?t=1777417700210:30:27)\n    at ProtectedRoute (http://localhost:5174/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5174/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5174/src/App.tsx?t=1777417700210:176:42)\n    at Router (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5174/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+19:09:55.394 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:09:55.537 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":281,"rows":1}
+19:09:55.581 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":43,"rows":1}
+19:10:25.229 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:55.239Z","userId":"dev-user-000"}
+19:10:25.229 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:55.239Z","userId":"dev-user-000"}
+19:10:25.229 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:55.255Z","userId":"dev-user-000"}
+19:10:25.229 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:55.255Z","userId":"dev-user-000"}
+19:10:25.229 [31merror[39m: React Error Boundary caught error
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4326:12)
+    at updateCallback (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4920:15)
+    at Object.useCallback (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:13242:12)
+    at exports.useCallback (http://localhost:5174/node_modules/.vite/deps/react-BB3LFtmO.js?v=d45501da:732:31)
+    at InteractiveCanvas (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:506:28)
+    at Object.react_stack_bottom_frame (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:12867:12)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:4212:19)
+    at updateFunctionComponent (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:5568:16)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:6139:20)
+    at runWithFiberInDEV (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:850:66) {"service":"nords-client","clientTimestamp":"2026-04-28T23:09:55.561Z","errorMessage":"Rendered more hooks than during the previous render.","componentStack":"\n    at InteractiveCanvas (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:27:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777417700210:707:40)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5174/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5174/src/context/LensContext.tsx:35:32)\n    at BatchProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5174/src/App.tsx?t=1777417700210:30:27)\n    at ProtectedRoute (http://localhost:5174/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5174/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5174/src/App.tsx?t=1777417700210:176:42)\n    at Router (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5174/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+19:11:00.878 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:11:01.022 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":280,"rows":1}
+19:11:01.066 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":43,"rows":1}
+19:11:03.894 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:11:00.724Z","userId":"dev-user-000"}
+19:11:03.895 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:11:00.724Z","userId":"dev-user-000"}
+19:11:03.895 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:11:00.741Z","userId":"dev-user-000"}
+19:11:03.895 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:11:00.741Z","userId":"dev-user-000"}
+19:11:03.994 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":44,"rows":1}
+19:11:04.037 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":43,"rows":1}
+19:11:33.925 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:11:03.933Z","userId":"dev-user-000"}
+19:11:33.925 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:11:03.933Z","userId":"dev-user-000"}
+19:11:33.925 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:11:03.950Z","userId":"dev-user-000"}
+19:11:33.925 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T23:11:03.950Z","userId":"dev-user-000"}

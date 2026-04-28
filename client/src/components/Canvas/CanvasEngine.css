@@ -155,6 +155,16 @@
   to { stroke-dashoffset: -48; }
 }
 
+/* Pause all dash-march animations during drag/pan/zoom interactions.
+ * The [data-interacting] attribute is set on the wrapper div by CanvasEngine
+ * during any active pointer or camera gesture. This eliminates GPU composite
+ * work for ~24 animation layers during interaction. */
+[data-interacting] .nords-connection--march-forward,
+[data-interacting] .nords-connection--march-reverse,
+[data-interacting] .nords-connection--march-both {
+  animation-play-state: paused !important;
+}
+
 @keyframes march-reverse {
   to { stroke-dashoffset: 48; }
 }
