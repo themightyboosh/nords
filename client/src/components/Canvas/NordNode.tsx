@@ -29,7 +29,7 @@ interface NordNodeData {
 }
 
 export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<NordNodeData>) => {
-  const zoom = useStore((s) => s.transform[2]);
+  const zoom = useStore((s) => s.transform[2], (a, b) => a === b);
   const inverseScale = Math.min(0.65, 100 / (zoom * 100));
   const textScale = zoom < 0.6 ? Math.min(2.5, 0.6 / zoom) : 1;
   const isGhosted = data.isGhosted === true;

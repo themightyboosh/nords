@@ -29,7 +29,7 @@ logger.info('Nords client starting', { version: '0.0.0' });
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <App />
       </BrowserRouter>
     </ErrorBoundary>

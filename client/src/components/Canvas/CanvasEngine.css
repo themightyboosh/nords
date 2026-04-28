@@ -275,6 +275,7 @@
   user-select: none;
   overflow: visible;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
+  contain: layout style; /* Isolate repaints during drag — major perf win */
 }
 
 .nords-node:hover {
@@ -978,6 +979,7 @@
 .nords-canvas--dragging .react-flow__node:not(.dragging):not(.selected) {
   opacity: 0.3;
   transition: opacity 0.2s ease;
+  will-change: opacity; /* Pre-promote layer to avoid compositor churn during drag */
 }
 
 .nords-canvas--dragging .react-flow__node.dragging,

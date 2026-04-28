@@ -79,6 +79,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
   const [isDragCloning, setIsDragCloning] = useState(false);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null); // Phase 3: visual drop target
+  const [dragOverLane, setDragOverLane] = useState<string | null>(null);     // Swimlane-level drop target
 
   // Keyboard listener — also handles Option toggle mid-drag
   React.useEffect(() => {
@@ -377,6 +378,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   ) => {
     e.preventDefault();
     setDragOverColumn(null);
+    setDragOverLane(null);
     const data = getDragData(e);
     if (!data || !activeType) {
       console.warn('[Board] Drop ignored — no drag data or no active type');
@@ -411,15 +413,49 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
     const connectionIds = data.sourceConnectionIds;
     if (connectionIds.length > 0) {
-      // Write canonical column position + sort order to all connections of this type
+      // ── Micro-spread: distribute all cards in this cell across column bounds ──
+      // Instead of writing bounds.center for every card, spread them evenly so
+      // nords don't collapse to the same point in graph view.
+      const droppedCard = columnCards.find(c => c.id === data.nordId);
+      const droppedCardEntry = droppedCard
+        ? { ...droppedCard, sortOrder: newSortOrder }
+        : { id: data.nordId, sortOrder: newSortOrder, connectionIds } as Pick<MatrixCard, 'id' | 'sortOrder' | 'connectionIds'>;
+
+      // Build the full cell roster: existing cards + dropped card at new sort position
+      const allCellCards = [
+        ...existingCards,
+        droppedCardEntry,
+      ].sort((a, b) => a.sortOrder - b.sortOrder);
+
+      const n = allCellCards.length;
+
+      // Compute y-axis bounds for quadrant mode spread
+      const yLabelsArr = activeType.yStageLabels;
+      const yLabel = targetPositionY != null && yLabelsArr.length > 0
+        ? resolveStageLabel(targetPositionY, yLabelsArr)
+        : null;
+      const yBounds = yLabel ? getColumnBounds(yLabel, yLabelsArr) : null;
+
+      // Write spread distances for all cards in the cell
       await Promise.all(
-        connectionIds.map(connId =>
-          updateConnection(connId, {
-            distance_x: bounds.center,
-            distance_y: newDistY,
-            sort_order: newSortOrder,
-          })
-        )
+        allCellCards.map((card, i) => {
+          const spreadX = n === 1
+            ? bounds.center
+            : bounds.min + ((i + 1) / (n + 1)) * (bounds.max - bounds.min);
+          const spreadY = yBounds && n > 1
+            ? yBounds.min + ((i + 1) / (n + 1)) * (yBounds.max - yBounds.min)
+            : newDistY;
+
+          return Promise.all(
+            card.connectionIds.map(connId =>
+              updateConnection(connId, {
+                distance_x: spreadX,
+                distance_y: spreadY,
+                sort_order: card.sortOrder,
+              })
+            )
+          );
+        })
       );
     } else {
       // Orphan: no connections yet — use board_positions fallback
@@ -485,6 +521,17 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     }
   }, []);
 
+  const handleLaneDragEnter = useCallback((laneLabel: string) => {
+    setDragOverLane(laneLabel);
+  }, []);
+
+  const handleLaneDragLeave = useCallback((e: React.DragEvent) => {
+    const related = e.relatedTarget as HTMLElement | null;
+    if (!related || !(e.currentTarget as HTMLElement).contains(related)) {
+      setDragOverLane(null);
+    }
+  }, []);
+
   // ── Render ──
   // BoardCard is defined below as a React.memo component to prevent N² re-renders.
 
@@ -540,17 +587,22 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       {/* Render swimlane grid OR flat columns */}
       {isQuadrant ? (() => {
         const hasOrphans = boardSettings?.showOrphans;
-        const hasConnections = connectionEntries.length > 0;
         const totalRows = yLabels.length;
+        // Compute card counts per lane for the banner badge
+        const laneCardCounts = new Map<string, number>();
+        yLabels.forEach(yl => {
+          let count = 0;
+          columns.forEach(col => {
+            count += (gridCells.get(`${col.label}|${yl.label}`) || []).length;
+          });
+          laneCardCounts.set(yl.label, count);
+        });
         return (
-        /* ── Quadrant Mode: CSS Grid with swimlane rows ── */
+        /* ── Quadrant Mode: CSS Grid with horizontal swimlane banners ── */
         <div className="nords-matrix__grid" style={{
-          gridTemplateColumns: `80px repeat(${columns.length}, 1fr)${hasOrphans ? ' minmax(200px, 260px)' : ''}${hasConnections ? ' minmax(180px, 220px)' : ''}`,
-          gridTemplateRows: `auto repeat(${totalRows}, minmax(80px, auto))`,
+          gridTemplateColumns: `repeat(${columns.length}, minmax(260px, 1fr))${hasOrphans ? ' minmax(200px, 260px)' : ''}`,
+          gridTemplateRows: `auto ${yLabels.map(() => 'auto minmax(80px, auto)').join(' ')}`,
         }}>
-          {/* Top-left corner */}
-          <div className="nords-matrix__grid-corner" />
-
           {/* Column headers (x-axis) */}
           {columns.map(col => (
             <div key={col.label} className="nords-matrix__grid-col-header" style={{ color: activeType.color }}>
@@ -569,33 +621,38 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
             </div>
           )}
 
-          {/* Connections column header */}
-          {hasConnections && (
-            <div className="nords-matrix__grid-col-header nords-matrix__grid-col-header--muted">
-              <Link2 size={12} /> Connections
-              <span className="nords-matrix__column-count">{connectionEntries.length}</span>
-            </div>
-          )}
 
-          {/* Row headers + cells */}
-          {yLabels.map((yl, rowIdx) => (
+
+          {/* Swimlane banners + cells */}
+          {yLabels.map((yl, rowIdx) => {
+            const dataColCount = columns.length + (hasOrphans ? 1 : 0);
+            return (
             <React.Fragment key={yl.label}>
-              <div className="nords-matrix__grid-row-header" style={{ color: activeType.color }}>
+              {/* Full-span swimlane banner bar */}
+              <div
+                className={`nords-matrix__lane-banner ${dragOverLane === yl.label ? 'is-drag-over' : ''}`}
+                style={{ gridColumn: `1 / ${dataColCount + 1}`, color: activeType.color }}
+                onDragOver={handleDragOver}
+                onDragEnter={() => handleLaneDragEnter(yl.label)}
+                onDragLeave={handleLaneDragLeave}
+              >
                 {yl.label}
+                <span className="nords-matrix__lane-count">{laneCardCounts.get(yl.label) || 0}</span>
               </div>
+
+              {/* Grid cells for this swimlane row */}
               {columns.map(col => {
                 const cellKey = `${col.label}|${yl.label}`;
                 const cellCards = gridCells.get(cellKey) || [];
                 return (
                   <div
-              key={cellKey}
-              className={`nords-matrix__grid-cell ${dragOverColumn === cellKey ? 'is-drag-over' : ''}`}
-              onDragOver={handleDragOver}
-              onDragEnter={() => handleColumnDragEnter(cellKey)}
-              onDragLeave={handleColumnDragLeave}
-              onDrop={(e) => handleCellDrop(e, col.position, gridCells.get(cellKey) || [], yl.position)}
-            >
-
+                    key={cellKey}
+                    className={`nords-matrix__grid-cell ${dragOverColumn === cellKey ? 'is-drag-over' : ''} ${dragOverLane === yl.label ? 'is-lane-drag-over' : ''}`}
+                    onDragOver={handleDragOver}
+                    onDragEnter={() => handleColumnDragEnter(cellKey)}
+                    onDragLeave={handleColumnDragLeave}
+                    onDrop={(e) => handleCellDrop(e, col.position, gridCells.get(cellKey) || [], yl.position)}
+                  >
                     {cellCards.map(card => (
                       <BoardCard
                         key={card.id}
@@ -617,6 +674,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                           setIsDragCloning(false);
                           setMouseHeldCardId(null);
                           setDragOverColumn(null);
+                          setDragOverLane(null);
                         }}
                         onClick={onNordClick}
                       />
@@ -628,11 +686,11 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                 );
               })}
 
-              {/* Orphans: only render content in the FIRST row, with row span */}
+              {/* Orphans: only in the FIRST row, spanning all swimlane sub-rows */}
               {hasOrphans && rowIdx === 0 && (
                 <div
                   className="nords-matrix__grid-cell nords-matrix__grid-cell--span"
-                  style={{ gridRow: `2 / ${totalRows + 2}` }}
+                  style={{ gridRow: `2 / ${totalRows * 2 + 2}` }}
                 >
                   {unlinked.length > 0 ? (
                     unlinked.map(card => (
@@ -665,35 +723,10 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                 </div>
               )}
 
-              {/* Connections: only render content in the FIRST row, with row span */}
-              {hasConnections && rowIdx === 0 && (
-                <div
-                  className="nords-matrix__grid-cell nords-matrix__grid-cell--span nords-matrix__grid-cell--connections"
-                  style={{ gridRow: `2 / ${totalRows + 2}` }}
-                >
-                  <span className={`nords-matrix__connection-hint ${optionHeld ? 'is-clone' : ''}`}>
-                    {optionHeld ? '⌥ Clone + stay on board' : 'Drop to swap board'}
-                  </span>
-                  {connectionEntries.map(entry => (
-                    <div
-                      key={entry.typeId}
-                      className={`nords-matrix__connection-entry ${optionHeld ? 'is-clone-mode' : ''}`}
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
-                      onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
-                    >
-                      <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
-                      <span className="nords-matrix__connection-name">{entry.typeName}</span>
-                      <span className="nords-matrix__connection-count">{entry.count}</span>
-                      <span className={`nords-matrix__connection-mode ${optionHeld ? 'is-clone' : ''}`}>
-                        {optionHeld ? '+ clone' : '→ move'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+
             </React.Fragment>
-          ))}
+            );
+          })}
         </div>
         );
       })() : (
@@ -791,38 +824,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
             </div>
           )}
 
-          {/* 🔗 Connections column */}
-          {connectionEntries.length > 0 && (
-            <div className="nords-matrix__column nords-matrix__column--connections">
-              <div className="nords-matrix__column-header">
-                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
-                  <Link2 size={12} /> Connections
-                </span>
-                <span className="nords-matrix__column-count">{connectionEntries.length}</span>
-              </div>
-              <div className="nords-matrix__column-body">
-                <span className={`nords-matrix__connection-hint ${optionHeld ? 'is-clone' : ''}`}>
-                  {optionHeld ? '⌥ Clone + stay on board' : 'Drop to swap board'}
-                </span>
-                {connectionEntries.map(entry => (
-                  <div
-                    key={entry.typeId}
-                    className={`nords-matrix__connection-entry ${optionHeld ? 'is-clone-mode' : ''}`}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleConnectionEntryDrop(e, entry.typeId)}
-                    onClick={() => handleConnectionEntryDoubleClick(entry.typeId)}
-                  >
-                    <span className="nords-matrix__connection-swatch" style={{ backgroundColor: entry.typeColor }} />
-                    <span className="nords-matrix__connection-name">{entry.typeName}</span>
-                    <span className="nords-matrix__connection-count">{entry.count}</span>
-                    <span className={`nords-matrix__connection-mode ${optionHeld ? 'is-clone' : ''}`}>
-                      {optionHeld ? '+ clone' : '→ move'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
       )}
 

@@ -18,12 +18,30 @@
 
 import React, { useRef, useEffect, useMemo, useCallback } from 'react';
 import { useStore } from '@xyflow/react';
-import type { EdgeProps } from '@xyflow/react';
+import type { EdgeProps, Edge } from '@xyflow/react';
 import { ConnectionLabel } from './ConnectionLabel';
 import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
 import { resolveStageLabel } from '../../utils/stageLabels';
 import type { NordEdgeData } from '../../types/canvas';
 import './CanvasEngine.css';
+
+// ── Memoized edge selector factory ──
+// During drag, only node positions change — the edges array reference stays the same.
+// By caching the last edges ref, we skip the expensive .filter() entirely (O(1) vs O(N)).
+function useCachedEdgeSelector<T>(
+  selector: (edges: Edge[]) => T,
+  equalityFn: (a: T, b: T) => boolean,
+): T {
+  const cacheRef = useRef<{ edgesRef: Edge[] | null; result: T | null }>({ edgesRef: null, result: null });
+  return useStore((s) => {
+    if (s.edges === cacheRef.current.edgesRef && cacheRef.current.result !== null) {
+      return cacheRef.current.result;
+    }
+    const result = selector(s.edges);
+    cacheRef.current = { edgesRef: s.edges, result };
+    return result;
+  }, equalityFn);
+}
 
 // ── Spring Physics Constants ──
 const STIFFNESS = 0.03;   // Very low snap → wide oscillation arcs
@@ -195,26 +213,35 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   const tx = tgtPt.x;
   const ty = tgtPt.y;
 
-  // ── Ribbon config: O(1) via equality check ──
-  const ribbonConfig = useStore((s) => {
-    const pairKey = [source, target].sort().join('-');
-    const siblings = s.edges.filter(e => [e.source, e.target].sort().join('-') === pairKey);
-    const sibIdx = siblings.findIndex(e => e.id === id);
-    return { count: siblings.length, index: sibIdx };
-  }, (a, b) => a.count === b.count && a.index === b.index);
+  // ── Ribbon config: cached — skips filter when only node positions change ──
+  const ribbonConfig = useCachedEdgeSelector(
+    (edges) => {
+      const pairKey = [source, target].sort().join('-');
+      const siblings = edges.filter(e => [e.source, e.target].sort().join('-') === pairKey);
+      const sibIdx = siblings.findIndex(e => e.id === id);
+      return { count: siblings.length, index: sibIdx };
+    },
+    (a, b) => a.count === b.count && a.index === b.index
+  );
 
-  // ── Node Degree Splay ──
-  const sourceSplay = useStore((s) => {
-    const conns = s.edges.filter(e => e.source === source || e.target === source);
-    const idx = conns.findIndex(e => e.id === id);
-    return { degree: conns.length, index: idx };
-  }, (a, b) => a.degree === b.degree && a.index === b.index);
+  // ── Node Degree Splay: cached ──
+  const sourceSplay = useCachedEdgeSelector(
+    (edges) => {
+      const conns = edges.filter(e => e.source === source || e.target === source);
+      const idx = conns.findIndex(e => e.id === id);
+      return { degree: conns.length, index: idx };
+    },
+    (a, b) => a.degree === b.degree && a.index === b.index
+  );
 
-  const targetSplay = useStore((s) => {
-    const conns = s.edges.filter(e => e.source === target || e.target === target);
-    const idx = conns.findIndex(e => e.id === id);
-    return { degree: conns.length, index: idx };
-  }, (a, b) => a.degree === b.degree && a.index === b.index);
+  const targetSplay = useCachedEdgeSelector(
+    (edges) => {
+      const conns = edges.filter(e => e.source === target || e.target === target);
+      const idx = conns.findIndex(e => e.id === id);
+      return { degree: conns.length, index: idx };
+    },
+    (a, b) => a.degree === b.degree && a.index === b.index
+  );
 
   // ── Geometry ──
   const dx = tx - sx;

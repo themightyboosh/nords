@@ -31,18 +31,10 @@ typesRouter.get('/projects/:id/types', async (req: Request, res: Response) => {
   }
 });
 
-/** GET /api/users/:userId/types — all types owned by a user (global library) */
-typesRouter.get('/users/:userId/types', async (req: Request, res: Response) => {
-  try {
-    const [nordTypes, connectionTypes] = await Promise.all([
-      nordTypesRepo.findByUser(req.params.userId),
-      connectionTypesRepo.findByUser(req.params.userId),
-    ]);
-    res.json({ nord_types: nordTypes, connection_types: connectionTypes });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to load user types' });
-  }
-});
+/** GET /api/users/:userId/types — all types owned by a user (global library)
+ *  NOTE: Unused — retained for future multi-user re-enablement.
+ */
+// typesRouter.get('/users/:userId/types', async (req: Request, res: Response) => { ... });
 
 // ══════════════════════════════════════════════════════════
 //  NORD TYPES
@@ -51,11 +43,8 @@ typesRouter.get('/users/:userId/types', async (req: Request, res: Response) => {
 /** POST /api/projects/:id/nord-types — create a nord type and associate with project */
 typesRouter.post('/projects/:id/nord-types', async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.uid;
-    if (!userId) {
-      res.status(401).json({ error: 'Authentication required' });
-      return;
-    }
+    // Single-user mode: fall back to dev placeholder when auth is bypassed
+    const userId = req.user?.uid || 'dev-user-000';
     const type = await nordTypesRepo.create({
       user_id: userId,
       project_id: req.params.id,
@@ -107,11 +96,8 @@ typesRouter.delete('/nord-types/:typeId', async (req: Request, res: Response) =>
 /** POST /api/projects/:id/connection-types — create and associate with project */
 typesRouter.post('/projects/:id/connection-types', async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.uid;
-    if (!userId) {
-      res.status(401).json({ error: 'Authentication required' });
-      return;
-    }
+    // Single-user mode: fall back to dev placeholder when auth is bypassed
+    const userId = req.user?.uid || 'dev-user-000';
     const type = await connectionTypesRepo.create({
       user_id: userId,
       project_id: req.params.id,

@@ -28,6 +28,11 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
     'Content-Type': 'application/json',
   };
 
+  // Single-user mode: skip Firebase token injection entirely
+  if (import.meta.env.VITE_SKIP_AUTH === 'true') {
+    return headers;
+  }
+
   const user = auth.currentUser;
   if (user) {
     try {

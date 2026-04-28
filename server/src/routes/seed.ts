@@ -14,16 +14,14 @@ import { query, queryOne } from '../db.js';
 export const seedRouter = Router();
 
 seedRouter.post('/seed', async (req: Request, res: Response) => {
-  const { project_id, user_id, nord_types = [], connection_types = [], nords = [], connections = [] } = req.body;
+  const { project_id, user_id: rawUserId, nord_types = [], connection_types = [], nords = [], connections = [] } = req.body;
 
   if (!project_id) {
     res.status(400).json({ error: 'project_id required' });
     return;
   }
-  if (!user_id) {
-    res.status(400).json({ error: 'user_id required' });
-    return;
-  }
+  // Single-user mode: user_id is optional, defaults to dev placeholder
+  const user_id = rawUserId || 'dev-user-000';
 
   const results: Record<string, unknown[]> = {
     nord_types: [],

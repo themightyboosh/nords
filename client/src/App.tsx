@@ -143,13 +143,28 @@ function App() {
     localStorage.setItem('nords-theme', currentTheme);
   }, [currentTheme]);
 
+  const skipAuth = import.meta.env.VITE_SKIP_AUTH === 'true';
+
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/login" element={<LoginScreen />} />
-        <Route path="/signup" element={<SignupScreen />} />
-        <Route path="/verify-email" element={<VerifyEmailScreen />} />
-        <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+        {/* Auth screens: only render when auth is enabled */}
+        {!skipAuth && (
+          <>
+            <Route path="/login" element={<LoginScreen />} />
+            <Route path="/signup" element={<SignupScreen />} />
+            <Route path="/verify-email" element={<VerifyEmailScreen />} />
+            <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminScreen />
+                </ProtectedRoute>
+              }
+            />
+          </>
+        )}
 
         {/* Protected Routes */}
         <Route
@@ -165,14 +180,6 @@ function App() {
           element={
             <ProtectedRoute>
               <ProjectDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <AdminScreen />
             </ProtectedRoute>
           }
         />

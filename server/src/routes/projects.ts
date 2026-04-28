@@ -9,7 +9,7 @@ export const projectsRouter = Router();
  *   get:
  *     tags: [Projects]
  *     summary: List all projects
- *     description: Returns all active (non-deleted) projects. Will be filtered by user's org membership once auth middleware is wired.
+ *     description: Returns all active (non-deleted) projects. Single-user mode — no org filtering.
  *     responses:
  *       200:
  *         description: Array of projects
@@ -58,11 +58,13 @@ projectsRouter.get('/projects', async (_req: Request, res: Response) => {
 projectsRouter.post('/projects', async (req: Request, res: Response) => {
   try {
     const { org_id, name, description, icon } = req.body;
-    if (!org_id || !name) {
-      res.status(400).json({ error: 'org_id and name are required' });
+    if (!name) {
+      res.status(400).json({ error: 'name is required' });
       return;
     }
-    const project = await projectsRepo.create({ org_id, name, description, icon, created_by: null });
+    // Single-user mode: org_id is optional, defaults to a static placeholder
+    const resolvedOrgId = org_id || '00000000-0000-0000-0000-000000000000';
+    const project = await projectsRepo.create({ org_id: resolvedOrgId, name, description, icon, created_by: null });
     res.status(201).json(project);
   } catch (err) {
     res.status(500).json({ error: 'Failed to create project' });

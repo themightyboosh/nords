@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, signOut } from '../lib/firebase';
+import { config } from '../config/env';
 import logger from '../lib/logger';
 
 interface AuthContextType {
@@ -18,7 +19,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Dev bypass: set VITE_SKIP_AUTH=true in .env.local to skip auth entirely
+  const isDevBypass = import.meta.env.DEV && import.meta.env.VITE_SKIP_AUTH === 'true';
+
   useEffect(() => {
+    if (isDevBypass) {
+      // Create a minimal fake user for dev mode
+      setUser({ uid: 'dev-user', email: 'dev@nords.local', displayName: 'Dev User', emailVerified: true } as unknown as User);
+      setLoading(false);
+      logger.info('Auth dev bypass: auto-authenticated as dev-user');
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -33,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return unsubscribe;
-  }, []);
+  }, [isDevBypass]);
 
   const value = {
     user,

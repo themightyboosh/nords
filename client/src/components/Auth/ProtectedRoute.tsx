@@ -14,9 +14,9 @@ export function ProtectedRoute({ children, requireVerification = true }: Protect
   const { isAuthenticated, isEmailVerified, loading } = useAuth();
   const location = useLocation();
 
-  // Dev bypass: skip auth when Firebase isn't configured (demo-api-key fallback)
-  if (config.isDev && config.firebase.apiKey === 'demo-api-key') {
-    logger.warn('Auth bypassed: Firebase not configured (demo mode)');
+  // Dev bypass: skip auth entirely with env flag or when Firebase isn't configured
+  if (config.isDev && (import.meta.env.VITE_SKIP_AUTH === 'true' || config.firebase.apiKey === 'demo-api-key')) {
+    logger.warn('Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key)');
     return <>{children}</>;
   }
 
