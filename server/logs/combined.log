@@ -6372,3 +6372,179 @@ ReferenceError: config is not defined
 17:43:45.730 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
 17:43:48.435 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":37,"rows":1}
 17:43:48.476 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
+17:49:19.722 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+17:49:19.860 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":267,"rows":1}
+17:49:19.903 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":42,"rows":1}
+17:49:49.549 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T21:49:19.572Z","userId":"dev-user-000"}
+17:49:49.549 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T21:49:19.572Z","userId":"dev-user-000"}
+17:49:49.549 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T21:49:19.608Z","userId":"dev-user-000"}
+17:49:49.549 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T21:49:19.608Z","userId":"dev-user-000"}
+18:11:18.302 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:11:18.446 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":277,"rows":1}
+18:13:36.843 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:13:36.982 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":277,"rows":1}
+18:14:01.610 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:14:01.750 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":276,"rows":1}
+18:14:01.874 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":117,"rows":1}
+18:14:01.908 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:01.941 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:01.978 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":35,"rows":1}
+18:14:02.014 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":34,"rows":1}
+18:14:02.047 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":31,"rows":1}
+18:14:02.083 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":35,"rows":1}
+18:14:02.119 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":34,"rows":1}
+18:14:02.154 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:02.189 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":34,"rows":1}
+18:14:02.222 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":31,"rows":1}
+18:14:02.255 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":31,"rows":1}
+18:14:02.288 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:02.324 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":35,"rows":1}
+18:14:02.357 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:02.391 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:02.428 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":36,"rows":1}
+18:14:02.460 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:02.494 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:02.526 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":31,"rows":1}
+18:14:02.562 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":35,"rows":1}
+18:14:02.596 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:02.629 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:02.666 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":36,"rows":1}
+18:14:02.699 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:02.733 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:02.765 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":31,"rows":1}
+18:14:02.802 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":36,"rows":1}
+18:14:02.835 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:02.868 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:02.900 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":31,"rows":1}
+18:14:02.938 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":37,"rows":1}
+18:14:02.971 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:03.009 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":37,"rows":1}
+18:14:03.046 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":36,"rows":1}
+18:14:03.079 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:03.112 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:03.146 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:03.182 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":35,"rows":1}
+18:14:03.215 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:03.249 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:03.282 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:03.320 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":37,"rows":1}
+18:14:03.354 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":34,"rows":1}
+18:14:03.388 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:03.424 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":35,"rows":1}
+18:14:03.458 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:03.491 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:03.525 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:03.561 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":36,"rows":1}
+18:14:03.596 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":34,"rows":1}
+18:14:03.630 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:03.668 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":36,"rows":1}
+18:14:03.701 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:03.736 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:03.773 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":36,"rows":1}
+18:14:03.806 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:03.840 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:03.873 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:03.907 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:03.941 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:03.974 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:04.010 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":35,"rows":1}
+18:14:04.042 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:04.077 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":34,"rows":1}
+18:14:04.114 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":36,"rows":1}
+18:14:04.147 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:04.228 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":80,"rows":1}
+18:14:04.262 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:04.296 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:04.333 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":36,"rows":1}
+18:14:04.369 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":35,"rows":1}
+18:14:04.403 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:04.439 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":35,"rows":1}
+18:14:04.473 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:04.506 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:04.543 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":36,"rows":1}
+18:14:04.576 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:04.611 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":34,"rows":1}
+18:14:04.647 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":34,"rows":1}
+18:14:04.680 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:04.713 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:04.746 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:04.782 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":34,"rows":1}
+18:14:04.816 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":33,"rows":1}
+18:14:04.851 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":34,"rows":1}
+18:14:04.887 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":35,"rows":1}
+18:14:04.920 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE nords\n    SET position_x = $1, position_y = $2, updated_at = CURRENT","duration":32,"rows":1}
+18:14:39.400 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:14:39.555 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":284,"rows":1}
+18:14:39.602 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":45,"rows":1}
+18:15:09.231 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:14:39.249Z","userId":"dev-user-000"}
+18:15:09.231 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:14:39.249Z","userId":"dev-user-000"}
+18:15:09.231 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:14:39.270Z","userId":"dev-user-000"}
+18:15:09.231 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:14:39.270Z","userId":"dev-user-000"}
+18:18:18.717 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:18:18.856 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":270,"rows":1}
+18:18:18.905 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":48,"rows":1}
+18:18:19.292 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:18:18.564Z","userId":"dev-user-000"}
+18:18:19.292 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:18:18.564Z","userId":"dev-user-000"}
+18:18:19.292 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:18:18.585Z","userId":"dev-user-000"}
+18:18:19.292 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:18:18.585Z","userId":"dev-user-000"}
+18:18:19.386 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":44,"rows":1}
+18:18:19.425 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":38,"rows":1}
+18:18:34.798 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:18:34.798 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:18:34.844 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":192,"rows":1}
+18:18:34.845 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":194,"rows":1}
+18:18:49.319 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:18:19.325Z","userId":"dev-user-000"}
+18:18:49.319 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:18:19.325Z","userId":"dev-user-000"}
+18:18:49.320 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:18:19.342Z","userId":"dev-user-000"}
+18:18:49.320 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:18:19.342Z","userId":"dev-user-000"}
+18:20:08.610 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:20:08.610 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:20:08.611 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:20:08.650 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":175,"rows":1}
+18:20:08.650 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":175,"rows":1}
+18:20:08.651 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":176,"rows":1}
+18:24:20.152 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:24:20.292 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":274,"rows":1}
+18:24:20.344 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":50,"rows":1}
+18:24:49.980 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:24:19.995Z","userId":"dev-user-000"}
+18:24:49.980 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:24:19.995Z","userId":"dev-user-000"}
+18:24:49.980 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:24:20.017Z","userId":"dev-user-000"}
+18:24:49.980 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:24:20.017Z","userId":"dev-user-000"}
+18:25:42.064 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:25:42.064 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:25:42.110 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connections SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_","duration":189,"rows":1}
+18:25:42.112 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET source_nord_id = $1, target_nord_id = $2, distan","duration":190,"rows":0}
+18:28:56.311 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:28:56.450 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":267,"rows":1}
+18:28:56.493 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":41,"rows":1}
+18:29:26.147 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:28:56.162Z","userId":"dev-user-000"}
+18:29:26.148 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:28:56.162Z","userId":"dev-user-000"}
+18:29:26.148 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:28:56.182Z","userId":"dev-user-000"}
+18:29:26.148 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:28:56.182Z","userId":"dev-user-000"}
+18:31:38.811 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:38.820 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:38.820 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:38.821 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:38.821 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:38.821 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:38.846 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+18:31:38.865 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":195,"rows":1}
+18:31:38.865 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":195,"rows":1}
+18:31:38.865 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":195,"rows":1}
+18:31:38.865 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":195,"rows":1}
+18:31:38.866 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":196,"rows":1}
+18:31:38.880 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":33,"rows":1}
+18:31:38.899 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":33,"rows":1}
+18:31:55.604 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:55.605 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:55.605 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:55.605 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:55.608 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:55.610 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:31:55.643 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":183,"rows":1}
+18:31:55.646 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":185,"rows":1}
+18:31:55.648 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":188,"rows":1}
+18:31:55.649 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":187,"rows":1}
+18:31:55.649 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":187,"rows":1}
+18:31:55.649 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":187,"rows":1}
+18:31:55.676 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":32,"rows":1}

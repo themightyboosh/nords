@@ -12,29 +12,29 @@ interface ConnectionLabelProps {
   isDimmed?: boolean;
   /** Composite label: verb + stage value(s), or verb + preposition, or null */
   resolvedLabel?: string | null;
+  /** Ref forwarded to the label div for direct DOM position updates during animation */
+  labelRef?: React.RefObject<HTMLDivElement>;
 }
 
 export const ConnectionLabel = React.memo(function ConnectionLabel({
   x, y, angleDeg, direction, type, color, edgeId, isDimmed,
-  resolvedLabel,
+  resolvedLabel, labelRef,
 }: ConnectionLabelProps) {
-  const zoom = useStore((s) => s.transform[2]);
-  // Unified text scaling — same formula as NordNode textScale
-  const inverseScale = zoom < 0.6
-    ? Math.min(2.5, 0.6 / zoom)
-    : Math.min(0.8, Math.max(0.5, 1 / zoom));
+  // Zoom level — throttled via equality fn (only re-render on tier change)
+  const zoomTier = useStore(
+    (s) => {
+      const z = s.transform[2];
+      // Quantize to reduce re-renders: 3 tiers instead of continuous
+      if (z >= 0.6) return 'full';
+      if (z >= 0.35) return 'mid';
+      return 'small';
+    },
+    (a, b) => a === b,
+  );
 
-  // Drag-isolation: fade edges not connected to the dragged node
-  const isDragFaded = useStore((s) => {
-    let draggedId: string | null = null;
-    for (const [, node] of s.nodeLookup) {
-      if (node.dragging) { draggedId = node.id; break; }
-    }
-    if (!draggedId) return false;
-    const edge = s.edgeLookup.get(edgeId);
-    if (!edge) return true;
-    return edge.source !== draggedId && edge.target !== draggedId;
-  });
+  const inverseScale = zoomTier === 'full' ? 0.75
+    : zoomTier === 'mid' ? 1.2
+    : 2.0;
 
   const dirClass = direction === 'to'
     ? 'nords-connection-label--arrow-right'
@@ -47,14 +47,15 @@ export const ConnectionLabel = React.memo(function ConnectionLabel({
   return (
     <EdgeLabelRenderer>
       <div
+        ref={labelRef}
         className={`nords-connection-label ${dirClass}`}
         data-edge-id={edgeId}
+        data-angle={angleDeg}
+        data-invscale={inverseScale}
         style={{
           position: 'absolute',
           transform: `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${angleDeg}deg) scale(${inverseScale})`,
           backgroundColor: color,
-          opacity: isDragFaded ? 0.15 : 1,
-          transition: 'opacity 0.2s ease',
           zIndex: isDimmed ? 0 : 10,
         } as React.CSSProperties}
       >

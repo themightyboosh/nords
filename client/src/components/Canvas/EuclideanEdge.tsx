@@ -5,13 +5,16 @@
  * not to fixed handle positions. The Bézier control point is driven by
  * a 1D spring-mass-damper system for the tactile cable-wiggle effect.
  *
- * PERFORMANCE MODEL (v2):
- *   - Spring animation runs in a rAF loop but mutates the DOM directly
- *     via ref.setAttribute('d', ...) instead of calling setCpPos per frame.
- *   - React re-renders only occur when the spring settles or structural
- *     data changes (connection type, direction, visibility).
+ * PERFORMANCE MODEL (v3):
+ *   - Spring animation runs in a rAF loop and mutates the DOM directly
+ *     via ref.setAttribute('d', ...) — zero React re-renders during animation.
+ *   - Label position is also updated via direct DOM style mutation during
+ *     animation; React state is synced only when the spring settles.
  *   - Off-canvas guard: animation is paused for edges fully outside the
  *     visible viewport, resuming when they scroll back in.
+ *   - Node positions are extracted via a custom equality selector that
+ *     only triggers re-render when actual coordinates change (not on
+ *     unrelated node metadata updates).
  *
  * Physics tuned for 2x pronounced wiggle — resolves within ~600ms.
  */
@@ -53,6 +56,34 @@ interface SpringState {
   y: number;
   vx: number;
   vy: number;
+}
+
+// ── Position-only node selector ──
+// Extracts only position + dimensions from a node lookup entry.
+// Prevents re-renders when unrelated node data changes (selection, etc.)
+interface NodeGeometry {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+const EMPTY_GEO: NodeGeometry = { x: 0, y: 0, w: 200, h: 60 };
+
+function useNodeGeometry(nodeId: string): NodeGeometry {
+  return useStore(
+    (s) => {
+      const node = s.nodeLookup.get(nodeId);
+      if (!node) return EMPTY_GEO;
+      return {
+        x: node.position?.x ?? 0,
+        y: node.position?.y ?? 0,
+        w: node.measured?.width ?? 200,
+        h: node.measured?.height ?? 60,
+      };
+    },
+    (a, b) => a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h
+  );
 }
 
 /**
@@ -142,9 +173,10 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   // ── Typed edge data ──
   const edgeData = data as NordEdgeData | undefined;
 
-  // Read node dimensions from React Flow store for bounding-rect computation
-  const sourceNode = useStore((s) => s.nodeLookup.get(source));
-  const targetNode = useStore((s) => s.nodeLookup.get(target));
+  // Read node geometry from React Flow store — position-only selector
+  // prevents re-renders when unrelated node metadata changes
+  const sourceGeo = useNodeGeometry(source);
+  const targetGeo = useNodeGeometry(target);
 
   // ── Resolve distance to stage labels ──
   const { connectionTypes } = useTypeRegistryContext();
@@ -194,19 +226,14 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   }, [resolvedLabel, resolvedYLabel, edgeData?._verb, edgeData?._prepositions, edgeData?.direction]);
 
   // Node centers (React Flow positions are top-left, add half dimensions)
-  const sW = sourceNode?.measured?.width ?? 200;
-  const sH = sourceNode?.measured?.height ?? 60;
-  const tW = targetNode?.measured?.width ?? 200;
-  const tH = targetNode?.measured?.height ?? 60;
-
-  const sCx = (sourceNode?.position?.x ?? 0) + sW / 2;
-  const sCy = (sourceNode?.position?.y ?? 0) + sH / 2;
-  const tCx = (targetNode?.position?.x ?? 0) + tW / 2;
-  const tCy = (targetNode?.position?.y ?? 0) + tH / 2;
+  const sCx = sourceGeo.x + sourceGeo.w / 2;
+  const sCy = sourceGeo.y + sourceGeo.h / 2;
+  const tCx = targetGeo.x + targetGeo.w / 2;
+  const tCy = targetGeo.y + targetGeo.h / 2;
 
   // Compute intersection of center-to-center line with each card's bounding rect
-  const srcPt = rectIntersection(sCx, sCy, tCx, tCy, sW, sH);
-  const tgtPt = rectIntersection(tCx, tCy, sCx, sCy, tW, tH);
+  const srcPt = rectIntersection(sCx, sCy, tCx, tCy, sourceGeo.w, sourceGeo.h);
+  const tgtPt = rectIntersection(tCx, tCy, sCx, sCy, targetGeo.w, targetGeo.h);
 
   const sx = srcPt.x;
   const sy = srcPt.y;
@@ -281,8 +308,10 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   const hitAreaRef = useRef<SVGPathElement>(null);
   const springRef = useRef<SpringState>({ x: targetCpX, y: targetCpY, vx: 0, vy: 0 });
   const rafRef = useRef<number>(0);
-  // Track settled state for label positioning (only this triggers re-render)
+  // Label position: updated via direct DOM mutation during animation,
+  // React state synced only at rest to avoid per-frame re-renders.
   const labelPosRef = useRef({ x: midX, y: midY });
+  const labelElRef = useRef<HTMLDivElement>(null);
   const [labelPos, setLabelPos] = React.useState({ x: midX, y: midY });
 
   // ── Off-canvas guard ──
@@ -307,6 +336,18 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     if (basePathRef.current) basePathRef.current.setAttribute('d', pathD);
     if (activePathRef.current) activePathRef.current.setAttribute('d', pathD);
     if (hitAreaRef.current) hitAreaRef.current.setAttribute('d', pathD);
+  }, []);
+
+  // Update label position via direct DOM mutation (no React re-render)
+  const updateLabelDOM = useCallback((lx: number, ly: number) => {
+    const el = labelElRef.current;
+    if (!el) return;
+    // The label uses translate(-50%, -50%) for centering, then translate(x, y) for positioning.
+    // We need to find the existing rotation and scale to preserve them.
+    // Since the angle and scale don't change during animation, we can just rebuild
+    // the full transform with the new position values.
+    // This is cheaper than a React re-render cycle.
+    el.style.transform = `translate(-50%, -50%) translate(${lx}px, ${ly}px) rotate(${el.dataset.angle || 0}deg) scale(${el.dataset.invscale || 1})`;
   }, []);
 
   useEffect(() => {
@@ -338,7 +379,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
       );
       updatePaths(pathD);
 
-      // Update label position ref
+      // Update label position ref + DOM directly (no React re-render)
       const stagger = ribbonConfig.count > 1
         ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20
         : 0;
@@ -346,6 +387,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
         x: spring.x + (dx / len) * stagger,
         y: spring.y + (dy / len) * stagger,
       };
+      updateLabelDOM(labelPosRef.current.x, labelPosRef.current.y);
 
       if (speed < THRESHOLD && distToTarget < 1) {
         spring.vx = 0;
@@ -355,11 +397,6 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
         isAnimating = false;
         return;
       }
-
-      // Update label position every frame — labels are small HTML divs
-      // via EdgeLabelRenderer portal, so this is cheap. The expensive
-      // SVG path mutation is handled by direct DOM ref above.
-      setLabelPos({ ...labelPosRef.current });
 
       if (isAnimating) {
         rafRef.current = requestAnimationFrame(animate);
@@ -384,17 +421,16 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
         0
       );
       updatePaths(pathD);
-      setLabelPos({
-        x: targetCpX + (dx / len) * (ribbonConfig.count > 1 ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20 : 0),
-        y: targetCpY + (dy / len) * (ribbonConfig.count > 1 ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20 : 0),
-      });
+      const lx = targetCpX + (dx / len) * (ribbonConfig.count > 1 ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20 : 0);
+      const ly = targetCpY + (dy / len) * (ribbonConfig.count > 1 ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20 : 0);
+      setLabelPos({ x: lx, y: ly });
     }
 
     return () => {
       isAnimating = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [targetCpX, targetCpY, isVisible, sx, sy, tx, ty, perpUnitX, perpUnitY, dx, dy, len, offset, srcSplayOffset, tgtSplayOffset, ribbonConfig, updatePaths]);
+  }, [targetCpX, targetCpY, isVisible, sx, sy, tx, ty, perpUnitX, perpUnitY, dx, dy, len, offset, srcSplayOffset, tgtSplayOffset, ribbonConfig, updatePaths, updateLabelDOM]);
 
   // ── Initial path for SSR / first render ──
   const initialPathD = useMemo(() => buildPathD(
@@ -533,6 +569,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
           edgeId={id}
           isDimmed={isDimmed}
           resolvedLabel={compositeLabel}
+          labelRef={labelElRef}
         />
       )}
     </>

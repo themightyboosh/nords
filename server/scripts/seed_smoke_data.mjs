@@ -97,8 +97,8 @@ async function main() {
       type_id: def.type,
       title: def.title,
       properties: def.props,
-      position_x: Math.random() * 1600 - 800,
-      position_y: Math.random() * 1600 - 800,
+      position_x: Math.random(),
+      position_y: Math.random(),
     });
     nords.push(nord);
     console.log(`  ✅ Nord: ${nord.title}`);

@@ -3,10 +3,12 @@
  *
  * Adds canvas-specific concerns on top of the shared NordCard:
  *   - ReactFlow Handles (drop target + border drag sources)
- *   - Zoom-aware text counter-scaling
  *   - Comment badge with inverse-scale
  *
  * Visual rendering is delegated entirely to NordCard.
+ *
+ * PERF: Zoom subscription is only active when comment badge is rendered.
+ * All other rendering is zoom-independent (CSS handles zoom tier styling).
  */
 
 import React, { memo } from 'react';
@@ -29,10 +31,19 @@ interface NordNodeData {
 }
 
 export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<NordNodeData>) => {
-  const zoom = useStore((s) => s.transform[2], (a, b) => a === b);
-  const inverseScale = Math.min(0.65, 100 / (zoom * 100));
-  const textScale = zoom < 0.6 ? Math.min(2.5, 0.6 / zoom) : 1;
   const isGhosted = data.isGhosted === true;
+  const hasComments = (data.commentCount || 0) > 0 && !isGhosted;
+
+  // Only subscribe to zoom when comment badge is visible (avoids 91 subscriptions
+  // firing on every zoom/pan when no comments exist)
+  const inverseScale = useStore(
+    (s) => {
+      if (!hasComments) return 1;
+      const zoom = s.transform[2];
+      return Math.min(0.65, 100 / (zoom * 100));
+    },
+    (a, b) => a === b,
+  );
 
   return (
     <div style={{ width: `${CARD_WIDTH}px`, position: 'relative' }}>
@@ -58,7 +69,7 @@ export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<N
       />
 
       {/* Comment badge — canvas-only, inverse-scaled at low zoom */}
-      {(data.commentCount || 0) > 0 && !isGhosted && (
+      {hasComments && (
         <div
           className="nords-comment-badge"
           style={{

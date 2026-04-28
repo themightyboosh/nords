@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useStore, useReactFlow } from '@xyflow/react';
+import { useStore } from '@xyflow/react';
 
 /**
  * useSemanticZoom determines what visual tier to render nodes at based on the zoom lens.
@@ -7,22 +7,26 @@ import { useStore, useReactFlow } from '@xyflow/react';
  * Zoom tiers:
  * - Micro (100% - 50%): Full card anatomy
  * - Meso (49% - 25%): Hide descriptions/properties, show only title+icon
- * - Macro (< 25%): Colored dots, hairline connections
+ * - Macro (<25%): Colored dots, hairline connections
+ *
+ * PERF: Uses a quantized selector — only fires when the tier changes,
+ * not on every scroll/pinch event. This reduces DOM writes from ~60/sec
+ * during zoom gestures to max 2 (tier boundary crossings).
  */
 export function useSemanticZoom() {
-  const zoom = useStore((s) => s.transform[2]);
+  const zoomTier = useStore(
+    (s) => {
+      const z = s.transform[2];
+      if (z >= 0.50) return 'micro' as const;
+      if (z >= 0.25) return 'meso' as const;
+      return 'macro' as const;
+    },
+    (a, b) => a === b,
+  );
   
-  // We can inject a CSS variable or class on the body to let CSS handle it easily
   useEffect(() => {
-    const root = document.documentElement;
-    if (zoom >= 0.50) {
-      root.setAttribute('data-zoom-tier', 'micro');
-    } else if (zoom >= 0.25) {
-      root.setAttribute('data-zoom-tier', 'meso');
-    } else {
-      root.setAttribute('data-zoom-tier', 'macro');
-    }
-  }, [zoom]);
+    document.documentElement.setAttribute('data-zoom-tier', zoomTier);
+  }, [zoomTier]);
 
-  return { zoom };
+  return { zoomTier };
 }
