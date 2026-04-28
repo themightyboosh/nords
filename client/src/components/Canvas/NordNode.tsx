@@ -18,7 +18,7 @@ import { MessageSquare } from 'lucide-react';
 import { NordCard } from '../shared/NordCard';
 import './CanvasEngine.css';
 
-const CARD_WIDTH = 225;
+const CARD_WIDTH = 270;
 
 interface NordNodeData {
   title: string;

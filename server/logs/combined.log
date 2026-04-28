@@ -6548,3 +6548,20 @@ ReferenceError: config is not defined
 18:31:55.649 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":187,"rows":1}
 18:31:55.649 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":187,"rows":1}
 18:31:55.676 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":32,"rows":1}
+18:39:38.833 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:39:38.871 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE connections SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_","duration":184,"rows":1}
+18:45:21.683 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:45:21.822 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":276,"rows":1}
+18:45:21.868 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":45,"rows":1}
+18:45:48.448 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:45:48.448 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:45:48.488 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+18:45:48.488 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":176,"rows":1}
+18:45:51.499 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:45:21.525Z","userId":"dev-user-000"}
+18:45:51.500 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:45:21.525Z","userId":"dev-user-000"}
+18:45:51.500 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:45:21.563Z","userId":"dev-user-000"}
+18:45:51.500 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-28T22:45:21.563Z","userId":"dev-user-000"}
+18:46:22.378 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:46:22.380 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:46:22.417 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":176,"rows":1}
+18:46:22.419 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":176,"rows":1}

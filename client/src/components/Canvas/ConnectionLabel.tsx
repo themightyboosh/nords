@@ -12,29 +12,22 @@ interface ConnectionLabelProps {
   isDimmed?: boolean;
   /** Composite label: verb + stage value(s), or verb + preposition, or null */
   resolvedLabel?: string | null;
-  /** Ref forwarded to the label div for direct DOM position updates during animation */
-  labelRef?: React.RefObject<HTMLDivElement>;
 }
 
 export const ConnectionLabel = React.memo(function ConnectionLabel({
   x, y, angleDeg, direction, type, color, edgeId, isDimmed,
-  resolvedLabel, labelRef,
+  resolvedLabel,
 }: ConnectionLabelProps) {
-  // Zoom level — throttled via equality fn (only re-render on tier change)
-  const zoomTier = useStore(
+  // Zoom level — quantized to 3 tiers to reduce re-renders
+  const inverseScale = useStore(
     (s) => {
       const z = s.transform[2];
-      // Quantize to reduce re-renders: 3 tiers instead of continuous
-      if (z >= 0.6) return 'full';
-      if (z >= 0.35) return 'mid';
-      return 'small';
+      if (z >= 0.6) return 0.75;
+      if (z >= 0.35) return 1.2;
+      return 2.0;
     },
     (a, b) => a === b,
   );
-
-  const inverseScale = zoomTier === 'full' ? 0.75
-    : zoomTier === 'mid' ? 1.2
-    : 2.0;
 
   const dirClass = direction === 'to'
     ? 'nords-connection-label--arrow-right'
@@ -47,11 +40,8 @@ export const ConnectionLabel = React.memo(function ConnectionLabel({
   return (
     <EdgeLabelRenderer>
       <div
-        ref={labelRef}
         className={`nords-connection-label ${dirClass}`}
         data-edge-id={edgeId}
-        data-angle={angleDeg}
-        data-invscale={inverseScale}
         style={{
           position: 'absolute',
           transform: `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${angleDeg}deg) scale(${inverseScale})`,
@@ -59,7 +49,6 @@ export const ConnectionLabel = React.memo(function ConnectionLabel({
           zIndex: isDimmed ? 0 : 10,
         } as React.CSSProperties}
       >
-        {/* Priority: composite label > type name */}
         {resolvedLabel ? (
           <span className="nords-connection-label__resolved">{resolvedLabel}</span>
         ) : (
