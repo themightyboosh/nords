@@ -99,16 +99,30 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     });
   }, [rfEdges, activeConnectionTypeId]);
 
-  // ── "All Lines" drag lock ──
-  // In "All Lines" mode (no active type), node positions are COMPUTED from
-  // averaged distances — dragging them is meaningless since the position
-  // would snap back on next lens switch. Only orphan nodes (zero connections
-  // across ALL types) are freely draggable.
-  // When a specific connection type is selected, all nodes are draggable.
+  // ── Node draggability + ghosting by lens ──
+  // When a connection type is active:
+  //   - Nords connected by that type → draggable, normal color
+  //   - Nords NOT connected → locked, uniform gray (ghosted)
+  // This makes it clear which nords participate in the active relationship.
+  // Drawing a new connection to a gray nord instantly promotes it.
   const lensNodes = useMemo(() => {
     if (activeConnectionTypeId) {
-      // Type-specific view: all nodes draggable (positions are per-type cached)
-      return rfNodes.map(n => ({ ...n, draggable: true }));
+      // Build set of nord IDs that participate in the active connection type
+      const connectedIds = new Set<string>();
+      for (const e of rfEdges) {
+        if ((e.data as any)?._typeId === activeConnectionTypeId) {
+          connectedIds.add(e.source);
+          connectedIds.add(e.target);
+        }
+      }
+      return rfNodes.map(n => ({
+        ...n,
+        draggable: connectedIds.has(n.id),
+        data: {
+          ...n.data,
+          isGhosted: !connectedIds.has(n.id),
+        },
+      }));
     }
     // "All Lines" view: lock connected nodes, free orphans
     const connectedIds = new Set<string>();

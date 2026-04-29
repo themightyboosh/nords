@@ -6836,3 +6836,638 @@ ReferenceError: hasSplay is not defined
 20:01:27.640 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 20:01:27.677 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":178,"rows":1}
 20:01:27.678 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":180,"rows":1}
+20:43:15.111 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+20:43:15.111 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+20:43:15.256 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":283,"rows":1}
+20:43:15.263 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":294,"rows":1}
+20:43:15.310 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":43,"rows":1}
+20:43:15.313 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":54,"rows":1}
+20:43:15.352 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":40,"rows":1}
+20:43:15.394 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":40,"rows":1}
+20:43:15.437 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":40,"rows":1}
+20:43:15.480 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":41,"rows":1}
+20:43:52.988 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.946Z","userId":"dev-user-000"}
+20:43:52.988 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.946Z","userId":"dev-user-000"}
+20:43:52.988 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.968Z","userId":"dev-user-000"}
+20:43:52.988 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.968Z","userId":"dev-user-000"}
+20:43:52.990 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.978Z","userId":"dev-user-000"}
+20:43:52.990 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.978Z","userId":"dev-user-000"}
+20:43:52.990 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:15.001Z","userId":"dev-user-000"}
+20:43:52.990 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:15.001Z","userId":"dev-user-000"}
+20:43:52.991 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.949Z","userId":"dev-user-000"}
+20:43:52.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.949Z","userId":"dev-user-000"}
+20:43:52.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.971Z","userId":"dev-user-000"}
+20:43:52.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.971Z","userId":"dev-user-000"}
+20:43:52.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.946Z","userId":"dev-user-000"}
+20:43:52.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.947Z","userId":"dev-user-000"}
+20:43:52.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.968Z","userId":"dev-user-000"}
+20:43:52.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T00:43:14.968Z","userId":"dev-user-000"}
+03:20:13.312 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+03:20:13.392 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5002,"error":"Connection terminated due to connection timeout"}
+03:20:18.325 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+03:20:18.396 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5002,"error":"Connection terminated due to connection timeout"}
+03:20:23.401 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+03:20:28.410 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+03:20:33.399 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+03:20:33.402 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5007,"error":"Connection terminated due to connection timeout"}
+03:20:38.562 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.367Z","userId":"dev-user-000"}
+03:20:38.562 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.367Z","userId":"dev-user-000"}
+03:20:38.563 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.388Z","userId":"dev-user-000"}
+03:20:38.563 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.388Z","userId":"dev-user-000"}
+03:20:38.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.368Z","userId":"dev-user-000"}
+03:20:38.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.368Z","userId":"dev-user-000"}
+03:20:38.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.390Z","userId":"dev-user-000"}
+03:20:38.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.390Z","userId":"dev-user-000"}
+03:20:38.565 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.285Z","userId":"dev-user-000"}
+03:20:38.565 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.285Z","userId":"dev-user-000"}
+03:20:38.565 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.314Z","userId":"dev-user-000"}
+03:20:38.565 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.314Z","userId":"dev-user-000"}
+03:20:38.567 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.368Z","userId":"dev-user-000"}
+03:20:38.567 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.368Z","userId":"dev-user-000"}
+03:20:38.567 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.390Z","userId":"dev-user-000"}
+03:20:38.567 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T07:20:08.390Z","userId":"dev-user-000"}
+10:05:14.497 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:05:14.513 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5013,"error":"Connection terminated due to connection timeout"}
+10:08:10.893 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":176379,"error":"Connection terminated due to connection timeout"}
+10:08:10.895 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":176384,"error":"Connection terminated due to connection timeout"}
+10:08:15.906 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:08:20.914 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+10:08:25.924 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+10:08:25.991 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:08:31.562 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.478Z","userId":"dev-user-000"}
+10:08:31.563 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.478Z","userId":"dev-user-000"}
+10:08:31.563 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.499Z","userId":"dev-user-000"}
+10:08:31.563 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.499Z","userId":"dev-user-000"}
+10:08:31.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.478Z","userId":"dev-user-000"}
+10:08:31.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.478Z","userId":"dev-user-000"}
+10:08:31.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.499Z","userId":"dev-user-000"}
+10:08:31.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.499Z","userId":"dev-user-000"}
+10:08:31.566 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.473Z","userId":"dev-user-000"}
+10:08:31.566 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.473Z","userId":"dev-user-000"}
+10:08:31.566 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.499Z","userId":"dev-user-000"}
+10:08:31.566 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.499Z","userId":"dev-user-000"}
+10:08:31.567 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.478Z","userId":"dev-user-000"}
+10:08:31.567 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.478Z","userId":"dev-user-000"}
+10:08:31.567 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.499Z","userId":"dev-user-000"}
+10:08:31.567 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:05:09.499Z","userId":"dev-user-000"}
+10:25:05.321 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:25:05.341 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:25:38.274 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32931,"error":"Connection terminated due to connection timeout"}
+10:25:38.279 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32952,"error":"Connection terminated due to connection timeout"}
+10:25:43.292 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:25:48.302 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+10:25:53.292 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:25:53.295 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5005,"error":"Connection terminated due to connection timeout"}
+10:25:58.936 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.318Z","userId":"dev-user-000"}
+10:25:58.936 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.318Z","userId":"dev-user-000"}
+10:25:58.936 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.339Z","userId":"dev-user-000"}
+10:25:58.936 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.339Z","userId":"dev-user-000"}
+10:25:58.937 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.318Z","userId":"dev-user-000"}
+10:25:58.937 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.318Z","userId":"dev-user-000"}
+10:25:58.937 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.338Z","userId":"dev-user-000"}
+10:25:58.937 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.338Z","userId":"dev-user-000"}
+10:25:58.938 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.298Z","userId":"dev-user-000"}
+10:25:58.939 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.298Z","userId":"dev-user-000"}
+10:25:58.939 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.324Z","userId":"dev-user-000"}
+10:25:58.939 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.324Z","userId":"dev-user-000"}
+10:25:58.939 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.318Z","userId":"dev-user-000"}
+10:25:58.939 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.318Z","userId":"dev-user-000"}
+10:25:58.940 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.339Z","userId":"dev-user-000"}
+10:25:58.940 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:25:00.339Z","userId":"dev-user-000"}
+10:55:16.949 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:55:16.963 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:56:22.917 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":65951,"error":"Connection terminated due to connection timeout"}
+10:56:22.920 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":65967,"error":"Connection terminated due to connection timeout"}
+10:56:27.924 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5002,"error":"Connection terminated due to connection timeout"}
+10:56:32.930 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:56:36.531 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.940Z","userId":"dev-user-000"}
+10:56:36.531 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.940Z","userId":"dev-user-000"}
+10:56:36.531 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.960Z","userId":"dev-user-000"}
+10:56:36.531 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.960Z","userId":"dev-user-000"}
+10:56:37.930 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:56:37.931 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:56:41.582 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:56:43.531 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.940Z","userId":"dev-user-000"}
+10:56:43.531 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.940Z","userId":"dev-user-000"}
+10:56:43.531 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.961Z","userId":"dev-user-000"}
+10:56:43.531 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.961Z","userId":"dev-user-000"}
+10:56:43.532 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.925Z","userId":"dev-user-000"}
+10:56:43.532 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.926Z","userId":"dev-user-000"}
+10:56:43.532 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.952Z","userId":"dev-user-000"}
+10:56:43.532 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.952Z","userId":"dev-user-000"}
+10:56:43.532 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.940Z","userId":"dev-user-000"}
+10:56:43.532 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.940Z","userId":"dev-user-000"}
+10:56:43.533 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.961Z","userId":"dev-user-000"}
+10:56:43.533 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:55:11.961Z","userId":"dev-user-000"}
+10:56:46.587 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:57:06.563 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:56:36.568Z","userId":"dev-user-000"}
+10:57:06.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:56:36.568Z","userId":"dev-user-000"}
+10:57:06.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:56:36.579Z","userId":"dev-user-000"}
+10:57:06.564 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:56:36.579Z","userId":"dev-user-000"}
+10:58:22.997 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5002,"error":"Connection terminated due to connection timeout"}
+10:58:28.001 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:58:47.974 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:58:17.980Z","userId":"dev-user-000"}
+10:58:47.974 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:58:17.980Z","userId":"dev-user-000"}
+10:58:47.974 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:58:17.992Z","userId":"dev-user-000"}
+10:58:47.974 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T14:58:17.992Z","userId":"dev-user-000"}
+10:59:31.163 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+11:00:34.080 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+11:01:09.335 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:82:18) {"service":"nords-server","text":"\n    INSERT INTO nords (project_id, type_id, title, description, properties, position_x, position_y, scale, created_by)\n","duration":5001,"error":"Connection terminated due to connection timeout"}
+11:01:19.305 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+11:01:19.308 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+11:01:19.308 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+11:01:35.953 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+11:12:12.658 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+11:12:17.670 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+11:12:37.615 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:12:07.626Z","userId":"dev-user-000"}
+11:12:37.615 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:12:07.626Z","userId":"dev-user-000"}
+11:12:37.615 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:12:07.657Z","userId":"dev-user-000"}
+11:12:37.615 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:12:07.657Z","userId":"dev-user-000"}
+11:40:35.468 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:40:35.673 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":347,"rows":1}
+11:44:57.981 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:44:58.014 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "0"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":169,"error":"invalid input syntax for type uuid: \"0\""}
+11:44:58.147 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:44:58.181 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "0"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":165,"error":"invalid input syntax for type uuid: \"0\""}
+11:45:01.119 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:45:01.154 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":169,"rows":1}
+11:45:01.187 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":31,"rows":1}
+11:45:02.292 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":141,"rows":1}
+11:45:02.337 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":42,"rows":1}
+11:45:05.508 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":42,"rows":1}
+11:45:05.608 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:45:05.646 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+11:45:10.044 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:45:10.046 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+11:45:21.721 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:45:21.723 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:45:21.760 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":189,"rows":1}
+11:45:21.760 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":187,"rows":1}
+11:45:24.832 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":43,"rows":1}
+11:45:27.817 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:44:57.824Z","userId":"dev-user-000"}
+11:45:27.817 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:44:57.824Z","userId":"dev-user-000"}
+11:45:27.817 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:44:57.845Z","userId":"dev-user-000"}
+11:45:27.817 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:44:57.845Z","userId":"dev-user-000"}
+11:45:27.817 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:45:00.965Z","userId":"dev-user-000"}
+11:45:27.817 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:45:00.965Z","userId":"dev-user-000"}
+11:45:27.817 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:45:02.133Z","userId":"dev-user-000"}
+11:45:27.817 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:45:02.133Z","userId":"dev-user-000"}
+11:45:30.383 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":42,"rows":1}
+11:45:30.384 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":45,"rows":1}
+11:45:30.493 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:45:30.494 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:45:30.495 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:45:30.496 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:45:30.534 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":188,"rows":1}
+11:45:30.541 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":197,"rows":1}
+11:45:30.541 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":195,"rows":1}
+11:45:30.541 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":199,"rows":1}
+11:45:33.066 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+11:45:33.068 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+11:45:37.069 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":34,"rows":1}
+11:45:37.070 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+11:45:38.648 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":34,"rows":1}
+11:45:38.650 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":34,"rows":1}
+11:45:42.399 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:45:42.400 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:45:52.161 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":44,"rows":1}
+11:45:56.455 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":43,"rows":1}
+11:45:56.567 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:45:56.604 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":188,"rows":1}
+11:46:06.379 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:46:06.383 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":43,"rows":1}
+11:46:10.013 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":42,"rows":1}
+11:46:10.016 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":46,"rows":1}
+11:46:12.038 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":41,"rows":1}
+11:46:12.039 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:46:13.731 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":44,"rows":1}
+11:46:13.733 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":44,"rows":1}
+11:46:27.818 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-29T15:46:22.558Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+11:46:27.819 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-29T15:46:26.401Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+11:46:55.241 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:46:55.243 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:46:55.243 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:46:55.278 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":174,"rows":1}
+11:46:55.280 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":175,"rows":1}
+11:46:55.280 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":174,"rows":1}
+11:47:02.092 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:47:02.094 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":42,"rows":1}
+11:47:02.095 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":42,"rows":1}
+11:47:07.457 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+11:47:07.462 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+11:47:07.463 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":42,"rows":1}
+11:47:22.490 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:47:22.491 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:47:22.530 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":190,"rows":1}
+11:47:22.539 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":198,"rows":1}
+11:47:25.323 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:47:25.327 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":41,"rows":1}
+11:47:25.436 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:47:25.437 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:47:25.438 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:47:25.439 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:47:25.481 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":190,"rows":1}
+11:47:25.483 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":196,"rows":1}
+11:47:25.490 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":200,"rows":1}
+11:47:25.491 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":202,"rows":1}
+11:47:26.901 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:47:26.903 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:47:26.904 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":34,"rows":1}
+11:47:26.905 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+11:47:28.645 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":43,"rows":1}
+11:47:28.646 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":41,"rows":1}
+11:47:30.239 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:47:30.241 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:47:45.295 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:47:45.296 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:47:45.297 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:47:45.297 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:47:45.335 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":190,"rows":1}
+11:47:45.339 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":195,"rows":1}
+11:47:45.340 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":197,"rows":1}
+11:47:45.341 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":200,"rows":1}
+11:47:47.521 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+11:48:22.037 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:48:22.075 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":190,"rows":1}
+11:48:24.802 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":43,"rows":1}
+11:48:49.744 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:48:49.746 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:48:49.746 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:48:49.785 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":191,"rows":1}
+11:48:49.787 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":191,"rows":1}
+11:48:49.788 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":196,"rows":1}
+11:49:20.860 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:49:20.861 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:49:20.862 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:49:20.897 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":186,"rows":1}
+11:49:20.899 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":190,"rows":1}
+11:49:20.904 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":189,"rows":1}
+11:49:27.063 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+11:49:27.064 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+11:49:27.065 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:49:27.172 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:49:27.172 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:49:27.208 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":178,"rows":1}
+11:49:27.209 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":180,"rows":1}
+11:49:33.901 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:49:33.904 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+11:49:33.905 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+11:49:33.906 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+11:49:33.906 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+11:49:46.275 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:49:46.276 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:49:46.315 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":185,"rows":1}
+11:49:46.316 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":189,"rows":1}
+11:49:46.414 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":35,"rows":1}
+11:49:46.414 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":35,"rows":1}
+11:49:47.981 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:49:47.983 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":41,"rows":1}
+11:49:50.048 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:49:50.049 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:49:51.831 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+11:49:51.832 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+11:49:51.942 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:49:51.943 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:49:51.944 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:49:51.979 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":184,"rows":1}
+11:49:51.983 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":186,"rows":1}
+11:49:51.983 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":185,"rows":1}
+11:49:53.796 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+11:49:53.797 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:49:53.798 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+11:49:53.799 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:49:55.114 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+11:49:55.115 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+11:49:55.116 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+11:49:55.117 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+11:54:57.462 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:54:57.467 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:54:57.471 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:54:57.471 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:54:57.502 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":170,"rows":1}
+11:54:57.504 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":171,"rows":1}
+11:54:57.523 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":191,"rows":1}
+11:54:57.523 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":191,"rows":1}
+11:55:01.383 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":34,"rows":1}
+11:55:01.386 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":35,"rows":1}
+11:55:01.387 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":35,"rows":1}
+11:55:01.388 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+11:55:01.484 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:55:01.521 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":168,"rows":1}
+11:55:04.077 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+11:55:04.077 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+11:55:06.871 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:55:06.872 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":41,"rows":1}
+11:55:19.096 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:55:19.096 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:55:19.131 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+11:55:19.132 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":173,"rows":1}
+11:55:24.714 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:55:24.715 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+11:55:26.155 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:55:26.157 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":40,"rows":1}
+11:55:43.715 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:55:43.716 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:55:43.755 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":186,"rows":1}
+11:55:43.756 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":188,"rows":1}
+11:55:49.994 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":34,"rows":1}
+11:55:49.995 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":35,"rows":1}
+11:56:01.048 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:56:01.049 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:56:01.086 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":172,"rows":1}
+11:56:01.087 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":175,"rows":1}
+11:57:19.165 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:57:19.311 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":279,"rows":1}
+11:57:19.356 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":44,"rows":1}
+11:57:48.984 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:57:19.002Z","userId":"dev-user-000"}
+11:57:48.984 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:57:19.003Z","userId":"dev-user-000"}
+11:57:48.984 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:57:19.044Z","userId":"dev-user-000"}
+11:57:48.984 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-04-29T15:57:19.044Z","userId":"dev-user-000"}
+11:59:18.984 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-29T15:59:12.520Z","filename":"http://localhost:5174/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+11:59:32.742 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:59:32.744 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:59:32.744 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:59:32.749 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:59:32.750 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:59:32.778 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":169,"rows":1}
+11:59:32.780 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":169,"rows":1}
+11:59:32.783 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":176,"rows":1}
+11:59:32.784 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":173,"rows":1}
+11:59:32.785 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":175,"rows":1}
+11:59:41.574 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":38,"rows":1}
+11:59:41.575 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":39,"rows":1}
+11:59:53.148 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:59:53.149 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:59:53.188 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":184,"rows":1}
+11:59:53.188 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":184,"rows":1}
+12:02:18.984 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-29T16:02:14.408Z","filename":"http://localhost:5174/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+12:03:49.831 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+12:03:49.832 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+12:03:49.832 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+12:03:49.871 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":282,"rows":1}
+12:03:49.871 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":281,"rows":1}
+12:03:49.871 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":281,"rows":1}

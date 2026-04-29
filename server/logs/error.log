@@ -2257,3 +2257,315 @@ ReferenceError: hasSplay is not defined
     at runWithFiberInDEV (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:850:66)
     at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:8428:92)
     at workLoopSync (http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=d45501da:8324:37) {"service":"nords-client","clientTimestamp":"2026-04-28T23:59:45.486Z","errorMessage":"hasSplay is not defined","componentStack":"\n    at ActiveEdge (http://localhost:5174/src/components/Canvas/EuclideanEdge.tsx?t=1777420631271:318:67)\n    at EuclideanEdge (http://localhost:5174/src/components/Canvas/EuclideanEdge.tsx?t=1777420631271:148:78)\n    at g (<anonymous>)\n    at svg (<anonymous>)\n    at EdgeWrapper (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:8852:24)\n    at div (<anonymous>)\n    at EdgeRendererComponent (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9037:34)\n    at div (<anonymous>)\n    at Viewport (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9073:21)\n    at div (<anonymous>)\n    at Pane (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:7266:17)\n    at div (<anonymous>)\n    at ZoomPane (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:7135:21)\n    at FlowRendererComponent (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:7835:34)\n    at GraphViewComponent (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9270:31)\n    at Wrapper (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9772:20)\n    at div (<anonymous>)\n    at ReactFlow (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9798:22)\n    at div (<anonymous>)\n    at InteractiveCanvas (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777420631271:27:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5174/src/components/Canvas/CanvasEngine.tsx?t=1777420631271:747:40)\n    at div (<anonymous>)\n    at TypeRegistryProvider (http://localhost:5174/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5174/src/context/LensContext.tsx:35:32)\n    at BatchProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:6808:26)\n    at ReactFlowProvider (http://localhost:5174/node_modules/.vite/deps/@xyflow_react.js?v=d45501da:9751:44)\n    at WorkspaceShell (http://localhost:5174/src/App.tsx?t=1777420631271:30:27)\n    at ProtectedRoute (http://localhost:5174/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3331:8)\n    at Routes (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3774:8)\n    at AuthProvider (http://localhost:5174/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5174/src/App.tsx?t=1777420631271:176:42)\n    at Router (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:3722:18)\n    at BrowserRouter (http://localhost:5174/node_modules/.vite/deps/react-router-dom.js?v=d45501da:4401:8)\n    at ErrorBoundary (http://localhost:5174/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+03:20:13.312 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+03:20:13.392 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5002,"error":"Connection terminated due to connection timeout"}
+03:20:18.325 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+03:20:18.396 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5002,"error":"Connection terminated due to connection timeout"}
+03:20:23.401 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+03:20:28.410 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+03:20:33.399 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+03:20:33.402 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5007,"error":"Connection terminated due to connection timeout"}
+10:05:14.497 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:05:14.513 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5013,"error":"Connection terminated due to connection timeout"}
+10:08:10.893 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":176379,"error":"Connection terminated due to connection timeout"}
+10:08:10.895 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":176384,"error":"Connection terminated due to connection timeout"}
+10:08:15.906 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:08:20.914 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+10:08:25.924 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+10:08:25.991 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:25:05.321 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:25:05.341 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:25:38.274 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32931,"error":"Connection terminated due to connection timeout"}
+10:25:38.279 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":32952,"error":"Connection terminated due to connection timeout"}
+10:25:43.292 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:25:48.302 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+10:25:53.292 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:25:53.295 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5005,"error":"Connection terminated due to connection timeout"}
+10:55:16.949 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:55:16.963 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:56:22.917 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":65951,"error":"Connection terminated due to connection timeout"}
+10:56:22.920 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":65967,"error":"Connection terminated due to connection timeout"}
+10:56:27.924 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5002,"error":"Connection terminated due to connection timeout"}
+10:56:32.930 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:56:37.930 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:56:37.931 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:56:41.582 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:56:46.587 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5003,"error":"Connection terminated due to connection timeout"}
+10:58:22.997 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5002,"error":"Connection terminated due to connection timeout"}
+10:58:28.001 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+10:59:31.163 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+11:00:34.080 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+11:01:09.335 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:82:18) {"service":"nords-server","text":"\n    INSERT INTO nords (project_id, type_id, title, description, properties, position_x, position_y, scale, created_by)\n","duration":5001,"error":"Connection terminated due to connection timeout"}
+11:01:35.953 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5004,"error":"Connection terminated due to connection timeout"}
+11:12:12.658 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+11:12:17.670 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":5001,"error":"Connection terminated due to connection timeout"}
+11:44:58.014 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "0"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":169,"error":"invalid input syntax for type uuid: \"0\""}
+11:44:58.181 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "0"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:37:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":165,"error":"invalid input syntax for type uuid: \"0\""}
+11:46:27.818 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-29T15:46:22.558Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+11:46:27.819 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-29T15:46:26.401Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+11:59:18.984 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-29T15:59:12.520Z","filename":"http://localhost:5174/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+12:02:18.984 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-29T16:02:14.408Z","filename":"http://localhost:5174/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
