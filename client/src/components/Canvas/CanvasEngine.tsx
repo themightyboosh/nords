@@ -115,14 +115,18 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
           connectedIds.add(e.target);
         }
       }
-      return rfNodes.map(n => ({
-        ...n,
-        draggable: connectedIds.has(n.id),
-        data: {
-          ...n.data,
-          isGhosted: !connectedIds.has(n.id),
-        },
-      }));
+      return rfNodes.map(n => {
+        const isConnected = connectedIds.has(n.id);
+        return {
+          ...n,
+          draggable: isConnected,
+          zIndex: isConnected ? 20 : 0, // connected nords render above edges
+          data: {
+            ...n.data,
+            isGhosted: !isConnected,
+          },
+        };
+      });
     }
     // "All Lines" view: lock connected nodes, free orphans
     const connectedIds = new Set<string>();
@@ -505,10 +509,17 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         },
       };
       setEdges(eds => addEdge(newEdge, eds));
+      // Promote both nords: unghost, make draggable, raise above edges
+      const promoteIds = new Set([connection.source, connection.target]);
+      setNodes(nds => nds.map(n =>
+        promoteIds.has(n.id)
+          ? { ...n, draggable: true, zIndex: 20, data: { ...n.data, isGhosted: false } }
+          : n
+      ));
     } catch (err) {
       console.error('Failed to create connection:', err);
     }
-  }, [activeConnType, connectionTypes, createConnection, setEdges, edges]);
+  }, [activeConnType, connectionTypes, createConnection, setEdges, setNodes, edges]);
 
   // ── Delete Connection ──
   const handleDeleteEdge = useCallback(async (edgeId: string) => {
