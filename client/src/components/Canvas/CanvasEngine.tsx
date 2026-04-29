@@ -159,6 +159,24 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const { saveNodePosition } = useLensLayout(activeConnectionTypeId, rfNodes);
   const { onNodeClick } = useNodeSelection(onNordClick);
 
+  // ── Focused node: the node whose connected edges get full rendering ──
+  // Priority: dragged node > selected node
+  const focusedNodeId = dragNodeId || selectedNord;
+
+  // Stamp _highlighted on edges connected to the focused node
+  React.useEffect(() => {
+    setEdges(eds => eds.map(e => {
+      const shouldHighlight = focusedNodeId != null &&
+        (e.source === focusedNodeId || e.target === focusedNodeId);
+      const isHighlighted = (e.data as NordEdgeData)?._highlighted === true;
+      if (shouldHighlight === isHighlighted) return e; // no change
+      return {
+        ...e,
+        data: { ...e.data, _highlighted: shouldHighlight },
+      };
+    }));
+  }, [focusedNodeId, setEdges]);
+
   // ── Create Nord (from Add panel or radial menu) ──
   // In "placing" mode: don't create immediately, enter click-to-place
   const handleCreateNord = useCallback(async (typeId: string, canvasPosition?: { x: number; y: number }) => {
@@ -327,6 +345,24 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       ));
     },
     [setEdges]
+  );
+
+  // ── Live distance updates during drag ──
+  // Recalculate _distanceX every frame so labels update in real time
+  const onNodeDrag = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      const nodeMap = new Map(nodes.map(n => [n.id, n]));
+      setEdges(eds => eds.map(e => {
+        if (e.source !== node.id && e.target !== node.id) return e;
+        const srcNode = e.source === node.id ? node : nodeMap.get(e.source);
+        const tgtNode = e.target === node.id ? node : nodeMap.get(e.target);
+        if (!srcNode || !tgtNode) return e;
+        const newDist = computeNormalizedDistance(srcNode.position, tgtNode.position);
+        if (Math.abs(((e.data as NordEdgeData)?._distanceX ?? 0) - newDist) < 0.005) return e;
+        return { ...e, data: { ...e.data, _distanceX: newDist } };
+      }));
+    },
+    [nodes, setEdges]
   );
 
   const onNodeDragStop = useCallback(
@@ -547,6 +583,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         onConnectEnd={() => setIsConnecting(false)}
         onNodeClick={onNodeClick}
         onNodeDragStart={onNodeDragStart}
+        onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
         onMoveStart={onMoveStart}
         onMoveEnd={onMoveEnd}

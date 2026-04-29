@@ -47,5 +47,7 @@ export interface NordEdgeData {
   dimmed?: boolean;
   /** Set when edge should be invisible (ghosted/hidden) */
   ghost?: boolean;
+  /** Set when edge is connected to the focused (selected/dragged) node */
+  _highlighted?: boolean;
   [key: string]: unknown;
 }

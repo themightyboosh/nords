@@ -19,7 +19,7 @@
  *   - Ribbon splay and degree splay use cached edge selectors (O(1) during drag).
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useLayoutEffect } from 'react';
 import { useStore } from '@xyflow/react';
 import type { EdgeProps, Edge } from '@xyflow/react';
 import { ConnectionLabel } from './ConnectionLabel';
@@ -256,27 +256,43 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   if (isGhosted) {
     const pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
     return (
-      <path
-        d={pathD}
-        className="nords-connection--ghost"
-        stroke={edgeData?.color || '#000'}
-        fill="none"
-      />
+      <path d={pathD} className="nords-connection--ghost"
+        stroke={edgeData?.color || '#000'} fill="none" />
     );
   }
 
-  // ── ACTIVE EDGES: full render with label + arrows ──
+  const isHighlighted = edgeData?._highlighted === true;
+
+  // ── NON-HIGHLIGHTED ACTIVE: simple colored path, no label/animation ──
+  if (!isHighlighted) {
+    const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
+    const hasOff = Math.abs(offset) >= 1;
+    let qPathD: string;
+    if (!hasSplay && !hasOff) {
+      qPathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+    } else {
+      const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
+      const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
+      const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
+      const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
+      qPathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
+    }
+    return (
+      <path d={qPathD} stroke={edgeData?.color || '#888'}
+        strokeWidth="1.5" fill="none" opacity="0.55"
+        style={{ pointerEvents: 'stroke', cursor: 'grab' }} />
+    );
+  }
+
+  // ── HIGHLIGHTED EDGES: full render with spring + labels (~2-5 max) ──
   return (
     <ActiveEdge
-      id={id}
-      source={source}
-      target={target}
+      id={id} source={source} target={target}
       sx={sx} sy={sy} tx={tx} ty={ty}
       dx={dx} dy={dy} len={len}
       perpUnitX={perpUnitX} perpUnitY={perpUnitY}
       offset={offset}
-      srcSplayOffset={srcSplayOffset}
-      tgtSplayOffset={tgtSplayOffset}
+      srcSplayOffset={srcSplayOffset} tgtSplayOffset={tgtSplayOffset}
       ribbonConfig={ribbonConfig}
       edgeData={edgeData}
       style={style}
@@ -285,7 +301,8 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
 });
 
 
-// ── Active Edge: full-featured but only ~24 of these render at once ──
+
+// ── Active Edge: full-featured, spring-animated, only for highlighted (~2-5) ──
 const ActiveEdge = React.memo(function ActiveEdge({
   id, source, target,
   sx, sy, tx, ty,
@@ -360,11 +377,17 @@ const ActiveEdge = React.memo(function ActiveEdge({
   const cpX = midX + perpX * 2;
   const cpY = midY + perpY * 2;
 
-  // Static path — Bézier for splay/ribbon, straight line otherwise
+  // Bézier needed?
   const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
   const hasOffset = Math.abs(offset) >= 1;
 
-  const pathD = useMemo(() => {
+  // ── Spring-animated path (only ~2-5 edges use this) ──
+  const basePathRef = useRef<SVGPathElement>(null);
+  const activePathRef = useRef<SVGPathElement>(null);
+  const hitPathRef = useRef<SVGPathElement>(null);
+
+  // Target path string
+  const targetPathD = useMemo(() => {
     if (!hasSplay && !hasOffset) {
       return `M ${sx} ${sy} L ${tx} ${ty}`;
     }
@@ -374,6 +397,60 @@ const ActiveEdge = React.memo(function ActiveEdge({
     const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
     return `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
   }, [sx, sy, tx, ty, dx, dy, hasSplay, hasOffset, perpUnitX, perpUnitY, srcSplayOffset, tgtSplayOffset]);
+
+  // Spring interpolation — runs rAF loop only while settling
+  const springState = useRef<{ current: number[]; velocity: number[] }>({ current: [], velocity: [] });
+  const pathD = targetPathD; // initial/fallback render value
+
+  useLayoutEffect(() => {
+    const parseNums = (d: string) => (d.match(/-?\d+\.?\d*/g) || []).map(Number);
+    const target = parseNums(targetPathD);
+    const st = springState.current;
+
+    // Initialize on first render or coordinate count change
+    if (st.current.length !== target.length) {
+      st.current = [...target];
+      st.velocity = new Array(target.length).fill(0);
+      return; // no animation needed on mount
+    }
+
+    let prevTime = performance.now();
+    let raf = 0;
+    const STIFFNESS = 180;
+    const DAMPING = 16;
+
+    const tick = (now: number) => {
+      const dt = Math.min((now - prevTime) / 1000, 0.032);
+      prevTime = now;
+
+      let maxDelta = 0;
+      for (let i = 0; i < target.length; i++) {
+        const disp = st.current[i] - target[i];
+        st.velocity[i] += (-STIFFNESS * disp - DAMPING * st.velocity[i]) * dt;
+        st.current[i] += st.velocity[i] * dt;
+        maxDelta = Math.max(maxDelta, Math.abs(disp));
+      }
+
+      // Rebuild d-string
+      let idx = 0;
+      const newD = targetPathD.replace(/-?\d+\.?\d*/g, () => {
+        const v = st.current[idx++];
+        return v !== undefined ? v.toFixed(1) : '0';
+      });
+
+      // Direct DOM mutation — no React re-render
+      basePathRef.current?.setAttribute('d', newD);
+      activePathRef.current?.setAttribute('d', newD);
+      hitPathRef.current?.setAttribute('d', newD);
+
+      if (maxDelta > 0.3) {
+        raf = requestAnimationFrame(tick);
+      }
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [targetPathD]);
 
   // Label position
   const stagger = ribbonConfig.count > 1
@@ -457,6 +534,7 @@ const ActiveEdge = React.memo(function ActiveEdge({
     <>
       {/* Base path — solid at reduced opacity */}
       <path
+        ref={basePathRef}
         d={pathD}
         className="nords-connection--base"
         stroke={edgeColor}
@@ -464,6 +542,7 @@ const ActiveEdge = React.memo(function ActiveEdge({
       />
       {/* Active path — dashed, direction-aware marching */}
       <path
+        ref={activePathRef}
         d={pathD}
         className={`nords-connection--active ${directionClass}`}
         stroke={edgeColor}
@@ -475,6 +554,7 @@ const ActiveEdge = React.memo(function ActiveEdge({
       {startArrowPoints && <polygon points={startArrowPoints} fill={edgeColor} />}
       {/* Hit area */}
       <path
+        ref={hitPathRef}
         d={pathD}
         stroke="transparent"
         strokeWidth="30"
