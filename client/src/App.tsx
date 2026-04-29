@@ -29,7 +29,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
   const { id: projectId } = useParams<{ id: string }>();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<{ id: string; type: 'nord' | 'connection' } | null>(null);
-  const [showManageTypes, setShowManageTypes] = useState(false);
+  const [manageTypesTab, setManageTypesTab] = useState<'nord' | 'connection' | null>(null);
   
   // Load graph at the shell level so TypeRegistryProvider wraps everything
   const { graph, refetch } = useProjectGraph(projectId || '');
@@ -97,7 +97,10 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
             <ViewportHeader
               currentTheme={currentTheme}
               onThemeChange={onThemeChange}
-              onOpenSettings={() => setShowManageTypes(true)}
+              onOpenNordTypes={() => setManageTypesTab('nord')}
+              onOpenCategoryTypes={() => setManageTypesTab('connection')}
+              onOpenPersonas={() => { /* placeholder */ }}
+              onOpenSettings={() => { /* placeholder */ }}
             />
             <GlobalDock projectId={projectId} refetchGraph={refetch} />
             <CanvasEngine
@@ -116,12 +119,13 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
               typeSchemas={typeSchemas}
               onSelectConnection={handleSelectConnection}
             />
-            {showManageTypes && (
+            {manageTypesTab !== null && (
               <ManageTypes
                 projectId={projectId || ''}
-                open={showManageTypes}
-                onClose={() => setShowManageTypes(false)}
+                open={true}
+                onClose={() => setManageTypesTab(null)}
                 onTypesChanged={refetch}
+                initialTab={manageTypesTab}
               />
             )}
           </div>

@@ -4,16 +4,16 @@
  * Full-width floating bar at the top of the workspace.
  * Three-zone CSS grid layout: Project Switcher | Brand Logo | User Controls.
  *
- * Production version: wires useAuth() for real user data,
- * adds data-testid attributes, supports logout.
+ * Header items: Nords | Categories | Personas | Settings
+ * (Personas and Settings are placeholder for now)
  */
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Settings, Activity, ChevronDown, Menu, X,
-  FolderKanban, Bell, User, LogOut,
-  MessageSquare, Camera, Settings2,
+  ChevronDown, Menu, X,
+  FolderKanban, LogOut, User,
+  Box, Link2, Users, Settings,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NordsLogo from '../NordsLogo';
@@ -23,12 +23,16 @@ import './ViewportHeader.css';
 interface ViewportHeaderProps {
   currentTheme: string;
   onThemeChange: (theme: string) => void;
+  onOpenNordTypes?: () => void;
+  onOpenCategoryTypes?: () => void;
+  onOpenPersonas?: () => void;
   onOpenSettings?: () => void;
-  onOpenComments?: () => void;
-  onOpenSnapshots?: () => void;
 }
 
-export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSettings, onOpenComments, onOpenSnapshots }: ViewportHeaderProps) {
+export default function ViewportHeader({
+  currentTheme, onThemeChange,
+  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenSettings,
+}: ViewportHeaderProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -44,7 +48,7 @@ export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSett
   return (
     <header className="nords-viewport-header nords-glass" data-testid="viewport-header">
 
-      {/* ═══ Left: Project Switcher ═══ */}
+      {/* ═══ Left: Project Switcher + Top-level nav ═══ */}
       <div className="nords-viewport-header__left">
         <button 
           className="nords-viewport-header__project-btn" 
@@ -59,34 +63,43 @@ export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSett
           <ChevronDown size={10} className="nords-viewport-header__project-chevron" />
         </button>
 
-        {/* Project-level tools — right of title to free dock space */}
+        {/* Top-level navigation items */}
         <div className="nords-viewport-header__project-tools">
           <button
             className="nords-viewport-header__tool-btn"
-            title="Manage Types"
+            title="Manage Nord Types"
+            onClick={onOpenNordTypes}
+            data-testid="header-nords"
+          >
+            <Box size={14} strokeWidth={1.6} />
+            <span>Nords</span>
+          </button>
+          <button
+            className="nords-viewport-header__tool-btn"
+            title="Manage Categories (Connection Types)"
+            onClick={onOpenCategoryTypes}
+            data-testid="header-categories"
+          >
+            <Link2 size={14} strokeWidth={1.6} />
+            <span>Categories</span>
+          </button>
+          <button
+            className="nords-viewport-header__tool-btn"
+            title="Personas"
+            onClick={onOpenPersonas}
+            data-testid="header-personas"
+          >
+            <Users size={14} strokeWidth={1.6} />
+            <span>Personas</span>
+          </button>
+          <button
+            className="nords-viewport-header__tool-btn"
+            title="Project Settings"
             onClick={onOpenSettings}
-            data-testid="header-manage-types"
+            data-testid="header-settings"
           >
-            <Settings2 size={14} strokeWidth={1.6} />
-            <span>Types</span>
-          </button>
-          <button
-            className="nords-viewport-header__tool-btn"
-            title="Comments"
-            onClick={onOpenComments}
-            data-testid="header-comments"
-          >
-            <MessageSquare size={14} strokeWidth={1.6} />
-            <span>Comments</span>
-          </button>
-          <button
-            className="nords-viewport-header__tool-btn"
-            title="Snapshots"
-            onClick={onOpenSnapshots}
-            data-testid="header-snapshots"
-          >
-            <Camera size={14} strokeWidth={1.6} />
-            <span>Snapshots</span>
+            <Settings size={14} strokeWidth={1.6} />
+            <span>Settings</span>
           </button>
         </div>
       </div>
@@ -99,31 +112,9 @@ export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSett
         <span className="nords-viewport-header__tagline">Monumental Node Cards</span>
       </div>
 
-      {/* ═══ Right: Desktop controls + Mobile hamburger ═══ */}
+      {/* ═══ Right: Theme + User ═══ */}
       <div className="nords-viewport-header__right">
-        <button className="nords-viewport-header__icon-btn" aria-label="Notifications" title="Notifications" data-testid="notifications-btn">
-          <Bell size={15} strokeWidth={1.6} />
-          <span className="nords-viewport-header__notification-badge">2</span>
-        </button>
-
-        <div className="nords-viewport-header__activity" title="3 changes off-screen">
-          <Activity size={12} />
-          <span className="nords-viewport-header__activity-count">3</span>
-        </div>
-
-        <div className="nords-viewport-header__divider" />
-
-        <div className="nords-viewport-header__avatars">
-          <div className="nords-viewport-header__avatar" style={{ backgroundColor: '#059669' }} title="Sarah Chen">S</div>
-        </div>
-
-        <div className="nords-viewport-header__divider" />
-
         <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />
-
-        <button className="nords-viewport-header__icon-btn" aria-label="Project Settings" title="Project Settings" onClick={onOpenSettings} data-testid="settings-btn">
-          <Settings size={15} strokeWidth={1.6} />
-        </button>
 
         <div style={{ position: 'relative' }}>
           <button
@@ -192,36 +183,26 @@ export default function ViewportHeader({ currentTheme, onThemeChange, onOpenSett
 
       {/* ═══ Mobile slide-down menu (visible ≤768px when open) ═══ */}
       <div className={`nords-viewport-header__mobile-menu ${mobileMenuOpen ? 'is-open' : ''}`}>
-        {/* Project tools — hidden in desktop header on mobile, accessible here */}
+        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenNordTypes?.(); setMobileMenuOpen(false); }}>
+          <Box size={14} strokeWidth={1.6} />
+          <span>Nords</span>
+        </button>
+        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenCategoryTypes?.(); setMobileMenuOpen(false); }}>
+          <Link2 size={14} strokeWidth={1.6} />
+          <span>Categories</span>
+        </button>
+        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenPersonas?.(); setMobileMenuOpen(false); }}>
+          <Users size={14} strokeWidth={1.6} />
+          <span>Personas</span>
+        </button>
         <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenSettings?.(); setMobileMenuOpen(false); }}>
-          <Settings2 size={14} strokeWidth={1.6} />
-          <span>Manage Types</span>
-        </button>
-        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenComments?.(); setMobileMenuOpen(false); }}>
-          <MessageSquare size={14} strokeWidth={1.6} />
-          <span>Comments</span>
-        </button>
-        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenSnapshots?.(); setMobileMenuOpen(false); }}>
-          <Camera size={14} strokeWidth={1.6} />
-          <span>Snapshots</span>
+          <Settings size={14} strokeWidth={1.6} />
+          <span>Settings</span>
         </button>
         <div className="nords-context-menu__divider" style={{ margin: '4px 12px', height: '1px', background: 'var(--nords-color-border-subtle)' }} />
-        <button className="nords-viewport-header__mobile-menu-item">
-          <Bell size={14} strokeWidth={1.6} />
-          <span>Notifications</span>
-          <span className="nords-viewport-header__notification-badge" style={{ position: 'static' }}>2</span>
-        </button>
-        <button className="nords-viewport-header__mobile-menu-item">
-          <Activity size={14} strokeWidth={1.6} />
-          <span>Activity (3 changes)</span>
-        </button>
         <div style={{ padding: '0 8px' }}>
           <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />
         </div>
-        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenSettings?.(); setMobileMenuOpen(false); }}>
-          <Settings size={14} strokeWidth={1.6} />
-          <span>Project Settings</span>
-        </button>
         <button className="nords-viewport-header__mobile-menu-item" onClick={handleLogout}>
           <LogOut size={14} strokeWidth={1.6} />
           <span>Sign Out</span>

@@ -8,9 +8,9 @@
  *   - Zero requestAnimationFrame loops. Paths are pure functions of node positions.
  *   - Labels are LAZY: only mounted when the edge midpoint is within the viewport.
  *     Off-screen active edges render paths but skip label React components entirely.
- *   - Labels are stripped from dimmed/ghosted edges (never mounted).
- *   - Dimmed edges render as simple gray lines — no dash animation, no labels,
- *     no arrowheads. This reduces DOM elements by ~75% when a lens is active.
+ *   - Dimmed edges render as simple gray lines with direction arrows —
+ *     no dash animation, no labels. This reduces DOM elements significantly
+ *     when a lens is active.
  *   - CSS dash-march animations are paused during drag/zoom via
  *     [data-interacting] attribute on the root — zero GPU composite work
  *     during interaction.
@@ -118,15 +118,16 @@ function useIsPointInViewport(px: number, py: number): boolean {
 }
 
 
-// ── Dimmed Edge — ultra-lightweight, zero overhead ──
+// ── Dimmed Edge — lightweight render with direction arrows ──
 const DimmedEdge = React.memo(function DimmedEdge({
   sx, sy, tx, ty, offset, perpUnitX, perpUnitY,
-  srcSplayOffset, tgtSplayOffset, dx, dy,
+  srcSplayOffset, tgtSplayOffset, dx, dy, direction,
 }: {
   sx: number; sy: number; tx: number; ty: number;
   offset: number; perpUnitX: number; perpUnitY: number;
   srcSplayOffset: number; tgtSplayOffset: number;
   dx: number; dy: number;
+  direction: string;
 }) {
   // Simple path — straight line or gentle curve for splay
   const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
@@ -136,8 +137,6 @@ const DimmedEdge = React.memo(function DimmedEdge({
   if (!hasSplay && !hasOffset) {
     pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
   } else {
-    const midX = (sx + tx) / 2 + (-dy / (Math.sqrt(dx * dx + dy * dy) || 1)) * offset * 2;
-    const midY = (sy + ty) / 2 + (dx / (Math.sqrt(dx * dx + dy * dy) || 1)) * offset * 2;
     const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
     const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
     const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
@@ -145,16 +144,39 @@ const DimmedEdge = React.memo(function DimmedEdge({
     pathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
   }
 
+  // Arrowheads (dimmed but present)
+  const arrowSize = 16;
+  const showEndArrow = direction === 'to' || direction === 'both';
+  const showStartArrow = direction === 'from' || direction === 'both';
+
+  const endAngle = Math.atan2(ty - sy, tx - sx);
+  const endArrowPoints = showEndArrow ? [
+    [tx, ty],
+    [tx - arrowSize * Math.cos(endAngle - Math.PI / 6), ty - arrowSize * Math.sin(endAngle - Math.PI / 6)],
+    [tx - arrowSize * Math.cos(endAngle + Math.PI / 6), ty - arrowSize * Math.sin(endAngle + Math.PI / 6)],
+  ].map(p => p.join(',')).join(' ') : null;
+
+  const startAngle = Math.atan2(sy - ty, sx - tx);
+  const startArrowPoints = showStartArrow ? [
+    [sx, sy],
+    [sx - arrowSize * Math.cos(startAngle - Math.PI / 6), sy - arrowSize * Math.sin(startAngle - Math.PI / 6)],
+    [sx - arrowSize * Math.cos(startAngle + Math.PI / 6), sy - arrowSize * Math.sin(startAngle + Math.PI / 6)],
+  ].map(p => p.join(',')).join(' ') : null;
+
   return (
-    <path
-      d={pathD}
-      className="nords-connection--dimmed-simple"
-      stroke="#555"
-      strokeWidth="1.5"
-      fill="none"
-      opacity="0.35"
-      style={{ pointerEvents: 'stroke', cursor: 'grab' }}
-    />
+    <>
+      <path
+        d={pathD}
+        className="nords-connection--dimmed-simple"
+        stroke="#555"
+        strokeWidth="1.5"
+        fill="none"
+        opacity="0.35"
+        style={{ pointerEvents: 'stroke', cursor: 'grab' }}
+      />
+      {endArrowPoints && <polygon points={endArrowPoints} fill="#555" opacity="0.35" />}
+      {startArrowPoints && <polygon points={startArrowPoints} fill="#555" opacity="0.35" />}
+    </>
   );
 });
 
@@ -239,8 +261,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     ? (targetSplay.index - (targetSplay.degree - 1) / 2) * SPLAY_PX
     : 0;
 
-  // ── DIMMED EDGES: ultra-lightweight render ──
-  // No labels, no arrows, no dash animation, no hit area → minimal DOM
+  // ── DIMMED EDGES: lightweight render with arrows ──
   if (isDimmed) {
     return (
       <DimmedEdge
@@ -248,6 +269,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
         offset={offset} perpUnitX={perpUnitX} perpUnitY={perpUnitY}
         srcSplayOffset={srcSplayOffset} tgtSplayOffset={tgtSplayOffset}
         dx={dx} dy={dy}
+        direction={edgeData?.direction || 'none'}
       />
     );
   }

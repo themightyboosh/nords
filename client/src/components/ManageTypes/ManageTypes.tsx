@@ -35,6 +35,8 @@ interface ManageTypesProps {
   open: boolean;
   onClose: () => void;
   onTypesChanged?: () => void;
+  /** Which tab to open on mount: 'nord' or 'connection' */
+  initialTab?: Tab;
 }
 
 type Tab = 'nord' | 'connection';
@@ -84,12 +86,12 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (op
 }
 
 
-export function ManageTypes({ projectId, open, onClose, onTypesChanged }: ManageTypesProps) {
+export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialTab }: ManageTypesProps) {
   const mutations = useTypeMutations(projectId);
 
   const [nordTypes, setNordTypes] = useState<NordTypeData[]>([]);
   const [connectionTypes, setConnectionTypes] = useState<ConnectionTypeData[]>([]);
-  const [activeTab, setActiveTab] = useState<Tab>('nord');
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab || 'nord');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [saving, setSaving] = useState(false);
