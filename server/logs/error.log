@@ -2591,3 +2591,25 @@ error: column "measurement_mode" of relation "connection_types" does not exist
     at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
     at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":38,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+12:20:03.833 [31merror[39m: Query failed
+error: column "measurement_mode" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":183,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+12:20:07.123 [31merror[39m: Query failed
+error: column "measurement_mode" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":170,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+12:20:08.233 [31merror[39m: Query failed
+error: column "measurement_mode" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":172,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+12:22:17.849 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-29T16:22:10.214Z","filename":"http://localhost:5174/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
