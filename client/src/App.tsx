@@ -118,6 +118,8 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
               entityType={selectedEntity?.type || 'nord'}
               typeSchemas={typeSchemas}
               onSelectConnection={handleSelectConnection}
+              graph={graph}
+              refetchGraph={refetch}
             />
             {manageTypesTab !== null && (
               <ManageTypes
@@ -125,7 +127,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
                 open={true}
                 onClose={() => setManageTypesTab(null)}
                 onTypesChanged={refetch}
-                initialTab={manageTypesTab}
+                lockedTab={manageTypesTab}
               />
             )}
           </div>

@@ -208,13 +208,13 @@
   white-space: nowrap;
   pointer-events: none;
   transform-origin: center center;
-  border-radius: 3px;
-  padding: 1px 5px;
+  border-radius: 4px;
+  padding: 3px 10px;
 }
 
 .nords-connection-label__type {
   font-family: var(--nords-font-primary);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: var(--nords-font-weight-bold);
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -223,38 +223,11 @@
 
 .nords-connection-label__resolved {
   font-family: var(--nords-font-primary);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--nords-color-label-on-color);
   text-transform: uppercase;
-}
-
-/* ── Directional Chevron Labels ──
- *
- * Direction is conveyed by the label shape:
- *   - 'to'   → right-pointing chevron
- *   - 'from' → left-pointing chevron
- *   - 'both' → double chevron (both ends pointed)
- *   - 'none' → plain rounded rectangle (default)
- */
-.nords-connection-label--arrow-right {
-  clip-path: polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%);
-  padding-right: 7px;
-  border-radius: 3px 0 0 3px;
-}
-
-.nords-connection-label--arrow-left {
-  clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 15% 100%, 0% 50%);
-  padding-left: 7px;
-  border-radius: 0 3px 3px 0;
-}
-
-.nords-connection-label--arrow-both {
-  clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
-  padding-left: 6px;
-  padding-right: 6px;
-  border-radius: 0;
 }
 
 /* ── Label Glow — mode-specific contrast halo ── */

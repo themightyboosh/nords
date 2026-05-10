@@ -29,18 +29,10 @@ export const ConnectionLabel = React.memo(function ConnectionLabel({
     (a, b) => a === b,
   );
 
-  const dirClass = direction === 'to'
-    ? 'nords-connection-label--arrow-right'
-    : direction === 'from'
-    ? 'nords-connection-label--arrow-left'
-    : direction === 'both'
-    ? 'nords-connection-label--arrow-both'
-    : '';
-
   return (
     <EdgeLabelRenderer>
       <div
-        className={`nords-connection-label ${dirClass}`}
+        className="nords-connection-label"
         data-edge-id={edgeId}
         style={{
           position: 'absolute',

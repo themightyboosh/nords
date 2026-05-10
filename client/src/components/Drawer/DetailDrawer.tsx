@@ -5,8 +5,11 @@
  * optimistic mutations. Wrapped in `FloatingPanel` for unified
  * windowing behavior (escape, responsive bottom sheet, etc.).
  *
+ * ARCHITECTURE: View-agnostic — reads from raw graph data, NOT
+ * React Flow's useStore. Works identically in graph and board views.
+ *
  * Two modes:
- *   - Nord Mode: Title editing, schema-driven properties, connections list, description
+ *   - Nord Mode: Title editing, schema-driven properties, category list, description
  *   - Line Mode: Direction toggle, distance display, endpoint display
  */
 
@@ -16,7 +19,7 @@ import { useDrawerEntity } from '../../hooks/useDrawerEntity';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { PropertyField } from './PropertyField';
 import { MarkdownEditor } from './MarkdownEditor';
-import { useStore } from '@xyflow/react';
+import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import './DetailDrawer.css';
 import './PropertyField.css';
 
@@ -34,6 +37,10 @@ interface DetailDrawerProps {
   }>>;
   /** Callback when user clicks a connection in the connections tab */
   onSelectConnection?: (connectionId: string) => void;
+  /** Raw graph data — used for view-agnostic entity resolution and category list */
+  graph?: ProjectGraph | null;
+  /** Refetch graph after mutations so both views stay in sync */
+  refetchGraph?: () => Promise<void>;
 }
 
 // ── Direction Toggle Button Group ──
@@ -76,72 +83,128 @@ function DirectionToggle({
   );
 }
 
-// ── Connections Tab: List all edges for this nord ──
-function ConnectionsList({
+// ── Category List: Groups connections by type ──
+function CategoryList({
   nordId,
-  color,
+  graph,
   onSelectConnection,
+  onDirectionChange,
 }: {
   nordId: string;
-  color: string;
+  graph: ProjectGraph;
   onSelectConnection?: (connectionId: string) => void;
+  onDirectionChange?: (connectionId: string, direction: 'forward' | 'reverse' | 'both' | 'neither') => void;
 }) {
-  // Subscribe to all edges that reference this nord
-  const connectedEdges = useStore(
-    (s) => s.edges.filter(e => e.source === nordId || e.target === nordId),
-    (a, b) => a.length === b.length && a.every((e, i) => e.id === b[i]?.id)
-  );
+  // Build category groups: one per connection type
+  const categories = useMemo(() => {
+    const connectionTypes = graph.connection_types || [];
+    const connections = graph.connections || [];
+    const nords = graph.nords || [];
 
-  // Lookup node names
-  const nodeNames = useStore(
-    (s) => {
-      const names: Record<string, string> = {};
-      connectedEdges.forEach(e => {
-        const src = s.nodeLookup.get(e.source);
-        const tgt = s.nodeLookup.get(e.target);
-        if (src) names[e.source] = (src.data?.title as string) || 'Untitled';
-        if (tgt) names[e.target] = (tgt.data?.title as string) || 'Untitled';
-      });
-      return names;
-    },
-    (a, b) => JSON.stringify(a) === JSON.stringify(b)
-  );
+    // Build a quick lookup for nords by id
+    const nordMap = new Map(nords.map(n => [n.id, n]));
 
-  if (connectedEdges.length === 0) {
+    return connectionTypes.map(ct => {
+      // Find all connections of this type involving this nord
+      const myConnections = connections.filter(
+        c => c.type_id === ct.id &&
+          (c.source_nord_id === nordId || c.target_nord_id === nordId)
+      );
+
+      return {
+        typeId: ct.id,
+        typeName: ct.name,
+        typeColor: ct.accent_color || '#888',
+        connections: myConnections.map(c => {
+          const otherNordId = c.source_nord_id === nordId ? c.target_nord_id : c.source_nord_id;
+          const otherNord = nordMap.get(otherNordId);
+
+          // Map DB direction to visual direction
+          const visualDirection =
+            c.direction === 'forward' ? 'to' :
+            c.direction === 'reverse' ? 'from' :
+            c.direction === 'both' ? 'both' :
+            'none';
+
+          return {
+            id: c.id,
+            otherNordId,
+            otherNordTitle: otherNord?.title || 'Untitled',
+            direction: visualDirection,
+            dbDirection: c.direction,
+          };
+        }),
+      };
+    });
+  }, [nordId, graph]);
+
+  const activeCategories = categories.filter(c => c.connections.length > 0);
+  const inactiveCategories = categories.filter(c => c.connections.length === 0);
+
+  if (categories.length === 0) {
     return (
       <div className="nords-drawer-empty">
-        No connections yet. Draw a line from this nord to another.
+        No connection types defined.
+        <span className="nords-drawer-empty__hint">
+          Create connection types in Categories.
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="nords-connections-list">
-      {connectedEdges.map(edge => {
-        const data = edge.data as any;
-        const isSource = edge.source === nordId;
-        const otherName = isSource ? nodeNames[edge.target] : nodeNames[edge.source];
-        const dirIcon = data?.direction === 'to' ? '→'
-          : data?.direction === 'from' ? '←'
-          : data?.direction === 'both' ? '↔'
-          : '—';
-
-        return (
-          <button
-            key={edge.id}
-            className="nords-connection-row"
-            onClick={() => onSelectConnection?.(edge.id)}
-          >
+    <div className="nords-category-list">
+      {/* Active categories: expanded with connection rows */}
+      {activeCategories.map(cat => (
+        <div key={cat.typeId} className="nords-category-group">
+          <div className="nords-category-group__header">
             <span
-              className="nords-connection-row__type-dot"
-              style={{ backgroundColor: data?.color || '#888' }}
+              className="nords-category-group__dot"
+              style={{ backgroundColor: cat.typeColor }}
             />
-            <span className="nords-connection-row__type">{data?.type || 'Connection'}</span>
-            <span className="nords-connection-row__dir">{dirIcon}</span>
-            <span className="nords-connection-row__target">{otherName || '…'}</span>
-          </button>
-        );
-      })}
+            <span className="nords-category-group__name">{cat.typeName}</span>
+            <span className="nords-category-group__count">{cat.connections.length}</span>
+          </div>
+          <div className="nords-category-group__rows">
+            {cat.connections.map(conn => (
+              <div key={conn.id} className="nords-category-row">
+                <button
+                  className="nords-category-row__target"
+                  onClick={() => onSelectConnection?.(conn.id)}
+                  title={`View connection to ${conn.otherNordTitle}`}
+                >
+                  <span className="nords-category-row__dir-icon">
+                    {conn.direction === 'to' ? '→'
+                      : conn.direction === 'from' ? '←'
+                      : conn.direction === 'both' ? '↔'
+                      : '—'}
+                  </span>
+                  <span className="nords-category-row__name">{conn.otherNordTitle}</span>
+                </button>
+                <DirectionToggle
+                  value={conn.direction}
+                  color={cat.typeColor}
+                  onChange={(dir) => onDirectionChange?.(conn.id, dir)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {/* Inactive categories: collapsed, grayed out */}
+      {inactiveCategories.map(cat => (
+        <div key={cat.typeId} className="nords-category-group nords-category-group--inactive">
+          <div className="nords-category-group__header">
+            <span
+              className="nords-category-group__dot"
+              style={{ backgroundColor: cat.typeColor, opacity: 0.4 }}
+            />
+            <span className="nords-category-group__name">{cat.typeName}</span>
+            <span className="nords-category-group__inactive-label">no connections</span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -154,8 +217,10 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
   entityType,
   typeSchemas,
   onSelectConnection,
+  graph,
+  refetchGraph,
 }) => {
-  const { entity, mutations } = useDrawerEntity(entityId, entityType);
+  const { entity, mutations } = useDrawerEntity(entityId, entityType, graph || null, refetchGraph);
   const [activeTab, setActiveTab] = useState<'properties' | 'connections' | 'comments'>('properties');
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -221,12 +286,36 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
     mutations.updateProperty('_description', text);
   }, [entityId, mutations]);
 
+  // Handle direction change from CategoryList
+  const handleCategoryDirectionChange = useCallback((connectionId: string, direction: 'forward' | 'reverse' | 'both' | 'neither') => {
+    // Temporarily switch to the connection entity context for direction update
+    const visualDirection =
+      direction === 'forward' ? 'to' :
+      direction === 'reverse' ? 'from' :
+      direction === 'both' ? 'both' :
+      'none';
+
+    // Direct API call + refetch (since we're in Nord mode, not connection mode)
+    api.put(`/api/connections/${connectionId}`, { direction })
+      .then(() => refetchGraph?.())
+      .catch((err: unknown) => {
+        console.error('Failed to update direction:', err);
+        refetchGraph?.();
+      });
+  }, [refetchGraph]);
+
+  // Category count for the tab badge
+  const categoryConnectionCount = useMemo(() => {
+    if (!entityId || !graph) return 0;
+    return graph.connections.filter(
+      c => c.source_nord_id === entityId || c.target_nord_id === entityId
+    ).length;
+  }, [entityId, graph]);
+
   if (!entityId) return null;
 
   // ── Nord Mode ──
   if (entity?.kind === 'nord') {
-    const connectionCount = 0; // Will be derived from edges
-
     return (
       <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
         {/* Header */}
@@ -267,7 +356,10 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
               className={`nords-drawer-tab ${activeTab === 'connections' ? 'is-active' : ''}`}
               onClick={() => setActiveTab('connections')}
             >
-              Connections
+              Categories
+              {categoryConnectionCount > 0 && (
+                <span className="nords-drawer-tab__count">{categoryConnectionCount}</span>
+              )}
             </button>
             <button
               className={`nords-drawer-tab ${activeTab === 'comments' ? 'is-active' : ''}`}
@@ -303,13 +395,19 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
             </div>
           )}
 
-          {/* Connections Tab — Live Edge List */}
-          {activeTab === 'connections' && (
-            <ConnectionsList
+          {/* Categories Tab — Grouped by connection type */}
+          {activeTab === 'connections' && graph && (
+            <CategoryList
               nordId={entity.id}
-              color={entity.typeColor}
+              graph={graph}
               onSelectConnection={onSelectConnection}
+              onDirectionChange={handleCategoryDirectionChange}
             />
+          )}
+          {activeTab === 'connections' && !graph && (
+            <div className="nords-drawer-empty">
+              Loading categories…
+            </div>
           )}
 
           {/* Comments Tab */}
@@ -434,5 +532,8 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
     </FloatingPanel>
   );
 };
+
+// Need direct API import for CategoryList direction changes
+import { api } from '../../api/client';
 
 export default DetailDrawer;

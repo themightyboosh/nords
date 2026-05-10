@@ -146,7 +146,7 @@ const DimmedEdge = React.memo(function DimmedEdge({
 
   // Arrowheads (dimmed but present)
   const arrowSize = 16;
-  const showEndArrow = direction === 'to' || direction === 'both';
+  const showEndArrow = true;  // Always show forward arrowhead
   const showStartArrow = direction === 'from' || direction === 'both';
 
   const endAngle = Math.atan2(ty - sy, tx - sx);
@@ -285,7 +285,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
 
   const isHighlighted = edgeData?._highlighted === true;
 
-  // ── NON-HIGHLIGHTED ACTIVE: simple colored path, no label/animation ──
+  // ── NON-HIGHLIGHTED ACTIVE: simple colored path with arrowheads ──
   if (!isHighlighted) {
     const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
     const hasOff = Math.abs(offset) >= 1;
@@ -299,10 +299,36 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
       const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
       qPathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
     }
+
+    // Arrowheads for non-highlighted edges
+    const direction = edgeData?.direction || 'none';
+    const nhColor = edgeData?.color || '#888';
+    const nhArrowSize = 18;
+    const showEndArrow = true;  // Always show forward arrowhead
+    const showStartArrow = direction === 'from' || direction === 'both';
+
+    const endAngle = Math.atan2(ty - sy, tx - sx);
+    const endArrowPoints = showEndArrow ? [
+      [tx, ty],
+      [tx - nhArrowSize * Math.cos(endAngle - Math.PI / 6), ty - nhArrowSize * Math.sin(endAngle - Math.PI / 6)],
+      [tx - nhArrowSize * Math.cos(endAngle + Math.PI / 6), ty - nhArrowSize * Math.sin(endAngle + Math.PI / 6)],
+    ].map(p => p.join(',')).join(' ') : null;
+
+    const startAngle = Math.atan2(sy - ty, sx - tx);
+    const startArrowPoints = showStartArrow ? [
+      [sx, sy],
+      [sx - nhArrowSize * Math.cos(startAngle - Math.PI / 6), sy - nhArrowSize * Math.sin(startAngle - Math.PI / 6)],
+      [sx - nhArrowSize * Math.cos(startAngle + Math.PI / 6), sy - nhArrowSize * Math.sin(startAngle + Math.PI / 6)],
+    ].map(p => p.join(',')).join(' ') : null;
+
     return (
-      <path d={qPathD} stroke={edgeData?.color || '#888'}
-        strokeWidth="1.5" fill="none" opacity="0.55"
-        style={{ pointerEvents: 'stroke', cursor: 'grab' }} />
+      <>
+        <path d={qPathD} stroke={nhColor}
+          strokeWidth="1.5" fill="none" opacity="0.55"
+          style={{ pointerEvents: 'stroke', cursor: 'grab' }} />
+        {endArrowPoints && <polygon points={endArrowPoints} fill={nhColor} opacity="0.55" />}
+        {startArrowPoints && <polygon points={startArrowPoints} fill={nhColor} opacity="0.55" />}
+      </>
     );
   }
 
@@ -445,7 +471,7 @@ const ActiveEdge = React.memo(function ActiveEdge({
 
   // ── Arrowheads ──
   const arrowSize = 20;
-  const showEndArrow = direction === 'to' || direction === 'both';
+  const showEndArrow = true;  // Always show forward arrowhead
   const showStartArrow = direction === 'from' || direction === 'both';
 
   const endAngle = Math.atan2(ty - sy, tx - sx);

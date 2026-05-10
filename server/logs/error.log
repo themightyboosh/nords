@@ -2613,3 +2613,106 @@ error: column "measurement_mode" of relation "connection_types" does not exist
     at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":172,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
 12:22:17.849 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-29T16:22:10.214Z","filename":"http://localhost:5174/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+19:09:32.660 [31merror[39m: Query failed
+error: column "measurement_mode" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":176,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+19:09:33.693 [31merror[39m: Query failed
+error: column "measurement_mode" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":180,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+19:09:34.867 [31merror[39m: Query failed
+error: column "measurement_mode" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":173,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+19:09:36.129 [31merror[39m: Query failed
+error: column "measurement_mode" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":182,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+20:52:03.071 [31merror[39m: Query failed
+error: column "measurement_mode" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":175,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+20:52:05.506 [31merror[39m: Query failed
+error: column "measurement_mode" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":166,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+20:52:06.569 [31merror[39m: Query failed
+error: column "measurement_mode" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:121:21) {"service":"nords-server","text":"UPDATE connection_types SET measurement_mode = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":188,"error":"column \"measurement_mode\" of relation \"connection_types\" does not exist"}
+07:40:52.262 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-30T11:40:28.272Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+08:12:25.737 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-30T12:11:56.208Z","filename":"http://localhost:5175/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+08:12:25.737 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-30T12:11:59.833Z","filename":"http://localhost:5175/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+08:12:25.737 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-30T12:12:04.487Z","filename":"http://localhost:5175/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+09:12:12.862 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-30T13:11:53.093Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+09:12:12.862 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-04-30T13:11:53.109Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+01:25:25.294 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:48:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n  ","duration":38,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+01:25:26.266 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:48:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n  ","duration":38,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+01:25:26.962 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:48:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n  ","duration":172,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+01:25:27.220 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:48:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n  ","duration":176,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+10:53:06.543 [31merror[39m: Query failed
+error: column "user_id" of relation "nord_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:59:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:48:18) {"service":"nords-server","text":"INSERT INTO nord_types (user_id, project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)\n  ","duration":34,"error":"column \"user_id\" of relation \"nord_types\" does not exist"}
+10:54:02.021 [31merror[39m: Query failed
+error: column "is_system" of relation "connection_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async Object.create (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/types.ts:173:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:101:18) {"service":"nords-server","text":"INSERT INTO connection_types (project_id, name, accent_color, stroke_style, x_stage_labels, y_stage_labels, properties_s","duration":31,"error":"column \"is_system\" of relation \"connection_types\" does not exist"}

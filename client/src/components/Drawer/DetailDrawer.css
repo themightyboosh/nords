@@ -368,62 +368,143 @@
 }
 
 
-/* ── Connections List ── */
-.nords-connections-list {
+/* ── Category List (grouped connections by type) ── */
+.nords-category-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   margin-bottom: 16px;
 }
 
-.nords-connection-row {
+.nords-category-group {
+  border-radius: var(--nords-radius-sm);
+  overflow: hidden;
+}
+
+.nords-category-group__header {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  border: none;
-  border-radius: var(--nords-radius-sm);
-  background: transparent;
-  color: var(--nords-color-text-primary);
-  font-family: var(--nords-font-primary);
-  font-size: var(--nords-font-size-sm);
-  cursor: pointer;
-  text-align: left;
-  width: 100%;
-  transition: background 0.12s ease;
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide);
+  color: var(--nords-color-text-secondary);
+  border-left: 3px solid transparent;
 }
 
-.nords-connection-row:hover {
-  background: var(--nords-color-bg-hover);
+.nords-category-group:not(.nords-category-group--inactive) .nords-category-group__header {
+  background: color-mix(in srgb, var(--nords-color-bg-hover) 60%, transparent);
 }
 
-.nords-connection-row__type-dot {
+.nords-category-group__dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.nords-connection-row__type {
-  font-size: var(--nords-font-size-xs);
-  font-weight: var(--nords-font-weight-semibold);
-  color: var(--nords-color-text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  min-width: 80px;
+.nords-category-group__name {
+  flex: 1;
 }
 
-.nords-connection-row__dir {
-  font-size: 1rem;
-  color: var(--nords-color-text-tertiary);
+.nords-category-group__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--nords-color-bg-hover);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--nords-color-text-primary);
 }
 
-.nords-connection-row__target {
+.nords-category-group__inactive-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--nords-color-text-disabled);
+  text-transform: lowercase;
+  letter-spacing: normal;
+}
+
+/* Inactive categories */
+.nords-category-group--inactive .nords-category-group__header {
+  opacity: 0.5;
+}
+
+.nords-category-group--inactive .nords-category-group__name {
+  color: var(--nords-color-text-disabled);
+}
+
+/* Connection rows within a category */
+.nords-category-group__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0 4px 11px;
+  border-left: 3px solid var(--nords-color-border-subtle);
+  margin-left: 0;
+}
+
+.nords-category-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: var(--nords-radius-sm);
+  transition: background 0.12s ease;
+}
+
+.nords-category-row:hover {
+  background: var(--nords-color-bg-hover);
+}
+
+.nords-category-row__target {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--nords-color-text-primary);
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-sm);
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.nords-category-row__dir-icon {
+  font-size: 0.85rem;
+  color: var(--nords-color-text-tertiary);
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.nords-category-row__name {
   flex: 1;
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Compact direction toggle within category rows */
+.nords-category-row .nords-direction-toggle {
+  flex-shrink: 0;
+  border-radius: var(--nords-radius-sm);
+}
+
+.nords-category-row .nords-direction-toggle__btn {
+  padding: 4px 6px;
+  font-size: 0.8rem;
 }
 
 /* ── Tab Count Badge ── */

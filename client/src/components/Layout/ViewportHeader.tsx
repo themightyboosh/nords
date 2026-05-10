@@ -2,18 +2,18 @@
  * ViewportHeader.tsx — Top Navigation Bar
  *
  * Full-width floating bar at the top of the workspace.
- * Three-zone CSS grid layout: Project Switcher | Brand Logo | User Controls.
- *
- * Header items: Nords | Categories | Personas | Settings
- * (Personas and Settings are placeholder for now)
+ * Three-zone CSS grid layout:
+ *   Left:   Logo (→ Projects) | Nords | Categories | Personas
+ *   Center: Project Title (→ TBD settings panel)
+ *   Right:  Theme Switcher | User Controls
  */
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronDown, Menu, X,
-  FolderKanban, LogOut, User,
-  Box, Link2, Users, Settings,
+  LogOut, User,
+  Box, Link2, Users,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NordsLogo from '../NordsLogo';
@@ -27,11 +27,14 @@ interface ViewportHeaderProps {
   onOpenCategoryTypes?: () => void;
   onOpenPersonas?: () => void;
   onOpenSettings?: () => void;
+  /** Project name displayed in the center; clicking opens TBD settings */
+  projectName?: string;
 }
 
 export default function ViewportHeader({
   currentTheme, onThemeChange,
   onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenSettings,
+  projectName = 'Product Launch Q3',
 }: ViewportHeaderProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -48,25 +51,22 @@ export default function ViewportHeader({
   return (
     <header className="nords-viewport-header nords-glass" data-testid="viewport-header">
 
-      {/* ═══ Left: Project Switcher + Top-level nav ═══ */}
+      {/* ═══ Left: Logo + Nav Items ═══ */}
       <div className="nords-viewport-header__left">
-        <button 
-          className="nords-viewport-header__project-btn" 
-          data-testid="project-switcher-btn"
+        {/* Logo — navigates back to Projects dashboard */}
+        <button
+          className="nords-viewport-header__logo-btn"
+          data-testid="logo-projects-btn"
           onClick={() => navigate('/projects')}
           title="Back to Projects"
         >
-          <FolderKanban size={18} strokeWidth={1.6} />
-          <div className="nords-viewport-header__project">
-            <span className="nords-viewport-header__project-name">Product Launch Q3</span>
-          </div>
-          <ChevronDown size={10} className="nords-viewport-header__project-chevron" />
+          <NordsLogo size={22} />
         </button>
 
         {/* Top-level navigation items */}
-        <div className="nords-viewport-header__project-tools">
+        <div className="nords-viewport-header__nav">
           <button
-            className="nords-viewport-header__tool-btn"
+            className="nords-viewport-header__nav-item"
             title="Manage Nord Types"
             onClick={onOpenNordTypes}
             data-testid="header-nords"
@@ -75,7 +75,7 @@ export default function ViewportHeader({
             <span>Nords</span>
           </button>
           <button
-            className="nords-viewport-header__tool-btn"
+            className="nords-viewport-header__nav-item"
             title="Manage Categories (Connection Types)"
             onClick={onOpenCategoryTypes}
             data-testid="header-categories"
@@ -84,7 +84,7 @@ export default function ViewportHeader({
             <span>Categories</span>
           </button>
           <button
-            className="nords-viewport-header__tool-btn"
+            className="nords-viewport-header__nav-item"
             title="Personas"
             onClick={onOpenPersonas}
             data-testid="header-personas"
@@ -92,24 +92,19 @@ export default function ViewportHeader({
             <Users size={14} strokeWidth={1.6} />
             <span>Personas</span>
           </button>
-          <button
-            className="nords-viewport-header__tool-btn"
-            title="Project Settings"
-            onClick={onOpenSettings}
-            data-testid="header-settings"
-          >
-            <Settings size={14} strokeWidth={1.6} />
-            <span>Settings</span>
-          </button>
         </div>
       </div>
 
-      {/* ═══ Center: Logo + Wordmark (hidden on mobile) ═══ */}
+      {/* ═══ Center: Project Title ═══ */}
       <div className="nords-viewport-header__center">
-        <div className="nords-viewport-header__branding">
-          <NordsLogo size={20} />
-        </div>
-        <span className="nords-viewport-header__tagline">Monumental Node Cards</span>
+        <button
+          className="nords-viewport-header__project-title"
+          onClick={onOpenSettings}
+          title="Project Settings"
+          data-testid="project-title-btn"
+        >
+          <span>{projectName}</span>
+        </button>
       </div>
 
       {/* ═══ Right: Theme + User ═══ */}
@@ -194,10 +189,6 @@ export default function ViewportHeader({
         <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenPersonas?.(); setMobileMenuOpen(false); }}>
           <Users size={14} strokeWidth={1.6} />
           <span>Personas</span>
-        </button>
-        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenSettings?.(); setMobileMenuOpen(false); }}>
-          <Settings size={14} strokeWidth={1.6} />
-          <span>Settings</span>
         </button>
         <div className="nords-context-menu__divider" style={{ margin: '4px 12px', height: '1px', background: 'var(--nords-color-border-subtle)' }} />
         <div style={{ padding: '0 8px' }}>

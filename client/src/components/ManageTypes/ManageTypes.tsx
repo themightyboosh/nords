@@ -37,6 +37,8 @@ interface ManageTypesProps {
   onTypesChanged?: () => void;
   /** Which tab to open on mount: 'nord' or 'connection' */
   initialTab?: Tab;
+  /** When set, locks to a single tab and hides the tab switcher */
+  lockedTab?: Tab;
 }
 
 type Tab = 'nord' | 'connection';
@@ -86,12 +88,17 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (op
 }
 
 
-export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialTab }: ManageTypesProps) {
+export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialTab, lockedTab }: ManageTypesProps) {
   const mutations = useTypeMutations(projectId);
 
   const [nordTypes, setNordTypes] = useState<NordTypeData[]>([]);
   const [connectionTypes, setConnectionTypes] = useState<ConnectionTypeData[]>([]);
-  const [activeTab, setActiveTab] = useState<Tab>(initialTab || 'nord');
+  const [activeTab, setActiveTab] = useState<Tab>(lockedTab || initialTab || 'nord');
+
+  // When lockedTab changes (e.g. switching between Nords/Categories), sync activeTab
+  React.useEffect(() => {
+    if (lockedTab) setActiveTab(lockedTab);
+  }, [lockedTab]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -231,9 +238,15 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
         {/* ── Header ── */}
         <div className="manage-types__header">
           <div>
-            <h2 className="manage-types__title">Manage Types</h2>
+            <h2 className="manage-types__title">
+              {lockedTab === 'nord' ? 'Manage Nord Types' : lockedTab === 'connection' ? 'Manage Categories' : 'Manage Types'}
+            </h2>
             <p className="manage-types__subtitle">
-              Define properties and appearance. Changes apply to all nords of each type.
+              {lockedTab === 'nord'
+                ? 'Define properties and appearance for nords.'
+                : lockedTab === 'connection'
+                ? 'Define categories and relationship types.'
+                : 'Define properties and appearance. Changes apply to all nords of each type.'}
             </p>
           </div>
           <button className="manage-types__close" onClick={onClose}>
@@ -245,21 +258,23 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
 
           {/* ── Sidebar ── */}
           <div className="manage-types__sidebar">
-            {/* Tab Switcher */}
-            <div className="manage-types__tabs">
-              <button
-                className={`manage-types__tab ${activeTab === 'nord' ? 'manage-types__tab--active' : ''}`}
-                onClick={() => { setActiveTab('nord'); setSelectedId(nordTypes[0]?.id || null); }}
-              >
-                Nord Types
-              </button>
-              <button
-                className={`manage-types__tab ${activeTab === 'connection' ? 'manage-types__tab--active' : ''}`}
-                onClick={() => { setActiveTab('connection'); setSelectedId(connectionTypes[0]?.id || null); }}
-              >
-                Conn Types
-              </button>
-            </div>
+            {/* Tab Switcher — hidden when locked to a single tab */}
+            {!lockedTab && (
+              <div className="manage-types__tabs">
+                <button
+                  className={`manage-types__tab ${activeTab === 'nord' ? 'manage-types__tab--active' : ''}`}
+                  onClick={() => { setActiveTab('nord'); setSelectedId(nordTypes[0]?.id || null); }}
+                >
+                  Nord Types
+                </button>
+                <button
+                  className={`manage-types__tab ${activeTab === 'connection' ? 'manage-types__tab--active' : ''}`}
+                  onClick={() => { setActiveTab('connection'); setSelectedId(connectionTypes[0]?.id || null); }}
+                >
+                  Conn Types
+                </button>
+              </div>
+            )}
 
             {/* Type List */}
             <div className="manage-types__list">
@@ -290,7 +305,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
               disabled={saving}
             >
               <Plus size={14} />
-              <span>New {activeTab === 'nord' ? 'Type' : 'Connection'}</span>
+              <span>New {activeTab === 'nord' ? 'Nord Type' : 'Category'}</span>
             </button>
           </div>
 
