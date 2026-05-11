@@ -275,7 +275,7 @@
   align-items: flex-start;
   gap: 6px;
   padding: 8px;
-  min-height: 80px;
+  min-height: 120px;
   background: color-mix(in srgb, var(--nords-color-bg-secondary) 25%, transparent);
   transition: background-color 0.15s ease;
   border-right: 1px solid var(--nords-color-border);
@@ -421,6 +421,12 @@
   font-size: 12px;
   color: var(--nords-color-text-disabled);
   font-style: italic;
+  pointer-events: none;  /* let drag events pass through to parent cell */
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ── Card Wrapper ──

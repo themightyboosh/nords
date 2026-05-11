@@ -604,7 +604,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         /* ── Quadrant Mode: CSS Grid with horizontal swimlane banners ── */
         <div className="nords-matrix__grid" style={{
           gridTemplateColumns: `repeat(${columns.length}, minmax(260px, 1fr))${hasOrphans ? ' minmax(200px, 260px)' : ''}`,
-          gridTemplateRows: `auto ${yLabels.map(() => 'auto minmax(80px, auto)').join(' ')}`,
+          gridTemplateRows: `auto ${yLabels.map(() => 'auto minmax(120px, auto)').join(' ')}`,
         }}>
           {/* Column headers (x-axis) */}
           {columns.map(col => (
