@@ -229,3 +229,76 @@
   border-radius: 1px;
   pointer-events: none;
 }
+
+/* ═══════════════════════════════════════════════ */
+/* PERSONA TYPE FILTER — 3-state visibility rows  */
+/* ═══════════════════════════════════════════════ */
+
+.persona-type-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.persona-type-filter__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.2s ease;
+  user-select: none;
+}
+
+.persona-type-filter__row:hover {
+  background: var(--nords-color-bg-hover);
+}
+
+.persona-type-filter__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.persona-type-filter__name {
+  font-size: var(--nords-font-size-sm);
+  color: var(--nords-color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.persona-type-filter__count {
+  font-size: 11px;
+  color: var(--nords-color-text-disabled);
+  font-variant-numeric: tabular-nums;
+}
+
+.persona-type-filter__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.persona-type-filter__state {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--nords-color-text-disabled);
+  min-width: 28px;
+}
+
+/* Dim state — row itself appears muted */
+.persona-type-filter__row--dim {
+  opacity: 0.55;
+}
+
+/* Hide state — row appears very faded */
+.persona-type-filter__row--hide {
+  opacity: 0.3;
+}

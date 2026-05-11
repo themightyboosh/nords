@@ -3903,3 +3903,85 @@ TypeError: personaRadialPositions?.get is not a function
     at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:6140:20)
     at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:851:66) {"service":"nords-client","clientTimestamp":"2026-05-11T14:25:44.534Z","errorMessage":"personaRadialPositions?.get is not a function","componentStack":"\n    at InteractiveCanvas (http://localhost:5173/src/components/Canvas/CanvasEngine.tsx?t=1778509544495:32:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5173/src/components/Canvas/CanvasEngine.tsx?t=1778509544495:908:40)\n    at div (<anonymous>)\n    at WorkspaceContent (http://localhost:5173/src/App.tsx?t=1778508794978:98:29)\n    at BoardSettingsProvider (http://localhost:5173/src/context/BoardSettingsContext.tsx:15:41)\n    at TypeRegistryProvider (http://localhost:5173/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5173/src/context/LensContext.tsx?t=1778466407826:55:32)\n    at WorkspaceShell (http://localhost:5173/src/App.tsx?t=1778508794978:46:27)\n    at BatchProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:6809:26)\n    at ReactFlowProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:9752:44)\n    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3332:8)\n    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3775:8)\n    at AuthProvider (http://localhost:5173/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5173/src/App.tsx?t=1778508794978:317:42)\n    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3723:18)\n    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:4402:8)\n    at ErrorBoundary (http://localhost:5173/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
 10:29:35.278 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T14:29:10.828Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+10:47:06.853 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T14:46:52.149Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+10:47:06.853 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T14:46:52.215Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+10:47:06.853 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T14:46:57.954Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+10:47:36.853 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T14:47:07.368Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+10:47:36.853 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T14:47:07.453Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+10:51:36.849 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T14:51:13.533Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+10:51:36.850 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T14:51:13.619Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+10:51:48.014 [31merror[39m: Query failed
+error: column "sort_order" of relation "connections" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:345:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":40,"error":"column \"sort_order\" of relation \"connections\" does not exist"}
+10:51:48.014 [31merror[39m: Connection update failed column "sort_order" of relation "connections" does not exist {"service":"nords-server","code":"42703","connectionId":"0e681187-306f-4ccc-8f97-0e4a33d016a6"}
+10:51:48.015 [31merror[39m: PUT /api/connections/0e681187-306f-4ccc-8f97-0e4a33d016a6 500 {"service":"nords-server","method":"PUT","path":"/api/connections/0e681187-306f-4ccc-8f97-0e4a33d016a6","status":500,"duration":"45ms","bytes":"39"}
+10:51:50.540 [31merror[39m: Query failed
+error: column "sort_order" of relation "connections" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:345:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":186,"error":"column \"sort_order\" of relation \"connections\" does not exist"}
+10:51:50.540 [31merror[39m: Connection update failed column "sort_order" of relation "connections" does not exist {"service":"nords-server","code":"42703","connectionId":"0e681187-306f-4ccc-8f97-0e4a33d016a6"}
+10:51:50.540 [31merror[39m: PUT /api/connections/0e681187-306f-4ccc-8f97-0e4a33d016a6 500 {"service":"nords-server","method":"PUT","path":"/api/connections/0e681187-306f-4ccc-8f97-0e4a33d016a6","status":500,"duration":"186ms","bytes":"39"}
+10:51:52.549 [31merror[39m: Query failed
+error: column "sort_order" of relation "connections" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:345:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":178,"error":"column \"sort_order\" of relation \"connections\" does not exist"}
+10:51:52.550 [31merror[39m: Connection update failed column "sort_order" of relation "connections" does not exist {"service":"nords-server","code":"42703","connectionId":"0be65830-7f36-44fc-972e-65b898098541"}
+10:51:52.550 [31merror[39m: PUT /api/connections/0be65830-7f36-44fc-972e-65b898098541 500 {"service":"nords-server","method":"PUT","path":"/api/connections/0be65830-7f36-44fc-972e-65b898098541","status":500,"duration":"179ms","bytes":"39"}
+10:51:55.160 [31merror[39m: Query failed
+error: column "sort_order" of relation "connections" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:345:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":179,"error":"column \"sort_order\" of relation \"connections\" does not exist"}
+10:51:55.160 [31merror[39m: Connection update failed column "sort_order" of relation "connections" does not exist {"service":"nords-server","code":"42703","connectionId":"039a7272-b5f0-43eb-81c8-40d49aa4baed"}
+10:51:55.161 [31merror[39m: PUT /api/connections/039a7272-b5f0-43eb-81c8-40d49aa4baed 500 {"service":"nords-server","method":"PUT","path":"/api/connections/039a7272-b5f0-43eb-81c8-40d49aa4baed","status":500,"duration":"180ms","bytes":"39"}
+10:52:01.462 [31merror[39m: Query failed
+error: column "sort_order" of relation "connections" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:345:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":34,"error":"column \"sort_order\" of relation \"connections\" does not exist"}
+10:52:01.462 [31merror[39m: Connection update failed column "sort_order" of relation "connections" does not exist {"service":"nords-server","code":"42703","connectionId":"074c9671-2d62-40d8-ac07-d4e12bbe0d11"}
+10:52:01.462 [31merror[39m: PUT /api/connections/074c9671-2d62-40d8-ac07-d4e12bbe0d11 500 {"service":"nords-server","method":"PUT","path":"/api/connections/074c9671-2d62-40d8-ac07-d4e12bbe0d11","status":500,"duration":"35ms","bytes":"39"}
+10:52:06.851 [31merror[39m: Unhandled promise rejection
+ApiError: Failed to update connection
+    at request (http://localhost:5173/src/api/client.ts:46:9)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+    at async http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1778508794978:391:4 {"service":"nords-client","clientTimestamp":"2026-05-11T14:51:48.016Z","reason":"Failed to update connection","userId":"dev-user-000"}
+10:52:06.851 [31merror[39m: Unhandled promise rejection
+ApiError: Failed to update connection
+    at request (http://localhost:5173/src/api/client.ts:46:9)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+    at async http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1778508794978:391:4 {"service":"nords-client","clientTimestamp":"2026-05-11T14:51:50.541Z","reason":"Failed to update connection","userId":"dev-user-000"}
+10:52:06.851 [31merror[39m: Unhandled promise rejection
+ApiError: Failed to update connection
+    at request (http://localhost:5173/src/api/client.ts:46:9)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+    at async http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1778508794978:391:4 {"service":"nords-client","clientTimestamp":"2026-05-11T14:51:52.551Z","reason":"Failed to update connection","userId":"dev-user-000"}
+10:52:06.851 [31merror[39m: Unhandled promise rejection
+ApiError: Failed to update connection
+    at request (http://localhost:5173/src/api/client.ts:46:9)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+    at async http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1778508794978:391:4 {"service":"nords-client","clientTimestamp":"2026-05-11T14:51:55.162Z","reason":"Failed to update connection","userId":"dev-user-000"}
+10:52:06.851 [31merror[39m: Unhandled promise rejection
+ApiError: Failed to update connection
+    at request (http://localhost:5173/src/api/client.ts:46:9)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+    at async http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1778511116631:391:4 {"service":"nords-client","clientTimestamp":"2026-05-11T14:52:01.463Z","reason":"Failed to update connection","userId":"dev-user-000"}

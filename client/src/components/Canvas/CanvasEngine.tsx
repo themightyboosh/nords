@@ -70,7 +70,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const { createNord, batchUpdatePositions, deleteNord } = useNordMutations(projectId);
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
   const { connectionTypes } = useTypeRegistry();
-  const { activeConnectionTypeId, lens } = useLens();
+  const { activeConnectionTypeId, lens, personaTypeFilter } = useLens();
   const isPersonaMode = lens === 'persona';
   const { addNodes, screenToFlowPosition, getNodes, fitView } = useReactFlow();
 
@@ -156,12 +156,21 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       for (const n of rfNodes) {
         const ps = personaScores.get(n.id);
         if (!ps) continue; // skip orphan nodes with no connections
+
+        // Apply 3-state type visibility filter
+        const nodeTypeName = (n.data as any)?.type as string | undefined;
+        const typeState = nodeTypeName ? (personaTypeFilter.get(nodeTypeName) || 'show') : 'show';
+        if (typeState === 'hide') continue; // completely hidden
+
         const radialPos = personaRadialPositions?.get(n.id);
         radialNodes.push({
           ...n,
           position: radialPos || n.position,
           draggable: false,
-          data: { ...n.data },
+          data: {
+            ...n.data,
+            isGhosted: typeState === 'dim',
+          },
         });
       }
 
@@ -188,7 +197,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
             position: { x: -neutralRadius, y: -neutralRadius },
             draggable: false,
             selectable: false,
-            data: { radius: neutralRadius, color: '#14532d' },
+            data: { radius: neutralRadius, color: '#14532d', showBorder: true },
             zIndex: -1,
           } as any);
         }
@@ -246,7 +255,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       ...n,
       draggable: !connectedIds.has(n.id), // only orphans are draggable
     }));
-  }, [rfNodes, rfEdges, activeConnectionTypeId, isPersonaMode, personaScores, personaRadialPositions, personaLayout, activePersona]);
+  }, [rfNodes, rfEdges, activeConnectionTypeId, isPersonaMode, personaScores, personaRadialPositions, personaLayout, activePersona, personaTypeFilter]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(lensNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(lensEdges);

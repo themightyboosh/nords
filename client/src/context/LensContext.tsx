@@ -19,6 +19,9 @@ import logger from '../lib/logger';
 
 export type LensMode = 'canvas' | 'board' | 'persona';
 
+/** 3-state visibility for persona view: show (default) → dim → hide → show */
+export type PersonaTypeVisibility = 'show' | 'dim' | 'hide';
+
 interface LensContextValue {
   lens: LensMode;
   setLens: (lens: LensMode) => void;
@@ -35,6 +38,10 @@ interface LensContextValue {
   setShowContext: (show: boolean) => void;
   hiddenTypes: Set<string>;
   toggleTypeVisibility: (typeName: string) => void;
+  /** Persona mode: per-type 3-state visibility (show/dim/hide) */
+  personaTypeFilter: Map<string, PersonaTypeVisibility>;
+  /** Cycle a type's persona visibility: show → dim → hide → show */
+  cyclePersonaTypeFilter: (typeName: string) => void;
 }
 
 const LensContext = createContext<LensContextValue | null>(null);
@@ -89,6 +96,7 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
   const [activeLine, setActiveLine] = useState('Blocks');
   const [showContext, setShowContext] = useState(true);
   const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
+  const [personaTypeFilter, setPersonaTypeFilter] = useState<Map<string, PersonaTypeVisibility>>(new Map());
   const [activeConnectionTypeId, setActiveConnectionTypeIdState] = useState<string | null>(
     () => projectId ? getStoredTypeId(projectId) : null
   );
@@ -128,6 +136,20 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
     });
   };
 
+  const cyclePersonaTypeFilter = useCallback((typeName: string) => {
+    setPersonaTypeFilter(prev => {
+      const next = new Map(prev);
+      const current = next.get(typeName) || 'show';
+      const cycle: Record<PersonaTypeVisibility, PersonaTypeVisibility> = {
+        show: 'dim',
+        dim: 'hide',
+        hide: 'show',
+      };
+      next.set(typeName, cycle[current]);
+      return next;
+    });
+  }, []);
+
   return (
     <LensContext.Provider value={{ 
       lens, setLens, 
@@ -135,7 +157,8 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
       activePersonaId, setActivePersonaId,
       activeLine, setActiveLine, 
       showContext, setShowContext,
-      hiddenTypes, toggleTypeVisibility
+      hiddenTypes, toggleTypeVisibility,
+      personaTypeFilter, cyclePersonaTypeFilter
     }}>
       {children}
     </LensContext.Provider>
