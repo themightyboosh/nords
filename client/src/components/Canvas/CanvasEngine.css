@@ -72,27 +72,14 @@
   50% { box-shadow: 0 0 40px rgba(100, 140, 255, 0.25), 0 0 80px rgba(100, 140, 255, 0.12); }
 }
 
-/* ── Heatmap card backgrounds ── */
-/* --persona-heat-color and --persona-text-color set from NordNode inline styles.
-   CSS transition handles smooth color animation when sliders change. */
-.nords-canvas--persona .nords-node {
-  transition: background-color 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease, color 0.4s ease;
-  background-color: var(--persona-heat-color, var(--nords-color-surface)) !important;
-  border-color: color-mix(in srgb, var(--persona-heat-color, transparent) 50%, transparent) !important;
-  box-shadow: 0 2px 16px color-mix(in srgb, var(--persona-heat-color, transparent) 25%, transparent);
-  color: var(--persona-text-color, inherit) !important;
+/* ── Persona mode: smooth radial position animation ── */
+/* ReactFlow nodes use inline transform: translate(x, y) for positioning.
+   Adding a CSS transition on transform creates smooth animation when nodes
+   move to their radial positions on persona entry or weight changes. */
+.nords-canvas--persona .react-flow__node {
+  transition: transform 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Force all text descendants to inherit the persona text color */
-.nords-canvas--persona .nords-node * {
-  color: inherit !important;
-}
-
-/* Slightly mute SVG icons to match text */
-.nords-canvas--persona .nords-node svg {
-  stroke: currentColor !important;
-  opacity: 0.8;
-}
 
 /* ═══════════════════════════════════════════════ */
 /* UNANCHORED STICKIES — top-left flow             */

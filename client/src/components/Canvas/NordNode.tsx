@@ -28,10 +28,6 @@ interface NordNodeData {
   commentCount?: number;
   isGhosted?: boolean;
   properties: Array<{ key: string; value: string; color?: string }>;
-  /** Persona lens: heatmap background color (green→yellow→red) */
-  _personaHeatColor?: string;
-  /** Persona lens: contrast-safe text color for the heatmap background */
-  _personaTextColor?: string;
 }
 
 export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<NordNodeData>) => {
@@ -49,21 +45,11 @@ export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<N
     (a, b) => a === b,
   );
 
-  // Persona lens: heatmap card background + contrast-safe text color
-  const personaStyle: React.CSSProperties | undefined =
-    data._personaHeatColor
-      ? {
-          '--persona-heat-color': data._personaHeatColor,
-          '--persona-text-color': data._personaTextColor || '#fff',
-        } as React.CSSProperties
-      : undefined;
-
   return (
     <div
       style={{
         width: `${CARD_WIDTH}px`,
         position: 'relative',
-        ...personaStyle,
       }}
     >
       {/* DROP TARGET — covers entire card so releasing anywhere connects */}

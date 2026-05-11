@@ -144,29 +144,25 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   }, [personaScores, rfNodes, graph]);
 
   const lensNodes = useMemo(() => {
-    // ── Persona mode: radial heatmap ──
+    // ── Persona mode: radial layout with native card colors ──
     if (isPersonaMode && personaScores) {
       // Only include nodes with persona scores (orphans with no connections are excluded)
-      const heatNodes: typeof rfNodes = [];
+      const radialNodes: typeof rfNodes = [];
       for (const n of rfNodes) {
         const ps = personaScores.get(n.id);
         if (!ps) continue; // skip orphan nodes with no connections
         const radialPos = personaRadialPositions?.get(n.id);
-        heatNodes.push({
+        radialNodes.push({
           ...n,
           position: radialPos || n.position,
           draggable: false,
-          data: {
-            ...n.data,
-            _personaHeatColor: ps.heatColor,
-            _personaTextColor: ps.textColor,
-          },
+          data: { ...n.data },
         });
       }
 
       // Add center avatar node
       if (activePersona) {
-        heatNodes.push({
+        radialNodes.push({
           id: '__persona_center__',
           type: 'personaCenterNode',
           position: { x: -60, y: -60 }, // offset to center the 120px node
@@ -181,7 +177,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         } as any);
       }
 
-      return heatNodes;
+      return radialNodes;
     }
 
     if (activeConnectionTypeId) {
