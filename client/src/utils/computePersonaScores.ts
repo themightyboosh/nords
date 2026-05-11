@@ -1,9 +1,12 @@
 /**
  * computePersonaScores — Per-node relevance scoring for the Persona Lens.
  *
- * For each node, sums the persona's category weights across ALL connection
- * types that link to that node. Normalizes by the theoretical max
- * (numCategories × 100) so every node gets a score in [-1.0, +1.0].
+ * For each node, takes the persona's weight for each connection type that
+ * links to that node. Each connection type is counted AT MOST ONCE per node
+ * (prevents nodes with many connections from getting inflated scores).
+ *
+ * Normalizes by the theoretical max (numCategories × 100) so every node
+ * gets a score in [-1.0, +1.0].
  *
  * Position mapping:
  *   +1.0 → closest to center (highest bias)
@@ -32,6 +35,10 @@ export interface RadialLayoutResult {
 
 /**
  * Compute persona relevance scores for all nodes in the graph.
+ *
+ * Each connection type contributes its weight AT MOST ONCE per node.
+ * This prevents nodes with many connections of the same type from getting
+ * artificially inflated scores.
  */
 export function computePersonaScores(
   connections: Connection[],
@@ -40,20 +47,26 @@ export function computePersonaScores(
 ): Map<string, PersonaNodeScore> {
   const theoreticalMax = Math.max(totalCategories * 100, 1);
 
-  // Accumulate raw scores per node
-  const rawScores = new Map<string, number>();
+  // Track which connection types touch each node (deduplicated)
+  const nodeTypes = new Map<string, Set<string>>();
   for (const conn of connections) {
-    const w = weights.get(conn.type_id) ?? 0;
-    rawScores.set(conn.source_nord_id, (rawScores.get(conn.source_nord_id) ?? 0) + w);
-    rawScores.set(conn.target_nord_id, (rawScores.get(conn.target_nord_id) ?? 0) + w);
+    if (!nodeTypes.has(conn.source_nord_id)) nodeTypes.set(conn.source_nord_id, new Set());
+    if (!nodeTypes.has(conn.target_nord_id)) nodeTypes.set(conn.target_nord_id, new Set());
+    nodeTypes.get(conn.source_nord_id)!.add(conn.type_id);
+    nodeTypes.get(conn.target_nord_id)!.add(conn.type_id);
   }
 
-  // Normalize and rank
-  const entries = [...rawScores.entries()].map(([id, raw]) => {
-    const clamped = Math.max(-theoreticalMax, Math.min(theoreticalMax, raw));
+  // Score each node: sum of unique connection type weights
+  const entries: Array<{ id: string; normalized: number }> = [];
+  for (const [nodeId, typeIds] of nodeTypes) {
+    let rawScore = 0;
+    for (const typeId of typeIds) {
+      rawScore += weights.get(typeId) ?? 0;
+    }
+    const clamped = Math.max(-theoreticalMax, Math.min(theoreticalMax, rawScore));
     const normalized = clamped / theoreticalMax;
-    return { id, normalized };
-  });
+    entries.push({ id: nodeId, normalized });
+  }
 
   entries.sort((a, b) => a.normalized - b.normalized);
 

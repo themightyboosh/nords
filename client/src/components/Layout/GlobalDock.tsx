@@ -16,7 +16,7 @@ import {
   MessageSquare, Camera,
   EyeIcon, EyeOff, ChevronDown, ArrowLeftRight, Unlink, Filter,
   Bug, User, FileText, Target, Lightbulb, Layers, AlertTriangle,
-  Square, Settings2,
+  Square, Settings2, CircleDot,
 } from 'lucide-react';
 import { useLens } from '../../context/LensContext';
 
@@ -39,7 +39,7 @@ interface GlobalDockProps {
 }
 
 export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph, graph, personas = [] }: GlobalDockProps) {
-  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activePersonaId, setActivePersonaId, activeLine, setActiveLine, showContext, setShowContext } = useLens();
+  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activePersonaId, setActivePersonaId, activeLine, setActiveLine, showContext, setShowContext, personaTypeFilter, cyclePersonaTypeFilter } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [snapshotTab, setSnapshotTab] = useState<'take' | 'history'>('take');
 
@@ -194,6 +194,22 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
             </div>
           )}
 
+          {/* Filter button — persona mode: opens 3-state visibility flyout */}
+          {lens === 'persona' && (
+            <div className="nords-dock__section">
+              <button
+                className={`nords-dock__item ${openPanel === 'persona-filter' ? 'is-active' : ''}`}
+                onClick={() => togglePanel('persona-filter')}
+                data-testid="dock-persona-filter"
+                title="Filter visible nord types (show / dim / hide)"
+              >
+                <Filter size={15} strokeWidth={1.6} />
+                <span className="nords-dock__label">Filter</span>
+                <ChevronDown size={10} className="nords-dock__chevron" />
+              </button>
+            </div>
+          )}
+
           {/* Direction filter — board mode only, inline segmented control */}
           {lens === 'board' && activeConnectionTypeId && (
             <>
@@ -284,6 +300,16 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
             nordTypes={nordTypes}
             isNordTypeVisible={isNordTypeVisible}
             toggleNordTypeFilter={toggleNordTypeFilter}
+          />
+        </div>
+
+        {/* Persona Nord Filter Flyout (persona mode) — 3-state: show/dim/hide */}
+        <div className={`nords-flyout nords-glass ${openPanel === 'persona-filter' ? 'is-open' : ''}`} data-testid="flyout-persona-filter">
+          <PersonaFilterFlyoutContent
+            graph={graph || null}
+            nordTypes={nordTypes}
+            personaTypeFilter={personaTypeFilter}
+            cyclePersonaTypeFilter={cyclePersonaTypeFilter}
           />
         </div>
 
@@ -468,6 +494,89 @@ function FilterFlyoutContent({ graph, activeConnectionTypeId, nordTypes, isNordT
       <div className="nords-flyout__footer">
         <span className="nords-flyout__footer-hint">
           Toggle visibility of nord types on this board
+        </span>
+      </div>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// PersonaFilterFlyoutContent — 3-state nord type visibility
+// for persona view: show → dim → hide → show
+// ═══════════════════════════════════════════════════════════
+
+import type { PersonaTypeVisibility } from '../../context/LensContext';
+
+interface PersonaFilterFlyoutProps {
+  graph: ProjectGraph | null;
+  nordTypes: ResolvedNordType[];
+  personaTypeFilter: Map<string, PersonaTypeVisibility>;
+  cyclePersonaTypeFilter: (typeName: string) => void;
+}
+
+function PersonaFilterFlyoutContent({ graph, nordTypes, personaTypeFilter, cyclePersonaTypeFilter }: PersonaFilterFlyoutProps) {
+  // Count nords of each type in the graph
+  const typesWithCounts = useMemo(() => {
+    if (!graph) return [];
+    const typeCounts = new Map<string, number>();
+    for (const n of graph.nords) {
+      typeCounts.set(n.type_id, (typeCounts.get(n.type_id) || 0) + 1);
+    }
+    return nordTypes
+      .filter(nt => typeCounts.has(nt.id))
+      .map(nt => ({ ...nt, count: typeCounts.get(nt.id) || 0 }));
+  }, [graph, nordTypes]);
+
+  const dimmedCount = typesWithCounts.filter(t => (personaTypeFilter.get(t.name) || 'show') === 'dim').length;
+  const hiddenCount = typesWithCounts.filter(t => (personaTypeFilter.get(t.name) || 'show') === 'hide').length;
+
+  const statusLabel = [
+    dimmedCount > 0 ? `${dimmedCount} dimmed` : null,
+    hiddenCount > 0 ? `${hiddenCount} hidden` : null,
+  ].filter(Boolean).join(' · ');
+
+  return (
+    <>
+      <div className="nords-flyout__header">
+        <h3 className="nords-flyout__title">Nord Visibility</h3>
+        <span className="nords-flyout__count">
+          {typesWithCounts.length} types{statusLabel ? ` · ${statusLabel}` : ''}
+        </span>
+      </div>
+      <div className="nords-flyout__list">
+        {typesWithCounts.length === 0 && (
+          <div style={{ padding: '24px 12px', textAlign: 'center', color: 'var(--nords-color-text-disabled)', fontSize: '12px' }}>
+            No nords in this project yet.
+          </div>
+        )}
+        {typesWithCounts.map(nt => {
+          const state = personaTypeFilter.get(nt.name) || 'show';
+          const NtIcon = nt.icon;
+          return (
+            <div
+              key={nt.id}
+              className={`nords-flyout__row nords-flyout__row--selectable ${state === 'show' ? 'is-active' : ''}`}
+              onClick={() => cyclePersonaTypeFilter(nt.name)}
+              style={{ opacity: state === 'hide' ? 0.3 : state === 'dim' ? 0.55 : 1 }}
+            >
+              <div className="nords-flyout__row-left">
+                <NtIcon size={14} strokeWidth={1.8} style={{ color: nt.color, flexShrink: 0 }} />
+                <span className="nords-flyout__row-name">{nt.name}</span>
+                <span className="nords-flyout__row-count">{nt.count}</span>
+              </div>
+              <div className="nords-flyout__row-right" style={{ gap: '4px', display: 'flex', alignItems: 'center' }}>
+                {state === 'show' && <EyeIcon size={13} style={{ color: nt.color }} />}
+                {state === 'dim' && <CircleDot size={13} style={{ opacity: 0.5 }} />}
+                {state === 'hide' && <EyeOff size={13} style={{ opacity: 0.3 }} />}
+                <span style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--nords-color-text-disabled)', minWidth: '24px' }}>{state}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="nords-flyout__footer">
+        <span className="nords-flyout__footer-hint">
+          Click to cycle: show → dim → hide
         </span>
       </div>
     </>

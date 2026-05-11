@@ -1,53 +1,25 @@
 /**
- * PersonaLensDrawer — Read-only persona detail with live category weight sliders
- * and per-nord-type 3-state visibility filter (show / dim / hide).
+ * PersonaLensDrawer — Read-only persona detail with live category weight sliders.
  *
  * Shown in the right-side FloatingPanel when the Persona Lens is active.
  * Displays persona background and motivation (read-only) and editable
  * category weight sliders that drive real-time graph repositioning.
  *
- * ┌─────────────────────────────┐
- * │  👤 Product Manager         │  ← Avatar + Name (read-only)
- * │─────────────────────────────│
- * │  Background                 │
- * │  "10 years in SaaS PM..."   │  ← Read-only text
- * │─────────────────────────────│
- * │  Primary Motivation         │
- * │  "Ship features that..."    │  ← Read-only text
- * │─────────────────────────────│
- * │  CATEGORY WEIGHTS           │
- * │  Blocks         ━━━●━━  +60 │  ← Slider, live update
- * │  Depends On     ━●━━━━  -20 │
- * │─────────────────────────────│
- * │  NORD VISIBILITY            │
- * │  👁 Person         show     │  ← 3-state: show/dim/hide
- * │  ◑ Bug             dim      │
- * │  ✕ Task            hide     │
- * └─────────────────────────────┘
+ * Nord type visibility is handled by the GlobalDock's Filter flyout
+ * (3-state: show / dim / hide), not in this drawer.
  */
 
 import React, { useMemo, useCallback, useRef } from 'react';
 import { createAvatar } from '@dicebear/core';
 import { notionists } from '@dicebear/collection';
-import { Eye, EyeOff, CircleDot } from 'lucide-react';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import type { Persona } from '../../hooks/usePersonas';
-import type { PersonaTypeVisibility } from '../../context/LensContext';
-import type { LucideIcon } from 'lucide-react';
 import './PersonaLensDrawer.css';
 
 interface ConnectionType {
   id: string;
   name: string;
   accent_color?: string | null;
-}
-
-interface NordTypeInfo {
-  id: string;
-  name: string;
-  icon: LucideIcon;
-  color: string;
-  count: number;
 }
 
 interface PersonaLensDrawerProps {
@@ -61,12 +33,6 @@ interface PersonaLensDrawerProps {
   onWeightChange: (connectionTypeId: string, weight: number) => void;
   /** Called on slider release to persist to DB */
   onWeightCommit: (connectionTypeId: string, weight: number) => void;
-  /** All nord types in the project */
-  nordTypes?: NordTypeInfo[];
-  /** Current 3-state visibility per type name */
-  personaTypeFilter?: Map<string, PersonaTypeVisibility>;
-  /** Cycle a type through show → dim → hide → show */
-  onCycleTypeFilter?: (typeName: string) => void;
 }
 
 // ── Avatar helper ──
@@ -84,9 +50,6 @@ export function PersonaLensDrawer({
   liveWeights,
   onWeightChange,
   onWeightCommit,
-  nordTypes = [],
-  personaTypeFilter,
-  onCycleTypeFilter,
 }: PersonaLensDrawerProps) {
   const avatarUri = useAvatar(persona?.avatar_seed || 'default', 80);
 
@@ -159,41 +122,6 @@ export function PersonaLensDrawer({
               )}
             </div>
           </div>
-
-          {/* ── Nord Type Visibility Filter ── */}
-          {nordTypes.length > 0 && onCycleTypeFilter && (
-            <div className="persona-lens-drawer__field">
-              <label className="persona-lens-drawer__label">Nord Visibility</label>
-              <p className="persona-lens-drawer__hint">
-                Click to cycle: show → dim → hide
-              </p>
-              <div className="persona-type-filter">
-                {nordTypes.map(nt => {
-                  const state = personaTypeFilter?.get(nt.name) || 'show';
-                  const NtIcon = nt.icon;
-                  return (
-                    <div
-                      key={nt.id}
-                      className={`persona-type-filter__row persona-type-filter__row--${state}`}
-                      onClick={() => onCycleTypeFilter(nt.name)}
-                    >
-                      <div className="persona-type-filter__left">
-                        <NtIcon size={14} strokeWidth={1.8} style={{ color: nt.color, flexShrink: 0 }} />
-                        <span className="persona-type-filter__name">{nt.name}</span>
-                        <span className="persona-type-filter__count">{nt.count}</span>
-                      </div>
-                      <div className="persona-type-filter__right">
-                        {state === 'show' && <Eye size={13} style={{ color: nt.color }} />}
-                        {state === 'dim' && <CircleDot size={13} style={{ opacity: 0.5 }} />}
-                        {state === 'hide' && <EyeOff size={13} style={{ opacity: 0.3 }} />}
-                        <span className="persona-type-filter__state">{state}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </FloatingPanel>

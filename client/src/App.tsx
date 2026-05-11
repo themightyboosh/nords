@@ -22,7 +22,6 @@ import { ManagePersonas } from './components/ManagePersonas/ManagePersonas';
 import { PersonaLensDrawer } from './components/Drawer/PersonaLensDrawer';
 import { BoardSettingsProvider } from './context/BoardSettingsContext';
 import { usePersonas } from './hooks/usePersonas';
-import { useTypeRegistry } from './hooks/useTypeRegistry';
 import { useLens } from './context/LensContext';
 
 /**
@@ -96,11 +95,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
 
   // Safe ReactFlow access — returns null in board view where ReactFlow isn't mounted
   const reactFlow = useOptionalReactFlow();
-  const { lens, activePersonaId, personaTypeFilter, cyclePersonaTypeFilter } = useLens();
-  const { nordTypes } = useTypeRegistry();
-
-  // Nord types list for the persona visibility filter
-  const nordTypesForFilter = useMemo(() => nordTypes, [nordTypes]);
+  const { lens, activePersonaId } = useLens();
 
   // Active persona for the Persona Lens
   const activePersona = useMemo(() => {
@@ -246,9 +241,6 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           liveWeights={liveWeights}
           onWeightChange={handleWeightChange}
           onWeightCommit={handleWeightCommit}
-          nordTypes={nordTypesForFilter}
-          personaTypeFilter={personaTypeFilter}
-          onCycleTypeFilter={cyclePersonaTypeFilter}
         />
       )}
       <DetailDrawer
