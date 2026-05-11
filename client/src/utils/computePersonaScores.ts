@@ -105,6 +105,12 @@ export function computeNeutralScore(
 
 // ── Radial layout ──
 
+/**
+ * Golden angle in radians — produces a natural, non-overlapping
+ * spiral distribution (like sunflower seeds).
+ */
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+
 export function computeRadialPositions(
   scores: Map<string, PersonaNodeScore>,
   neutralScore: number,
@@ -116,68 +122,38 @@ export function computeRadialPositions(
   if (total === 0) return { positions: new Map(), maxRadius: 0, neutralRadius: 0 };
 
   const innerRadius = 200;
-  const arcSpacing  = cardWidth + 20;
-  const bandGap     = cardHeight + 20;   // tighter spacing
-  const BAND_W      = 0.15;
 
-  // ── Group nodes into orbit bands by score ──
-  const bandMap = new Map<number, string[]>();
-  for (const [id, { score }] of scores) {
-    const key = Math.round(score / BAND_W) * BAND_W;
-    if (!bandMap.has(key)) bandMap.set(key, []);
-    bandMap.get(key)!.push(id);
-  }
-
-  const bands = [...bandMap.entries()]
-    .sort((a, b) => b[0] - a[0])       // highest score first (center)
-    .map(([score, ids]) => ({ score, ids }));
-
-  // ── Compute span — compact ──
-  const span = Math.max(500, bands.length * bandGap);
+  // Span scales with node count but stays compact
+  const span = Math.max(400, total * 18);
   const outerRadius = innerRadius + span;
 
-  // Score → ideal radius: +1 → innerRadius, -1 → outerRadius
+  // Score → radius: +1 → innerRadius, -1 → outerRadius (linear)
   const scoreToRadius = (s: number) => innerRadius + ((1 - s) / 2) * span;
 
-  // ── Assign orbit radii (walk outward) ──
-  let prevR = 0;
-  const orbitRadii: number[] = [];
+  // Sort nodes by score descending (highest = closest to center)
+  const sorted = [...scores.entries()].sort((a, b) => b[1].score - a[1].score);
 
-  for (const band of bands) {
-    const fitR  = (band.ids.length * arcSpacing) / (2 * Math.PI);
-    const ideal = scoreToRadius(band.score);
-    const minR  = prevR > 0 ? prevR + bandGap : innerRadius;
-    const actual = Math.max(ideal, fitR, minR);
-    orbitRadii.push(actual);
-    prevR = actual;
-  }
-
-  // ── Place nodes ──
   const positions = new Map<string, { x: number; y: number }>();
   const halfW = cardWidth / 2;
   const halfH = cardHeight / 2;
 
-  for (let b = 0; b < bands.length; b++) {
-    const { ids } = bands[b];
-    const r = orbitRadii[b];
-    const slotAngle = (2 * Math.PI) / ids.length;
-    const offset = b * 0.4;
+  // Place each node at its exact score-based radius,
+  // using golden angle for angular distribution
+  for (let i = 0; i < sorted.length; i++) {
+    const [id, { score }] = sorted[i];
+    const r = scoreToRadius(score);
+    const angle = i * GOLDEN_ANGLE;
 
-    for (let j = 0; j < ids.length; j++) {
-      const a = offset + j * slotAngle;
-      positions.set(ids[j], {
-        x: center.x + r * Math.cos(a) - halfW,
-        y: center.y + r * Math.sin(a) - halfH,
-      });
-    }
+    positions.set(id, {
+      x: center.x + r * Math.cos(angle) - halfW,
+      y: center.y + r * Math.sin(angle) - halfH,
+    });
   }
 
-  // ── Zone radii ──
-  const lastR = orbitRadii.length > 0 ? orbitRadii[orbitRadii.length - 1] : outerRadius;
+  // Zone radii
   const diag = Math.sqrt(cardWidth ** 2 + cardHeight ** 2);
-  const maxRadius = lastR + diag / 2 + 40;
-
-  // Green circle = where neutralScore maps
+  const furthestR = scoreToRadius(-1);
+  const maxRadius = furthestR + diag / 2 + 40;
   const neutralRadius = scoreToRadius(neutralScore);
 
   return { positions, maxRadius, neutralRadius };
