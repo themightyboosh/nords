@@ -86,13 +86,29 @@ function storePersonaId(projectId: string, personaId: string | null) {
   }
 }
 
+function getStoredLens(projectId: string): LensMode {
+  try {
+    const v = localStorage.getItem(`nords-lens-mode-${projectId}`);
+    if (v === 'canvas' || v === 'board' || v === 'persona') return v;
+  } catch { /* noop */ }
+  return 'canvas';
+}
+
+function storeLens(projectId: string, mode: LensMode) {
+  try {
+    localStorage.setItem(`nords-lens-mode-${projectId}`, mode);
+  } catch { /* noop */ }
+}
+
 interface LensProviderProps {
   children: ReactNode;
   projectId?: string;
 }
 
 export function LensProvider({ children, projectId }: LensProviderProps) {
-  const [lens, setLens] = useState<LensMode>('canvas');
+  const [lens, setLensState] = useState<LensMode>(
+    () => projectId ? getStoredLens(projectId) : 'canvas'
+  );
   const [activeLine, setActiveLine] = useState('Blocks');
   const [showContext, setShowContext] = useState(true);
   const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
@@ -116,11 +132,18 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
     if (projectId) storePersonaId(projectId, id);
   }, [projectId]);
 
+  // Persist lens mode to localStorage when it changes
+  const setLens = useCallback((mode: LensMode) => {
+    setLensState(mode);
+    if (projectId) storeLens(projectId, mode);
+  }, [projectId]);
+
   // When projectId changes, reload from localStorage
   useEffect(() => {
     if (projectId) {
       setActiveConnectionTypeIdState(getStoredTypeId(projectId));
       setActivePersonaIdState(getStoredPersonaId(projectId));
+      setLensState(getStoredLens(projectId));
     }
   }, [projectId]);
 

@@ -155,7 +155,7 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
                 ) : (
                   <>
                     <Link2 size={14} strokeWidth={1.6} />
-                    <span className="nords-dock__label">All Lines (Relevance)</span>
+                    <span className="nords-dock__label">All Lines</span>
                   </>
                 )}
                 <ChevronDown size={10} className="nords-dock__chevron" />
@@ -255,8 +255,8 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
             </span>
           </div>
           <div className="nords-flyout__list">
-            {/* All Lines (Relevance) — hidden in board mode, board requires a specific type */}
-            {lens !== 'board' && (
+            {/* All Lines (Relevance) — commented out per user request */}
+            {/* {lens !== 'board' && (
               <div
                 className={`nords-flyout__row nords-flyout__row--selectable ${!activeConnectionTypeId ? 'is-active' : ''}`}
                 onClick={() => { setActiveConnectionTypeId(null); setActiveLine('All'); setOpenPanel(null); }}
@@ -266,7 +266,7 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
                   <span className="nords-flyout__row-name">All Lines (Relevance)</span>
                 </div>
               </div>
-            )}
+            )} */}
             {visibleConnectionTypes
               .filter(t => !t.isSystem)
               .filter(t => lens !== 'board' || (t.measurementMode !== 'none' && t.xStageLabels.length > 0))

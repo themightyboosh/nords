@@ -164,7 +164,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         radialNodes.push({
           ...n,
           position: radialPos || n.position,
-          draggable: false,
+          draggable: true,
           data: {
             ...n.data,
             isGhosted: typeState === 'dim',
@@ -206,7 +206,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         radialNodes.push({
           id: '__persona_center__',
           type: 'personaCenterNode',
-          position: { x: -60, y: -60 }, // offset to center the 120px node
+          position: { x: -120, y: -120 }, // offset to center the 240px node
           draggable: false,
           selectable: false,
           data: {

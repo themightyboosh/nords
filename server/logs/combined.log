@@ -20573,3 +20573,246 @@ ApiError: Failed to update connection
 13:53:13.982 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T17:52:44.006Z","userId":"dev-user-000"}
 13:53:13.982 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T17:52:44.006Z","userId":"dev-user-000"}
 13:53:13.983 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"0ms","bytes":"14"}
+13:56:13.978 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T17:55:49.582Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+13:56:13.978 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T17:55:49.635Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+13:56:13.978 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T17:55:49.681Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+13:56:13.979 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}
+13:56:34.500 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:56:34.537 [31merror[39m: Query failed
+error: column "sort_order" of relation "connections" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:345:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":193,"error":"column \"sort_order\" of relation \"connections\" does not exist"}
+13:56:34.537 [31merror[39m: Connection update failed column "sort_order" of relation "connections" does not exist {"service":"nords-server","code":"42703","connectionId":"0e681187-306f-4ccc-8f97-0e4a33d016a6"}
+13:56:34.537 [31merror[39m: PUT /api/connections/0e681187-306f-4ccc-8f97-0e4a33d016a6 500 {"service":"nords-server","method":"PUT","path":"/api/connections/0e681187-306f-4ccc-8f97-0e4a33d016a6","status":500,"duration":"193ms","bytes":"39"}
+13:56:43.979 [31merror[39m: Unhandled promise rejection
+ApiError: Failed to update connection
+    at request (http://localhost:5173/src/api/client.ts:46:9)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+    at async http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1778511116631:391:4 {"service":"nords-client","clientTimestamp":"2026-05-11T17:56:34.539Z","reason":"Failed to update connection","userId":"dev-user-000"}
+13:56:43.979 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}
+13:56:56.638 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:56:56.673 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO persona_category_weights (persona_id, connection_type_id, weight)\n  ","duration":191,"rows":1}
+13:56:56.674 [32minfo[39m: PUT /api/personas/ef9570b6-67fb-48f5-ad1d-c9a5cb70f743/weights/a24264e5-3b04-4ed2-83ec-16541c1367b3 200 {"service":"nords-server","method":"PUT","path":"/api/personas/ef9570b6-67fb-48f5-ad1d-c9a5cb70f743/weights/a24264e5-3b04-4ed2-83ec-16541c1367b3","status":200,"duration":"193ms","bytes":"170"}
+13:56:59.099 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO persona_category_weights (persona_id, connection_type_id, weight)\n  ","duration":38,"rows":1}
+13:56:59.099 [32minfo[39m: PUT /api/personas/ef9570b6-67fb-48f5-ad1d-c9a5cb70f743/weights/4ac25c78-3527-48db-aaa9-832b3affb7b1 200 {"service":"nords-server","method":"PUT","path":"/api/personas/ef9570b6-67fb-48f5-ad1d-c9a5cb70f743/weights/4ac25c78-3527-48db-aaa9-832b3affb7b1","status":200,"duration":"38ms","bytes":"170"}
+13:57:05.331 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO persona_category_weights (persona_id, connection_type_id, weight)\n  ","duration":41,"rows":1}
+13:57:05.332 [32minfo[39m: PUT /api/personas/ef9570b6-67fb-48f5-ad1d-c9a5cb70f743/weights/d1daa79e-efdd-470c-8471-605bf0949ed1 200 {"service":"nords-server","method":"PUT","path":"/api/personas/ef9570b6-67fb-48f5-ad1d-c9a5cb70f743/weights/d1daa79e-efdd-470c-8471-605bf0949ed1","status":200,"duration":"43ms","bytes":"170"}
+13:59:09.673 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:59:09.681 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:59:09.713 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":174,"rows":10}
+13:59:09.718 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":179,"rows":6}
+13:59:09.718 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types 200 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types","status":200,"duration":"179ms","bytes":"9391"}
+13:59:09.758 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":39,"rows":6}
+13:59:09.758 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":39,"rows":10}
+13:59:09.758 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types","status":304,"duration":"39ms"}
+13:59:25.731 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:59:25.731 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:59:25.757 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:59:25.762 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:59:25.768 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":188,"rows":1}
+13:59:25.768 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"188ms","bytes":"585"}
+13:59:25.770 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":179,"rows":1}
+13:59:25.770 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"179ms","bytes":"585"}
+13:59:25.781 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:59:25.795 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":187,"rows":1}
+13:59:25.795 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"187ms","bytes":"585"}
+13:59:25.797 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":172,"rows":1}
+13:59:25.797 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"172ms","bytes":"585"}
+13:59:25.798 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+13:59:25.801 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":32,"rows":1}
+13:59:25.801 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"32ms","bytes":"585"}
+13:59:25.802 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":32,"rows":1}
+13:59:25.803 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:25.818 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":176,"rows":1}
+13:59:25.818 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"176ms","bytes":"585"}
+13:59:25.832 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":36,"rows":1}
+13:59:25.832 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"36ms","bytes":"585"}
+13:59:25.832 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:25.832 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"35ms","bytes":"585"}
+13:59:25.833 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":31,"rows":1}
+13:59:25.833 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"32ms","bytes":"585"}
+13:59:25.835 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":176,"rows":1}
+13:59:25.835 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"177ms","bytes":"585"}
+13:59:25.838 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:25.838 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"35ms","bytes":"585"}
+13:59:25.852 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":33,"rows":1}
+13:59:25.853 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:25.864 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":31,"rows":1}
+13:59:25.864 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"32ms","bytes":"585"}
+13:59:25.866 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":32,"rows":1}
+13:59:25.866 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"32ms","bytes":"585"}
+13:59:25.868 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:25.868 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"35ms","bytes":"585"}
+13:59:25.883 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":33,"rows":1}
+13:59:25.883 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:25.904 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:25.904 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"35ms","bytes":"585"}
+13:59:25.917 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:25.917 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:25.936 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":36,"rows":1}
+13:59:25.936 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"36ms","bytes":"585"}
+13:59:25.952 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:25.952 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"35ms","bytes":"585"}
+13:59:25.970 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":37,"rows":1}
+13:59:25.970 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"37ms","bytes":"585"}
+13:59:25.984 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:25.984 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:26.002 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:26.002 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"35ms","bytes":"585"}
+13:59:26.017 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":33,"rows":1}
+13:59:26.017 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:26.034 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:26.034 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:26.053 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":36,"rows":1}
+13:59:26.054 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"37ms","bytes":"585"}
+13:59:26.374 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":40,"rows":1}
+13:59:26.374 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"40ms","bytes":"585"}
+13:59:26.383 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":33,"rows":1}
+13:59:26.383 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:26.400 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":33,"rows":1}
+13:59:26.400 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:26.415 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":32,"rows":1}
+13:59:26.415 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"32ms","bytes":"585"}
+13:59:26.434 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:26.434 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:26.449 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":33,"rows":1}
+13:59:26.450 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:26.467 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:26.467 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:26.487 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":37,"rows":1}
+13:59:26.487 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"37ms","bytes":"585"}
+13:59:26.916 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":40,"rows":1}
+13:59:26.916 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"40ms","bytes":"585"}
+13:59:26.924 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":32,"rows":1}
+13:59:26.924 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:26.941 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":33,"rows":1}
+13:59:26.941 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:26.968 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:26.968 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"35ms","bytes":"585"}
+13:59:26.982 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":32,"rows":1}
+13:59:26.983 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:27.000 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:27.000 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:27.020 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":37,"rows":1}
+13:59:27.020 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"37ms","bytes":"585"}
+13:59:27.032 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":32,"rows":1}
+13:59:27.032 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"32ms","bytes":"585"}
+13:59:27.052 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:27.052 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"36ms","bytes":"585"}
+13:59:27.071 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":38,"rows":1}
+13:59:27.071 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"38ms","bytes":"585"}
+13:59:27.084 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:27.084 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:27.100 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":33,"rows":1}
+13:59:27.100 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:27.118 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:27.119 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"36ms","bytes":"585"}
+13:59:27.135 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:27.136 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"36ms","bytes":"585"}
+13:59:27.149 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":32,"rows":1}
+13:59:27.149 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"32ms","bytes":"585"}
+13:59:27.168 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:27.168 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"35ms","bytes":"585"}
+13:59:27.184 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:27.184 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:27.353 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":37,"rows":1}
+13:59:27.354 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"38ms","bytes":"585"}
+13:59:27.383 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":32,"rows":1}
+13:59:27.384 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:27.385 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":36,"rows":1}
+13:59:27.385 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"36ms","bytes":"585"}
+13:59:27.401 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":33,"rows":1}
+13:59:27.401 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:27.419 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:27.419 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"35ms","bytes":"585"}
+13:59:27.433 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":33,"rows":1}
+13:59:27.433 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"33ms","bytes":"585"}
+13:59:27.450 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:27.450 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:27.470 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":37,"rows":1}
+13:59:27.470 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"37ms","bytes":"585"}
+13:59:27.485 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":35,"rows":1}
+13:59:27.486 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"36ms","bytes":"585"}
+13:59:27.501 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:27.501 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:27.586 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":36,"rows":1}
+13:59:27.586 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"36ms","bytes":"585"}
+13:59:27.600 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:27.600 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:27.617 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:27.617 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:27.632 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":32,"rows":1}
+13:59:27.632 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"32ms","bytes":"585"}
+13:59:27.650 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE personas SET accent_color = $1, updated_at = CURRENT_TIMESTAMP WHERE id =","duration":34,"rows":1}
+13:59:27.650 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab","status":200,"duration":"34ms","bytes":"585"}
+13:59:31.870 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":39,"rows":10}
+13:59:31.870 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":38,"rows":6}
+13:59:31.871 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types","status":304,"duration":"40ms"}
+13:59:31.904 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":33,"rows":6}
+13:59:31.904 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":33,"rows":10}
+13:59:31.904 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types","status":304,"duration":"33ms"}
+13:59:41.852 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO persona_category_weights (persona_id, connection_type_id, weight)\n  ","duration":41,"rows":1}
+13:59:41.852 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab/weights/a24264e5-3b04-4ed2-83ec-16541c1367b3 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab/weights/a24264e5-3b04-4ed2-83ec-16541c1367b3","status":200,"duration":"41ms","bytes":"170"}
+13:59:44.197 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO persona_category_weights (persona_id, connection_type_id, weight)\n  ","duration":35,"rows":1}
+13:59:44.197 [32minfo[39m: PUT /api/personas/4610b329-aa46-4004-93c3-e644586686ab/weights/a24264e5-3b04-4ed2-83ec-16541c1367b3 200 {"service":"nords-server","method":"PUT","path":"/api/personas/4610b329-aa46-4004-93c3-e644586686ab/weights/a24264e5-3b04-4ed2-83ec-16541c1367b3","status":200,"duration":"35ms","bytes":"170"}
+14:03:30.368 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+14:03:30.369 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+14:03:30.405 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":181,"rows":2}
+14:03:30.439 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":34,"rows":2}
+14:03:30.476 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":36,"rows":12}
+14:03:30.476 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 200 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":200,"duration":"252ms","bytes":"3493"}
+14:03:30.510 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":33,"rows":2}
+14:03:30.524 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":299,"rows":1}
+14:03:30.524 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph","status":304,"duration":"299ms"}
+14:03:30.542 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":32,"rows":2}
+14:03:30.574 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":32,"rows":12}
+14:03:30.575 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"98ms"}
+14:03:30.591 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":48,"rows":1}
+14:03:30.592 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph","status":304,"duration":"49ms"}
+14:03:30.606 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":31,"rows":2}
+14:03:30.633 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":41,"rows":1}
+14:03:30.634 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph","status":304,"duration":"42ms"}
+14:03:30.640 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":34,"rows":2}
+14:03:30.674 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":33,"rows":12}
+14:03:30.674 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"99ms"}
+14:03:30.684 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":49,"rows":1}
+14:03:30.684 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph","status":304,"duration":"49ms"}
+14:03:30.696 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+14:03:30.696 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+14:03:30.707 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":33,"rows":2}
+14:03:30.732 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":179,"rows":2}
+14:03:30.740 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":33,"rows":2}
+14:03:30.766 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":34,"rows":2}
+14:03:30.774 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":34,"rows":12}
+14:03:30.774 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"100ms"}
+14:03:30.798 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":32,"rows":12}
+14:03:30.798 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 200 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":200,"duration":"245ms","bytes":"3493"}
+14:03:30.808 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":33,"rows":2}
+14:03:30.832 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":32,"rows":2}
+14:03:30.840 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":32,"rows":2}
+14:03:30.856 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":304,"rows":1}
+14:03:30.857 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph","status":200,"duration":"305ms","bytes":"131223"}
+14:03:30.864 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":32,"rows":2}
+14:03:30.872 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":32,"rows":12}
+14:03:30.872 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"97ms"}
+14:03:30.898 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":34,"rows":12}
+14:03:30.899 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"99ms"}
+14:03:30.904 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":31,"rows":2}
+14:03:30.936 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":32,"rows":2}
+14:03:30.969 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":33,"rows":12}
+14:03:30.969 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"97ms"}
+14:03:31.004 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":34,"rows":2}
+14:03:31.037 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":33,"rows":2}
+14:03:31.069 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":32,"rows":12}
+14:03:31.069 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"99ms"}
+14:03:31.102 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":32,"rows":2}
+14:03:31.138 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":36,"rows":2}
+14:03:31.179 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":41,"rows":12}
+14:03:31.179 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"109ms"}
+14:03:43.981 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.090Z","userId":"dev-user-000"}
+14:03:43.981 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.090Z","userId":"dev-user-000"}
+14:03:43.981 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}

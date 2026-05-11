@@ -19,7 +19,7 @@ interface PersonaCenterData {
 
 export const PersonaCenterNode = memo(({ data }: NodeProps<PersonaCenterData>) => {
   const avatarUri = useMemo(() => {
-    return createAvatar(notionists, { seed: data.avatarSeed || 'default', size: 120 }).toDataUri();
+    return createAvatar(notionists, { seed: data.avatarSeed || 'default', size: 240 }).toDataUri();
   }, [data.avatarSeed]);
 
   return (

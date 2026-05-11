@@ -4270,3 +4270,21 @@ ApiError: Failed to update connection
     at async Promise.all (index 0)
     at async Promise.all (index 0)
     at async http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1778511116631:391:4 {"service":"nords-client","clientTimestamp":"2026-05-11T17:46:29.946Z","reason":"Failed to update connection","userId":"dev-user-000"}
+13:56:13.978 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T17:55:49.582Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+13:56:13.978 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T17:55:49.635Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+13:56:13.978 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-11T17:55:49.681Z","filename":"http://localhost:5173/project/5413fc94-3245-4153-9641-b9d025367e1d","lineno":0,"colno":0,"userId":"dev-user-000"}
+13:56:34.537 [31merror[39m: Query failed
+error: column "sort_order" of relation "connections" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:345:24) {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1, distance_y = $2, sort_order = $3\n    WHERE id = $4 AND deleted_at IS NU","duration":193,"error":"column \"sort_order\" of relation \"connections\" does not exist"}
+13:56:34.537 [31merror[39m: Connection update failed column "sort_order" of relation "connections" does not exist {"service":"nords-server","code":"42703","connectionId":"0e681187-306f-4ccc-8f97-0e4a33d016a6"}
+13:56:34.537 [31merror[39m: PUT /api/connections/0e681187-306f-4ccc-8f97-0e4a33d016a6 500 {"service":"nords-server","method":"PUT","path":"/api/connections/0e681187-306f-4ccc-8f97-0e4a33d016a6","status":500,"duration":"193ms","bytes":"39"}
+13:56:43.979 [31merror[39m: Unhandled promise rejection
+ApiError: Failed to update connection
+    at request (http://localhost:5173/src/api/client.ts:46:9)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+    at async http://localhost:5173/src/components/Matrix/MatrixView.tsx?t=1778511116631:391:4 {"service":"nords-client","clientTimestamp":"2026-05-11T17:56:34.539Z","reason":"Failed to update connection","userId":"dev-user-000"}
