@@ -9,7 +9,13 @@
  *
  * Uses a JSON-serialized drag payload in dataTransfer so the drop
  * target knows the source nord, connection, and direction.
+ *
+ * NOTE: We use 'text/plain' as the MIME type instead of a custom type
+ * because Safari on macOS silently drops custom MIME types, causing
+ * getData() to return empty on drop events.
  */
+
+import React from 'react';
 
 export interface BoardDragData {
   nordId: string;
@@ -20,11 +26,13 @@ export interface BoardDragData {
   sourceDirection: string;
 }
 
-const DRAG_TYPE = 'application/x-nords-board-drag';
+const DRAG_TYPE = 'text/plain';
+const DRAG_PREFIX = '__nords_board__';
 
 /** Set drag data on a dragstart event */
 export function setDragData(e: React.DragEvent, data: BoardDragData) {
-  e.dataTransfer.setData(DRAG_TYPE, JSON.stringify(data));
+  // Prefix the JSON so we can identify nords board drags vs other text drops
+  e.dataTransfer.setData(DRAG_TYPE, DRAG_PREFIX + JSON.stringify(data));
   e.dataTransfer.effectAllowed = 'move';
 }
 
@@ -32,8 +40,8 @@ export function setDragData(e: React.DragEvent, data: BoardDragData) {
 export function getDragData(e: React.DragEvent): BoardDragData | null {
   try {
     const raw = e.dataTransfer.getData(DRAG_TYPE);
-    if (!raw) return null;
-    return JSON.parse(raw);
+    if (!raw || !raw.startsWith(DRAG_PREFIX)) return null;
+    return JSON.parse(raw.slice(DRAG_PREFIX.length));
   } catch {
     return null;
   }
@@ -43,11 +51,3 @@ export function getDragData(e: React.DragEvent): BoardDragData | null {
 export function isAddLinkMode(e: React.DragEvent | DragEvent): boolean {
   return e.altKey;
 }
-
-/**
- * React import needed for the type annotations on DragEvent.
- * The actual hook logic lives in Board.tsx where it has access
- * to the mutation functions. This file provides the serialization
- * helpers and type definitions.
- */
-import React from 'react';
