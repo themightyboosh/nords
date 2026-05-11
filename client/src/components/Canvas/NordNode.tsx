@@ -28,10 +28,8 @@ interface NordNodeData {
   commentCount?: number;
   isGhosted?: boolean;
   properties: Array<{ key: string; value: string; color?: string }>;
-  /** Persona lens: 0.5–1.0 opacity (only set in persona mode) */
-  _personaOpacity?: number;
-  /** Persona lens: 0 = colored, 1 = grayscale (only set in persona mode) */
-  _personaGrayscale?: number;
+  /** Persona lens: heatmap background color (green→yellow→red) */
+  _personaHeatColor?: string;
 }
 
 export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<NordNodeData>) => {
@@ -49,14 +47,13 @@ export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<N
     (a, b) => a === b,
   );
 
-  // Persona lens visual layer — CSS-only, no layout math
+  // Persona lens: heatmap card background color
   const personaStyle: React.CSSProperties | undefined =
-    data._personaOpacity != null
+    data._personaHeatColor
       ? {
-          opacity: data._personaOpacity,
-          filter: data._personaGrayscale ? `grayscale(${data._personaGrayscale})` : undefined,
-          transition: 'opacity 0.15s ease, filter 0.15s ease',
-        }
+          // Override the card background — CSS transition handles animation
+          '--persona-heat-color': data._personaHeatColor,
+        } as React.CSSProperties
       : undefined;
 
   return (

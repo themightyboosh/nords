@@ -32,16 +32,25 @@ import { useSemanticZoom } from '../../hooks/useSemanticZoom';
 import { useSpatialAnimations } from '../../hooks/useSpatialAnimations';
 import { useLensLayout } from '../../hooks/useLensLayout';
 import ZoomControls from './ZoomControls';
-import { computePersonaScores } from '../../utils/computePersonaScores';
+import { computePersonaScores, computeRadialPositions } from '../../utils/computePersonaScores';
+import { PersonaCenterNode } from './PersonaCenterNode';
 import './CanvasEngine.css';
 
 const nodeTypes = {
   nordNode: NordNode,
+  personaCenterNode: PersonaCenterNode,
 };
 
 const edgeTypes = {
   euclidean: EuclideanEdge,
 };
+
+interface ActivePersonaInfo {
+  id: string;
+  name: string;
+  avatar_seed: string;
+  accent_color: string;
+}
 
 interface InteractiveCanvasProps {
   projectId: string;
@@ -51,9 +60,10 @@ interface InteractiveCanvasProps {
   graph: ProjectGraph | null;
   refetchGraph: () => Promise<void>;
   personaWeights?: Map<string, number> | null;
+  activePersona?: ActivePersonaInfo | null;
 }
 
-function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord, graph, refetchGraph, personaWeights }: InteractiveCanvasProps) {
+function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord, graph, refetchGraph, personaWeights, activePersona }: InteractiveCanvasProps) {
   const { createNord, batchUpdatePositions, deleteNord } = useNordMutations(projectId);
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
   const { connectionTypes } = useTypeRegistry();
@@ -109,28 +119,63 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   // This makes it clear which nords participate in the active relationship.
   // Drawing a new connection to a gray nord instantly promotes it.
 
-  // Persona lens: compute per-node relevance scores
+  // Persona lens: compute per-node relevance scores + radial positions
   const personaScores = useMemo(() => {
     if (!isPersonaMode || !personaWeights || !graph) return null;
     const totalCategories = graph.connection_types.filter(ct => !ct.is_system).length;
     return computePersonaScores(graph.connections, personaWeights, totalCategories);
   }, [isPersonaMode, personaWeights, graph]);
 
+  // Compute radial target positions for animated transitions
+  const personaRadialPositions = useMemo(() => {
+    if (!personaScores || !graph) return null;
+
+    // Build averaged positions from current node positions (used as angular hints)
+    const avgPositions = new Map<string, { x: number; y: number }>();
+    for (const n of rfNodes) {
+      avgPositions.set(n.id, { x: n.position.x, y: n.position.y });
+    }
+
+    // Center at origin — ReactFlow will fitView after animation
+    const center = { x: 0, y: 0 };
+    return computeRadialPositions(personaScores, avgPositions, center, 220, 900);
+  }, [personaScores, rfNodes, graph]);
+
   const lensNodes = useMemo(() => {
-    // ── Persona mode: opacity-based visualization ──
+    // ── Persona mode: radial heatmap ──
     if (isPersonaMode && personaScores) {
-      return rfNodes.map(n => {
+      const heatNodes = rfNodes.map(n => {
         const ps = personaScores.get(n.id);
+        const radialPos = personaRadialPositions?.get(n.id);
         return {
           ...n,
+          position: radialPos || n.position,
           draggable: false,
           data: {
             ...n.data,
-            _personaOpacity: ps ? ps.opacity : 0.5,
-            _personaGrayscale: ps ? ps.grayscale : 1,
+            _personaHeatColor: ps?.heatColor || undefined,
           },
         };
       });
+
+      // Add center avatar node
+      if (activePersona) {
+        heatNodes.push({
+          id: '__persona_center__',
+          type: 'personaCenterNode',
+          position: { x: -60, y: -60 }, // offset to center the 120px node
+          draggable: false,
+          selectable: false,
+          data: {
+            avatarSeed: activePersona.avatar_seed,
+            accentColor: activePersona.accent_color,
+            name: activePersona.name,
+          },
+          zIndex: 1000,
+        } as any);
+      }
+
+      return heatNodes;
     }
 
     if (activeConnectionTypeId) {
@@ -165,7 +210,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       ...n,
       draggable: !connectedIds.has(n.id), // only orphans are draggable
     }));
-  }, [rfNodes, rfEdges, activeConnectionTypeId, isPersonaMode, personaScores]);
+  }, [rfNodes, rfEdges, activeConnectionTypeId, isPersonaMode, personaScores, personaRadialPositions, activePersona]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(lensNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(lensEdges);
@@ -198,18 +243,18 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       return lensNodes.map(n => {
         const existing = prevMap.get(n.id);
         if (existing) {
-          // Keep the in-memory position, update everything else
-          // (ghost state, draggability, data/properties, zIndex)
+          // In persona mode, USE the computed radial position from lensNodes.
+          // In other modes, keep the in-memory position to avoid jumps after refetch.
           return {
             ...n,
-            position: existing.position,
+            position: isPersonaMode ? n.position : existing.position,
           };
         }
-        // New node — use DB position
+        // New node — use lensNodes position (DB or radial-computed)
         return n;
       });
     });
-  }, [lensNodes, setNodes]);
+  }, [lensNodes, setNodes, isPersonaMode]);
 
   React.useEffect(() => {
     setEdges(lensEdges);
@@ -778,9 +823,10 @@ interface CanvasEngineProps {
   graph?: ProjectGraph | null;
   refetchGraph?: () => Promise<void>;
   personaWeights?: Map<string, number> | null;
+  activePersona?: ActivePersonaInfo | null;
 }
 
-export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights }: CanvasEngineProps) {
+export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights, activePersona }: CanvasEngineProps) {
   const { lens } = useLens();
   const noop = async () => {};
 
@@ -800,7 +846,7 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
 
   return (
     <div className={`nords-canvas ${lens === 'persona' ? 'nords-canvas--persona' : ''}`}>
-      <InteractiveCanvas projectId={projectId || ''} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} personaWeights={personaWeights} />
+      <InteractiveCanvas projectId={projectId || ''} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} personaWeights={personaWeights} activePersona={activePersona} />
     </div>
   );
 }

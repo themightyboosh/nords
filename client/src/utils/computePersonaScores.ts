@@ -5,10 +5,10 @@
  * types that link to that node. Normalizes by the theoretical max
  * (numCategories × 100) so every node gets a score in [-1.0, +1.0].
  *
- * Visual mapping:
- *   +1.0 → 100% opacity, full color  (most relevant)
- *    0.0 → 50% opacity, color/gray boundary
- *   -1.0 → 50% opacity, full grayscale (least relevant)
+ * Visual mapping (radial heatmap):
+ *   +1.0 → green background, closest to center
+ *    0.0 → yellow background, middle ring
+ *   -1.0 → red background, outermost ring
  */
 
 import type { Connection } from '../hooks/useProjectGraph';
@@ -16,10 +16,10 @@ import type { Connection } from '../hooks/useProjectGraph';
 export interface PersonaNodeScore {
   /** Normalized score: -1.0 to +1.0 */
   score: number;
-  /** CSS opacity: 0.5 to 1.0 */
-  opacity: number;
-  /** CSS grayscale filter: 0 (colored) or 1 (gray) */
-  grayscale: number;
+  /** Heatmap background color: green → yellow → red */
+  heatColor: string;
+  /** Rank 0.0 (lowest score) → 1.0 (highest score), for radial positioning */
+  rank: number;
 }
 
 /**
@@ -36,7 +36,6 @@ export function computePersonaScores(
   totalCategories: number
 ): Map<string, PersonaNodeScore> {
   // Theoretical max = totalCategories × 100
-  // A node that participates in every category at +100 would score totalCategories × 100
   const theoreticalMax = Math.max(totalCategories * 100, 1); // avoid /0
 
   // Step 1: Accumulate raw scores per node
@@ -45,47 +44,135 @@ export function computePersonaScores(
 
   for (const conn of connections) {
     const w = weights.get(conn.type_id) ?? 0;
-    if (w === 0) continue; // neutral categories don't affect score
-
+    // Even zero-weight connections contribute to the score (they don't change it,
+    // but the node needs to appear in the result set)
     rawScores.set(conn.source_nord_id, (rawScores.get(conn.source_nord_id) ?? 0) + w);
     rawScores.set(conn.target_nord_id, (rawScores.get(conn.target_nord_id) ?? 0) + w);
   }
 
-  // Step 2: Normalize and compute visual properties
+  // Step 2: Normalize scores and compute percentile ranks
+  const entries = [...rawScores.entries()].map(([id, raw]) => {
+    const clamped = Math.max(-theoreticalMax, Math.min(theoreticalMax, raw));
+    const normalized = clamped / theoreticalMax;  // -1..+1
+    return { id, normalized };
+  });
+
+  // Sort ascending by score so rank 0 = lowest, rank 1 = highest
+  entries.sort((a, b) => a.normalized - b.normalized);
+
   const result = new Map<string, PersonaNodeScore>();
+  const count = entries.length;
 
-  for (const [nordId, rawScore] of rawScores.entries()) {
-    // Clamp to theoretical range and normalize to -1..+1
-    const clamped = Math.max(-theoreticalMax, Math.min(theoreticalMax, rawScore));
-    const normalized = clamped / theoreticalMax;
+  for (let i = 0; i < count; i++) {
+    const { id, normalized } = entries[i];
+    const rank = count > 1 ? i / (count - 1) : 0.5;
 
-    result.set(nordId, scoreToVisuals(normalized));
+    result.set(id, {
+      score: normalized,
+      heatColor: scoreToHeatColor(normalized),
+      rank,
+    });
   }
 
   return result;
 }
 
 /**
- * Convert a normalized score (-1..+1) to visual properties.
+ * Convert a normalized score (-1..+1) to a heatmap color.
  *
- * Positive (0 → +1): colored, opacity 50% → 100%
- * Negative (-1 → 0): grayscale, opacity 50% → 100%
+ * Uses HSL interpolation through the warm spectrum:
+ *   +1.0 → HSL(142, 71%, 45%) — green
+ *    0.0 → HSL(48, 96%, 53%)  — gold/yellow
+ *   -1.0 → HSL(0, 84%, 60%)   — red
  *
- * The zero crossing creates a clear visual break:
- *   colored at 50% opacity  ←→  gray at 100% opacity
+ * The midpoint is gold (not lime) to give better visual separation.
  */
-export function scoreToVisuals(normalized: number): PersonaNodeScore {
-  if (normalized >= 0) {
-    return {
-      score: normalized,
-      opacity: 0.5 + 0.5 * normalized,  // 0.5 → 1.0
-      grayscale: 0,                       // full color
-    };
+export function scoreToHeatColor(normalized: number): string {
+  // Map -1..+1 to 0..1 for interpolation
+  const t = (normalized + 1) / 2; // 0 = red, 0.5 = yellow, 1.0 = green
+
+  // Piecewise HSL interpolation for a clean green→yellow→red gradient
+  let h: number, s: number, l: number;
+
+  if (t >= 0.5) {
+    // Yellow → Green (t: 0.5 → 1.0)
+    const p = (t - 0.5) * 2; // 0..1
+    h = 48 + p * (142 - 48);   // 48 → 142
+    s = 96 - p * (96 - 71);    // 96% → 71%
+    l = 53 - p * (53 - 45);    // 53% → 45%
   } else {
-    return {
-      score: normalized,
-      opacity: 0.5 + 0.5 * Math.abs(normalized),  // 0.5 → 1.0
-      grayscale: 1,                                 // full gray
-    };
+    // Red → Yellow (t: 0.0 → 0.5)
+    const p = t * 2; // 0..1
+    h = 0 + p * 48;            // 0 → 48
+    s = 84 + p * (96 - 84);    // 84% → 96%
+    l = 60 - p * (60 - 53);    // 60% → 53%
   }
+
+  return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
+}
+
+/**
+ * Compute radial positions for the persona heatmap.
+ *
+ * Places nodes in a radial layout around a center point:
+ *   - Highest-scored nodes are closest to center
+ *   - Lowest-scored nodes are furthest from center
+ *   - Uses golden angle distribution for even spacing
+ *   - Averaged "All Lines" positions inform angular placement for spatial continuity
+ *
+ * @param scores Per-node scores from computePersonaScores
+ * @param averagedPositions Current averaged positions (for angular hints)
+ * @param center Center point (persona avatar position)
+ * @param minRadius Inner ring radius (highest score nodes)
+ * @param maxRadius Outer ring radius (lowest score nodes)
+ */
+export function computeRadialPositions(
+  scores: Map<string, PersonaNodeScore>,
+  averagedPositions: Map<string, { x: number; y: number }>,
+  center: { x: number; y: number },
+  minRadius: number = 200,
+  maxRadius: number = 900,
+): Map<string, { x: number; y: number }> {
+  // Sort nodes by score descending (highest first → closest to center)
+  const sorted = [...scores.entries()].sort((a, b) => b[1].score - a[1].score);
+
+  // Compute centroid of averaged positions for angular reference
+  let cx = 0, cy = 0, count = 0;
+  for (const pos of averagedPositions.values()) {
+    cx += pos.x;
+    cy += pos.y;
+    count++;
+  }
+  if (count > 0) { cx /= count; cy /= count; }
+
+  const result = new Map<string, { x: number; y: number }>();
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // ~137.5° — optimal packing
+
+  for (let i = 0; i < sorted.length; i++) {
+    const [nodeId, nodeScore] = sorted[i];
+
+    // Radius: lerp from min → max based on inverse rank
+    // rank 1.0 (highest) → minRadius, rank 0.0 (lowest) → maxRadius
+    const radius = minRadius + (1 - nodeScore.rank) * (maxRadius - minRadius);
+
+    // Angle: use golden angle distribution for even coverage,
+    // but bias by the node's original angular position for spatial continuity
+    const avgPos = averagedPositions.get(nodeId);
+    let baseAngle: number;
+
+    if (avgPos) {
+      // Use original angle as a starting hint, but offset by golden angle per rank
+      const originalAngle = Math.atan2(avgPos.y - cy, avgPos.x - cx);
+      baseAngle = originalAngle + (i * goldenAngle * 0.3); // gentle spiral from original angle
+    } else {
+      baseAngle = i * goldenAngle;
+    }
+
+    result.set(nodeId, {
+      x: center.x + radius * Math.cos(baseAngle),
+      y: center.y + radius * Math.sin(baseAngle),
+    });
+  }
+
+  return result;
 }

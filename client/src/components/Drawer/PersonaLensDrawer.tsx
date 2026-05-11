@@ -101,7 +101,7 @@ export function PersonaLensDrawer({
           <div className="persona-lens-drawer__field">
             <label className="persona-lens-drawer__label">Category Weights</label>
             <p className="persona-lens-drawer__hint">
-              Positive weights pull nodes closer. Negative weights push them apart.
+              Adjust how this persona values each category. Positive = green &amp; close. Negative = red &amp; far.
             </p>
             <div className="persona-lens-drawer__sliders">
               {connectionTypes.map(ct => {

@@ -29,6 +29,59 @@
   cursor: grabbing;
 }
 
+/* ── Persona Center Node (avatar at radial origin) ── */
+.persona-center-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.persona-center-node__ring {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--accent, #3d4f7c);
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 30px rgba(100, 140, 255, 0.15),
+    0 0 60px rgba(100, 140, 255, 0.08);
+  animation: persona-center-pulse 3s ease-in-out infinite;
+}
+
+.persona-center-node__avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.persona-center-node__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #a0aec0);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+@keyframes persona-center-pulse {
+  0%, 100% { box-shadow: 0 0 30px rgba(100, 140, 255, 0.15), 0 0 60px rgba(100, 140, 255, 0.08); }
+  50% { box-shadow: 0 0 40px rgba(100, 140, 255, 0.25), 0 0 80px rgba(100, 140, 255, 0.12); }
+}
+
+/* ── Heatmap card backgrounds ── */
+/* The card background color is set via --persona-heat-color from NordNode.
+   CSS transition handles smooth color animation when sliders change. */
+.nords-canvas--persona .nords-node {
+  transition: background-color 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+  background-color: var(--persona-heat-color, var(--nords-color-surface)) !important;
+  border-color: color-mix(in srgb, var(--persona-heat-color, transparent) 40%, transparent) !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--persona-heat-color, transparent) 20%, transparent);
+}
+
 /* ═══════════════════════════════════════════════ */
 /* UNANCHORED STICKIES — top-left flow             */
 /* ═══════════════════════════════════════════════ */

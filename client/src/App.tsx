@@ -224,6 +224,12 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         graph={graph}
         refetchGraph={refetch}
         personaWeights={effectiveWeights}
+        activePersona={activePersona ? {
+          id: activePersona.id,
+          name: activePersona.name,
+          avatar_seed: activePersona.avatar_seed,
+          accent_color: activePersona.accent_color,
+        } : null}
       />
       {/* Persona Lens Drawer — shown when viewing through a persona */}
       {lens === 'persona' && (
