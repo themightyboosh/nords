@@ -1,13 +1,12 @@
 /**
- * PersonaZoneNode — Renders a circular bias-indicator zone behind the radial layout.
+ * PersonaZoneNode — Renders a circular ring behind the persona radial layout.
  *
- * Two instances are placed at the center of the persona layout:
- *   1. Red zone (bottom layer)  — radius covers ALL nords (score -100 to +100)
- *   2. Green zone (top of red)  — radius covers positive-bias nords (score 0 to +100)
- *      The green circle has a 2px white border to clearly delineate the
- *      positive/negative bias boundary.
+ * Multiple instances are stacked concentrically (outermost → innermost).
+ * Each ring represents a category weight level, colored on a
+ * green→blue→red gradient. Inner rings cover the center of outer rings,
+ * creating visible color bands.
  *
- * Uses flat solid colors at low opacity — no gradients.
+ * The ring closest to weight=0 gets a 2px white border.
  */
 
 import React, { memo } from 'react';
@@ -16,9 +15,9 @@ import type { NodeProps } from '@xyflow/react';
 interface PersonaZoneData {
   /** Radius of the circle in px */
   radius: number;
-  /** CSS color — should be a dark, muted tone (e.g. '#7f1d1d', '#14532d') */
+  /** CSS color — hsla() with alpha baked in */
   color: string;
-  /** If true, add a 2px white border (used for the green zone) */
+  /** If true, add a 2px white border (weight=0 boundary) */
   showBorder?: boolean;
 }
 
@@ -33,8 +32,7 @@ export const PersonaZoneNode = memo(({ data }: NodeProps<PersonaZoneData>) => {
         height: `${diameter}px`,
         borderRadius: '50%',
         background: data.color,
-        opacity: 0.18,
-        border: data.showBorder ? '2px solid rgba(255, 255, 255, 0.8)' : 'none',
+        border: data.showBorder ? '2px solid rgba(255, 255, 255, 0.7)' : 'none',
         boxSizing: 'border-box',
         pointerEvents: 'none',
         transition: 'width 600ms cubic-bezier(0.25,0.46,0.45,0.94), height 600ms cubic-bezier(0.25,0.46,0.45,0.94)',

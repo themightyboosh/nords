@@ -1,109 +1,182 @@
 /**
- * computePersonaScores — Per-node relevance scoring for the Persona Lens.
+ * Persona Lens — Scoring & Radial Layout
  *
- * SCORING MODEL:
- *   Each connection contributes its type's persona weight to both endpoints.
- *   Node score = average persona-weight across all connections.
- *   Unset type weights default to 0.
+ * SCORING:  Sum the persona weight of each UNIQUE connection type touching
+ *           a node, then normalize the raw sums across all nodes to [-1,+1].
  *
- *   score range: -100 to +100, normalized to [-1, +1]
- *
- * LAYOUT MODEL (direct score → radius mapping):
- *   +1.0 (score +100) → innerRadius  (closest to center avatar)
- *    0.0 (score 0)    → neutralRadius (green circle perimeter)
- *   -1.0 (score -100) → outerRadius  (red circle perimeter)
- *
- *   Nodes at similar scores form "orbits" distributed evenly around
- *   the circumference. If an orbit has too many nodes, the radius
- *   expands and subsequent orbits shift outward to maintain gaps.
+ * LAYOUT:   Category rings (one per unique weight level) as concentric
+ *           background circles, colored green→blue→red. Nodes placed at
+ *           radii proportional to their normalized score.
  */
 
 import type { Connection } from '../hooks/useProjectGraph';
 
+// ── Public types ──
+
 export interface PersonaNodeScore {
-  /** Normalized score: -1.0 to +1.0 */
-  score: number;
-  /** Rank 0.0 (lowest score) → 1.0 (highest score) */
-  rank: number;
+  score: number;   // normalized [-1, +1]
+  rank: number;    // 0 (lowest) → 1 (highest)
+}
+
+export interface CategoryRing {
+  labels: string[];    // category name(s) sharing this ring
+  weight: number;      // persona weight for this ring
+  radius: number;      // outer radius of the filled circle
+  color: string;       // CSS background color (semi-transparent)
+  showBorder: boolean; // true for the ring closest to weight=0
 }
 
 export interface RadialLayoutResult {
   positions: Map<string, { x: number; y: number }>;
-  /** Red zone radius — outermost boundary, where score -100 sits */
   maxRadius: number;
-  /** Green zone radius — where score 0 sits */
   neutralRadius: number;
+  rings: CategoryRing[];
 }
 
-/**
- * Score every node by averaging the persona weights of its connections.
- * Unset weights default to 0.
- */
+export interface CategoryInfo {
+  name: string;
+  weight: number;
+}
+
+// ── Scoring ──
+
 export function computePersonaScores(
   connections: Connection[],
   weights: Map<string, number>,
   _totalCategories: number,
 ): Map<string, PersonaNodeScore> {
-  const sums = new Map<string, number>();
-  const counts = new Map<string, number>();
-
+  // Collect unique connection types per node
+  const nodeTypes = new Map<string, Set<string>>();
   for (const conn of connections) {
-    const w = weights.get(conn.type_id) ?? 0; // unset = 0
     for (const nid of [conn.source_nord_id, conn.target_nord_id]) {
-      sums.set(nid, (sums.get(nid) ?? 0) + w);
-      counts.set(nid, (counts.get(nid) ?? 0) + 1);
+      if (!nodeTypes.has(nid)) nodeTypes.set(nid, new Set());
+      nodeTypes.get(nid)!.add(conn.type_id);
     }
   }
 
+  // Raw score = SUM of unique type weights
+  const rawScores = new Map<string, number>();
+  for (const [nid, typeIds] of nodeTypes) {
+    let sum = 0;
+    for (const tid of typeIds) sum += weights.get(tid) ?? 0;
+    rawScores.set(nid, sum);
+  }
+
+  // Normalize to [-1, +1]
+  let minRaw = Infinity, maxRaw = -Infinity;
+  for (const v of rawScores.values()) {
+    if (v < minRaw) minRaw = v;
+    if (v > maxRaw) maxRaw = v;
+  }
+  const range = maxRaw - minRaw || 1;
+
+  const result = new Map<string, PersonaNodeScore>();
   const entries: Array<{ id: string; score: number }> = [];
-  for (const [id, s] of sums) {
-    const avg = s / (counts.get(id) || 1);          // [-100, +100]
-    const norm = Math.max(-1, Math.min(1, avg / 100)); // [-1, +1]
+
+  for (const [id, raw] of rawScores) {
+    const norm = ((raw - minRaw) / range) * 2 - 1;   // [-1, +1]
     entries.push({ id, score: norm });
   }
 
   entries.sort((a, b) => a.score - b.score);
   const n = entries.length;
-  const result = new Map<string, PersonaNodeScore>();
   for (let i = 0; i < n; i++) {
     result.set(entries[i].id, {
       score: entries[i].score,
       rank: n > 1 ? i / (n - 1) : 0.5,
     });
   }
+
   return result;
 }
 
-/**
- * Place nodes radially: score maps directly to orbit radius.
- *
- * Algorithm:
- *  1. Group nodes into orbit bands by score (band width ≈ 0.15).
- *  2. Compute an ideal radius per band via linear interpolation
- *     from score to [innerRadius, outerRadius].
- *  3. Walk bands from highest score → lowest, ensuring each orbit
- *     is large enough for its node count and separated from the
- *     previous orbit by at least `bandGap`.
- *  4. Distribute nodes evenly around each orbit.
- *  5. Derive zone circle radii from the actual layout.
- */
+// ── Color helpers ──
+
+/** Map a persona weight to a color: +100→green, 0→blue, -100→red */
+function weightToColor(weight: number, alpha = 0.2): string {
+  let hue: number;
+  if (weight >= 0) {
+    // green (140°) → blue (220°)
+    hue = 140 + ((100 - weight) / 100) * 80;
+  } else {
+    // blue (220°) → red (360°)
+    hue = 220 + ((-weight) / 100) * 140;
+  }
+  return `hsla(${Math.round(hue)}, 45%, 22%, ${alpha})`;
+}
+
+// ── Radial layout ──
+
 export function computeRadialPositions(
   scores: Map<string, PersonaNodeScore>,
-  _avgPos: Map<string, { x: number; y: number }>,
+  categories: CategoryInfo[],
   center: { x: number; y: number },
   cardWidth = 270,
   cardHeight = 120,
 ): RadialLayoutResult {
   const total = scores.size;
-  if (total === 0) return { positions: new Map(), maxRadius: 0, neutralRadius: 0 };
+  if (total === 0) {
+    return { positions: new Map(), maxRadius: 0, neutralRadius: 0, rings: [] };
+  }
 
-  // ── constants ──
-  const innerRadius = 200;                   // avatar clearance
-  const arcSpacing  = cardWidth + 30;        // gap between card centers on arc
-  const bandGap     = cardHeight + 40;       // min radial gap between orbits
-  const BAND_W      = 0.15;                  // score width per band (~15 pts)
+  // ── Layout constants ──
+  const innerRadius = 200;
+  const arcSpacing  = cardWidth + 30;
+  const bandGap     = cardHeight + 40;
+  const BAND_W      = 0.15;
 
-  // ── 1. bucket nodes into orbit bands ──
+  // ── Build category rings ──
+  // Group categories by weight (merge same-bias), sort high→low
+  const weightGroups = new Map<number, string[]>();
+  for (const c of categories) {
+    const w = c.weight;
+    if (!weightGroups.has(w)) weightGroups.set(w, []);
+    weightGroups.get(w)!.push(c.name);
+  }
+  const sortedWeights = [...weightGroups.keys()].sort((a, b) => b - a); // high first
+  const ringCount = sortedWeights.length || 1;
+
+  // Radial span: enough for all orbit bands + breathing room
+  const minSpanForBands = Math.max(8, total) * bandGap * 0.3;
+  const span = Math.max(600, minSpanForBands);
+  const outerRadius = innerRadius + span;
+
+  // Build ring definitions — equidistant, from inner to outer
+  // Each ring's radius = its outer boundary (filled circle from center)
+  const ringStep = span / ringCount;
+  const rings: CategoryRing[] = [];
+
+  // Find which ring is closest to weight=0 for the border
+  const closestToZeroIdx = sortedWeights.length > 0
+    ? sortedWeights.reduce((best, w, i) =>
+        Math.abs(w) < Math.abs(sortedWeights[best]) ? i : best, 0)
+    : -1;
+
+  for (let i = 0; i < ringCount; i++) {
+    const w = sortedWeights[i];
+    const labels = weightGroups.get(w) || [];
+    // Ring i=0 is innermost (highest weight), i=ringCount-1 is outermost
+    const radius = innerRadius + ringStep * (i + 1);
+    rings.push({
+      labels,
+      weight: w,
+      radius,
+      color: weightToColor(w, 0.18),
+      showBorder: i === closestToZeroIdx,
+    });
+  }
+
+  // ── Score → target radius ──
+  // +1 → innerRadius, -1 → outerRadius (linear)
+  const scoreToRadius = (s: number): number => {
+    const t = (1 - s) / 2;   // 0 at +1, 0.5 at 0, 1.0 at -1
+    return innerRadius + t * span;
+  };
+
+  // Neutral radius (where score=0 maps)
+  const neutralRadius = scoreToRadius(0);
+
+  // ── Group nodes into orbit bands ──
   const bandMap = new Map<number, string[]>();
   for (const [id, { score }] of scores) {
     const key = Math.round(score / BAND_W) * BAND_W;
@@ -111,36 +184,24 @@ export function computeRadialPositions(
     bandMap.get(key)!.push(id);
   }
 
-  // Sort bands high→low (center→edge)
   const bands = [...bandMap.entries()]
     .sort((a, b) => b[0] - a[0])
     .map(([score, ids]) => ({ score, ids }));
 
-  // ── 2. compute ideal span ──
-  // Span must be large enough that the largest band fits at its ideal radius
-  // and all bands have room between them.
-  const minSpanForBands = bands.length * bandGap;
-  const span = Math.max(800, minSpanForBands, total * 14);
-  const outerIdeal = innerRadius + span;
+  // ── Assign orbit radii ──
+  let prevR = 0;
+  const orbitRadii: number[] = [];
 
-  // Ideal score→radius: +1→innerRadius, 0→mid, -1→outerIdeal
-  const idealRadius = (s: number) => innerRadius + ((1 - s) / 2) * span;
-
-  // ── 3. walk bands, assign actual orbit radii ──
-  let prevR = 0;                             // track last used radius
-  const orbitRadii: number[] = [];           // actual radius per band
-
-  for (let b = 0; b < bands.length; b++) {
-    const { score, ids } = bands[b];
-    const fitR   = (ids.length * arcSpacing) / (2 * Math.PI);
-    const ideal  = idealRadius(score);
-    const minR   = prevR > 0 ? prevR + bandGap : innerRadius;
+  for (const band of bands) {
+    const fitR  = (band.ids.length * arcSpacing) / (2 * Math.PI);
+    const ideal = scoreToRadius(band.score);
+    const minR  = prevR > 0 ? prevR + bandGap : innerRadius;
     const actual = Math.max(ideal, fitR, minR);
     orbitRadii.push(actual);
     prevR = actual;
   }
 
-  // ── 4. place nodes ──
+  // ── Place nodes ──
   const positions = new Map<string, { x: number; y: number }>();
   const halfW = cardWidth / 2;
   const halfH = cardHeight / 2;
@@ -149,7 +210,7 @@ export function computeRadialPositions(
     const { ids } = bands[b];
     const r = orbitRadii[b];
     const slotAngle = (2 * Math.PI) / ids.length;
-    const offset = b * 0.4;                  // deterministic angular jitter
+    const offset = b * 0.4;
 
     for (let j = 0; j < ids.length; j++) {
       const a = offset + j * slotAngle;
@@ -160,35 +221,10 @@ export function computeRadialPositions(
     }
   }
 
-  // ── 5. derive zone radii ──
-  const lastR = orbitRadii[orbitRadii.length - 1] || innerRadius;
-  const diag  = Math.sqrt(cardWidth ** 2 + cardHeight ** 2);
-  const maxRadius = lastR + diag / 2 + 50;  // red circle edge
+  // ── Max radius ──
+  const lastR = orbitRadii.length > 0 ? orbitRadii[orbitRadii.length - 1] : outerRadius;
+  const diag = Math.sqrt(cardWidth ** 2 + cardHeight ** 2);
+  const maxRadius = Math.max(lastR, outerRadius) + diag / 2 + 50;
 
-  // Green circle: interpolate where score=0 falls among the actual orbits
-  let neutralRadius: number;
-  const allPositive = bands.every(b => b.score > 0);
-  const allNegative = bands.every(b => b.score <= 0);
-
-  if (allPositive) {
-    neutralRadius = maxRadius;               // everything positive → green covers all
-  } else if (allNegative) {
-    neutralRadius = innerRadius * 0.6;       // everything negative → tiny green
-  } else {
-    // Find the boundary where score crosses 0
-    let found = false;
-    for (let i = 0; i < bands.length - 1; i++) {
-      if (bands[i].score >= 0 && bands[i + 1].score < 0) {
-        const s1 = bands[i].score, s2 = bands[i + 1].score;
-        const r1 = orbitRadii[i], r2 = orbitRadii[i + 1];
-        const t = (0 - s1) / (s2 - s1);
-        neutralRadius = r1 + t * (r2 - r1);
-        found = true;
-        break;
-      }
-    }
-    if (!found) neutralRadius = (innerRadius + lastR) / 2;
-  }
-
-  return { positions, maxRadius, neutralRadius: neutralRadius! };
+  return { positions, maxRadius, neutralRadius, rings };
 }

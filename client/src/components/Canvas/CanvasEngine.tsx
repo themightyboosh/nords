@@ -33,7 +33,7 @@ import { useSpatialAnimations } from '../../hooks/useSpatialAnimations';
 import { useLensLayout } from '../../hooks/useLensLayout';
 import ZoomControls from './ZoomControls';
 import { computePersonaScores, computeRadialPositions } from '../../utils/computePersonaScores';
-import type { RadialLayoutResult } from '../../utils/computePersonaScores';
+import type { RadialLayoutResult, CategoryInfo } from '../../utils/computePersonaScores';
 import { PersonaCenterNode } from './PersonaCenterNode';
 import { PersonaZoneNode } from './PersonaZoneNode';
 import './CanvasEngine.css';
@@ -131,20 +131,20 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     return computePersonaScores(graph.connections, personaWeights, totalCategories);
   }, [isPersonaMode, personaWeights, graph]);
 
-  // Compute radial target positions + zone radii for animated transitions
+  // Build category info for ring rendering
+  const personaCategories = useMemo((): CategoryInfo[] => {
+    if (!graph || !personaWeights) return [];
+    return graph.connection_types
+      .filter(ct => !ct.is_system)
+      .map(ct => ({ name: ct.name, weight: personaWeights.get(ct.id) ?? 0 }));
+  }, [graph, personaWeights]);
+
+  // Compute radial target positions + zone radii + ring definitions
   const personaLayout = useMemo((): RadialLayoutResult | null => {
     if (!personaScores || !graph) return null;
-
-    // Build averaged positions from current node positions (used as angular hints)
-    const avgPositions = new Map<string, { x: number; y: number }>();
-    for (const n of rfNodes) {
-      avgPositions.set(n.id, { x: n.position.x, y: n.position.y });
-    }
-
-    // Center at origin — ReactFlow will fitView after animation
     const center = { x: 0, y: 0 };
-    return computeRadialPositions(personaScores, avgPositions, center);
-  }, [personaScores, rfNodes, graph]);
+    return computeRadialPositions(personaScores, personaCategories, center);
+  }, [personaScores, personaCategories, graph]);
 
   const personaRadialPositions = personaLayout?.positions ?? null;
 
@@ -174,31 +174,25 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         });
       }
 
-      // Add bias zone indicator circles (red underneath green)
+      // Add category ring circles (outermost first, innermost last = highest zIndex)
       if (personaLayout) {
-        const { maxRadius, neutralRadius } = personaLayout;
-
-        // Red zone — covers entire layout (negative bias region)
-        radialNodes.push({
-          id: '__persona_zone_red__',
-          type: 'personaZoneNode',
-          position: { x: -maxRadius, y: -maxRadius },
-          draggable: false,
-          selectable: false,
-          data: { radius: maxRadius, color: '#7f1d1d' },
-          zIndex: -2,
-        } as any);
-
-        // Green zone — covers positive bias region (on top of red)
-        if (neutralRadius > 0) {
+        const { rings } = personaLayout;
+        // Render from outermost ring to innermost so inner covers outer's center
+        const sortedRings = [...rings].sort((a, b) => b.radius - a.radius);
+        for (let ri = 0; ri < sortedRings.length; ri++) {
+          const ring = sortedRings[ri];
           radialNodes.push({
-            id: '__persona_zone_green__',
+            id: `__persona_ring_${ri}__`,
             type: 'personaZoneNode',
-            position: { x: -neutralRadius, y: -neutralRadius },
+            position: { x: -ring.radius, y: -ring.radius },
             draggable: false,
             selectable: false,
-            data: { radius: neutralRadius, color: '#14532d', showBorder: true },
-            zIndex: -1,
+            data: {
+              radius: ring.radius,
+              color: ring.color,
+              showBorder: ring.showBorder,
+            },
+            zIndex: -(sortedRings.length - ri + 1),
           } as any);
         }
       }
