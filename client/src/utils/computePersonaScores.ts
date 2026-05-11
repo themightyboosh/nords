@@ -1,17 +1,18 @@
 /**
  * computePersonaScores — Per-node relevance scoring for the Persona Lens.
  *
- * For each node, takes the persona's weight for each connection type that
- * links to that node. Each connection type is counted AT MOST ONCE per node
- * (prevents nodes with many connections from getting inflated scores).
+ * For each node, takes the AVERAGE of the persona's weights across the
+ * connection types that actually touch that node. This means:
+ *   - A node connected only via "Blocks" (+100) → score = +100
+ *   - A node connected via "Blocks" (+100) and "Assigned" (-100) → score = 0
+ *   - A node connected via all negative types → score ≈ -100
  *
- * Normalizes by the theoretical max (numCategories × 100) so every node
- * gets a score in [-1.0, +1.0].
+ * The score is then normalized to [-1.0, +1.0] by dividing by 100.
  *
  * Position mapping:
- *   +1.0 → closest to center (highest bias)
+ *   +1.0 → closest to center (highest bias — persona loves these)
  *    0.0 → middle ring (neutral)
- *   -1.0 → outermost ring (lowest / negative bias)
+ *   -1.0 → outermost ring (persona dislikes these)
  */
 
 import type { Connection } from '../hooks/useProjectGraph';
@@ -36,16 +37,14 @@ export interface RadialLayoutResult {
 /**
  * Compute persona relevance scores for all nodes in the graph.
  *
- * Each connection type contributes its weight AT MOST ONCE per node.
- * This prevents nodes with many connections of the same type from getting
- * artificially inflated scores.
+ * Score = AVERAGE weight of the connection types touching this node.
+ * Each connection type contributes at most once per node (deduplicated).
  */
 export function computePersonaScores(
   connections: Connection[],
   weights: Map<string, number>,
-  totalCategories: number
+  _totalCategories: number  // kept for API compat but not used for normalization
 ): Map<string, PersonaNodeScore> {
-  const theoreticalMax = Math.max(totalCategories * 100, 1);
 
   // Track which connection types touch each node (deduplicated)
   const nodeTypes = new Map<string, Set<string>>();
@@ -56,27 +55,33 @@ export function computePersonaScores(
     nodeTypes.get(conn.target_nord_id)!.add(conn.type_id);
   }
 
-  // Score each node: sum of unique connection type weights
-  const entries: Array<{ id: string; normalized: number }> = [];
+  // Score each node: AVERAGE of unique connection type weights
+  const entries: Array<{ id: string; score: number }> = [];
   for (const [nodeId, typeIds] of nodeTypes) {
-    let rawScore = 0;
+    let weightSum = 0;
+    let typeCount = 0;
     for (const typeId of typeIds) {
-      rawScore += weights.get(typeId) ?? 0;
+      const w = weights.get(typeId);
+      if (w !== undefined) {
+        weightSum += w;
+        typeCount++;
+      }
     }
-    const clamped = Math.max(-theoreticalMax, Math.min(theoreticalMax, rawScore));
-    const normalized = clamped / theoreticalMax;
-    entries.push({ id: nodeId, normalized });
+    // Average weight, normalized to [-1, +1]
+    const avgWeight = typeCount > 0 ? weightSum / typeCount : 0;
+    const normalized = Math.max(-1, Math.min(1, avgWeight / 100));
+    entries.push({ id: nodeId, score: normalized });
   }
 
-  entries.sort((a, b) => a.normalized - b.normalized);
+  entries.sort((a, b) => a.score - b.score);
 
   const result = new Map<string, PersonaNodeScore>();
   const count = entries.length;
 
   for (let i = 0; i < count; i++) {
-    const { id, normalized } = entries[i];
+    const { id, score } = entries[i];
     const rank = count > 1 ? i / (count - 1) : 0.5;
-    result.set(id, { score: normalized, rank });
+    result.set(id, { score, rank });
   }
 
   return result;
