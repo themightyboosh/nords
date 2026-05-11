@@ -19504,3 +19504,6 @@ ApiError: Failed to update connection
 10:58:13.323 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T14:57:40.321Z","userId":"dev-user-000"}
 10:58:13.324 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T14:57:40.321Z","userId":"dev-user-000"}
 10:58:13.325 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}
+11:10:55.281 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:10:55.319 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO persona_category_weights (persona_id, connection_type_id, weight)\n  ","duration":180,"rows":1}
+11:10:55.320 [32minfo[39m: PUT /api/personas/ef9570b6-67fb-48f5-ad1d-c9a5cb70f743/weights/d4ec08c6-386f-407e-8edc-03e2d6bd03e1 200 {"service":"nords-server","method":"PUT","path":"/api/personas/ef9570b6-67fb-48f5-ad1d-c9a5cb70f743/weights/d4ec08c6-386f-407e-8edc-03e2d6bd03e1","status":200,"duration":"181ms","bytes":"170"}
