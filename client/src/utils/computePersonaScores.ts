@@ -20,6 +20,16 @@ export interface PersonaNodeScore {
   rank: number;
 }
 
+/** Layout result from computeRadialPositions */
+export interface RadialLayoutResult {
+  /** Per-node positions (top-left coords, ReactFlow convention) */
+  positions: Map<string, { x: number; y: number }>;
+  /** Radius of the outermost ring — red zone boundary (all nodes fit inside) */
+  maxRadius: number;
+  /** Radius where score ≈ 0 — green zone boundary (positive-bias nodes inside) */
+  neutralRadius: number;
+}
+
 /**
  * Compute persona relevance scores for all nodes in the graph.
  */
@@ -66,8 +76,9 @@ export function computePersonaScores(
  * into expanding concentric rings. Ring radius is determined dynamically
  * to prevent card overlap.
  *
- * Card positions are returned as top-left coordinates (ReactFlow convention).
- * The card's visual center is at (x + cardW/2, y + cardH/2).
+ * Also computes zone radii for the bias indicator circles:
+ *  - maxRadius:     outermost ring + padding (red zone)
+ *  - neutralRadius: ring where score transitions from positive to negative (green zone)
  */
 export function computeRadialPositions(
   scores: Map<string, PersonaNodeScore>,
@@ -75,10 +86,12 @@ export function computeRadialPositions(
   center: { x: number; y: number },
   cardWidth: number = 270,
   cardHeight: number = 120,
-): Map<string, { x: number; y: number }> {
+): RadialLayoutResult {
   const sorted = [...scores.entries()].sort((a, b) => b[1].score - a[1].score);
   const totalNodes = sorted.length;
-  if (totalNodes === 0) return new Map();
+  if (totalNodes === 0) {
+    return { positions: new Map(), maxRadius: 0, neutralRadius: 0 };
+  }
 
   // Fixed ring spacing — enough to clear card height + breathing room
   const ringSpacing = cardHeight + 80; // 200px between rings
@@ -96,7 +109,7 @@ export function computeRadialPositions(
     ringIdx++;
   }
 
-  const result = new Map<string, { x: number; y: number }>();
+  const positions = new Map<string, { x: number; y: number }>();
   let nodeIdx = 0;
   const halfW = cardWidth / 2;
   const halfH = cardHeight / 2;
@@ -106,28 +119,38 @@ export function computeRadialPositions(
 
   let prevRadius = 0;
 
+  // Track which ring each node lands on, and each ring's computed radius
+  const ringRadii: number[] = [];
+  // Track the ring index where score first drops ≤ 0 (transition to negative bias)
+  let neutralRingIdx = -1;
+  let foundNeutral = false;
+
   for (let ring = 0; ring < ringCapacities.length; ring++) {
     const nodesInRing = ringCapacities[ring];
 
     // Radius: must fit all cards at arcSpacing apart around the circumference
     const fitRadius = (nodesInRing * arcSpacing) / (2 * Math.PI);
-    // Also enforce minimum gap from previous ring
     const minRadius = prevRadius + ringSpacing;
     const radius = Math.max(fitRadius, minRadius, innerRadius);
     prevRadius = radius;
+    ringRadii.push(radius);
 
-    // Stagger every other ring by half a slot to prevent radial alignment
     const slotAngle = (2 * Math.PI) / nodesInRing;
     const ringOffset = ring % 2 === 0 ? 0 : slotAngle / 2;
 
     for (let j = 0; j < nodesInRing; j++) {
       if (nodeIdx >= sorted.length) break;
-      const [nodeId] = sorted[nodeIdx];
+      const [nodeId, nodeScore] = sorted[nodeIdx];
+
+      // Detect the first node with score ≤ 0 to mark the neutral boundary
+      if (!foundNeutral && nodeScore.score <= 0) {
+        neutralRingIdx = ring;
+        foundNeutral = true;
+      }
 
       const angle = ringOffset + j * slotAngle;
 
-      // Position is the top-left corner of the card (ReactFlow convention)
-      result.set(nodeId, {
+      positions.set(nodeId, {
         x: center.x + radius * Math.cos(angle) - halfW,
         y: center.y + radius * Math.sin(angle) - halfH,
       });
@@ -136,5 +159,26 @@ export function computeRadialPositions(
     }
   }
 
-  return result;
+  const lastRingRadius = ringRadii[ringRadii.length - 1] || innerRadius;
+  // Pad the max radius to give breathing room beyond the last ring
+  const cardDiag = Math.sqrt(cardWidth * cardWidth + cardHeight * cardHeight);
+  const maxRadius = lastRingRadius + cardDiag / 2 + 40;
+
+  // Green zone: extends to the ring BEFORE the first negative-score ring.
+  // If all scores are positive, green = max. If all negative, green = tiny.
+  let neutralRadius: number;
+  if (!foundNeutral) {
+    // All scores are positive — green covers everything
+    neutralRadius = maxRadius;
+  } else if (neutralRingIdx === 0) {
+    // All scores are ≤ 0 — green is just the avatar clearance
+    neutralRadius = innerRadius * 0.5;
+  } else {
+    // Midpoint between the last positive ring and the first negative ring
+    const prevRing = ringRadii[neutralRingIdx - 1];
+    const nextRing = ringRadii[neutralRingIdx];
+    neutralRadius = (prevRing + nextRing) / 2;
+  }
+
+  return { positions, maxRadius, neutralRadius };
 }

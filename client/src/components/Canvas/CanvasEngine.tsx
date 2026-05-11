@@ -33,12 +33,15 @@ import { useSpatialAnimations } from '../../hooks/useSpatialAnimations';
 import { useLensLayout } from '../../hooks/useLensLayout';
 import ZoomControls from './ZoomControls';
 import { computePersonaScores, computeRadialPositions } from '../../utils/computePersonaScores';
+import type { RadialLayoutResult } from '../../utils/computePersonaScores';
 import { PersonaCenterNode } from './PersonaCenterNode';
+import { PersonaZoneNode } from './PersonaZoneNode';
 import './CanvasEngine.css';
 
 const nodeTypes = {
   nordNode: NordNode,
   personaCenterNode: PersonaCenterNode,
+  personaZoneNode: PersonaZoneNode,
 };
 
 const edgeTypes = {
@@ -128,8 +131,8 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     return computePersonaScores(graph.connections, personaWeights, totalCategories);
   }, [isPersonaMode, personaWeights, graph]);
 
-  // Compute radial target positions for animated transitions
-  const personaRadialPositions = useMemo(() => {
+  // Compute radial target positions + zone radii for animated transitions
+  const personaLayout = useMemo((): RadialLayoutResult | null => {
     if (!personaScores || !graph) return null;
 
     // Build averaged positions from current node positions (used as angular hints)
@@ -142,6 +145,8 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     const center = { x: 0, y: 0 };
     return computeRadialPositions(personaScores, avgPositions, center);
   }, [personaScores, rfNodes, graph]);
+
+  const personaRadialPositions = personaLayout?.positions ?? null;
 
   const lensNodes = useMemo(() => {
     // ── Persona mode: radial layout with native card colors ──
@@ -158,6 +163,35 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
           draggable: false,
           data: { ...n.data },
         });
+      }
+
+      // Add bias zone indicator circles (red underneath green)
+      if (personaLayout) {
+        const { maxRadius, neutralRadius } = personaLayout;
+
+        // Red zone — covers entire layout (negative bias region)
+        radialNodes.push({
+          id: '__persona_zone_red__',
+          type: 'personaZoneNode',
+          position: { x: -maxRadius, y: -maxRadius },
+          draggable: false,
+          selectable: false,
+          data: { radius: maxRadius, color: '#7f1d1d' },
+          zIndex: -2,
+        } as any);
+
+        // Green zone — covers positive bias region (on top of red)
+        if (neutralRadius > 0) {
+          radialNodes.push({
+            id: '__persona_zone_green__',
+            type: 'personaZoneNode',
+            position: { x: -neutralRadius, y: -neutralRadius },
+            draggable: false,
+            selectable: false,
+            data: { radius: neutralRadius, color: '#14532d' },
+            zIndex: -1,
+          } as any);
+        }
       }
 
       // Add center avatar node
@@ -212,7 +246,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       ...n,
       draggable: !connectedIds.has(n.id), // only orphans are draggable
     }));
-  }, [rfNodes, rfEdges, activeConnectionTypeId, isPersonaMode, personaScores, personaRadialPositions, activePersona]);
+  }, [rfNodes, rfEdges, activeConnectionTypeId, isPersonaMode, personaScores, personaRadialPositions, personaLayout, activePersona]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(lensNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(lensEdges);
@@ -262,15 +296,15 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const prevPersonaModeRef = React.useRef(isPersonaMode);
   React.useEffect(() => {
     if (isPersonaMode || prevPersonaModeRef.current !== isPersonaMode) {
-      // Short delay to allow React to reconcile new node positions
+      // Delay to let React reconcile new positions + zone circles
       const timer = setTimeout(() => {
-        fitView({ padding: 0.15, duration: 400 });
-      }, 50);
+        fitView({ padding: 0.08, duration: 500 });
+      }, 80);
       prevPersonaModeRef.current = isPersonaMode;
       return () => clearTimeout(timer);
     }
     prevPersonaModeRef.current = isPersonaMode;
-  }, [isPersonaMode, personaRadialPositions, fitView]);
+  }, [isPersonaMode, personaLayout, fitView]);
 
   React.useEffect(() => {
     setEdges(lensEdges);
