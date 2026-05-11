@@ -902,6 +902,14 @@ const BoardCard = memo(function BoardCard({
       ghost.style.pointerEvents = 'none';
       ghost.style.opacity = '0.92';
 
+      // Helper: remove the ghost from the DOM after browser captures it.
+      // Must survive long enough for Chrome to snapshot it for the drag image.
+      const deferRemove = (el: HTMLElement) => {
+        setTimeout(() => {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        }, 100);
+      };
+
       if (isCloning) {
         const wrapper = document.createElement('div');
         wrapper.style.position = 'absolute';
@@ -926,11 +934,11 @@ const BoardCard = memo(function BoardCard({
         wrapper.appendChild(ghost);
         document.body.appendChild(wrapper);
         e.dataTransfer.setDragImage(wrapper, cardEl.offsetWidth / 2, 20);
-        requestAnimationFrame(() => document.body.removeChild(wrapper));
+        deferRemove(wrapper);
       } else {
         document.body.appendChild(ghost);
         e.dataTransfer.setDragImage(ghost, cardEl.offsetWidth / 2, 20);
-        requestAnimationFrame(() => document.body.removeChild(ghost));
+        deferRemove(ghost);
       }
     }
   }, [card, optionHeld, onDragStart]);
