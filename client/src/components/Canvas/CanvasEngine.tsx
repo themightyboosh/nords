@@ -95,7 +95,9 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   }, [graph]);
 
   // Apply lens dimming: non-active type edges become ghosted
+  // Persona mode: hide all edges — the heatmap focuses on node relevance
   const lensEdges = useMemo(() => {
+    if (isPersonaMode) return [];
     if (!activeConnectionTypeId) return rfEdges;
     return rfEdges.map(e => {
       const isActive = (e.data as any)?._typeId === activeConnectionTypeId;
@@ -110,7 +112,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         zIndex: 0,
       };
     });
-  }, [rfEdges, activeConnectionTypeId]);
+  }, [rfEdges, activeConnectionTypeId, isPersonaMode]);
 
   // ── Node draggability + ghosting by lens ──
   // When a connection type is active:
@@ -154,6 +156,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
           data: {
             ...n.data,
             _personaHeatColor: ps?.heatColor || undefined,
+            _personaTextColor: ps?.textColor || undefined,
           },
         };
       });

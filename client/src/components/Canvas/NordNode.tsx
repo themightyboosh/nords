@@ -30,6 +30,8 @@ interface NordNodeData {
   properties: Array<{ key: string; value: string; color?: string }>;
   /** Persona lens: heatmap background color (green→yellow→red) */
   _personaHeatColor?: string;
+  /** Persona lens: contrast-safe text color for the heatmap background */
+  _personaTextColor?: string;
 }
 
 export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<NordNodeData>) => {
@@ -47,12 +49,12 @@ export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<N
     (a, b) => a === b,
   );
 
-  // Persona lens: heatmap card background color
+  // Persona lens: heatmap card background + contrast-safe text color
   const personaStyle: React.CSSProperties | undefined =
     data._personaHeatColor
       ? {
-          // Override the card background — CSS transition handles animation
           '--persona-heat-color': data._personaHeatColor,
+          '--persona-text-color': data._personaTextColor || '#fff',
         } as React.CSSProperties
       : undefined;
 

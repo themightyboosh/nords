@@ -18,46 +18,37 @@ export interface PersonaNodeScore {
   score: number;
   /** Heatmap background color: green → yellow → red */
   heatColor: string;
+  /** Contrast-safe text color for the heatmap background */
+  textColor: string;
   /** Rank 0.0 (lowest score) → 1.0 (highest score), for radial positioning */
   rank: number;
 }
 
 /**
  * Compute persona relevance scores for all nodes in the graph.
- *
- * @param connections All connections in the project
- * @param weights Map of connectionTypeId → weight (-100 to +100) from persona
- * @param totalCategories Total number of connection categories (for normalization)
- * @returns Map of nordId → PersonaNodeScore
  */
 export function computePersonaScores(
   connections: Connection[],
   weights: Map<string, number>,
   totalCategories: number
 ): Map<string, PersonaNodeScore> {
-  // Theoretical max = totalCategories × 100
-  const theoreticalMax = Math.max(totalCategories * 100, 1); // avoid /0
+  const theoreticalMax = Math.max(totalCategories * 100, 1);
 
-  // Step 1: Accumulate raw scores per node
-  // For each connection, BOTH source and target get the weight of that category
+  // Accumulate raw scores per node
   const rawScores = new Map<string, number>();
-
   for (const conn of connections) {
     const w = weights.get(conn.type_id) ?? 0;
-    // Even zero-weight connections contribute to the score (they don't change it,
-    // but the node needs to appear in the result set)
     rawScores.set(conn.source_nord_id, (rawScores.get(conn.source_nord_id) ?? 0) + w);
     rawScores.set(conn.target_nord_id, (rawScores.get(conn.target_nord_id) ?? 0) + w);
   }
 
-  // Step 2: Normalize scores and compute percentile ranks
+  // Normalize and rank
   const entries = [...rawScores.entries()].map(([id, raw]) => {
     const clamped = Math.max(-theoreticalMax, Math.min(theoreticalMax, raw));
-    const normalized = clamped / theoreticalMax;  // -1..+1
+    const normalized = clamped / theoreticalMax;
     return { id, normalized };
   });
 
-  // Sort ascending by score so rank 0 = lowest, rank 1 = highest
   entries.sort((a, b) => a.normalized - b.normalized);
 
   const result = new Map<string, PersonaNodeScore>();
@@ -66,10 +57,12 @@ export function computePersonaScores(
   for (let i = 0; i < count; i++) {
     const { id, normalized } = entries[i];
     const rank = count > 1 ? i / (count - 1) : 0.5;
+    const { bg, text } = scoreToHeatColors(normalized);
 
     result.set(id, {
       score: normalized,
-      heatColor: scoreToHeatColor(normalized),
+      heatColor: bg,
+      textColor: text,
       rank,
     });
   }
@@ -78,100 +71,135 @@ export function computePersonaScores(
 }
 
 /**
- * Convert a normalized score (-1..+1) to a heatmap color.
+ * Convert a normalized score (-1..+1) to heatmap background + contrast text color.
  *
- * Uses HSL interpolation through the warm spectrum:
- *   +1.0 → HSL(142, 71%, 45%) — green
- *    0.0 → HSL(48, 96%, 53%)  — gold/yellow
- *   -1.0 → HSL(0, 84%, 60%)   — red
+ * Background: green → yellow → red (HSL interpolation)
+ * Text: dark on light backgrounds, light on dark backgrounds
  *
- * The midpoint is gold (not lime) to give better visual separation.
+ * Uses relative luminance to decide text contrast:
+ *   luminance > 0.45 → dark text (#1a1a2e)
+ *   luminance ≤ 0.45 → light text (#fff)
  */
-export function scoreToHeatColor(normalized: number): string {
-  // Map -1..+1 to 0..1 for interpolation
+export function scoreToHeatColors(normalized: number): { bg: string; text: string } {
   const t = (normalized + 1) / 2; // 0 = red, 0.5 = yellow, 1.0 = green
 
-  // Piecewise HSL interpolation for a clean green→yellow→red gradient
   let h: number, s: number, l: number;
 
   if (t >= 0.5) {
-    // Yellow → Green (t: 0.5 → 1.0)
-    const p = (t - 0.5) * 2; // 0..1
-    h = 48 + p * (142 - 48);   // 48 → 142
-    s = 96 - p * (96 - 71);    // 96% → 71%
-    l = 53 - p * (53 - 45);    // 53% → 45%
+    // Yellow → Green
+    const p = (t - 0.5) * 2;
+    h = 48 + p * (142 - 48);
+    s = 96 - p * (96 - 71);
+    l = 53 - p * (53 - 45);
   } else {
-    // Red → Yellow (t: 0.0 → 0.5)
-    const p = t * 2; // 0..1
-    h = 0 + p * 48;            // 0 → 48
-    s = 84 + p * (96 - 84);    // 84% → 96%
-    l = 60 - p * (60 - 53);    // 60% → 53%
+    // Red → Yellow
+    const p = t * 2;
+    h = 0 + p * 48;
+    s = 84 + p * (96 - 84);
+    l = 60 - p * (60 - 53);
   }
 
-  return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
+  const bg = `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
+
+  // Compute relative luminance from HSL to pick text color
+  const luminance = hslToRelativeLuminance(h, s, l);
+  const text = luminance > 0.35 ? '#1a1a2e' : '#ffffff';
+
+  return { bg, text };
 }
 
 /**
- * Compute radial positions for the persona heatmap.
+ * Convert HSL to relative luminance (0-1).
+ * Uses sRGB → linear → WCAG luminance formula.
+ */
+function hslToRelativeLuminance(h: number, s: number, l: number): number {
+  // HSL → RGB
+  const sNorm = s / 100;
+  const lNorm = l / 100;
+  const c = (1 - Math.abs(2 * lNorm - 1)) * sNorm;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = lNorm - c / 2;
+
+  let r = 0, g = 0, b = 0;
+  if (h < 60) { r = c; g = x; b = 0; }
+  else if (h < 120) { r = x; g = c; b = 0; }
+  else if (h < 180) { r = 0; g = c; b = x; }
+  else if (h < 240) { r = 0; g = x; b = c; }
+  else if (h < 300) { r = x; g = 0; b = c; }
+  else { r = c; g = 0; b = x; }
+
+  r += m; g += m; b += m;
+
+  // sRGB → linear
+  const toLinear = (v: number) => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+/**
+ * Compute radial positions using concentric rings.
  *
- * Places nodes in a radial layout around a center point:
- *   - Highest-scored nodes are closest to center
- *   - Lowest-scored nodes are furthest from center
- *   - Uses golden angle distribution for even spacing
- *   - Averaged "All Lines" positions inform angular placement for spatial continuity
+ * Strategy:
+ *   1. Sort nodes by score descending (best → worst)
+ *   2. Assign to concentric rings, each ring holding more nodes than the last
+ *   3. Within each ring, distribute nodes evenly by angle
+ *   4. First ring starts at an angular offset for visual variety
  *
- * @param scores Per-node scores from computePersonaScores
- * @param averagedPositions Current averaged positions (for angular hints)
- * @param center Center point (persona avatar position)
- * @param minRadius Inner ring radius (highest score nodes)
- * @param maxRadius Outer ring radius (lowest score nodes)
+ * Ring capacity follows: ring 0 = 1, ring 1 = 6, ring 2 = 12, ring 3 = 18...
+ * This creates a natural density gradient: high-value nodes are uncrowded,
+ * low-value nodes share space in wider rings.
  */
 export function computeRadialPositions(
   scores: Map<string, PersonaNodeScore>,
-  averagedPositions: Map<string, { x: number; y: number }>,
+  _averagedPositions: Map<string, { x: number; y: number }>,
   center: { x: number; y: number },
-  minRadius: number = 200,
-  maxRadius: number = 900,
+  minRadius: number = 250,
+  maxRadius: number = 1000,
 ): Map<string, { x: number; y: number }> {
-  // Sort nodes by score descending (highest first → closest to center)
   const sorted = [...scores.entries()].sort((a, b) => b[1].score - a[1].score);
+  const totalNodes = sorted.length;
+  if (totalNodes === 0) return new Map();
 
-  // Compute centroid of averaged positions for angular reference
-  let cx = 0, cy = 0, count = 0;
-  for (const pos of averagedPositions.values()) {
-    cx += pos.x;
-    cy += pos.y;
-    count++;
+  // Build ring capacities: [1, 6, 12, 18, 24, ...]
+  // First ring is special (1 node, closest to center)
+  const ringCapacities: number[] = [];
+  let placed = 0;
+  let ringIdx = 0;
+
+  while (placed < totalNodes) {
+    const capacity = ringIdx === 0 ? 1 : ringIdx * 6;
+    ringCapacities.push(Math.min(capacity, totalNodes - placed));
+    placed += capacity;
+    ringIdx++;
   }
-  if (count > 0) { cx /= count; cy /= count; }
 
+  const totalRings = ringCapacities.length;
   const result = new Map<string, { x: number; y: number }>();
-  const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // ~137.5° — optimal packing
+  let nodeIdx = 0;
 
-  for (let i = 0; i < sorted.length; i++) {
-    const [nodeId, nodeScore] = sorted[i];
+  for (let ring = 0; ring < totalRings; ring++) {
+    const nodesInRing = ringCapacities[ring];
 
-    // Radius: lerp from min → max based on inverse rank
-    // rank 1.0 (highest) → minRadius, rank 0.0 (lowest) → maxRadius
-    const radius = minRadius + (1 - nodeScore.rank) * (maxRadius - minRadius);
+    // Radius: lerp between min and max based on ring position
+    const ringT = totalRings > 1 ? ring / (totalRings - 1) : 0;
+    const radius = minRadius + ringT * (maxRadius - minRadius);
 
-    // Angle: use golden angle distribution for even coverage,
-    // but bias by the node's original angular position for spatial continuity
-    const avgPos = averagedPositions.get(nodeId);
-    let baseAngle: number;
+    // Angular offset per ring — stagger rings so nodes don't align radially
+    const ringOffset = ring * 0.4;
 
-    if (avgPos) {
-      // Use original angle as a starting hint, but offset by golden angle per rank
-      const originalAngle = Math.atan2(avgPos.y - cy, avgPos.x - cx);
-      baseAngle = originalAngle + (i * goldenAngle * 0.3); // gentle spiral from original angle
-    } else {
-      baseAngle = i * goldenAngle;
+    for (let j = 0; j < nodesInRing; j++) {
+      if (nodeIdx >= sorted.length) break;
+      const [nodeId] = sorted[nodeIdx];
+
+      // Even angular distribution within the ring
+      const angle = ringOffset + (j / nodesInRing) * Math.PI * 2;
+
+      result.set(nodeId, {
+        x: center.x + radius * Math.cos(angle),
+        y: center.y + radius * Math.sin(angle),
+      });
+
+      nodeIdx++;
     }
-
-    result.set(nodeId, {
-      x: center.x + radius * Math.cos(baseAngle),
-      y: center.y + radius * Math.sin(baseAngle),
-    });
   }
 
   return result;

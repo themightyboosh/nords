@@ -73,13 +73,25 @@
 }
 
 /* ── Heatmap card backgrounds ── */
-/* The card background color is set via --persona-heat-color from NordNode.
+/* --persona-heat-color and --persona-text-color set from NordNode inline styles.
    CSS transition handles smooth color animation when sliders change. */
 .nords-canvas--persona .nords-node {
-  transition: background-color 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+  transition: background-color 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease, color 0.4s ease;
   background-color: var(--persona-heat-color, var(--nords-color-surface)) !important;
-  border-color: color-mix(in srgb, var(--persona-heat-color, transparent) 40%, transparent) !important;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--persona-heat-color, transparent) 20%, transparent);
+  border-color: color-mix(in srgb, var(--persona-heat-color, transparent) 50%, transparent) !important;
+  box-shadow: 0 2px 16px color-mix(in srgb, var(--persona-heat-color, transparent) 25%, transparent);
+  color: var(--persona-text-color, inherit) !important;
+}
+
+/* Force all text descendants to inherit the persona text color */
+.nords-canvas--persona .nords-node * {
+  color: inherit !important;
+}
+
+/* Slightly mute SVG icons to match text */
+.nords-canvas--persona .nords-node svg {
+  stroke: currentColor !important;
+  opacity: 0.8;
 }
 
 /* ═══════════════════════════════════════════════ */
