@@ -32,8 +32,8 @@ import { useSemanticZoom } from '../../hooks/useSemanticZoom';
 import { useSpatialAnimations } from '../../hooks/useSpatialAnimations';
 import { useLensLayout } from '../../hooks/useLensLayout';
 import ZoomControls from './ZoomControls';
-import { computePersonaScores, computeRadialPositions } from '../../utils/computePersonaScores';
-import type { RadialLayoutResult, CategoryInfo } from '../../utils/computePersonaScores';
+import { computePersonaScores, computeRadialPositions, computeNeutralScore } from '../../utils/computePersonaScores';
+import type { RadialLayoutResult } from '../../utils/computePersonaScores';
 import { PersonaCenterNode } from './PersonaCenterNode';
 import { PersonaZoneNode } from './PersonaZoneNode';
 import './CanvasEngine.css';
@@ -131,20 +131,18 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     return computePersonaScores(graph.connections, personaWeights, totalCategories);
   }, [isPersonaMode, personaWeights, graph]);
 
-  // Build category info for ring rendering
-  const personaCategories = useMemo((): CategoryInfo[] => {
-    if (!graph || !personaWeights) return [];
-    return graph.connection_types
-      .filter(ct => !ct.is_system)
-      .map(ct => ({ name: ct.name, weight: personaWeights.get(ct.id) ?? 0 }));
-  }, [graph, personaWeights]);
+  // Compute where raw-sum=0 falls in the normalized score range
+  const neutralScore = useMemo(() => {
+    if (!isPersonaMode || !personaWeights || !graph) return 0;
+    return computeNeutralScore(graph.connections, personaWeights);
+  }, [isPersonaMode, personaWeights, graph]);
 
-  // Compute radial target positions + zone radii + ring definitions
+  // Compute radial target positions + zone radii
   const personaLayout = useMemo((): RadialLayoutResult | null => {
     if (!personaScores || !graph) return null;
     const center = { x: 0, y: 0 };
-    return computeRadialPositions(personaScores, personaCategories, center);
-  }, [personaScores, personaCategories, graph]);
+    return computeRadialPositions(personaScores, neutralScore, center);
+  }, [personaScores, neutralScore, graph]);
 
   const personaRadialPositions = personaLayout?.positions ?? null;
 
@@ -174,25 +172,31 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         });
       }
 
-      // Add category ring circles (outermost first, innermost last = highest zIndex)
+      // Add red + green zone circles
       if (personaLayout) {
-        const { rings } = personaLayout;
-        // Render from outermost ring to innermost so inner covers outer's center
-        const sortedRings = [...rings].sort((a, b) => b.radius - a.radius);
-        for (let ri = 0; ri < sortedRings.length; ri++) {
-          const ring = sortedRings[ri];
+        const { maxRadius, neutralRadius } = personaLayout;
+
+        // Red zone — outermost boundary
+        radialNodes.push({
+          id: '__persona_zone_red__',
+          type: 'personaZoneNode',
+          position: { x: -maxRadius, y: -maxRadius },
+          draggable: false,
+          selectable: false,
+          data: { radius: maxRadius, color: 'hsla(0, 45%, 22%, 0.18)' },
+          zIndex: -2,
+        } as any);
+
+        // Green zone — where raw-sum=0 falls
+        if (neutralRadius > 0) {
           radialNodes.push({
-            id: `__persona_ring_${ri}__`,
+            id: '__persona_zone_green__',
             type: 'personaZoneNode',
-            position: { x: -ring.radius, y: -ring.radius },
+            position: { x: -neutralRadius, y: -neutralRadius },
             draggable: false,
             selectable: false,
-            data: {
-              radius: ring.radius,
-              color: ring.color,
-              showBorder: ring.showBorder,
-            },
-            zIndex: -(sortedRings.length - ri + 1),
+            data: { radius: neutralRadius, color: 'hsla(140, 45%, 22%, 0.18)', showBorder: true },
+            zIndex: -1,
           } as any);
         }
       }

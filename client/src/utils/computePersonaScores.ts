@@ -1,41 +1,26 @@
 /**
- * Persona Lens — Scoring & Radial Layout
+ * Persona Lens — Sum-based Scoring & Simple Radial Layout
  *
  * SCORING:  Sum the persona weight of each UNIQUE connection type touching
- *           a node, then normalize the raw sums across all nodes to [-1,+1].
+ *           a node, then normalize across all nodes to [-1,+1].
  *
- * LAYOUT:   Category rings (one per unique weight level) as concentric
- *           background circles, colored green→blue→red. Nodes placed at
- *           radii proportional to their normalized score.
+ * LAYOUT:   Highest score → closest to center, lowest → outermost.
+ *           Green circle = where raw sum 0 falls (the true neutral).
+ *           Red circle = outermost boundary.
  */
 
 import type { Connection } from '../hooks/useProjectGraph';
 
-// ── Public types ──
-
 export interface PersonaNodeScore {
   score: number;   // normalized [-1, +1]
-  rank: number;    // 0 (lowest) → 1 (highest)
-}
-
-export interface CategoryRing {
-  labels: string[];    // category name(s) sharing this ring
-  weight: number;      // persona weight for this ring
-  radius: number;      // outer radius of the filled circle
-  color: string;       // CSS background color (semi-transparent)
-  showBorder: boolean; // true for the ring closest to weight=0
+  rank: number;
 }
 
 export interface RadialLayoutResult {
   positions: Map<string, { x: number; y: number }>;
   maxRadius: number;
+  /** Radius where raw-sum=0 maps — the true neutral boundary */
   neutralRadius: number;
-  rings: CategoryRing[];
-}
-
-export interface CategoryInfo {
-  name: string;
-  weight: number;
 }
 
 // ── Scoring ──
@@ -62,7 +47,7 @@ export function computePersonaScores(
     rawScores.set(nid, sum);
   }
 
-  // Normalize to [-1, +1]
+  // Find min/max for normalization
   let minRaw = Infinity, maxRaw = -Infinity;
   for (const v of rawScores.values()) {
     if (v < minRaw) minRaw = v;
@@ -70,11 +55,11 @@ export function computePersonaScores(
   }
   const range = maxRaw - minRaw || 1;
 
+  // Normalize to [-1, +1]
   const result = new Map<string, PersonaNodeScore>();
   const entries: Array<{ id: string; score: number }> = [];
-
   for (const [id, raw] of rawScores) {
-    const norm = ((raw - minRaw) / range) * 2 - 1;   // [-1, +1]
+    const norm = ((raw - minRaw) / range) * 2 - 1;
     entries.push({ id, score: norm });
   }
 
@@ -90,93 +75,52 @@ export function computePersonaScores(
   return result;
 }
 
-// ── Color helpers ──
-
-/** Map a persona weight to a color: +100→green, 0→blue, -100→red */
-function weightToColor(weight: number, alpha = 0.2): string {
-  let hue: number;
-  if (weight >= 0) {
-    // green (140°) → blue (220°)
-    hue = 140 + ((100 - weight) / 100) * 80;
-  } else {
-    // blue (220°) → red (360°)
-    hue = 220 + ((-weight) / 100) * 140;
+/**
+ * Where does raw-sum = 0 fall in the normalized [-1, +1] range?
+ * Returns the normalized score that corresponds to a raw sum of 0.
+ */
+export function computeNeutralScore(
+  connections: Connection[],
+  weights: Map<string, number>,
+): number {
+  // Recompute min/max (lightweight — just sums)
+  const nodeTypes = new Map<string, Set<string>>();
+  for (const conn of connections) {
+    for (const nid of [conn.source_nord_id, conn.target_nord_id]) {
+      if (!nodeTypes.has(nid)) nodeTypes.set(nid, new Set());
+      nodeTypes.get(nid)!.add(conn.type_id);
+    }
   }
-  return `hsla(${Math.round(hue)}, 45%, 22%, ${alpha})`;
+  let minRaw = Infinity, maxRaw = -Infinity;
+  for (const [, typeIds] of nodeTypes) {
+    let sum = 0;
+    for (const tid of typeIds) sum += weights.get(tid) ?? 0;
+    if (sum < minRaw) minRaw = sum;
+    if (sum > maxRaw) maxRaw = sum;
+  }
+  const range = maxRaw - minRaw || 1;
+  // Where does raw=0 normalize to?
+  return ((0 - minRaw) / range) * 2 - 1;  // [-1, +1]
 }
 
 // ── Radial layout ──
 
 export function computeRadialPositions(
   scores: Map<string, PersonaNodeScore>,
-  categories: CategoryInfo[],
+  neutralScore: number,
   center: { x: number; y: number },
   cardWidth = 270,
   cardHeight = 120,
 ): RadialLayoutResult {
   const total = scores.size;
-  if (total === 0) {
-    return { positions: new Map(), maxRadius: 0, neutralRadius: 0, rings: [] };
-  }
+  if (total === 0) return { positions: new Map(), maxRadius: 0, neutralRadius: 0 };
 
-  // ── Layout constants ──
   const innerRadius = 200;
-  const arcSpacing  = cardWidth + 30;
-  const bandGap     = cardHeight + 40;
+  const arcSpacing  = cardWidth + 20;
+  const bandGap     = cardHeight + 20;   // tighter spacing
   const BAND_W      = 0.15;
 
-  // ── Build category rings ──
-  // Group categories by weight (merge same-bias), sort high→low
-  const weightGroups = new Map<number, string[]>();
-  for (const c of categories) {
-    const w = c.weight;
-    if (!weightGroups.has(w)) weightGroups.set(w, []);
-    weightGroups.get(w)!.push(c.name);
-  }
-  const sortedWeights = [...weightGroups.keys()].sort((a, b) => b - a); // high first
-  const ringCount = sortedWeights.length || 1;
-
-  // Radial span: enough for all orbit bands + breathing room
-  const minSpanForBands = Math.max(8, total) * bandGap * 0.3;
-  const span = Math.max(600, minSpanForBands);
-  const outerRadius = innerRadius + span;
-
-  // Build ring definitions — equidistant, from inner to outer
-  // Each ring's radius = its outer boundary (filled circle from center)
-  const ringStep = span / ringCount;
-  const rings: CategoryRing[] = [];
-
-  // Find which ring is closest to weight=0 for the border
-  const closestToZeroIdx = sortedWeights.length > 0
-    ? sortedWeights.reduce((best, w, i) =>
-        Math.abs(w) < Math.abs(sortedWeights[best]) ? i : best, 0)
-    : -1;
-
-  for (let i = 0; i < ringCount; i++) {
-    const w = sortedWeights[i];
-    const labels = weightGroups.get(w) || [];
-    // Ring i=0 is innermost (highest weight), i=ringCount-1 is outermost
-    const radius = innerRadius + ringStep * (i + 1);
-    rings.push({
-      labels,
-      weight: w,
-      radius,
-      color: weightToColor(w, 0.18),
-      showBorder: i === closestToZeroIdx,
-    });
-  }
-
-  // ── Score → target radius ──
-  // +1 → innerRadius, -1 → outerRadius (linear)
-  const scoreToRadius = (s: number): number => {
-    const t = (1 - s) / 2;   // 0 at +1, 0.5 at 0, 1.0 at -1
-    return innerRadius + t * span;
-  };
-
-  // Neutral radius (where score=0 maps)
-  const neutralRadius = scoreToRadius(0);
-
-  // ── Group nodes into orbit bands ──
+  // ── Group nodes into orbit bands by score ──
   const bandMap = new Map<number, string[]>();
   for (const [id, { score }] of scores) {
     const key = Math.round(score / BAND_W) * BAND_W;
@@ -185,10 +129,17 @@ export function computeRadialPositions(
   }
 
   const bands = [...bandMap.entries()]
-    .sort((a, b) => b[0] - a[0])
+    .sort((a, b) => b[0] - a[0])       // highest score first (center)
     .map(([score, ids]) => ({ score, ids }));
 
-  // ── Assign orbit radii ──
+  // ── Compute span — compact ──
+  const span = Math.max(500, bands.length * bandGap);
+  const outerRadius = innerRadius + span;
+
+  // Score → ideal radius: +1 → innerRadius, -1 → outerRadius
+  const scoreToRadius = (s: number) => innerRadius + ((1 - s) / 2) * span;
+
+  // ── Assign orbit radii (walk outward) ──
   let prevR = 0;
   const orbitRadii: number[] = [];
 
@@ -221,10 +172,13 @@ export function computeRadialPositions(
     }
   }
 
-  // ── Max radius ──
+  // ── Zone radii ──
   const lastR = orbitRadii.length > 0 ? orbitRadii[orbitRadii.length - 1] : outerRadius;
   const diag = Math.sqrt(cardWidth ** 2 + cardHeight ** 2);
-  const maxRadius = Math.max(lastR, outerRadius) + diag / 2 + 50;
+  const maxRadius = lastR + diag / 2 + 40;
 
-  return { positions, maxRadius, neutralRadius, rings };
+  // Green circle = where neutralScore maps
+  const neutralRadius = scoreToRadius(neutralScore);
+
+  return { positions, maxRadius, neutralRadius };
 }
