@@ -29,7 +29,7 @@ export function useNordMutations(projectId: string | null) {
 
   const updateNord = useCallback(async (
     nordId: string,
-    updates: Partial<Pick<Nord, 'title' | 'description' | 'properties' | 'position_x' | 'position_y' | 'scale'>>
+    updates: Partial<Pick<Nord, 'title' | 'properties' | 'position_x' | 'position_y' | 'scale'>>
   ): Promise<Nord> => {
     return api.put<Nord>(`/api/nords/${nordId}`, updates);
   }, []);
@@ -83,7 +83,7 @@ export function useConnectionMutations(projectId: string | null) {
 export function useConnectionTypeMutations() {
   const updateConnectionType = useCallback(async (
     typeId: string,
-    updates: Partial<{ direction_filter: string; verb: string; name: string; accent_color: string }>
+    updates: Partial<{ direction_filter: string; verb: string; name: string; accent_color: string; measurement_mode: string }>
   ): Promise<unknown> => {
     return api.put(`/api/connection-types/${typeId}`, updates);
   }, []);

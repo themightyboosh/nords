@@ -20,6 +20,19 @@
   border-bottom: none;
 }
 
+/* Required-but-empty validation state */
+.nords-pf--missing {
+  /* label + input border tinting only — no left bar */
+}
+.nords-pf--missing .nords-pf__label {
+  color: #ff8888;
+}
+.nords-pf--missing .nords-pf__input,
+.nords-pf--missing .nords-pf__select,
+.nords-pf--missing .nords-pf__textarea {
+  border-color: rgba(255, 100, 100, 0.3);
+}
+
 .nords-pf__label {
   font-size: 11px;
   font-weight: 500;
@@ -119,7 +132,8 @@
 
 .nords-pf__textarea {
   width: 100%;
-  min-height: 120px;
+  min-height: 160px;
+  max-height: 400px;
   padding: 8px;
   border: 1px solid var(--nords-color-border-default, rgba(255,255,255,0.1));
   border-radius: 6px;

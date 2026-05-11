@@ -50,18 +50,20 @@ export const nordTypesRepo = {
     user_id: string;
     project_id?: string;  // optional — if provided, auto-associate with project
     name: string;
+    description?: string;
     icon?: string;
     accent_color?: string;
     properties_schema?: Record<string, unknown>[];
     scale_property?: string | null;
   }): Promise<NordType> {
     const result = await queryOne<NordType>(
-      `INSERT INTO nord_types (project_id, name, icon, accent_color, properties_schema, scale_property, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6, 0)
+      `INSERT INTO nord_types (project_id, name, description, icon, accent_color, properties_schema, scale_property, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 0)
        RETURNING *`,
       [
         data.project_id || null,
         data.name,
+        data.description || '',
         data.icon || 'Square',
         data.accent_color || '#4da6ff',
         JSON.stringify(data.properties_schema || []),
@@ -71,12 +73,13 @@ export const nordTypesRepo = {
     return result!;
   },
 
-  async update(id: string, updates: Partial<Pick<NordType, 'name' | 'icon' | 'accent_color' | 'properties_schema' | 'scale_property' | 'sort_order'>>): Promise<NordType | null> {
+  async update(id: string, updates: Partial<Pick<NordType, 'name' | 'description' | 'icon' | 'accent_color' | 'properties_schema' | 'scale_property' | 'sort_order'>>): Promise<NordType | null> {
     const setClauses: string[] = [];
     const values: unknown[] = [];
     let idx = 1;
 
     if (updates.name !== undefined) { setClauses.push(`name = $${idx++}`); values.push(updates.name); }
+    if (updates.description !== undefined) { setClauses.push(`description = $${idx++}`); values.push(updates.description); }
     if (updates.icon !== undefined) { setClauses.push(`icon = $${idx++}`); values.push(updates.icon); }
     if (updates.accent_color !== undefined) { setClauses.push(`accent_color = $${idx++}`); values.push(updates.accent_color); }
     if (updates.properties_schema !== undefined) { setClauses.push(`properties_schema = $${idx++}`); values.push(JSON.stringify(updates.properties_schema)); }
@@ -119,13 +122,14 @@ export interface ConnectionType {
   verb: string | null;
   accent_color: string;
   stroke_style: string;
+  default_direction: string;
   direction_filter: string;
   direction_prepositions: {
     forward: string;
     reverse: string;
     both: string;
   };
-  description: string | null;
+  description: string;
   measurement_mode: string;
   x_stage_labels: string[];
   y_stage_labels: string[];
@@ -162,25 +166,31 @@ export const connectionTypesRepo = {
     user_id?: string;
     project_id?: string;
     name: string;
+    description?: string;
     accent_color?: string;
     stroke_style?: string;
+    default_direction?: string;
     verb?: string | null;
     direction_filter?: string;
+    measurement_mode?: string;
     x_stage_labels?: string[];
     y_stage_labels?: string[];
     properties_schema?: Record<string, unknown>[];
   }): Promise<ConnectionType> {
     const result = await queryOne<ConnectionType>(
-      `INSERT INTO connection_types (project_id, name, accent_color, stroke_style, verb, direction_filter, x_stage_labels, y_stage_labels, properties_schema, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 0)
+      `INSERT INTO connection_types (project_id, name, description, accent_color, stroke_style, default_direction, verb, direction_filter, measurement_mode, x_stage_labels, y_stage_labels, properties_schema, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 0)
        RETURNING *`,
       [
         data.project_id || null,
         data.name,
+        data.description || '',
         data.accent_color || '#888888',
         data.stroke_style || 'solid',
+        data.default_direction || 'none',
         data.verb || null,
         data.direction_filter || 'all',
+        data.measurement_mode || 'spectrum',
         JSON.stringify(data.x_stage_labels || []),
         JSON.stringify(data.y_stage_labels || []),
         JSON.stringify(data.properties_schema || []),
@@ -189,16 +199,20 @@ export const connectionTypesRepo = {
     return result!;
   },
 
-  async update(id: string, updates: Partial<Pick<ConnectionType, 'name' | 'verb' | 'accent_color' | 'stroke_style' | 'direction_filter' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>): Promise<ConnectionType | null> {
+  async update(id: string, updates: Partial<Pick<ConnectionType, 'name' | 'description' | 'verb' | 'accent_color' | 'stroke_style' | 'default_direction' | 'direction_filter' | 'direction_prepositions' | 'measurement_mode' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>): Promise<ConnectionType | null> {
     const setClauses: string[] = [];
     const values: unknown[] = [];
     let idx = 1;
 
     if (updates.name !== undefined) { setClauses.push(`name = $${idx++}`); values.push(updates.name); }
+    if (updates.description !== undefined) { setClauses.push(`description = $${idx++}`); values.push(updates.description); }
     if (updates.verb !== undefined) { setClauses.push(`verb = $${idx++}`); values.push(updates.verb); }
     if (updates.accent_color !== undefined) { setClauses.push(`accent_color = $${idx++}`); values.push(updates.accent_color); }
     if (updates.stroke_style !== undefined) { setClauses.push(`stroke_style = $${idx++}`); values.push(updates.stroke_style); }
+    if ((updates as any).default_direction !== undefined) { setClauses.push(`default_direction = $${idx++}`); values.push((updates as any).default_direction); }
     if (updates.direction_filter !== undefined) { setClauses.push(`direction_filter = $${idx++}`); values.push(updates.direction_filter); }
+    if (updates.direction_prepositions !== undefined) { setClauses.push(`direction_prepositions = $${idx++}`); values.push(JSON.stringify(updates.direction_prepositions)); }
+    if (updates.measurement_mode !== undefined) { setClauses.push(`measurement_mode = $${idx++}`); values.push(updates.measurement_mode); }
     if (updates.x_stage_labels !== undefined) { setClauses.push(`x_stage_labels = $${idx++}`); values.push(JSON.stringify(updates.x_stage_labels)); }
     if (updates.y_stage_labels !== undefined) { setClauses.push(`y_stage_labels = $${idx++}`); values.push(JSON.stringify(updates.y_stage_labels)); }
     if (updates.properties_schema !== undefined) { setClauses.push(`properties_schema = $${idx++}`); values.push(JSON.stringify(updates.properties_schema)); }

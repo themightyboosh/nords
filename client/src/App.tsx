@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import '@xyflow/react/dist/style.css';
-import { ReactFlowProvider } from '@xyflow/react';
+import { ReactFlowProvider, useReactFlow } from '@xyflow/react';
 import { AuthProvider } from './context/AuthContext';
 import { LensProvider } from './context/LensContext';
 import { TypeRegistryProvider } from './context/TypeRegistryContext';
@@ -18,6 +18,23 @@ import SignupScreen from './components/Auth/SignupScreen';
 import VerifyEmailScreen from './components/Auth/VerifyEmailScreen';
 import ForgotPasswordScreen from './components/Auth/ForgotPasswordScreen';
 import { ManageTypes } from './components/ManageTypes/ManageTypes';
+import { ManagePersonas } from './components/ManagePersonas/ManagePersonas';
+import { PersonaLensDrawer } from './components/Drawer/PersonaLensDrawer';
+import { BoardSettingsProvider } from './context/BoardSettingsContext';
+import { usePersonas } from './hooks/usePersonas';
+import { useLens } from './context/LensContext';
+
+/**
+ * Safe ReactFlow access — returns null when ReactFlow isn't mounted (e.g. board view).
+ */
+function useOptionalReactFlow() {
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useReactFlow();
+  } catch {
+    return null;
+  }
+}
 
 /**
  * WorkspaceShell — wraps Header + Dock + Canvas for a single project.
@@ -27,12 +44,92 @@ import { ManageTypes } from './components/ManageTypes/ManageTypes';
  */
 function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string, onThemeChange: (theme: string) => void }) {
   const { id: projectId } = useParams<{ id: string }>();
+
+  // Load graph at the shell level so TypeRegistryProvider wraps everything
+  const { graph, refetch } = useProjectGraph(projectId || '');
+  const { personas, updateCategoryWeight } = usePersonas(projectId || '');
+
+  return (
+    <LensProvider projectId={projectId || ''}>
+      <TypeRegistryProvider
+        rawNordTypes={graph?.nord_types || []}
+        rawConnectionTypes={graph?.connection_types || []}
+        rawNords={graph?.nords || []}
+        rawConnections={graph?.connections || []}
+      >
+       <BoardSettingsProvider projectId={projectId || null}>
+        <WorkspaceContent
+          projectId={projectId}
+          graph={graph}
+          refetch={refetch}
+          personas={personas}
+          updateCategoryWeight={updateCategoryWeight}
+          currentTheme={currentTheme}
+          onThemeChange={onThemeChange}
+        />
+       </BoardSettingsProvider>
+      </TypeRegistryProvider>
+    </LensProvider>
+  );
+}
+
+/**
+ * WorkspaceContent — Inner component that lives INSIDE LensProvider
+ * so it can safely call useLens() and access persona/lens state.
+ */
+interface WorkspaceContentProps {
+  projectId?: string;
+  graph: ReturnType<typeof useProjectGraph>['graph'];
+  refetch: () => Promise<void>;
+  personas: ReturnType<typeof usePersonas>['personas'];
+  updateCategoryWeight: ReturnType<typeof usePersonas>['updateCategoryWeight'];
+  currentTheme: string;
+  onThemeChange: (theme: string) => void;
+}
+
+function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryWeight, currentTheme, onThemeChange }: WorkspaceContentProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<{ id: string; type: 'nord' | 'connection' } | null>(null);
   const [manageTypesTab, setManageTypesTab] = useState<'nord' | 'connection' | null>(null);
-  
-  // Load graph at the shell level so TypeRegistryProvider wraps everything
-  const { graph, refetch } = useProjectGraph(projectId || '');
+  const [personasOpen, setPersonasOpen] = useState(false);
+
+  // Safe ReactFlow access — returns null in board view where ReactFlow isn't mounted
+  const reactFlow = useOptionalReactFlow();
+  const { lens, activePersonaId } = useLens();
+
+  // Active persona for the Persona Lens
+  const activePersona = useMemo(() => {
+    return personas.find(p => p.id === activePersonaId) || null;
+  }, [personas, activePersonaId]);
+
+  // Persona weights map for the layout engine
+  const personaWeights = useMemo(() => {
+    if (lens !== 'persona' || !activePersona) return null;
+    const weights = new Map<string, number>();
+    for (const cw of activePersona.category_weights) {
+      weights.set(cw.connection_type_id, cw.weight);
+    }
+    return weights;
+  }, [lens, activePersona]);
+
+  // Live slider state (local, pre-commit)
+  const [liveWeights, setLiveWeights] = useState<Map<string, number> | null>(null);
+  const effectiveWeights = liveWeights || personaWeights;
+
+  const handleWeightChange = useCallback((connectionTypeId: string, weight: number) => {
+    setLiveWeights(prev => {
+      const base = prev || personaWeights || new Map<string, number>();
+      const next = new Map(base);
+      next.set(connectionTypeId, weight);
+      return next;
+    });
+  }, [personaWeights]);
+
+  const handleWeightCommit = useCallback(async (connectionTypeId: string, weight: number) => {
+    if (!activePersonaId) return;
+    await updateCategoryWeight(activePersonaId, connectionTypeId, weight);
+    setLiveWeights(null); // Sync back to persona data
+  }, [activePersonaId, updateCategoryWeight]);
 
   // Build typeSchemas map for DetailDrawer: typeId → PropertySchema[]
   const typeSchemas = useMemo(() => {
@@ -41,6 +138,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
       type: string;
       options?: string[];
       card_row?: number;
+      required?: boolean;
     }>>();
     if (graph) {
       for (const t of graph.nord_types) {
@@ -49,6 +147,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
           type: s.type || 'string',
           options: s.options,
           card_row: s.card_row,
+          required: s.required,
         })));
       }
       for (const t of graph.connection_types) {
@@ -57,6 +156,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
           type: s.type || 'string',
           options: s.options,
           card_row: s.card_row,
+          required: s.required,
         })));
       }
     }
@@ -79,61 +179,90 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
     setIsDrawerOpen(true);
   }, []);
 
+  // Nords tab in connection detail: click a nord row → switch to Nord Mode + center graph
+  const handleSelectNord = useCallback((nordId: string) => {
+    setSelectedEntity({ id: nordId, type: 'nord' });
+    setIsDrawerOpen(true);
+
+    // Center the graph view on the selected nord (graph view only)
+    if (!reactFlow) return;
+    requestAnimationFrame(() => {
+      try {
+        const node = reactFlow!.getNode(nordId);
+        if (node) {
+          const x = node.position.x + (node.measured?.width ?? 200) / 2;
+          const y = node.position.y + (node.measured?.height ?? 60) / 2;
+          reactFlow!.setCenter(x, y, { duration: 400, zoom: reactFlow!.getZoom() });
+        }
+      } catch {
+        // ReactFlow not mounted — ignore
+      }
+    });
+  }, [reactFlow]);
+
   const closeDrawer = () => {
     setIsDrawerOpen(false);
     setSelectedEntity(null);
   };
 
   return (
-    <ReactFlowProvider>
-      <LensProvider projectId={projectId || ''}>
-        <TypeRegistryProvider
-          rawNordTypes={graph?.nord_types || []}
-          rawConnectionTypes={graph?.connection_types || []}
-          rawNords={graph?.nords || []}
-          rawConnections={graph?.connections || []}
-        >
-          <div className="nords-app-container">
-            <ViewportHeader
-              currentTheme={currentTheme}
-              onThemeChange={onThemeChange}
-              onOpenNordTypes={() => setManageTypesTab('nord')}
-              onOpenCategoryTypes={() => setManageTypesTab('connection')}
-              onOpenPersonas={() => { /* placeholder */ }}
-              onOpenSettings={() => { /* placeholder */ }}
-            />
-            <GlobalDock projectId={projectId} refetchGraph={refetch} />
-            <CanvasEngine
-              onNordClick={handleNordClick}
-              onEdgeDoubleClick={handleEdgeDoubleClick}
-              selectedNord={selectedEntity?.type === 'nord' ? selectedEntity.id : null}
-              projectId={projectId}
-              graph={graph}
-              refetchGraph={refetch}
-            />
-            <DetailDrawer
-              isOpen={isDrawerOpen}
-              onClose={closeDrawer}
-              entityId={selectedEntity?.id || null}
-              entityType={selectedEntity?.type || 'nord'}
-              typeSchemas={typeSchemas}
-              onSelectConnection={handleSelectConnection}
-              graph={graph}
-              refetchGraph={refetch}
-            />
-            {manageTypesTab !== null && (
-              <ManageTypes
-                projectId={projectId || ''}
-                open={true}
-                onClose={() => setManageTypesTab(null)}
-                onTypesChanged={refetch}
-                lockedTab={manageTypesTab}
-              />
-            )}
-          </div>
-        </TypeRegistryProvider>
-      </LensProvider>
-    </ReactFlowProvider>
+    <div className="nords-app-container">
+      <ViewportHeader
+        currentTheme={currentTheme}
+        onThemeChange={onThemeChange}
+        onOpenNordTypes={() => setManageTypesTab('nord')}
+        onOpenCategoryTypes={() => setManageTypesTab('connection')}
+        onOpenPersonas={() => setPersonasOpen(true)}
+        onOpenSettings={() => { /* placeholder */ }}
+      />
+      <GlobalDock projectId={projectId} refetchGraph={refetch} graph={graph} personas={personas} />
+      <CanvasEngine
+        onNordClick={lens === 'persona' ? () => {} : handleNordClick}
+        onEdgeDoubleClick={lens === 'persona' ? () => {} : handleEdgeDoubleClick}
+        selectedNord={lens === 'persona' ? null : (selectedEntity?.type === 'nord' ? selectedEntity.id : null)}
+        projectId={projectId}
+        graph={graph}
+        refetchGraph={refetch}
+        personaWeights={effectiveWeights}
+      />
+      {/* Persona Lens Drawer — shown when viewing through a persona */}
+      {lens === 'persona' && (
+        <PersonaLensDrawer
+          isOpen={lens === 'persona' && !!activePersona}
+          onClose={() => {}}
+          persona={activePersona}
+          connectionTypes={(graph?.connection_types || []).filter(ct => !ct.is_system)}
+          onWeightChange={handleWeightChange}
+          onWeightCommit={handleWeightCommit}
+        />
+      )}
+      <DetailDrawer
+        isOpen={isDrawerOpen && lens !== 'persona'}
+        onClose={closeDrawer}
+        entityId={selectedEntity?.id || null}
+        entityType={selectedEntity?.type || 'nord'}
+        typeSchemas={typeSchemas}
+        onSelectConnection={handleSelectConnection}
+        onSelectNord={handleSelectNord}
+        graph={graph}
+        refetchGraph={refetch}
+      />
+      {manageTypesTab !== null && (
+        <ManageTypes
+          projectId={projectId || ''}
+          open={true}
+          onClose={() => setManageTypesTab(null)}
+          onTypesChanged={refetch}
+          lockedTab={manageTypesTab}
+        />
+      )}
+      <ManagePersonas
+        projectId={projectId || ''}
+        open={personasOpen}
+        onClose={() => setPersonasOpen(false)}
+        connectionTypes={graph?.connection_types || []}
+      />
+    </div>
   );
 }
 
@@ -193,7 +322,9 @@ function App() {
           path="/project/:id"
           element={
             <ProtectedRoute>
-              <WorkspaceShell currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
+              <ReactFlowProvider>
+                <WorkspaceShell currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
+              </ReactFlowProvider>
             </ProtectedRoute>
           }
         />

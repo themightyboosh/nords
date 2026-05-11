@@ -1,19 +1,23 @@
 /**
  * LensContext.tsx — Spatial Lens Mode State
  *
- * Provides the active lens mode (Canvas/Link/Matrix) and related
+ * Provides the active lens mode (Canvas/Board/Persona) and related
  * state to the entire app tree. Written to by GlobalDock, read by
  * the canvas engine and any lens-aware component.
  *
  * activeConnectionTypeId: The connection type currently selected for
  * the lens. Determines which edges are highlighted and which labels
  * are shown. Persisted to localStorage per project.
+ *
+ * activePersonaId: The persona currently selected for the Persona Lens.
+ * When set, the graph shows weighted-average positions based on
+ * the persona's category weights. Persisted to localStorage per project.
  */
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import logger from '../lib/logger';
 
-export type LensMode = 'canvas' | 'board';
+export type LensMode = 'canvas' | 'board' | 'persona';
 
 interface LensContextValue {
   lens: LensMode;
@@ -21,6 +25,9 @@ interface LensContextValue {
   /** ID of the active connection type for the single-type lens */
   activeConnectionTypeId: string | null;
   setActiveConnectionTypeId: (id: string | null) => void;
+  /** ID of the active persona for the Persona Lens */
+  activePersonaId: string | null;
+  setActivePersonaId: (id: string | null) => void;
   /** Legacy activeLine for backward compat */
   activeLine: string;
   setActiveLine: (line: string) => void;
@@ -52,6 +59,26 @@ function storeTypeId(projectId: string, typeId: string | null) {
   }
 }
 
+function getStoredPersonaId(projectId: string): string | null {
+  try {
+    return localStorage.getItem(`nords-lens-persona-${projectId}`);
+  } catch {
+    return null;
+  }
+}
+
+function storePersonaId(projectId: string, personaId: string | null) {
+  try {
+    if (personaId) {
+      localStorage.setItem(`nords-lens-persona-${projectId}`, personaId);
+    } else {
+      localStorage.removeItem(`nords-lens-persona-${projectId}`);
+    }
+  } catch {
+    // localStorage not available
+  }
+}
+
 interface LensProviderProps {
   children: ReactNode;
   projectId?: string;
@@ -65,6 +92,9 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
   const [activeConnectionTypeId, setActiveConnectionTypeIdState] = useState<string | null>(
     () => projectId ? getStoredTypeId(projectId) : null
   );
+  const [activePersonaId, setActivePersonaIdState] = useState<string | null>(
+    () => projectId ? getStoredPersonaId(projectId) : null
+  );
 
   // Persist active type to localStorage when it changes
   const setActiveConnectionTypeId = useCallback((id: string | null) => {
@@ -72,10 +102,17 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
     if (projectId) storeTypeId(projectId, id);
   }, [projectId]);
 
+  // Persist active persona to localStorage when it changes
+  const setActivePersonaId = useCallback((id: string | null) => {
+    setActivePersonaIdState(id);
+    if (projectId) storePersonaId(projectId, id);
+  }, [projectId]);
+
   // When projectId changes, reload from localStorage
   useEffect(() => {
     if (projectId) {
       setActiveConnectionTypeIdState(getStoredTypeId(projectId));
+      setActivePersonaIdState(getStoredPersonaId(projectId));
     }
   }, [projectId]);
 
@@ -95,6 +132,7 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
     <LensContext.Provider value={{ 
       lens, setLens, 
       activeConnectionTypeId, setActiveConnectionTypeId,
+      activePersonaId, setActivePersonaId,
       activeLine, setActiveLine, 
       showContext, setShowContext,
       hiddenTypes, toggleTypeVisibility

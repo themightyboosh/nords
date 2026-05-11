@@ -32,6 +32,7 @@ import { useSemanticZoom } from '../../hooks/useSemanticZoom';
 import { useSpatialAnimations } from '../../hooks/useSpatialAnimations';
 import { useLensLayout } from '../../hooks/useLensLayout';
 import ZoomControls from './ZoomControls';
+import { computePersonaScores } from '../../utils/computePersonaScores';
 import './CanvasEngine.css';
 
 const nodeTypes = {
@@ -49,13 +50,15 @@ interface InteractiveCanvasProps {
   selectedNord: string | null;
   graph: ProjectGraph | null;
   refetchGraph: () => Promise<void>;
+  personaWeights?: Map<string, number> | null;
 }
 
-function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord, graph, refetchGraph }: InteractiveCanvasProps) {
+function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord, graph, refetchGraph, personaWeights }: InteractiveCanvasProps) {
   const { createNord, batchUpdatePositions, deleteNord } = useNordMutations(projectId);
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
   const { connectionTypes } = useTypeRegistry();
-  const { activeConnectionTypeId } = useLens();
+  const { activeConnectionTypeId, lens } = useLens();
+  const isPersonaMode = lens === 'persona';
   const { addNodes, screenToFlowPosition, getNodes } = useReactFlow();
 
   // ── Click-to-place mode ──
@@ -105,7 +108,31 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   //   - Nords NOT connected → locked, uniform gray (ghosted)
   // This makes it clear which nords participate in the active relationship.
   // Drawing a new connection to a gray nord instantly promotes it.
+
+  // Persona lens: compute per-node relevance scores
+  const personaScores = useMemo(() => {
+    if (!isPersonaMode || !personaWeights || !graph) return null;
+    const totalCategories = graph.connection_types.filter(ct => !ct.is_system).length;
+    return computePersonaScores(graph.connections, personaWeights, totalCategories);
+  }, [isPersonaMode, personaWeights, graph]);
+
   const lensNodes = useMemo(() => {
+    // ── Persona mode: opacity-based visualization ──
+    if (isPersonaMode && personaScores) {
+      return rfNodes.map(n => {
+        const ps = personaScores.get(n.id);
+        return {
+          ...n,
+          draggable: false,
+          data: {
+            ...n.data,
+            _personaOpacity: ps ? ps.opacity : 0.5,
+            _personaGrayscale: ps ? ps.grayscale : 1,
+          },
+        };
+      });
+    }
+
     if (activeConnectionTypeId) {
       // Build set of nord IDs that participate in the active connection type
       const connectedIds = new Set<string>();
@@ -138,7 +165,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       ...n,
       draggable: !connectedIds.has(n.id), // only orphans are draggable
     }));
-  }, [rfNodes, rfEdges, activeConnectionTypeId]);
+  }, [rfNodes, rfEdges, activeConnectionTypeId, isPersonaMode, personaScores]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(lensNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(lensEdges);
@@ -162,9 +189,26 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   );
 
   // Sync when graph data changes (initial load or refetch)
-  // Note: do NOT guard on length > 0 — an empty project should clear stale nodes
+  // IMPORTANT: Preserve in-memory positions for existing nodes so they
+  // don't jump back to stale DB positions after a refetch.
+  // Only brand-new nodes (not yet in React Flow) get their DB positions.
   React.useEffect(() => {
-    setNodes(lensNodes);
+    setNodes(prev => {
+      const prevMap = new Map(prev.map(n => [n.id, n]));
+      return lensNodes.map(n => {
+        const existing = prevMap.get(n.id);
+        if (existing) {
+          // Keep the in-memory position, update everything else
+          // (ghost state, draggability, data/properties, zIndex)
+          return {
+            ...n,
+            position: existing.position,
+          };
+        }
+        // New node — use DB position
+        return n;
+      });
+    });
   }, [lensNodes, setNodes]);
 
   React.useEffect(() => {
@@ -174,7 +218,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   useSemanticZoom();
   useVisibilityCascade();
   useSpatialAnimations();
-  const { saveNodePosition } = useLensLayout(activeConnectionTypeId, rfNodes);
+  const { saveNodePosition } = useLensLayout(activeConnectionTypeId, rfNodes, personaWeights);
   const { onNodeClick } = useNodeSelection(onNordClick);
 
   // ── Focused node: the node whose connected edges get full rendering ──
@@ -516,10 +560,12 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
           ? { ...n, draggable: true, zIndex: 20, data: { ...n.data, isGhosted: false } }
           : n
       ));
+      // Refetch full graph so drawer/categories see the new connection
+      refetchGraph();
     } catch (err) {
       console.error('Failed to create connection:', err);
     }
-  }, [activeConnType, connectionTypes, createConnection, setEdges, setNodes, edges]);
+  }, [activeConnType, connectionTypes, createConnection, setEdges, setNodes, edges, refetchGraph]);
 
   // ── Delete Connection ──
   const handleDeleteEdge = useCallback(async (edgeId: string) => {
@@ -527,10 +573,12 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       await deleteConnection(edgeId);
       setEdges(eds => eds.filter(e => e.id !== edgeId));
       setEdgeMenuConfig(null);
+      // Refetch full graph so drawer/categories see the deletion
+      refetchGraph();
     } catch (err) {
       console.error('Failed to delete connection:', err);
     }
-  }, [deleteConnection, setEdges]);
+  }, [deleteConnection, setEdges, refetchGraph]);
 
   // ── Context Menus ──
   const onNodeContextMenu = useCallback(
@@ -650,9 +698,9 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         multiSelectionKeyCode={null}
         selectionKeyCode={null}
         selectionOnDrag={false}
-        nodesDraggable={true}
-        nodesConnectable={!!activeConnectionTypeId}
-        edgesReconnectable={!!activeConnectionTypeId}
+        nodesDraggable={!isPersonaMode}
+        nodesConnectable={!isPersonaMode && !!activeConnectionTypeId}
+        edgesReconnectable={!isPersonaMode && !!activeConnectionTypeId}
         connectionRadius={80}
         reconnectRadius={80}
         onReconnectStart={onReconnectStart}
@@ -729,9 +777,10 @@ interface CanvasEngineProps {
   projectId?: string;
   graph?: ProjectGraph | null;
   refetchGraph?: () => Promise<void>;
+  personaWeights?: Map<string, number> | null;
 }
 
-export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph }: CanvasEngineProps) {
+export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights }: CanvasEngineProps) {
   const { lens } = useLens();
   const noop = async () => {};
 
@@ -750,8 +799,8 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
   }
 
   return (
-    <div className="nords-canvas">
-      <InteractiveCanvas projectId={projectId || ''} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} />
+    <div className={`nords-canvas ${lens === 'persona' ? 'nords-canvas--persona' : ''}`}>
+      <InteractiveCanvas projectId={projectId || ''} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} personaWeights={personaWeights} />
     </div>
   );
 }

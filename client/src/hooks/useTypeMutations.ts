@@ -14,11 +14,10 @@ import type { StageLabel } from './useProjectGraph';
 
 export interface NordTypeData {
   id: string;
-  user_id: string;
   name: string;
-  description: string | null;
-  icon: string;
+  description: string;
   accent_color: string;
+  icon: string;
   properties_schema: PropertySchema[];
   scale_property: string | null;
   sort_order: number;
@@ -26,30 +25,26 @@ export interface NordTypeData {
 
 export interface ConnectionTypeData {
   id: string;
-  user_id: string;
   name: string;
-  description: string | null;
+  description: string;
   accent_color: string;
-  stroke_style: string;
-  measurement_mode: 'spectrum' | 'quadrant' | 'none';
+  stroke_style: 'solid' | 'dashed' | 'dotted';
+  default_direction: 'to' | 'from' | 'both' | 'neither' | 'none';
   direction_filter: 'all' | 'forward' | 'reverse' | 'both' | 'none';
-  direction_prepositions: {
-    forward: string;  // default: 'from'
-    reverse: string;  // default: 'to'
-    both: string;     // default: 'together'
-    // neither/none: fixed as 'related', not stored
-  };
+  measurement_mode: 'spectrum' | 'quadrant' | 'none';
+  verb: string | null;
+  direction_prepositions: { forward: string; reverse: string; both: string };
   x_stage_labels: StageLabel[];
   y_stage_labels: StageLabel[];
   properties_schema: PropertySchema[];
-  verb: string | null;
-  is_system: boolean;
   sort_order: number;
 }
 
 export interface PropertySchema {
   name: string;
   type: 'string' | 'number' | 'select' | 'date' | 'markdown' | 'url' | 'tags';
+  required?: boolean;
+  defaultValue?: string | number | boolean | null;
   options?: string[];
   card_row?: number; // 1 or 2 — which row on the collapsed card
 }
@@ -62,6 +57,7 @@ export function useTypeMutations(projectId: string | null) {
 
   const createNordType = useCallback(async (data: {
     name: string;
+    description?: string;
     icon?: string;
     accent_color?: string;
     properties_schema?: PropertySchema[];
@@ -86,9 +82,11 @@ export function useTypeMutations(projectId: string | null) {
 
   const createConnectionType = useCallback(async (data: {
     name: string;
+    description?: string;
     accent_color?: string;
     stroke_style?: string;
     default_direction?: string;
+    measurement_mode?: string;
     x_stage_labels?: string[];
     y_stage_labels?: string[];
     properties_schema?: PropertySchema[];
@@ -99,7 +97,7 @@ export function useTypeMutations(projectId: string | null) {
 
   const updateConnectionType = useCallback(async (
     typeId: string,
-    updates: Partial<Pick<ConnectionTypeData, 'name' | 'description' | 'verb' | 'accent_color' | 'stroke_style' | 'direction_filter' | 'direction_prepositions' | 'measurement_mode' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>
+    updates: Partial<Pick<ConnectionTypeData, 'name' | 'description' | 'verb' | 'accent_color' | 'stroke_style' | 'default_direction' | 'direction_filter' | 'direction_prepositions' | 'measurement_mode' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>
   ): Promise<ConnectionTypeData> => {
     return api.put<ConnectionTypeData>(`/api/connection-types/${typeId}`, updates);
   }, []);

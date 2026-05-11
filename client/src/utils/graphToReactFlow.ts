@@ -37,10 +37,11 @@ export function graphToNodes(
       value: String(value ?? ''),
     }));
 
-    // Card-face properties: only schema entries with card_row 1 or 2,
-    // sorted by row then schema order, value resolved from the properties JSONB.
+    // Card-face properties: only schema entries with a card_row value,
+    // sorted by card_row then schema order, value resolved from the properties JSONB.
+    // NordCard caps visible count via maxProperties (default 3).
     const cardProperties = schema
-      .filter((s: any) => s.card_row === 1 || s.card_row === 2)
+      .filter((s: any) => s.card_row != null && s.card_row > 0)
       .sort((a: any, b: any) => (a.card_row || 999) - (b.card_row || 999))
       .map((s: any) => ({
         key: s.name,
@@ -81,10 +82,12 @@ export function graphToEdges(
     const isForward = conn.direction === 'forward';
     const isReverse = conn.direction === 'reverse';
     const isBoth = conn.direction === 'both';
+    const isNeither = conn.direction === 'neither';
 
     const visualDirection = isForward ? 'to'
       : isReverse ? 'from'
       : isBoth ? 'both'
+      : isNeither ? 'neither'
       : 'none';
 
     // Connection properties as {key, value} array for the Detail Drawer

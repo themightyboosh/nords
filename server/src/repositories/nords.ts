@@ -11,14 +11,13 @@ export async function findByProject(projectId: string): Promise<Nord[]> {
 
 export async function create(nord: Omit<Nord, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>): Promise<Nord> {
   return queryOne<Nord>(`
-    INSERT INTO nords (project_id, type_id, title, description, properties, position_x, position_y, scale, created_by)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    INSERT INTO nords (project_id, type_id, title, properties, position_x, position_y, scale, created_by)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING *
   `, [
     nord.project_id,
     nord.type_id,
     nord.title,
-    nord.description,
     nord.properties,
     nord.position_x,
     nord.position_y,
@@ -27,7 +26,7 @@ export async function create(nord: Omit<Nord, 'id' | 'created_at' | 'updated_at'
   ]) as Promise<Nord>;
 }
 
-export async function update(id: string, updates: Partial<Pick<Nord, 'title' | 'description' | 'properties' | 'position_x' | 'position_y' | 'scale'>>): Promise<Nord | null> {
+export async function update(id: string, updates: Partial<Pick<Nord, 'title' | 'properties' | 'position_x' | 'position_y' | 'scale'>>): Promise<Nord | null> {
   const setClauses: string[] = [];
   const values: unknown[] = [];
   let paramIdx = 1;

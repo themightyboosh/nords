@@ -146,7 +146,7 @@ const DimmedEdge = React.memo(function DimmedEdge({
 
   // Arrowheads (dimmed but present)
   const arrowSize = 16;
-  const showEndArrow = true;  // Always show forward arrowhead
+  const showEndArrow = direction === 'to' || direction === 'both';
   const showStartArrow = direction === 'from' || direction === 'both';
 
   const endAngle = Math.atan2(ty - sy, tx - sx);
@@ -304,7 +304,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     const direction = edgeData?.direction || 'none';
     const nhColor = edgeData?.color || '#888';
     const nhArrowSize = 18;
-    const showEndArrow = true;  // Always show forward arrowhead
+    const showEndArrow = direction === 'to' || direction === 'both';
     const showStartArrow = direction === 'from' || direction === 'both';
 
     const endAngle = Math.atan2(ty - sy, tx - sx);
@@ -399,11 +399,13 @@ const ActiveEdge = React.memo(function ActiveEdge({
     const hasY = resolvedYLabel != null;
 
     let verbPhrase: string | null = null;
-    if (verb) {
+    if (dir === 'none') {
+      verbPhrase = null; // context only — no verb phrase on label
+    } else if (verb) {
       if (dir === 'to') verbPhrase = `${verb} ${preps?.forward ?? 'from'}`;
       else if (dir === 'from') verbPhrase = `${verb} ${preps?.reverse ?? 'to'}`;
       else if (dir === 'both') verbPhrase = `${verb} ${preps?.both ?? 'together'}`;
-      else verbPhrase = 'related';
+      else verbPhrase = verb; // neither: verb only, no preposition
     }
 
     if (hasX && hasY) {
@@ -457,7 +459,7 @@ const ActiveEdge = React.memo(function ActiveEdge({
   if (angleDeg < -90) { angleDeg += 180; flipped = true; }
 
   let visualDirection = edgeData?.direction || 'none';
-  if (flipped && visualDirection !== 'none') {
+  if (flipped && visualDirection !== 'none' && visualDirection !== 'neither') {
     visualDirection = visualDirection === 'to' ? 'from' : 'to';
   }
 
@@ -471,7 +473,7 @@ const ActiveEdge = React.memo(function ActiveEdge({
 
   // ── Arrowheads ──
   const arrowSize = 20;
-  const showEndArrow = true;  // Always show forward arrowhead
+  const showEndArrow = direction === 'to' || direction === 'both';
   const showStartArrow = direction === 'from' || direction === 'both';
 
   const endAngle = Math.atan2(ty - sy, tx - sx);

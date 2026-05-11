@@ -14,6 +14,7 @@ import { useState, useCallback, useEffect } from 'react';
 
 interface PerBoardSettings {
   nordTypeFilters: Record<string, boolean>;
+  hiddenNordIds: string[];
   showOrphans: boolean;
 }
 
@@ -66,6 +67,7 @@ export function useBoardSettings(projectId: string | null) {
   const getBoard = useCallback((connectionTypeId: string): PerBoardSettings => {
     return settings.boards[connectionTypeId] || {
       nordTypeFilters: {},
+      hiddenNordIds: [],
       showOrphans: false,
     };
   }, [settings]);
@@ -80,7 +82,7 @@ export function useBoardSettings(projectId: string | null) {
   /** Toggle a nord type's visibility on a specific board */
   const toggleNordTypeFilter = useCallback((connectionTypeId: string, nordTypeId: string) => {
     setSettings(prev => {
-      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, showOrphans: false };
+      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, hiddenNordIds: [], showOrphans: false };
       const current = board.nordTypeFilters[nordTypeId] ?? true;
       return {
         ...prev,
@@ -101,7 +103,7 @@ export function useBoardSettings(projectId: string | null) {
   /** Toggle orphans column for a specific board */
   const toggleOrphans = useCallback((connectionTypeId: string) => {
     setSettings(prev => {
-      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, showOrphans: false };
+      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, hiddenNordIds: [], showOrphans: false };
       return {
         ...prev,
         boards: {
@@ -118,7 +120,7 @@ export function useBoardSettings(projectId: string | null) {
   /** Force a nord type to be visible on a board (for auto-show on drag/create) */
   const ensureNordTypeVisible = useCallback((connectionTypeId: string, nordTypeId: string) => {
     setSettings(prev => {
-      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, showOrphans: false };
+      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, hiddenNordIds: [], showOrphans: false };
       if (board.nordTypeFilters[nordTypeId] === false) {
         return {
           ...prev,
@@ -138,6 +140,34 @@ export function useBoardSettings(projectId: string | null) {
     });
   }, []);
 
+  /** Check if a specific nord is hidden on this board */
+  const isNordHidden = useCallback((connectionTypeId: string, nordId: string): boolean => {
+    const board = settings.boards[connectionTypeId];
+    if (!board) return false;
+    return (board.hiddenNordIds || []).includes(nordId);
+  }, [settings]);
+
+  /** Toggle a specific nord's visibility on a board */
+  const toggleNordFilter = useCallback((connectionTypeId: string, nordId: string) => {
+    setSettings(prev => {
+      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, hiddenNordIds: [], showOrphans: false };
+      const hiddenIds = board.hiddenNordIds || [];
+      const isHidden = hiddenIds.includes(nordId);
+      return {
+        ...prev,
+        boards: {
+          ...prev.boards,
+          [connectionTypeId]: {
+            ...board,
+            hiddenNordIds: isHidden
+              ? hiddenIds.filter(id => id !== nordId)
+              : [...hiddenIds, nordId],
+          },
+        },
+      };
+    });
+  }, []);
+
   return {
     settings,
     getBoard,
@@ -145,5 +175,7 @@ export function useBoardSettings(projectId: string | null) {
     toggleNordTypeFilter,
     ensureNordTypeVisible,
     toggleOrphans,
+    isNordHidden,
+    toggleNordFilter,
   };
 }

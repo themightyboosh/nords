@@ -35,7 +35,6 @@ export interface NordEntity {
   typeIcon: string | null;
   typeId: string;
   properties: Array<{ key: string; value: string }>;
-  description: string | null;
   position: { x: number; y: number };
 }
 
@@ -50,7 +49,7 @@ export interface ConnectionEntity {
   direction: string;
   distanceX: number;
   distanceY: number;
-  xStageLabels: Array<{ label: string; position: number }>;
+  xStageLabels: Array<string | { label: string; position: number }>;
   sourceId: string;
   targetId: string;
   sourceName: string;
@@ -62,7 +61,7 @@ export interface DrawerMutations {
   updateTitle: (title: string) => void;
   updateProperty: (key: string, value: string) => void;
   updateConnectionProperty: (key: string, value: string) => void;
-  updateDirection: (direction: 'forward' | 'reverse' | 'both' | 'neither') => void;
+  updateDirection: (direction: 'forward' | 'reverse' | 'both' | 'neither' | 'none') => void;
   updateDistance: (axis: 'x' | 'y', value: number) => void;
 }
 
@@ -113,7 +112,6 @@ export function useDrawerEntity(
         typeIcon: nordType?.icon || null,
         typeId: nord.type_id,
         properties: props,
-        description: nord.description,
         position: { x: nord.position_x, y: nord.position_y },
       };
     }
@@ -218,13 +216,14 @@ export function useDrawerEntity(
       });
   }, [entityId, entityType, reactFlow, refetchGraph]);
 
-  const updateDirection = useCallback((direction: 'forward' | 'reverse' | 'both' | 'neither') => {
+  const updateDirection = useCallback((direction: 'forward' | 'reverse' | 'both' | 'neither' | 'none') => {
     if (!entityId || entityType !== 'connection') return;
 
     const visualDirection =
       direction === 'forward' ? 'to' :
       direction === 'reverse' ? 'from' :
       direction === 'both' ? 'both' :
+      direction === 'neither' ? 'neither' :
       'none';
 
     // Optimistic update in React Flow (graph view only)

@@ -20,13 +20,13 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { X, Plus, Trash2, GripVertical, ChevronRight } from 'lucide-react';
+import { X, Plus, Trash2, ChevronUp, ChevronDown, Pencil, ChevronRight } from 'lucide-react';
 import { useTypeMutations, type NordTypeData, type ConnectionTypeData, type PropertySchema } from '../../hooks/useTypeMutations';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { IconPicker } from './IconPicker';
 import { SpectrumEditor } from '../Spectrum/SpectrumEditor';
 import { normalizeStageLabels } from '../../utils/stageLabels';
-import { hslToHex, hexToHSL, autoContrast } from '../../utils/color';
+import { hslToHex, hexToHSL } from '../../utils/color';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import './ManageTypes.css';
 
@@ -87,6 +87,15 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (op
   );
 }
 
+// Type compatibility groups — defaults carry over within the same group
+const TYPE_COMPAT_GROUPS: Record<string, string> = {
+  string: 'text', url: 'text', markdown: 'text',
+  number: 'number',
+  date: 'date',
+  select: 'select',
+  tags: 'tags',
+};
+
 
 export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialTab, lockedTab }: ManageTypesProps) {
   const mutations = useTypeMutations(projectId);
@@ -102,6 +111,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [expandedPropIdx, setExpandedPropIdx] = useState<number | null>(null);
 
   // ── Load types ──
   const loadTypes = useCallback(async () => {
@@ -216,12 +226,57 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
     handleUpdateField('properties_schema', currentSchema);
   }, [selected, handleUpdateField]);
 
+  const handleTypeChange = useCallback((index: number, newType: PropertySchema['type']) => {
+    if (!selected) return;
+    const currentSchema = [...((selected as any).properties_schema || [])];
+    const oldProp = currentSchema[index];
+    const oldGroup = TYPE_COMPAT_GROUPS[oldProp.type] || oldProp.type;
+    const newGroup = TYPE_COMPAT_GROUPS[newType] || newType;
+
+    const patch: Partial<PropertySchema> = { type: newType };
+
+    // Clear default if switching to an incompatible type group
+    if (oldGroup !== newGroup) {
+      patch.defaultValue = null;
+    }
+    // Clear options if leaving select type
+    if (oldProp.type === 'select' && newType !== 'select') {
+      patch.options = undefined;
+    }
+
+    currentSchema[index] = { ...oldProp, ...patch };
+    handleUpdateField('properties_schema', currentSchema);
+
+    // Auto-expand this row so user can immediately configure the new type
+    setExpandedPropIdx(index);
+  }, [selected, handleUpdateField]);
+
   const removeProperty = useCallback((index: number) => {
     if (!selected) return;
     const currentSchema = [...((selected as any).properties_schema || [])];
     currentSchema.splice(index, 1);
+    // Recompute card_row for non-hidden items
+    let row = 1;
+    for (const p of currentSchema) {
+      if (p.card_row) p.card_row = row++;
+    }
     handleUpdateField('properties_schema', currentSchema);
   }, [selected, handleUpdateField]);
+
+  // Arrow-button reorder properties
+  const reorderProperty = useCallback((fromIdx: number, toIdx: number) => {
+    if (!selected || fromIdx === toIdx) return;
+    const currentSchema = [...((selected as any).properties_schema || [])];
+    const [moved] = currentSchema.splice(fromIdx, 1);
+    currentSchema.splice(toIdx, 0, moved);
+    // Recompute card_row for non-hidden items
+    let row = 1;
+    for (const p of currentSchema) {
+      if (p.card_row) p.card_row = row++;
+    }
+    handleUpdateField('properties_schema', currentSchema);
+    if (expandedPropIdx === fromIdx) setExpandedPropIdx(toIdx);
+  }, [selected, handleUpdateField, expandedPropIdx]);
 
   if (!open) return null;
 
@@ -313,253 +368,280 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
           <div className="manage-types__editor">
             {selected ? (
               <>
-                {/* Type header with live preview */}
-                <div className="manage-types__editor-header" style={{ borderLeftColor: currentColor }}>
-                  {Icon && (
+                {/* Type header — icon + inline editable name */}
+                <div className="manage-types__editor-header">
+                  {Icon ? (
                     <button
                       className="manage-types__icon-btn"
                       style={{ color: currentColor }}
                       onClick={() => setShowIconPicker(!showIconPicker)}
-                      title="Change icon"
+                      title="Change icon & color"
                     >
                       <Icon size={24} strokeWidth={1.8} />
                     </button>
+                  ) : (
+                    <button
+                      className="manage-types__icon-btn"
+                      onClick={() => setShowIconPicker(!showIconPicker)}
+                      title="Change color"
+                    >
+                      <span className="manage-types__color-swatch-lg" style={{ backgroundColor: currentColor }} />
+                    </button>
                   )}
-                  <div className="manage-types__editor-meta">
-                    <span className="manage-types__editor-badge" style={{ color: autoContrast(currentColor), backgroundColor: currentColor }}>
-                      {activeTab === 'nord' ? 'NORD TYPE' : 'CONNECTION TYPE'}
-                    </span>
-                  </div>
+                  <input
+                    type="text"
+                    className="manage-types__name-input"
+                    value={selected.name}
+                    onChange={(e) => handleUpdateField('name', e.target.value)}
+                    placeholder={activeTab === 'nord' ? 'Type name…' : 'Category name…'}
+                  />
                   <button className="manage-types__delete-btn" onClick={handleDeleteType} title="Delete type" disabled={saving}>
                     <Trash2 size={16} />
                   </button>
                 </div>
 
-                {/* Icon picker popover */}
-                {showIconPicker && isNordType && (
-                  <div className="manage-types__icon-picker-popover">
-                    <IconPicker
-                      currentIcon={(selected as NordTypeData).icon}
-                      accentColor={currentColor}
-                      onSelect={(iconName) => {
-                        handleUpdateField('icon', iconName);
-                        setShowIconPicker(false);
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* Name */}
+                {/* Type description / purpose (required) */}
                 <div className="manage-types__field">
-                  <label className="manage-types__field-label">Name</label>
-                  <input
-                    type="text"
-                    className="manage-types__input"
-                    value={selected.name}
-                    onChange={(e) => handleUpdateField('name', e.target.value)}
-                  />
-                </div>
-
-                {/* Description */}
-                <div className="manage-types__field">
-                  <label className="manage-types__field-label">Description
-                    <span className="manage-types__field-hint">Used by AI for semantic traversal and context</span>
+                  <label className="manage-types__desc-label">
+                    Purpose / Description <span className="manage-types__required-badge">Required</span>
                   </label>
                   <textarea
-                    className="manage-types__textarea"
-                    placeholder="Describe what this type represents…"
+                    className={`manage-types__desc-input ${!(selected as any).description ? 'manage-types__desc-input--empty' : ''}`}
                     value={(selected as any).description || ''}
                     onChange={(e) => handleUpdateField('description', e.target.value)}
+                    placeholder={isNordType ? 'Describe the purpose of this Nord type…' : 'Describe the purpose of this category…'}
                     rows={2}
                   />
                 </div>
 
-                {/* Color (Hue slider) */}
-                <div className="manage-types__field">
-                  <label className="manage-types__field-label">Color</label>
-                  <div className="manage-types__color-row">
-                    <input
-                      type="range"
-                      min="0"
-                      max="360"
-                      value={currentHue}
-                      onChange={(e) => {
-                        const hue = parseInt(e.target.value);
-                        const hex = hslToHex(hue, 55, 50);
-                        handleUpdateField('accent_color', hex);
-                      }}
-                      className="manage-types__hue-slider"
-                      style={{
-                        background: `linear-gradient(to right, 
-                          hsl(0, 55%, 50%), hsl(60, 55%, 50%), hsl(120, 55%, 50%), 
-                          hsl(180, 55%, 50%), hsl(240, 55%, 50%), hsl(300, 55%, 50%), hsl(360, 55%, 50%))`,
-                      }}
-                    />
-                    <span className="manage-types__color-preview" style={{ backgroundColor: currentColor }} />
+                {/* Icon & color picker popover */}
+                {showIconPicker && (
+                  <div className="manage-types__icon-picker-popover">
+                    {isNordType && (
+                      <IconPicker
+                        currentIcon={(selected as NordTypeData).icon}
+                        accentColor={currentColor}
+                        onSelect={(iconName) => {
+                          handleUpdateField('icon', iconName);
+                          setShowIconPicker(false);
+                        }}
+                      />
+                    )}
+                    <div className="manage-types__popover-color">
+                      <label className="manage-types__popover-color-label">Color</label>
+                      <div className="manage-types__color-row">
+                        <input
+                          type="range"
+                          min="0"
+                          max="360"
+                          value={currentHue}
+                          onChange={(e) => {
+                            const hue = parseInt(e.target.value);
+                            const hex = hslToHex(hue, 55, 50);
+                            handleUpdateField('accent_color', hex);
+                          }}
+                          className="manage-types__hue-slider"
+                          style={{
+                            background: `linear-gradient(to right, 
+                              hsl(0, 55%, 50%), hsl(60, 55%, 50%), hsl(120, 55%, 50%), 
+                              hsl(180, 55%, 50%), hsl(240, 55%, 50%), hsl(300, 55%, 50%), hsl(360, 55%, 50%))`,
+                          }}
+                        />
+                        <span className="manage-types__color-preview" style={{ backgroundColor: currentColor }} />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Connection-specific fields */}
-                {!isNordType && (
-                  <>
-                    {/* Verb */}
-                    <div className="manage-types__field">
-                      <label className="manage-types__field-label">Verb
-                        <span className="manage-types__field-hint">Used in board title — e.g. "blocks", "depends on"</span>
-                      </label>
-                      <input
-                        type="text"
-                        className="manage-types__input"
-                        placeholder="e.g. blocks, depends on, relates to"
-                        value={(selected as ConnectionTypeData).verb || ''}
-                        onChange={(e) => handleUpdateField('verb', e.target.value)}
-                      />
-                    </div>
+                {!isNordType && (() => {
+                  const ct = selected as ConnectionTypeData;
+                  const preps = ct.direction_prepositions || { forward: 'from', reverse: 'to', both: 'together' };
+                  const verb = ct.verb || '';
+                  const defaultDir = ct.default_direction || 'none';
 
-                    {/* Direction Prepositions */}
-                    <div className="manage-types__field">
-                      <label className="manage-types__field-label">Arrow Labels
-                        <span className="manage-types__field-hint">One word per direction — paired with the verb to form readable labels</span>
-                      </label>
-                      <div className="manage-types__prepositions">
-                        {([
-                          { dir: 'forward', arrow: '→', placeholder: 'from' },
-                          { dir: 'reverse', arrow: '←', placeholder: 'to' },
-                          { dir: 'both',    arrow: '↔', placeholder: 'together' },
-                        ] as const).map(({ dir, arrow, placeholder }) => {
-                          const preps = (selected as ConnectionTypeData).direction_prepositions || { forward: 'from', reverse: 'to', both: 'together' };
-                          return (
-                            <div key={dir} className="manage-types__prep-row">
-                              <span
-                                className="manage-types__prep-arrow"
-                                style={{ color: currentColor }}
-                              >{arrow}</span>
-                              <input
-                                type="text"
-                                className="manage-types__prep-input"
-                                placeholder={placeholder}
-                                value={preps[dir] ?? placeholder}
-                                onChange={(e) => {
-                                  // Strip spaces — single word only
-                                  const word = e.target.value.replace(/\s+/g, '');
-                                  handleUpdateField('direction_prepositions', {
-                                    ...preps,
-                                    [dir]: word,
-                                  });
-                                }}
-                                onBlur={(e) => {
-                                  // On blur, fall back to the default if empty
-                                  if (!e.target.value.trim()) {
-                                    handleUpdateField('direction_prepositions', {
-                                      ...preps,
-                                      [dir]: placeholder,
-                                    });
-                                  }
-                                }}
-                                maxLength={24}
-                              />
-                            </div>
-                          );
-                        })}
-                        {/* Fixed: neither/none = 'related' */}
-                        <div className="manage-types__prep-row manage-types__prep-row--fixed">
-                          <span className="manage-types__prep-arrow" style={{ opacity: 0.35 }}>—</span>
-                          <span className="manage-types__prep-fixed">related</span>
+                  // Build a live preview sentence
+                  const previewPrep = defaultDir === 'to' ? preps.forward
+                    : defaultDir === 'from' ? preps.reverse
+                    : defaultDir === 'both' ? preps.both
+                    : '';
+                  const previewArrow = defaultDir === 'to' ? '→'
+                    : defaultDir === 'from' ? '←'
+                    : defaultDir === 'both' ? '↔'
+                    : '—';
+                  const previewLabel = verb
+                    ? (defaultDir === 'none' ? verb : `${verb} ${previewPrep}`.trim())
+                    : 'context only';
+
+                  return (
+                    <>
+                      {/* Verb — required */}
+                      <div className="manage-types__field">
+                        <label className="manage-types__field-label">Verb
+                          <span className="manage-types__field-hint">Required — the action word (e.g. "blocks", "depends", "assigns")</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="manage-types__input"
+                          placeholder="e.g. blocks, depends, relates"
+                          value={verb}
+                          onChange={(e) => handleUpdateField('verb', e.target.value || null)}
+                        />
+                      </div>
+
+                      {/* Direction Labels */}
+                      <div className="manage-types__field">
+                        <label className="manage-types__field-label">Direction Labels
+                          <span className="manage-types__field-hint">Prepositions that follow the verb per direction</span>
+                        </label>
+                        <div className="manage-types__dir-labels">
+                          <div className="manage-types__dir-label-row">
+                            <span className="manage-types__dir-label-icon">→</span>
+                            <span className="manage-types__dir-label-name">Forward</span>
+                            <input
+                              type="text"
+                              className="manage-types__input manage-types__dir-label-input"
+                              placeholder="from"
+                              value={preps.forward}
+                              onChange={(e) => handleUpdateField('direction_prepositions', { ...preps, forward: e.target.value })}
+                            />
+                          </div>
+                          <div className="manage-types__dir-label-row">
+                            <span className="manage-types__dir-label-icon">←</span>
+                            <span className="manage-types__dir-label-name">Reverse</span>
+                            <input
+                              type="text"
+                              className="manage-types__input manage-types__dir-label-input"
+                              placeholder="to"
+                              value={preps.reverse}
+                              onChange={(e) => handleUpdateField('direction_prepositions', { ...preps, reverse: e.target.value })}
+                            />
+                          </div>
+                          <div className="manage-types__dir-label-row">
+                            <span className="manage-types__dir-label-icon">↔</span>
+                            <span className="manage-types__dir-label-name">Both</span>
+                            <input
+                              type="text"
+                              className="manage-types__input manage-types__dir-label-input"
+                              placeholder="together"
+                              value={preps.both}
+                              onChange={(e) => handleUpdateField('direction_prepositions', { ...preps, both: e.target.value })}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-
-                    {/* Direction Filter */}
-                    <div className="manage-types__field">
-                      <label className="manage-types__field-label">Direction Filter
-                        <span className="manage-types__field-hint">Which directions show on the board by default</span>
-                      </label>
-                      <div className="manage-types__dir-filter">
-                        {(['all', 'forward', 'reverse', 'both', 'none'] as const).map(dir => (
-                          <button
-                            key={dir}
-                            type="button"
-                            className={`manage-types__dir-btn ${
-                              ((selected as ConnectionTypeData).direction_filter || 'all') === dir
-                                ? 'manage-types__dir-btn--active'
-                                : ''
-                            }`}
-                            style={{
-                              '--dir-color': currentColor,
-                            } as React.CSSProperties}
-                            onClick={() => handleUpdateField('direction_filter', dir)}
-                          >
-                            {dir === 'all' ? 'All'
-                              : dir === 'forward' ? '→'
-                              : dir === 'reverse' ? '←'
-                              : dir === 'both' ? '↔'
-                              : '⊘'}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Stage Labels */}
-                    <div className="manage-types__field">
-                      <label className="manage-types__field-label">Position System
-                        <span className="manage-types__field-hint">How connections of this type are plotted on the board</span>
-                      </label>
-                      <div className="manage-types__mode-selector">
-                        {(['spectrum', 'quadrant', 'none'] as const).map(mode => (
-                          <button
-                            key={mode}
-                            type="button"
-                            className={`manage-types__mode-btn ${
-                              ((selected as ConnectionTypeData).measurement_mode || 'spectrum') === mode
-                                ? 'manage-types__mode-btn--active'
-                                : ''
-                            }`}
-                            style={{
-                              '--mode-color': currentColor,
-                            } as React.CSSProperties}
-                            onClick={() => handleUpdateField('measurement_mode', mode)}
-                          >
-                            {mode === 'spectrum' ? 'Spectrum (1D)'
-                              : mode === 'quadrant' ? 'Quadrant (2D)'
-                              : 'Unranked'}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* X-axis Stage Labels — shown for spectrum or quadrant */}
-                    {((selected as ConnectionTypeData).measurement_mode || 'spectrum') !== 'none' && (
+                      {/* Live Preview */}
                       <div className="manage-types__field">
-                        <label className="manage-types__field-label">
-                          {((selected as ConnectionTypeData).measurement_mode || 'spectrum') === 'quadrant' ? 'X-Axis Labels' : 'Stage Labels'}
+                        <label className="manage-types__field-label">Preview</label>
+                        <div className="manage-types__preview-sentence" style={{ borderColor: currentColor }}>
+                          <span className="manage-types__preview-nord">Node A</span>
+                          <span className="manage-types__preview-middle" style={{ color: currentColor }}>
+                            {previewArrow} {previewLabel} {previewArrow}
+                          </span>
+                          <span className="manage-types__preview-nord">Node B</span>
+                        </div>
+                      </div>
+
+                      {/* Default Direction */}
+                      <div className="manage-types__field">
+                        <label className="manage-types__field-label">Default Direction
+                          <span className="manage-types__field-hint">Direction assigned to new connections of this category</span>
                         </label>
-                        <SpectrumEditor
-                          labels={normalizeStageLabels((selected as ConnectionTypeData).x_stage_labels)}
-                          color={currentColor}
-                          onChange={(labels) => handleUpdateField('x_stage_labels', labels)}
-                        />
+                        <div className="manage-types__dir-filter">
+                          {([
+                            { value: 'to',      label: '→ Forward' },
+                            { value: 'from',    label: '← Reverse' },
+                            { value: 'both',    label: '↔ Both' },
+                            { value: 'neither', label: '— Generic' },
+                            { value: 'none',    label: '· Context' },
+                          ] as const).map(({ value, label }) => (
+                            <button
+                              key={value}
+                              type="button"
+                              className={`manage-types__dir-btn ${
+                                defaultDir === value
+                                  ? 'manage-types__dir-btn--active'
+                                  : ''
+                              }`}
+                              style={{
+                                '--dir-color': currentColor,
+                              } as React.CSSProperties}
+                              onClick={() => handleUpdateField('default_direction', value)}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    )}
 
-                    {/* Y-axis Stage Labels — shown only for quadrant */}
-                    {(selected as ConnectionTypeData).measurement_mode === 'quadrant' && (
+                      {/* Spectrum Type Toggle */}
                       <div className="manage-types__field">
-                        <label className="manage-types__field-label">Y-Axis Labels</label>
-                        <SpectrumEditor
-                          labels={normalizeStageLabels((selected as ConnectionTypeData).y_stage_labels)}
-                          color={currentColor}
-                          onChange={(labels) => handleUpdateField('y_stage_labels', labels)}
-                        />
+                        <label className="manage-types__field-label">Spectrum Type
+                          <span className="manage-types__field-hint">Controls how connections are measured — board columns + edge labels</span>
+                        </label>
+                        <div className="manage-types__toggle-group">
+                          {([
+                            { value: 'none', label: '⊘ None' },
+                            { value: 'spectrum', label: '═ Spectrum' },
+                            { value: 'quadrant', label: '⊞ Quadrant' },
+                          ] as const).map(({ value, label }) => (
+                            <button
+                              key={value}
+                              className={`manage-types__toggle-btn ${
+                                (ct.measurement_mode || 'spectrum') === value ? 'is-active' : ''
+                              }`}
+                              style={{
+                                '--dir-color': currentColor,
+                              } as React.CSSProperties}
+                              onClick={() => handleUpdateField('measurement_mode', value)}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    )}
-                  </>
-                )}
+
+                      {/* X-axis Spectrum Labels (spectrum + quadrant) */}
+                      {(ct.measurement_mode || 'spectrum') !== 'none' && (
+                        <div className="manage-types__field">
+                          <label className="manage-types__field-label">
+                            {(ct.measurement_mode || 'spectrum') === 'quadrant' ? 'X-Axis Labels' : 'Spectrum'}
+                            <span className="manage-types__field-hint">
+                              {(ct.measurement_mode || 'spectrum') === 'quadrant'
+                                ? 'Horizontal axis — defines board columns'
+                                : 'Intensity axis — defines board columns and edge labels'}
+                            </span>
+                          </label>
+                          <SpectrumEditor
+                            labels={normalizeStageLabels(ct.x_stage_labels)}
+                            color={currentColor}
+                            onChange={(labels) => handleUpdateField('x_stage_labels', labels)}
+                          />
+                        </div>
+                      )}
+
+                      {/* Y-axis Labels (quadrant only) */}
+                      {(ct.measurement_mode || 'spectrum') === 'quadrant' && (
+                        <div className="manage-types__field">
+                          <label className="manage-types__field-label">Y-Axis Labels
+                            <span className="manage-types__field-hint">Vertical axis — defines board swimlane rows</span>
+                          </label>
+                          <SpectrumEditor
+                            labels={normalizeStageLabels(ct.y_stage_labels)}
+                            color={currentColor}
+                            onChange={(labels) => handleUpdateField('y_stage_labels', labels)}
+                          />
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 {/* Properties Schema */}
                 <div className="manage-types__field">
                   <div className="manage-types__field-header">
-                    <label className="manage-types__field-label">Properties</label>
+                    <label className="manage-types__field-label">Instance Properties</label>
                     <button className="manage-types__add-prop-btn" onClick={addProperty}>
                       <Plus size={12} />
                       <span>Add Property</span>
@@ -568,14 +650,37 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
 
                   <div className="manage-types__props-table">
                     <div className="manage-types__props-header">
+                      <span></span>
                       <span>Name</span>
                       <span>Type</span>
-                      <span>Card Row</span>
+                      <span>Req</span>
+                      <span>Hide</span>
                       <span></span>
                     </div>
                     {((selected as any).properties_schema || []).map((prop: PropertySchema, i: number) => (
                       <div key={i} className="manage-types__props-row-group">
-                        <div className="manage-types__props-row">
+                        <div
+                          className={`manage-types__props-row ${expandedPropIdx === i ? 'manage-types__props-row--expanded' : ''}`}
+                        >
+                          {/* Up/Down arrows */}
+                          <div className="manage-types__prop-arrows">
+                            <button
+                              className="manage-types__prop-arrow"
+                              disabled={i === 0}
+                              onClick={() => reorderProperty(i, i - 1)}
+                              title="Move up"
+                            >
+                              <ChevronUp size={12} />
+                            </button>
+                            <button
+                              className="manage-types__prop-arrow"
+                              disabled={i === ((selected as any).properties_schema || []).length - 1}
+                              onClick={() => reorderProperty(i, i + 1)}
+                              title="Move down"
+                            >
+                              <ChevronDown size={12} />
+                            </button>
+                          </div>
                           <input
                             type="text"
                             className="manage-types__prop-input"
@@ -585,39 +690,120 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                           <select
                             className="manage-types__prop-select"
                             value={prop.type}
-                            onChange={(e) => updateProperty(i, { type: e.target.value as PropertySchema['type'] })}
+                            onChange={(e) => handleTypeChange(i, e.target.value as PropertySchema['type'])}
                           >
                             <option value="string">Text</option>
                             <option value="number">Number</option>
-                            <option value="select">Select</option>
+                            <option value="select">Dropdown</option>
                             <option value="date">Date</option>
                             <option value="markdown">Markdown</option>
                             <option value="url">URL</option>
                             <option value="tags">Tags</option>
                           </select>
-                          <select
-                            className="manage-types__prop-select"
-                            value={prop.card_row || ''}
-                            onChange={(e) => updateProperty(i, { card_row: e.target.value ? parseInt(e.target.value) : undefined })}
-                          >
-                            <option value="">Hidden</option>
-                            <option value="1">Row 1</option>
-                            <option value="2">Row 2</option>
-                          </select>
-                          <button
-                            className="manage-types__prop-delete"
-                            onClick={() => removeProperty(i)}
-                            title="Remove property"
-                          >
-                            <Trash2 size={12} />
-                          </button>
+                          {/* Req checkbox — disabled when hidden */}
+                          <div className="manage-types__prop-req-cell">
+                            {prop.card_row ? (
+                              <input
+                                type="checkbox"
+                                className="manage-types__prop-req-check"
+                                checked={!!prop.required}
+                                onChange={(e) => updateProperty(i, { required: e.target.checked })}
+                                title="Required"
+                              />
+                            ) : (
+                              <span className="manage-types__prop-req-na">—</span>
+                            )}
+                          </div>
+                          {/* Hidden checkbox */}
+                          <div className="manage-types__prop-req-cell">
+                            <input
+                              type="checkbox"
+                              className="manage-types__prop-req-check"
+                              checked={!prop.card_row}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  // Hide: clear card_row and required
+                                  updateProperty(i, { card_row: undefined, required: false });
+                                } else {
+                                  // Show: assign next card_row
+                                  const schema = (selected as any).properties_schema || [];
+                                  const maxRow = Math.max(0, ...schema.map((p: any) => p.card_row || 0));
+                                  updateProperty(i, { card_row: maxRow + 1 });
+                                }
+                              }}
+                              title={prop.card_row ? 'Hide this property' : 'Show this property'}
+                            />
+                          </div>
+                          {/* Actions: edit + delete */}
+                          <div className="manage-types__prop-actions">
+                            <button
+                              className={`manage-types__prop-edit ${expandedPropIdx === i ? 'is-active' : ''}`}
+                              onClick={() => setExpandedPropIdx(expandedPropIdx === i ? null : i)}
+                              title="Edit defaults & options"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                            <button
+                              className="manage-types__prop-delete"
+                              onClick={() => removeProperty(i)}
+                              title="Remove property"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
                         </div>
-                        {/* Inline options editor — shown only for select type */}
-                        {prop.type === 'select' && (
-                          <OptionsEditor
-                            options={prop.options || []}
-                            onChange={(opts) => updateProperty(i, { options: opts })}
-                          />
+                        {/* Expandable detail — Required, Default, Options */}
+                        {expandedPropIdx === i && (
+                          <div className="manage-types__prop-detail">
+                            <div className="manage-types__prop-detail-row">
+                              <div className="manage-types__prop-detail-field">
+                                <span className="manage-types__prop-detail-label">Default</span>
+                                {prop.type === 'tags' ? (
+                                  <span className="manage-types__prop-detail-hint">Tags are added per instance</span>
+                                ) : prop.type === 'select' ? (
+                                  <select
+                                    className="manage-types__prop-default-select"
+                                    value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
+                                    onChange={(e) => updateProperty(i, { defaultValue: e.target.value || null })}
+                                  >
+                                    <option value="">— None —</option>
+                                    {(prop.options || []).map(opt => (
+                                      <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                  </select>
+                                ) : prop.type === 'date' ? (
+                                  <input
+                                    type="date"
+                                    className="manage-types__prop-default-input manage-types__prop-default-input--date"
+                                    value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
+                                    onChange={(e) => updateProperty(i, { defaultValue: e.target.value || null })}
+                                  />
+                                ) : prop.type === 'markdown' ? (
+                                  <textarea
+                                    className="manage-types__prop-default-textarea"
+                                    value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
+                                    onChange={(e) => updateProperty(i, { defaultValue: e.target.value || null })}
+                                    placeholder="Default markdown content…"
+                                    rows={4}
+                                  />
+                                ) : (
+                                  <input
+                                    type={prop.type === 'number' ? 'number' : prop.type === 'url' ? 'url' : 'text'}
+                                    className="manage-types__prop-default-input"
+                                    value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
+                                    onChange={(e) => updateProperty(i, { defaultValue: e.target.value || null })}
+                                    placeholder={prop.type === 'url' ? 'https://…' : 'Default value…'}
+                                  />
+                                )}
+                              </div>
+                            </div>
+                            {prop.type === 'select' && (
+                              <OptionsEditor
+                                options={prop.options || []}
+                                onChange={(opts) => updateProperty(i, { options: opts })}
+                              />
+                            )}
+                          </div>
                         )}
                       </div>
                     ))}
@@ -630,7 +816,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                   </div>
 
                   <p className="manage-types__props-hint">
-                    Common properties (Title, Scale, Description) are built-in and always available.
+                    Title and Scale are built-in. All other properties are user-configured above.
                   </p>
                 </div>
               </>

@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import logger from '../lib/logger.js';
 import * as projectsRepo from '../repositories/projects.js';
 
 export const projectsRouter = Router();
@@ -24,7 +25,8 @@ projectsRouter.get('/projects', async (_req: Request, res: Response) => {
   try {
     const projects = await projectsRepo.findAll();
     res.json(projects);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to load projects', { error: err.message });
     res.status(500).json({ error: 'Failed to load projects' });
   }
 });
@@ -66,7 +68,8 @@ projectsRouter.post('/projects', async (req: Request, res: Response) => {
     const resolvedOrgId = org_id || '00000000-0000-0000-0000-000000000000';
     const project = await projectsRepo.create({ org_id: resolvedOrgId, name, description, icon, created_by: null });
     res.status(201).json(project);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to create project', { error: err.message, name: req.body.name });
     res.status(500).json({ error: 'Failed to create project' });
   }
 });
@@ -106,7 +109,8 @@ projectsRouter.get('/projects/:id', async (req: Request, res: Response) => {
       return;
     }
     res.json(project);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to load project', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to load project' });
   }
 });
@@ -154,7 +158,8 @@ projectsRouter.put('/projects/:id', async (req: Request, res: Response) => {
       return;
     }
     res.json(project);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to update project', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to update project' });
   }
 });
@@ -186,7 +191,8 @@ projectsRouter.delete('/projects/:id', async (req: Request, res: Response) => {
       return;
     }
     res.status(204).send();
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to delete project', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to delete project' });
   }
 });

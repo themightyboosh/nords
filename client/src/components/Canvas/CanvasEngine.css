@@ -14,6 +14,21 @@
   cursor: grabbing;
 }
 
+/* Persona Lens — read-only visual affordance */
+.nords-canvas--persona .react-flow__node {
+  cursor: default !important;
+  pointer-events: none;
+}
+
+/* Keep panning enabled in persona mode */
+.nords-canvas--persona .react-flow__pane {
+  cursor: grab;
+}
+
+.nords-canvas--persona .react-flow__pane:active {
+  cursor: grabbing;
+}
+
 /* ═══════════════════════════════════════════════ */
 /* UNANCHORED STICKIES — top-left flow             */
 /* ═══════════════════════════════════════════════ */
@@ -448,14 +463,46 @@
   white-space: nowrap;
 }
 
-/* ── Semantic Zoom Tiers ── */
-[data-zoom-tier="meso"] .nords-node__props,
-[data-zoom-tier="meso"] .nords-node__footer,
-[data-zoom-tier="meso"] .nords-node__title {
+/* ── Semantic Zoom Tiers ──
+ * All selectors scoped to .react-flow so board/matrix cards are NEVER affected.
+ */
+
+/* Meso (50%–25%): Icon + title only, single line, 2× scale */
+[data-zoom-tier="meso"] .react-flow .nords-node__props,
+[data-zoom-tier="meso"] .react-flow .nords-node__footer,
+[data-zoom-tier="meso"] .react-flow .nords-node__type-label {
   display: none;
 }
 
-[data-zoom-tier="macro"] .nords-node {
+[data-zoom-tier="meso"] .react-flow .nords-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+[data-zoom-tier="meso"] .react-flow .nords-node__titlebar {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+[data-zoom-tier="meso"] .react-flow .nords-node__header svg {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+[data-zoom-tier="meso"] .react-flow .nords-node__title {
+  font-size: calc(var(--nords-font-size-sm) * 2);
+  margin-bottom: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Macro (<25%): Colored dots, everything hidden */
+[data-zoom-tier="macro"] .react-flow .nords-node {
   min-width: unset;
   width: 24px !important;
   height: 24px !important;
@@ -465,18 +512,18 @@
   overflow: hidden;
   box-shadow: none;
 }
-[data-zoom-tier="macro"] .nords-node__titlebar,
-[data-zoom-tier="macro"] .nords-node__props,
-[data-zoom-tier="macro"] .nords-node__title,
-[data-zoom-tier="macro"] .nords-node__footer {
+[data-zoom-tier="macro"] .react-flow .nords-node__titlebar,
+[data-zoom-tier="macro"] .react-flow .nords-node__props,
+[data-zoom-tier="macro"] .react-flow .nords-node__title,
+[data-zoom-tier="macro"] .react-flow .nords-node__footer {
   display: none;
 }
-[data-zoom-tier="macro"] .nords-connection--active,
-[data-zoom-tier="macro"] .nords-connection--ghost,
-[data-zoom-tier="macro"] .nords-connection--context {
-  stroke-width: 1 !important; /* thinner at macro zoom */
+[data-zoom-tier="macro"] .react-flow .nords-connection--active,
+[data-zoom-tier="macro"] .react-flow .nords-connection--ghost,
+[data-zoom-tier="macro"] .react-flow .nords-connection--context {
+  stroke-width: 1 !important;
 }
-[data-zoom-tier="macro"] .nords-connection-label {
+[data-zoom-tier="macro"] .react-flow .nords-connection-label {
   display: none;
 }
 

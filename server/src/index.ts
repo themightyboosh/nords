@@ -4,6 +4,7 @@ import swaggerUi from 'swagger-ui-express';
 import logger from './lib/logger.js';
 import { initFirebaseAdmin } from './lib/firebaseAdmin.js';
 import { requireAuth } from './middleware/auth.js';
+import { requestLogger } from './middleware/requestLogger.js';
 import { swaggerSpec } from './swagger.js';
 import { projectsRouter } from './routes/projects.js';
 import { graphRouter } from './routes/graph.js';
@@ -12,6 +13,7 @@ import { commentsRouter } from './routes/comments.js';
 import { seedRouter } from './routes/seed.js';
 import { typesRouter } from './routes/types.js';
 import { logsRouter } from './routes/logs.js';
+import { personasRouter } from './routes/personas.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -29,6 +31,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json({ limit: '5mb' }));
+app.use(requestLogger);
 
 // ── Swagger UI ──
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -55,6 +58,7 @@ app.use('/api', commentsRouter);
 app.use('/api', seedRouter); // Dev only — bulk data seeding
 app.use('/api', typesRouter);
 app.use('/api', logsRouter);
+app.use('/api', personasRouter);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

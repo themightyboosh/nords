@@ -77,6 +77,19 @@ async function post(path, body) {
   return res.json();
 }
 
+async function put(path, body) {
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`PUT ${path} → ${res.status}: ${txt}`);
+  }
+  return res.json();
+}
+
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function pickN(arr, n) {
   const copy = [...arr]; const out = [];
@@ -87,8 +100,36 @@ function pickN(arr, n) {
   return out;
 }
 
+// ── Type descriptions ────────────────────────────────────────────────────────
+const nordTypeDescriptions = {
+  [NT.Bug]:       'Tracks defects, regressions, and unexpected behavior across the product surface. Includes severity and browser targeting.',
+  [NT.Person]:    'Represents a team member or stakeholder. Used to model assignments, ownership, and collaboration relationships.',
+  [NT.Artifact]:  'Documents, diagrams, reports, and other deliverables produced during the project lifecycle.',
+  [NT.Milestone]: 'Key delivery dates and release checkpoints. Milestones aggregate task dependencies to track readiness.',
+  [NT.Task]:      'A unit of work to be completed. Tasks can be assigned to people, blocked by bugs, and linked to milestones.',
+};
+
+const connectionTypeDescriptions = {
+  [CT.Depends.id]:  'Models prerequisite relationships — the source must complete before the target can begin.',
+  [CT.Priority.id]: 'Ranks relative importance between nodes. Spectrum positions map to priority levels.',
+  [CT.Relates.id]:  'A general association between two nodes without directional semantics.',
+  [CT.Assigned.id]: 'Links a person to a task or bug they own. Spectrum position indicates workload balance.',
+  [CT.Blocks.id]:   'Indicates that the source node actively prevents progress on the target node.',
+};
+
 async function main() {
   console.log('🌱 Seeding smoke test data...\n');
+
+  // 0. Seed type descriptions
+  console.log('📝 Setting type descriptions...\n');
+  for (const [typeId, desc] of Object.entries(nordTypeDescriptions)) {
+    await put(`/nord-types/${typeId}`, { description: desc });
+    console.log(`  📝 Nord type: ${typeId.slice(0,8)}…`);
+  }
+  for (const [typeId, desc] of Object.entries(connectionTypeDescriptions)) {
+    await put(`/connection-types/${typeId}`, { description: desc });
+    console.log(`  📝 Connection type: ${typeId.slice(0,8)}…`);
+  }
 
   // 1. Create all nords
   const nords = [];

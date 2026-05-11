@@ -25,7 +25,9 @@
   backdrop-filter: blur(12px);
   background: color-mix(in srgb, var(--nords-color-bg-secondary) 80%, transparent);
   flex-shrink: 0;
-  z-index: 5;
+  position: sticky;
+  top: 0;
+  z-index: 6;
 }
 
 .nords-matrix__header-left {
@@ -214,9 +216,6 @@
   border-bottom: 2px solid var(--nords-color-border);
   border-right: 1px solid var(--nords-color-border);
   background: color-mix(in srgb, var(--nords-color-bg-secondary) 90%, var(--nords-color-bg-primary));
-  position: sticky;
-  top: 0;
-  z-index: 4;
 }
 
 .nords-matrix__grid-col-header--muted {
@@ -246,9 +245,6 @@
   transition: background-color 0.15s ease, border-color 0.15s ease;
   cursor: default;
   user-select: none;
-  position: sticky;
-  top: 42px; /* below column headers */
-  z-index: 3;
 }
 
 /* Zebra-stripe alternation for swimlane bands */
@@ -380,9 +376,6 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px 10px;
-  position: sticky;
-  top: 0;
-  z-index: 3;
   backdrop-filter: blur(8px);
   background: color-mix(in srgb, var(--nords-color-bg-secondary) 70%, transparent);
   border-bottom: 2px solid var(--nords-color-border);
@@ -500,6 +493,14 @@
 /* + COPY badge */
 .nords-matrix__card-wrapper.is-clone-dragging .nords-matrix__clone-badge {
   display: flex;
+}
+
+/* ── Dimmed state (filtered out by type filter) ── */
+.nords-matrix__card-wrapper.is-dimmed {
+  opacity: 0.2;
+  pointer-events: none;
+  filter: grayscale(0.8);
+  transition: opacity 0.2s ease, filter 0.2s ease;
 }
 
 .nords-matrix__clone-badge {
@@ -688,4 +689,114 @@
 .nords-matrix__connection-entry.is-drag-over {
   border-color: var(--nords-color-accent);
   box-shadow: 0 0 0 1px var(--nords-color-accent);
+}
+
+/* ═══════════════════════════════════════════
+   QUADRANT MODE — Square Grid Layout
+   ═══════════════════════════════════════════ */
+
+.nords-matrix__quadrant {
+  display: grid;
+  flex: 1;
+  overflow: auto;
+  gap: 0;
+  /* Force square aspect ratio for the grid area */
+  aspect-ratio: 1;
+  max-height: calc(100vh - 120px);
+  max-width: calc(100vh - 120px);
+  margin: 0 auto; /* center the square */
+}
+
+/* Corner cell (top-left, above Y headers + left of X headers) */
+.nords-matrix__quadrant-corner {
+  background: transparent;
+  border-bottom: 1px solid var(--nords-color-border);
+  border-right: 1px solid var(--nords-color-border);
+}
+
+/* X-axis column headers (top) */
+.nords-matrix__quadrant-col-header {
+  padding: 8px 6px;
+  font-size: var(--nords-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+  border-bottom: 1px solid var(--nords-color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.nords-matrix__quadrant-col-header--muted {
+  color: var(--nords-color-text-tertiary) !important;
+  font-weight: 500;
+}
+
+/* Y-axis row headers (left) */
+.nords-matrix__quadrant-row-header {
+  padding: 6px 8px;
+  font-size: var(--nords-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-right: 1px solid var(--nords-color-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}
+
+.nords-matrix__quadrant-row-header.is-drag-over {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.nords-matrix__quadrant-row-label {
+  white-space: nowrap;
+}
+
+/* Grid cells */
+.nords-matrix__quadrant-cell {
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px;
+  min-height: 80px;
+  overflow: auto;
+  transition: background 0.15s ease;
+}
+
+.nords-matrix__quadrant-cell.is-drag-over,
+.nords-matrix__quadrant-cell.is-lane-drag-over {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nords-matrix__quadrant-cell--orphans {
+  border-left: 1px solid var(--nords-color-border);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.nords-matrix__quadrant-cell-empty {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nords-color-text-disabled);
+  font-size: var(--nords-font-size-xs);
+  opacity: 0.4;
+}
+
+/* Make cards smaller in quadrant cells */
+.nords-matrix__quadrant-cell .nords-board-card {
+  width: 100%;
+  max-width: 180px;
 }

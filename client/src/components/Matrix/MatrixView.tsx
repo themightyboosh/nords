@@ -26,7 +26,7 @@ import { useLens } from '../../context/LensContext';
 import { resolveStageLabel, getColumnBounds } from '../../utils/stageLabels';
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import { resolveIcon } from '../../utils/iconRegistry';
-import { useBoardSettings } from '../../hooks/useBoardSettings';
+import { useBoardSettingsContext } from '../../context/BoardSettingsContext';
 import { setDragData, getDragData, isAddLinkMode, type BoardDragData } from '../../hooks/useBoardDragDrop';
 import { useConnectionMutations, useBoardPositionMutations } from '../../hooks/useNordMutations';
 import { NordCard } from '../shared/NordCard';
@@ -56,6 +56,7 @@ interface MatrixCard {
   sortOrder: number;
   connectionIds: string[];
   connectionDirection: string;
+  isDimmed: boolean;
   properties: Array<{ key: string; value: string; color?: string }>;
 }
 
@@ -69,7 +70,7 @@ interface ConnectionEntry {
 export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetchGraph }: MatrixViewProps) {
   const { activeConnectionTypeId, setActiveConnectionTypeId } = useLens();
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
-  const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, ensureNordTypeVisible } = useBoardSettings(projectId);
+  const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, ensureNordTypeVisible, isNordHidden } = useBoardSettingsContext();
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
   const { upsertPosition, removePosition } = useBoardPositionMutations(projectId);
 
@@ -129,7 +130,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   }, [connectionTypes, activeConnectionTypeId]);
 
   // Build columns + cards (+ swimlane grid for quadrant mode)
-  const isQuadrant = activeType?.yStageLabels && activeType.yStageLabels.length > 0;
+  const isQuadrant = activeType?.measurementMode === 'quadrant' && (activeType?.yStageLabels?.length ?? 0) > 0;
   const yLabels = isQuadrant ? activeType!.yStageLabels : [];
 
   const { columns, unlinked, connectionEntries, gridCells } = useMemo(() => {
@@ -227,8 +228,8 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     for (const nord of graph.nords) {
       const nordType = typeMap.get(nord.type_id);
 
-      // Apply nord type filter
-      if (!isNordTypeVisible(activeType.id, nord.type_id)) continue;
+      // Nord type filter: dimmed instead of hidden
+      const isDimmed = !isNordTypeVisible(activeType.id, nord.type_id);
 
       const isOrphan = !nordsWithAnyConnection.has(nord.id);
       const pos = resolvePosition(nord.id);
@@ -266,6 +267,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         })(),
         connectionIds: connIds,
         connectionDirection: firstConn?.direction || 'forward',
+        isDimmed,
         properties: (() => {
           // Schema-ordered card preview: same logic as graphToReactFlow.
           // Show only properties with card_row 1 or 2, sorted by row.
@@ -346,7 +348,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     }));
 
     return { columns, unlinked: unlinkedCards, connectionEntries: entries, gridCells: cells };
-  }, [graph, activeType, boardCapableTypes, isNordTypeVisible, isQuadrant, yLabels, directionFilter]);
+  }, [graph, activeType, boardCapableTypes, isNordTypeVisible, isNordHidden, isQuadrant, yLabels, directionFilter]);
 
   // ── Drag handlers ──
 
@@ -562,8 +564,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   const totalCards = columns.reduce((sum, col) => sum + col.cards.length, 0) + unlinked.length;
 
-  // Count hidden nords (those filtering out by type visibility)
-  const hiddenCount = graph ? graph.nords.filter(n => !isNordTypeVisible(activeType.id, n.type_id)).length : 0;
+  // Count dimmed nords (type-filtered, shown grayed out)
+  const dimmedCount = columns.reduce((sum, col) => sum + col.cards.filter(c => c.isDimmed).length, 0)
+    + unlinked.filter(c => c.isDimmed).length;
 
   return (
     <div className="nords-matrix">
@@ -579,7 +582,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
             )}
           </h1>
           <span className="nords-matrix__header-count">
-            {totalCards} nords{hiddenCount > 0 && <span className="nords-matrix__hidden-count"> ({hiddenCount} hidden)</span>}
+            {totalCards} nords{dimmedCount > 0 && <span className="nords-matrix__hidden-count"> ({dimmedCount} dimmed)</span>}
           </span>
         </div>
       </div>
@@ -635,6 +638,14 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                 onDragOver={handleDragOver}
                 onDragEnter={() => handleLaneDragEnter(yl.label)}
                 onDragLeave={handleLaneDragLeave}
+                onDrop={(e) => {
+                  // Dropping on the banner places the card in the first column of this lane
+                  const firstCol = columns[0];
+                  if (firstCol) {
+                    const cellKey = `${firstCol.label}|${yl.label}`;
+                    handleCellDrop(e, firstCol.position, gridCells.get(cellKey) || [], yl.position);
+                  }
+                }}
               >
                 {yl.label}
                 <span className="nords-matrix__lane-count">{laneCardCounts.get(yl.label) || 0}</span>
@@ -661,6 +672,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                         isDragging={draggingCardId === card.id}
                         isCloneDragging={draggingCardId === card.id && isDragCloning}
                         isMouseHeld={mouseHeldCardId === card.id}
+                        isDimmed={card.isDimmed}
                         optionHeld={optionHeld}
                         onMouseDown={setMouseHeldCardId}
                         onMouseUp={() => setMouseHeldCardId(null)}
@@ -701,6 +713,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                         isDragging={draggingCardId === card.id}
                         isCloneDragging={draggingCardId === card.id && isDragCloning}
                         isMouseHeld={mouseHeldCardId === card.id}
+                        isDimmed={card.isDimmed}
                         optionHeld={optionHeld}
                         onMouseDown={setMouseHeldCardId}
                         onMouseUp={() => setMouseHeldCardId(null)}
@@ -758,6 +771,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                     isDragging={draggingCardId === card.id}
                     isCloneDragging={draggingCardId === card.id && isDragCloning}
                     isMouseHeld={mouseHeldCardId === card.id}
+                    isDimmed={card.isDimmed}
                     optionHeld={optionHeld}
                     onMouseDown={setMouseHeldCardId}
                     onMouseUp={() => setMouseHeldCardId(null)}
@@ -801,6 +815,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                       isDragging={draggingCardId === card.id}
                       isCloneDragging={draggingCardId === card.id && isDragCloning}
                       isMouseHeld={mouseHeldCardId === card.id}
+                      isDimmed={card.isDimmed}
                       optionHeld={optionHeld}
                       onMouseDown={setMouseHeldCardId}
                       onMouseUp={() => setMouseHeldCardId(null)}
@@ -846,6 +861,7 @@ interface BoardCardProps {
   isDragging: boolean;
   isCloneDragging: boolean;
   isMouseHeld: boolean;
+  isDimmed: boolean;
   optionHeld: boolean;
   onMouseDown: (cardId: string) => void;
   onMouseUp: () => void;
@@ -860,6 +876,7 @@ const BoardCard = memo(function BoardCard({
   isDragging,
   isCloneDragging,
   isMouseHeld,
+  isDimmed,
   optionHeld,
   onMouseDown,
   onMouseUp,
@@ -923,6 +940,7 @@ const BoardCard = memo(function BoardCard({
     isDragging ? 'is-dragging' : '',
     isCloneDragging ? 'is-clone-dragging' : '',
     isMouseHeld ? 'is-mouse-held' : '',
+    isDimmed ? 'is-dimmed' : '',
   ].filter(Boolean).join(' ');
 
   return (

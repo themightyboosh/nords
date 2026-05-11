@@ -9,8 +9,10 @@
  *   If no cache exists yet, positions are computed from distance values.
  * - "All Lines (Relevance)" computes AVERAGED positions across all cached types.
  *   If no types have cached positions, the DB positions are used.
+ * - "Persona Lens" computes WEIGHTED positions using signed displacement from
+ *   the centroid. Positive weights attract; negative weights repel.
  *
- * Animation: cubic ease-in over 200ms via requestAnimationFrame.
+ * Animation: cubic ease-in-out over 350ms via requestAnimationFrame.
  */
 
 import { useEffect, useRef, useCallback } from 'react';
@@ -30,14 +32,17 @@ type PositionMap = Map<string, { x: number; y: number }>;
 /**
  * @param activeTypeId - Currently selected connection type, or null for All Lines
  * @param relevanceNodes - The React Flow nodes with DB-stored relevance positions
+ * @param personaWeights - Optional persona category weights for persona lens mode
  */
 export function useLensLayout(
   activeTypeId: string | null,
-  relevanceNodes: { id: string; position: { x: number; y: number } }[]
+  relevanceNodes: { id: string; position: { x: number; y: number } }[],
+  personaWeights?: Map<string, number> | null
 ) {
   const reactFlow = useReactFlow();
   const rafRef = useRef<number>(0);
   const prevTypeRef = useRef<string | null | undefined>(undefined);
+  const prevPersonaWeightsRef = useRef<string>('');
 
   // Per-type position cache: typeId → Map<nodeId, {x, y}>
   const typeCacheRef = useRef<Map<string, PositionMap>>(new Map());
@@ -167,37 +172,89 @@ export function useLensLayout(
     return positions;
   }, [reactFlow]);
 
-  useEffect(() => {
-    if (prevTypeRef.current === undefined) {
-      prevTypeRef.current = activeTypeId;
-      return;
-    }
-    if (prevTypeRef.current === activeTypeId) return;
-
-    // Snapshot current positions into the PREVIOUS type's cache before switching
-    snapshotCurrentPositions(prevTypeRef.current);
-    prevTypeRef.current = activeTypeId;
-
-    const currentNodes = reactFlow.getNodes();
-    if (currentNodes.length === 0) return;
-
-    // Determine target positions
-    let targetPositions: PositionMap;
-
-    if (!activeTypeId) {
-      // "All Lines (Relevance)" — averaged across all types
-      targetPositions = computeAveragedPositions();
-    } else {
-      // Check cache first
-      const cached = typeCacheRef.current.get(activeTypeId);
-      if (cached && cached.size > 0) {
-        targetPositions = cached;
-      } else {
-        // Compute from distance values and cache
-        targetPositions = computeTypePositions(activeTypeId);
-        typeCacheRef.current.set(activeTypeId, targetPositions);
+  /**
+   * Compute persona-weighted positions using signed displacement from centroid.
+   *
+   * Math:
+   *   C(n) = Σ P_i(n) / |T|                           — unweighted centroid
+   *   D(n) = Σ (w_i/100 × (P_i(n) - C(n))) / |T|     — signed displacement
+   *   Final(n) = C(n) + D(n)
+   *
+   * Positive weights attract toward that type's layout.
+   * Negative weights repel away from that type's layout.
+   * Zero weights = neutral = same as All Lines.
+   */
+  const computePersonaPositions = useCallback((
+    weights: Map<string, number>  // connectionTypeId → weight (-100..+100)
+  ): PositionMap => {
+    // Pre-populate: ensure all types with weights have cached positions
+    for (const typeId of weights.keys()) {
+      if (!typeCacheRef.current.has(typeId)) {
+        typeCacheRef.current.set(typeId, computeTypePositions(typeId));
       }
     }
+
+    // Also ensure any existing cached types are included
+    const allTypeIds = new Set([...typeCacheRef.current.keys(), ...weights.keys()]);
+
+    const allNodeIds = new Set<string>();
+    for (const posMap of typeCacheRef.current.values()) {
+      for (const nodeId of posMap.keys()) allNodeIds.add(nodeId);
+    }
+    for (const nodeId of relevanceMapRef.current.keys()) allNodeIds.add(nodeId);
+
+    const result = new Map<string, { x: number; y: number }>();
+    const typeIds = [...allTypeIds].filter(id => typeCacheRef.current.has(id));
+
+    for (const nodeId of allNodeIds) {
+      // Collect positions from all types that have this node
+      const typePositions: { typeId: string; x: number; y: number }[] = [];
+      for (const typeId of typeIds) {
+        const pos = typeCacheRef.current.get(typeId)?.get(nodeId);
+        if (pos) typePositions.push({ typeId, ...pos });
+      }
+
+      if (typePositions.length === 0) {
+        // No type positions → fall back to DB relevance position
+        const rel = relevanceMapRef.current.get(nodeId);
+        if (rel) result.set(nodeId, { x: rel.x, y: rel.y });
+        continue;
+      }
+
+      // Step 1: Unweighted centroid
+      const cx = typePositions.reduce((s, p) => s + p.x, 0) / typePositions.length;
+      const cy = typePositions.reduce((s, p) => s + p.y, 0) / typePositions.length;
+
+      // Step 2: Signed displacement from centroid
+      let dx = 0, dy = 0;
+      for (const tp of typePositions) {
+        const w = (weights.get(tp.typeId) ?? 0) / 100;  // normalize to -1..+1
+        dx += w * (tp.x - cx);
+        dy += w * (tp.y - cy);
+      }
+      dx /= typePositions.length;
+      dy /= typePositions.length;
+
+      // Clamp displacement to prevent extreme layouts (2× centroid spread)
+      const maxDisplacement = 500;
+      const mag = Math.sqrt(dx * dx + dy * dy);
+      if (mag > maxDisplacement) {
+        const scale = maxDisplacement / mag;
+        dx *= scale;
+        dy *= scale;
+      }
+
+      // Step 3: Final position
+      result.set(nodeId, { x: cx + dx, y: cy + dy });
+    }
+
+    return result;
+  }, [computeTypePositions]);
+
+  // ── Animate to persona-weighted positions when weights change ──
+  const animateToPositions = useCallback((targetPositions: PositionMap) => {
+    const currentNodes = reactFlow.getNodes();
+    if (currentNodes.length === 0) return;
 
     // Build animation targets
     const targets = new Map<string, PositionTarget>();
@@ -214,14 +271,13 @@ export function useLensLayout(
 
     if (targets.size === 0) return;
 
-    // ── Viewport check: only animate nodes near the visible area ──
-    // Off-screen nodes jump instantly to their target position.
+    // Viewport check: only animate nodes near the visible area
     const { x: vpX, y: vpY, zoom: vpZoom } = reactFlow.getViewport();
     const vpWidth = (window.innerWidth || 1200) / vpZoom;
     const vpHeight = (window.innerHeight || 800) / vpZoom;
     const vpLeft = -vpX / vpZoom;
     const vpTop = -vpY / vpZoom;
-    const margin = 500; // generous margin to include nodes about to scroll in
+    const margin = 500;
 
     const visibleTargets = new Map<string, PositionTarget>();
     const instantTargets = new Map<string, PositionTarget>();
@@ -240,7 +296,7 @@ export function useLensLayout(
       }
     }
 
-    // Jump off-screen nodes instantly (no animation cost)
+    // Jump off-screen nodes instantly
     if (instantTargets.size > 0) {
       reactFlow.setNodes(nds =>
         nds.map(n => {
@@ -260,7 +316,6 @@ export function useLensLayout(
     function animate() {
       const elapsed = performance.now() - startTime;
       const t = Math.min(1, elapsed / ANIM_DURATION);
-      // Ease-in-out: smooth start AND smooth landing (matches spring feel)
       const ease = t < 0.5
         ? 4 * t * t * t
         : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -285,9 +340,66 @@ export function useLensLayout(
     }
 
     rafRef.current = requestAnimationFrame(animate);
+  }, [reactFlow]);
 
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [activeTypeId, reactFlow, snapshotCurrentPositions, computeAveragedPositions, computeTypePositions]);
+  // ── Jump nodes to positions instantly (no animation — used during slider drag) ──
+  const jumpToPositions = useCallback((targetPositions: PositionMap) => {
+    cancelAnimationFrame(rafRef.current);
+    reactFlow.setNodes(nds =>
+      nds.map(n => {
+        const to = targetPositions.get(n.id);
+        if (!to) return n;
+        return { ...n, position: { x: to.x, y: to.y } };
+      })
+    );
+  }, [reactFlow]);
 
-  return { saveNodePosition };
+  // ── Connection type transition (existing behavior) ──
+  useEffect(() => {
+    // Skip persona mode — handled separately
+    if (personaWeights) return;
+
+    if (prevTypeRef.current === undefined) {
+      prevTypeRef.current = activeTypeId;
+      return;
+    }
+    if (prevTypeRef.current === activeTypeId) return;
+
+    // Snapshot current positions into the PREVIOUS type's cache before switching
+    snapshotCurrentPositions(prevTypeRef.current);
+    prevTypeRef.current = activeTypeId;
+
+    // Determine target positions
+    let targetPositions: PositionMap;
+
+    if (!activeTypeId) {
+      // "All Lines (Relevance)" — averaged across all types
+      targetPositions = computeAveragedPositions();
+    } else {
+      // Check cache first
+      const cached = typeCacheRef.current.get(activeTypeId);
+      if (cached && cached.size > 0) {
+        targetPositions = cached;
+      } else {
+        // Compute from distance values and cache
+        targetPositions = computeTypePositions(activeTypeId);
+        typeCacheRef.current.set(activeTypeId, targetPositions);
+      }
+    }
+
+    animateToPositions(targetPositions);
+  }, [activeTypeId, personaWeights, reactFlow, snapshotCurrentPositions, computeAveragedPositions, computeTypePositions, animateToPositions]);
+
+  // ── Persona weight transition ──
+  // NOTE: Spatial displacement is disabled. Persona lens now uses
+  // CSS opacity/grayscale via computePersonaScores (in CanvasEngine).
+  // This avoids expensive position recomputation on every slider tick.
+  // The computePersonaPositions function is retained for potential future use.
+  useEffect(() => {
+    if (!personaWeights) {
+      prevPersonaWeightsRef.current = '';
+    }
+  }, [personaWeights]);
+
+  return { saveNodePosition, computePersonaPositions, jumpToPositions, animateToPositions };
 }

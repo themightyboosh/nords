@@ -23,6 +23,7 @@ export interface PropertyFieldProps {
   value: unknown;
   options?: string[];
   color?: string;
+  required?: boolean;
   onChange: (value: unknown) => void;
 }
 
@@ -32,36 +33,48 @@ export const PropertyField: React.FC<PropertyFieldProps> = ({
   value,
   options = [],
   color,
+  required,
   onChange,
 }) => {
+  const label = required ? `${name} *` : name;
+  // Determine if a required field is missing a value
+  const isEmpty = (v: unknown): boolean => {
+    if (v == null) return true;
+    if (typeof v === 'string' && v.trim() === '') return true;
+    if (Array.isArray(v) && v.length === 0) return true;
+    if (typeof v === 'number' && isNaN(v)) return true;
+    return false;
+  };
+  const missing = !!required && isEmpty(value);
+
   switch (type) {
     case 'string':
-      return <StringField name={name} value={value as string} onChange={onChange} />;
+      return <StringField name={label} value={value as string} onChange={onChange} missing={missing} />;
     case 'number':
-      return <NumberField name={name} value={value as number} onChange={onChange} />;
+      return <NumberField name={label} value={value as number} onChange={onChange} missing={missing} />;
     case 'select':
-      return <SelectField name={name} value={value as string} options={options} color={color} onChange={onChange} />;
+      return <SelectField name={label} value={value as string} options={options} color={color} onChange={onChange} missing={missing} />;
     case 'date':
-      return <DateField name={name} value={value as string} onChange={onChange} />;
+      return <DateField name={label} value={value as string} onChange={onChange} missing={missing} />;
     case 'markdown':
-      return <MarkdownField name={name} value={value as string} onChange={onChange} />;
+      return <MarkdownField name={label} value={value as string} onChange={onChange} missing={missing} />;
     case 'url':
-      return <UrlField name={name} value={value as string} onChange={onChange} />;
+      return <UrlField name={label} value={value as string} onChange={onChange} missing={missing} />;
     case 'spectrum_1d':
-      return <SpectrumField name={name} value={value as number} color={color} />;
+      return <SpectrumField name={label} value={value as number} color={color} />;
     case 'tags':
-      return <TagsField name={name} value={value as string[]} onChange={onChange} />;
+      return <TagsField name={label} value={value as string[]} onChange={onChange} missing={missing} />;
     default:
-      return <StringField name={name} value={String(value ?? '')} onChange={onChange} />;
+      return <StringField name={label} value={String(value ?? '')} onChange={onChange} missing={missing} />;
   }
 };
 
 // ── Individual Field Components ──
 
-function StringField({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
+function StringField({ name, value, onChange, missing }: { name: string; value: string; onChange: (v: string) => void; missing?: boolean }) {
   const debouncedChange = useDebouncedCallback(onChange, 400);
   return (
-    <div className="nords-pf">
+    <div className={`nords-pf${missing ? ' nords-pf--missing' : ''}`}>
       <label className="nords-pf__label">{name}</label>
       <input
         className="nords-pf__input"
@@ -74,10 +87,10 @@ function StringField({ name, value, onChange }: { name: string; value: string; o
   );
 }
 
-function NumberField({ name, value, onChange }: { name: string; value: number; onChange: (v: number) => void }) {
+function NumberField({ name, value, onChange, missing }: { name: string; value: number; onChange: (v: number) => void; missing?: boolean }) {
   const debouncedChange = useDebouncedCallback((v: string) => onChange(parseFloat(v) || 0), 400);
   return (
-    <div className="nords-pf">
+    <div className={`nords-pf${missing ? ' nords-pf--missing' : ''}`}>
       <label className="nords-pf__label">{name}</label>
       <input
         className="nords-pf__input nords-pf__input--number"
@@ -90,11 +103,11 @@ function NumberField({ name, value, onChange }: { name: string; value: number; o
   );
 }
 
-function SelectField({ name, value, options, color, onChange }: {
-  name: string; value: string; options: string[]; color?: string; onChange: (v: string) => void;
+function SelectField({ name, value, options, color, onChange, missing }: {
+  name: string; value: string; options: string[]; color?: string; onChange: (v: string) => void; missing?: boolean;
 }) {
   return (
-    <div className="nords-pf">
+    <div className={`nords-pf${missing ? ' nords-pf--missing' : ''}`}>
       <label className="nords-pf__label">{name}</label>
       <select
         className="nords-pf__select"
@@ -111,9 +124,9 @@ function SelectField({ name, value, options, color, onChange }: {
   );
 }
 
-function DateField({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
+function DateField({ name, value, onChange, missing }: { name: string; value: string; onChange: (v: string) => void; missing?: boolean }) {
   return (
-    <div className="nords-pf">
+    <div className={`nords-pf${missing ? ' nords-pf--missing' : ''}`}>
       <label className="nords-pf__label">{name}</label>
       <input
         className="nords-pf__input nords-pf__input--date"
@@ -125,12 +138,21 @@ function DateField({ name, value, onChange }: { name: string; value: string; onC
   );
 }
 
-function MarkdownField({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
-  const [editing, setEditing] = useState(false);
+function MarkdownField({ name, value, onChange, missing }: { name: string; value: string; onChange: (v: string) => void; missing?: boolean }) {
+  const [editing, setEditing] = useState(!value);
   const debouncedChange = useDebouncedCallback(onChange, 500);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-grow textarea
+  const handleInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    debouncedChange(e.target.value);
+    const ta = e.target;
+    ta.style.height = 'auto';
+    ta.style.height = `${Math.min(ta.scrollHeight, 400)}px`;
+  }, [debouncedChange]);
 
   return (
-    <div className="nords-pf nords-pf--markdown">
+    <div className={`nords-pf nords-pf--markdown${missing ? ' nords-pf--missing' : ''}`}>
       <div className="nords-pf__header">
         <label className="nords-pf__label">{name}</label>
         <button
@@ -142,26 +164,27 @@ function MarkdownField({ name, value, onChange }: { name: string; value: string;
       </div>
       {editing ? (
         <textarea
+          ref={textareaRef}
           className="nords-pf__textarea"
           defaultValue={value || ''}
-          placeholder={`Write ${name} in markdown…`}
-          rows={6}
-          onChange={(e) => debouncedChange(e.target.value)}
+          placeholder={`Write markdown…`}
+          rows={8}
+          onChange={handleInput}
         />
       ) : (
         <div
           className="nords-pf__preview"
-          dangerouslySetInnerHTML={{ __html: simpleMarkdown(value || `*No ${name} yet*`) }}
+          dangerouslySetInnerHTML={{ __html: simpleMarkdown(value || `*No content yet — click Edit*`) }}
         />
       )}
     </div>
   );
 }
 
-function UrlField({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
+function UrlField({ name, value, onChange, missing }: { name: string; value: string; onChange: (v: string) => void; missing?: boolean }) {
   const debouncedChange = useDebouncedCallback(onChange, 400);
   return (
-    <div className="nords-pf nords-pf--url">
+    <div className={`nords-pf nords-pf--url${missing ? ' nords-pf--missing' : ''}`}>
       <label className="nords-pf__label">{name}</label>
       <div className="nords-pf__url-row">
         <input
@@ -206,7 +229,7 @@ function SpectrumField({ name, value, color }: { name: string; value: number; co
   );
 }
 
-function TagsField({ name, value, onChange }: { name: string; value: string[]; onChange: (v: string[]) => void }) {
+function TagsField({ name, value, onChange, missing }: { name: string; value: string[]; onChange: (v: string[]) => void; missing?: boolean }) {
   const tags = Array.isArray(value) ? value : [];
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -236,7 +259,7 @@ function TagsField({ name, value, onChange }: { name: string; value: string[]; o
   }, [addTag, removeTag, tags]);
 
   return (
-    <div className="nords-pf nords-pf--tags">
+    <div className={`nords-pf nords-pf--tags${missing ? ' nords-pf--missing' : ''}`}>
       <label className="nords-pf__label">{name}</label>
       <div className="nords-pf__tags-container">
         {tags.map((tag, i) => (

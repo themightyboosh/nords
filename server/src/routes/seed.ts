@@ -10,6 +10,7 @@
 
 import { Router, Request, Response } from 'express';
 import { query, queryOne } from '../db.js';
+import logger from '../lib/logger.js';
 
 export const seedRouter = Router();
 
@@ -134,8 +135,8 @@ seedRouter.post('/seed', async (req: Request, res: Response) => {
     }
 
     res.json({ ok: true, created: results });
-  } catch (err) {
-    console.error('Seed error:', err);
+  } catch (err: any) {
+    logger.error('Seed failed', { error: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ error: 'Seed failed', details: String(err) });
   }
 });

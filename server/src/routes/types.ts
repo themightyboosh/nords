@@ -11,6 +11,7 @@
 import { Router, Request, Response } from 'express';
 import { nordTypesRepo, connectionTypesRepo } from '../repositories/types.js';
 import { query, queryOne } from '../db.js';
+import logger from '../lib/logger.js';
 
 export const typesRouter = Router();
 
@@ -26,7 +27,8 @@ typesRouter.get('/projects/:id/types', async (req: Request, res: Response) => {
       connectionTypesRepo.findByProject(req.params.id),
     ]);
     res.json({ nord_types: nordTypes, connection_types: connectionTypes });
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to load types', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to load types' });
   }
 });
@@ -49,13 +51,15 @@ typesRouter.post('/projects/:id/nord-types', async (req: Request, res: Response)
       user_id: userId,
       project_id: req.params.id,
       name: req.body.name || 'New Type',
+      description: req.body.description,
       icon: req.body.icon,
       accent_color: req.body.accent_color,
       properties_schema: req.body.properties_schema,
       scale_property: req.body.scale_property,
     });
     res.status(201).json(type);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to create nord type', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to create nord type' });
   }
 });
@@ -69,7 +73,8 @@ typesRouter.put('/nord-types/:typeId', async (req: Request, res: Response) => {
       return;
     }
     res.json(updated);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to update nord type', { error: err.message, typeId: req.params.typeId });
     res.status(500).json({ error: 'Failed to update nord type' });
   }
 });
@@ -83,6 +88,7 @@ typesRouter.delete('/nord-types/:typeId', async (req: Request, res: Response) =>
     if (err.message?.includes('Cannot delete')) {
       res.status(409).json({ error: err.message });
     } else {
+      logger.error('Failed to delete nord type', { error: err.message, typeId: req.params.typeId });
       res.status(500).json({ error: 'Failed to delete nord type' });
     }
   }
@@ -102,15 +108,19 @@ typesRouter.post('/projects/:id/connection-types', async (req: Request, res: Res
       user_id: userId,
       project_id: req.params.id,
       name: req.body.name || 'New Connection',
+      description: req.body.description,
       accent_color: req.body.accent_color,
       stroke_style: req.body.stroke_style,
       default_direction: req.body.default_direction,
+      verb: req.body.verb,
+      direction_filter: req.body.direction_filter,
       x_stage_labels: req.body.x_stage_labels,
       y_stage_labels: req.body.y_stage_labels,
       properties_schema: req.body.properties_schema,
     });
     res.status(201).json(type);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to create connection type', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to create connection type' });
   }
 });
@@ -124,7 +134,8 @@ typesRouter.put('/connection-types/:typeId', async (req: Request, res: Response)
       return;
     }
     res.json(updated);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to update connection type', { error: err.message, typeId: req.params.typeId });
     res.status(500).json({ error: 'Failed to update connection type' });
   }
 });
@@ -138,6 +149,7 @@ typesRouter.delete('/connection-types/:typeId', async (req: Request, res: Respon
     if (err.message?.includes('Cannot delete')) {
       res.status(409).json({ error: err.message });
     } else {
+      logger.error('Failed to delete connection type', { error: err.message, typeId: req.params.typeId });
       res.status(500).json({ error: 'Failed to delete connection type' });
     }
   }
@@ -168,7 +180,8 @@ typesRouter.post('/projects/:id/types/associate', async (req: Request, res: Resp
       [req.params.id, type_id, type_kind, maxSort?.max ?? 0]
     );
     res.status(201).json({ associated: true });
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to associate type', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to associate type' });
   }
 });
@@ -192,7 +205,8 @@ typesRouter.post('/projects/:id/types/dissociate', async (req: Request, res: Res
       [req.params.id, type_id]
     );
     res.json({ dissociated: true });
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to dissociate type', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to dissociate type' });
   }
 });

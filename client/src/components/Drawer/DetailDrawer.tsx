@@ -13,12 +13,13 @@
  *   - Line Mode: Direction toggle, distance display, endpoint display
  */
 
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { useDrawerEntity } from '../../hooks/useDrawerEntity';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
+import { useLens } from '../../context/LensContext';
 import { PropertyField } from './PropertyField';
-import { MarkdownEditor } from './MarkdownEditor';
+
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import './DetailDrawer.css';
 import './PropertyField.css';
@@ -34,9 +35,12 @@ interface DetailDrawerProps {
     type: string;
     options?: string[];
     card_row?: number;
+    required?: boolean;
   }>>;
   /** Callback when user clicks a connection in the connections tab */
   onSelectConnection?: (connectionId: string) => void;
+  /** Callback when user clicks a nord in the nords tab */
+  onSelectNord?: (nordId: string) => void;
   /** Raw graph data — used for view-agnostic entity resolution and category list */
   graph?: ProjectGraph | null;
   /** Refetch graph after mutations so both views stay in sync */
@@ -44,12 +48,21 @@ interface DetailDrawerProps {
 }
 
 // ── Direction Toggle Button Group ──
+// 5 directional states for connections:
+//   forward (→)  — Source → Target
+//   reverse (←)  — Target → Source
+//   both    (↔)  — Bidirectional
+//   neither (—)  — Generic / verb only
+//   none    (·)  — Context only / no connection semantics
 const DIRECTIONS = [
   { value: 'forward' as const, label: '→', title: 'Forward' },
   { value: 'reverse' as const, label: '←', title: 'Reverse' },
   { value: 'both' as const, label: '↔', title: 'Bidirectional' },
-  { value: 'neither' as const, label: '—', title: 'None' },
+  { value: 'neither' as const, label: '—', title: 'Generic (verb only)' },
+  { value: 'none' as const, label: '·', title: 'Context only' },
 ];
+
+type DirectionValue = 'forward' | 'reverse' | 'both' | 'neither' | 'none';
 
 function DirectionToggle({
   value,
@@ -58,27 +71,38 @@ function DirectionToggle({
 }: {
   value: string;
   color: string;
-  onChange: (dir: 'forward' | 'reverse' | 'both' | 'neither') => void;
+  onChange: (dir: DirectionValue) => void;
 }) {
   // Map visual direction back to DB direction
-  const dbValue = value === 'to' ? 'forward'
+  const dbValue: DirectionValue = value === 'to' ? 'forward'
     : value === 'from' ? 'reverse'
     : value === 'both' ? 'both'
-    : 'neither';
+    : value === 'neither' ? 'neither'
+    : 'none';
+
+  // When direction is 'none' (context only), directional buttons are disabled
+  // because no line exists to direct.
+  const isContextOnly = dbValue === 'none';
 
   return (
-    <div className="nords-direction-toggle">
-      {DIRECTIONS.map(d => (
-        <button
-          key={d.value}
-          className={`nords-direction-toggle__btn ${dbValue === d.value ? 'is-active' : ''}`}
-          style={dbValue === d.value ? { borderColor: color, color } : undefined}
-          onClick={() => onChange(d.value)}
-          title={d.title}
-        >
-          {d.label}
-        </button>
-      ))}
+    <div className={`nords-direction-toggle ${isContextOnly ? 'nords-direction-toggle--context-only' : ''}`}>
+      {DIRECTIONS.map(d => {
+        const isActive = dbValue === d.value;
+        // In context-only mode, only the · button is interactive
+        const isDisabled = isContextOnly && d.value !== 'none';
+        return (
+          <button
+            key={d.value}
+            className={`nords-direction-toggle__btn ${isActive ? 'is-active' : ''} ${isDisabled ? 'is-disabled' : ''}`}
+            style={isActive ? { borderColor: color, color } : undefined}
+            onClick={() => !isDisabled && onChange(d.value)}
+            title={isDisabled ? 'Add a line first to set direction' : d.title}
+            disabled={isDisabled}
+          >
+            {d.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -88,12 +112,18 @@ function CategoryList({
   nordId,
   graph,
   onSelectConnection,
+  onSelectNord,
   onDirectionChange,
+  onDeleteConnection,
+  onSetActiveLens,
 }: {
   nordId: string;
   graph: ProjectGraph;
   onSelectConnection?: (connectionId: string) => void;
-  onDirectionChange?: (connectionId: string, direction: 'forward' | 'reverse' | 'both' | 'neither') => void;
+  onSelectNord?: (nordId: string) => void;
+  onDirectionChange?: (connectionId: string, direction: DirectionValue) => void;
+  onDeleteConnection?: (connectionId: string) => void;
+  onSetActiveLens?: (typeId: string) => void;
 }) {
   // Build category groups: one per connection type
   const categories = useMemo(() => {
@@ -111,10 +141,27 @@ function CategoryList({
           (c.source_nord_id === nordId || c.target_nord_id === nordId)
       );
 
+      // Resolve spectrum label helper
+      const resolveSpectrumLabel = (distanceX: number) => {
+        if (!ct.x_stage_labels?.length) return null;
+        const labels = ct.x_stage_labels;
+        // Find closest label
+        let closest: { label: string; position: number } | null = null;
+        let minDist = Infinity;
+        for (const sl of labels) {
+          const item = typeof sl === 'string' ? { label: sl, position: 0 } : sl;
+          const d = Math.abs(item.position - distanceX);
+          if (d < minDist) { minDist = d; closest = item; }
+        }
+        return closest?.label || null;
+      };
+
       return {
         typeId: ct.id,
         typeName: ct.name,
         typeColor: ct.accent_color || '#888',
+        verb: ct.verb || null,
+        prepositions: ct.direction_prepositions || { forward: 'from', reverse: 'to', both: 'together' },
         connections: myConnections.map(c => {
           const otherNordId = c.source_nord_id === nordId ? c.target_nord_id : c.source_nord_id;
           const otherNord = nordMap.get(otherNordId);
@@ -124,6 +171,7 @@ function CategoryList({
             c.direction === 'forward' ? 'to' :
             c.direction === 'reverse' ? 'from' :
             c.direction === 'both' ? 'both' :
+            c.direction === 'neither' ? 'neither' :
             'none';
 
           return {
@@ -132,6 +180,7 @@ function CategoryList({
             otherNordTitle: otherNord?.title || 'Untitled',
             direction: visualDirection,
             dbDirection: c.direction,
+            spectrumLabel: resolveSpectrumLabel(c.distance_x),
           };
         }),
       };
@@ -166,28 +215,68 @@ function CategoryList({
             <span className="nords-category-group__count">{cat.connections.length}</span>
           </div>
           <div className="nords-category-group__rows">
-            {cat.connections.map(conn => (
-              <div key={conn.id} className="nords-category-row">
-                <button
-                  className="nords-category-row__target"
-                  onClick={() => onSelectConnection?.(conn.id)}
-                  title={`View connection to ${conn.otherNordTitle}`}
-                >
-                  <span className="nords-category-row__dir-icon">
-                    {conn.direction === 'to' ? '→'
-                      : conn.direction === 'from' ? '←'
-                      : conn.direction === 'both' ? '↔'
-                      : '—'}
-                  </span>
-                  <span className="nords-category-row__name">{conn.otherNordTitle}</span>
-                </button>
-                <DirectionToggle
-                  value={conn.direction}
-                  color={cat.typeColor}
-                  onChange={(dir) => onDirectionChange?.(conn.id, dir)}
-                />
-              </div>
-            ))}
+            {cat.connections.map(conn => {
+              // Build verb + preposition text
+              const verbPrep = (cat.verb && conn.direction !== 'none')
+                ? `${cat.verb} ${
+                    conn.direction === 'to' ? cat.prepositions.forward
+                    : conn.direction === 'from' ? cat.prepositions.reverse
+                    : conn.direction === 'both' ? cat.prepositions.both
+                    : '' /* neither: verb only, no preposition */
+                  }`.trim()
+                : null;
+
+              return (
+                <div key={conn.id} className="nords-category-row">
+                  <div className="nords-category-row__info">
+                    <div className="nords-category-row__top">
+                      <span className="nords-category-row__dir-icon">
+                        {conn.direction === 'to' ? '→'
+                          : conn.direction === 'from' ? '←'
+                          : conn.direction === 'both' ? '↔'
+                          : conn.direction === 'neither' ? '—'
+                          : '·'}
+                      </span>
+                      <button
+                        className="nords-category-row__name-link"
+                        onClick={() => onSelectNord?.(conn.otherNordId)}
+                        title={`Open ${conn.otherNordTitle}`}
+                      >
+                        {conn.otherNordTitle}
+                      </button>
+                    </div>
+                    {(verbPrep || conn.spectrumLabel) && (
+                      <button
+                        className="nords-category-row__meta"
+                        onClick={() => {
+                          onSetActiveLens?.(cat.typeId);
+                          onSelectConnection?.(conn.id);
+                        }}
+                        title="Open connection detail"
+                        style={{ color: cat.typeColor }}
+                      >
+                        {verbPrep && <span className="nords-category-row__verb">{verbPrep}</span>}
+                        {conn.spectrumLabel && (
+                          <span className="nords-category-row__spectrum" style={{ borderColor: cat.typeColor }}>
+                            {conn.spectrumLabel}
+                          </span>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  <DirectionToggle
+                    value={conn.direction}
+                    color={cat.typeColor}
+                    onChange={(dir) => onDirectionChange?.(conn.id, dir)}
+                  />
+                  <button
+                    className="nords-category-row__delete"
+                    onClick={() => onDeleteConnection?.(conn.id)}
+                    title="Remove this connection"
+                  >×</button>
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}
@@ -217,12 +306,22 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
   entityType,
   typeSchemas,
   onSelectConnection,
+  onSelectNord,
   graph,
   refetchGraph,
 }) => {
   const { entity, mutations } = useDrawerEntity(entityId, entityType, graph || null, refetchGraph);
-  const [activeTab, setActiveTab] = useState<'properties' | 'connections' | 'comments'>('properties');
+  const { setActiveConnectionTypeId } = useLens();
+  const [activeTab, setActiveTab] = useState<'properties' | 'connections'>('properties');
   const titleRef = useRef<HTMLHeadingElement>(null);
+
+  // When entity changes, reset tab to properties and sync lens
+  useEffect(() => {
+    setActiveTab('properties');
+    if (entity?.kind === 'connection') {
+      setActiveConnectionTypeId(entity.typeId);
+    }
+  }, [entityId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Debounced title update
   const debouncedTitleUpdate = useDebouncedCallback((text: string) => {
@@ -250,6 +349,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
       value: propsMap.get(s.name) ?? '',
       options: s.options,
       cardRow: s.card_row,
+      required: s.required,
     }));
   }, [entity, schema]);
 
@@ -262,6 +362,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
       type: s.type as any,
       value: propsMap.get(s.name) ?? '',
       options: s.options,
+      required: s.required,
     }));
   }, [entity, schema]);
 
@@ -271,28 +372,29 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
     const labels = entity.xStageLabels;
     if (!labels || labels.length === 0) return null;
     const dx = entity.distanceX;
-    let closest = labels[0];
-    let minDist = Math.abs(dx - labels[0].position);
-    for (const l of labels) {
-      const d = Math.abs(dx - l.position);
-      if (d < minDist) { minDist = d; closest = l; }
+    const n = labels.length;
+
+    // Labels may be strings or {label, position} objects — normalize
+    let closestLabel = '';
+    let minDist = Infinity;
+    for (let i = 0; i < n; i++) {
+      const item = labels[i];
+      const label = typeof item === 'string' ? item : item.label;
+      const pos = typeof item === 'string' ? (n === 1 ? 0.5 : i / (n - 1)) : item.position;
+      const d = Math.abs(dx - pos);
+      if (d < minDist) { minDist = d; closestLabel = label; }
     }
-    return closest.label;
+    return closestLabel || null;
   }, [entity]);
 
-  // Handle description update
-  const handleDescriptionChange = useCallback((text: string) => {
-    if (!entityId) return;
-    mutations.updateProperty('_description', text);
-  }, [entityId, mutations]);
-
   // Handle direction change from CategoryList
-  const handleCategoryDirectionChange = useCallback((connectionId: string, direction: 'forward' | 'reverse' | 'both' | 'neither') => {
+  const handleCategoryDirectionChange = useCallback((connectionId: string, direction: DirectionValue) => {
     // Temporarily switch to the connection entity context for direction update
     const visualDirection =
       direction === 'forward' ? 'to' :
       direction === 'reverse' ? 'from' :
       direction === 'both' ? 'both' :
+      direction === 'neither' ? 'neither' :
       'none';
 
     // Direct API call + refetch (since we're in Nord mode, not connection mode)
@@ -300,6 +402,16 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
       .then(() => refetchGraph?.())
       .catch((err: unknown) => {
         console.error('Failed to update direction:', err);
+        refetchGraph?.();
+      });
+  }, [refetchGraph]);
+
+  // Handle deleting a connection from a category
+  const handleDeleteConnection = useCallback((connectionId: string) => {
+    api.delete(`/api/connections/${connectionId}`)
+      .then(() => refetchGraph?.())
+      .catch((err: unknown) => {
+        console.error('Failed to delete connection:', err);
         refetchGraph?.();
       });
   }, [refetchGraph]);
@@ -320,10 +432,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
       <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
         {/* Header */}
         <header className="nords-drawer-header">
-          <div className="nords-drawer-type-badge" style={{
-            color: entity.typeColor,
-            borderColor: entity.typeColor,
-          }}>
+          <div className="nords-drawer-type-eyebrow" style={{ color: entity.typeColor }}>
             {entity.type}
           </div>
           <button className="nords-close-btn" onClick={onClose} aria-label="Close">×</button>
@@ -361,38 +470,35 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
                 <span className="nords-drawer-tab__count">{categoryConnectionCount}</span>
               )}
             </button>
-            <button
-              className={`nords-drawer-tab ${activeTab === 'comments' ? 'is-active' : ''}`}
-              onClick={() => setActiveTab('comments')}
-            >
-              Comments
-            </button>
           </div>
 
-          {/* Properties Tab — Schema-Driven */}
+          {/* Properties Tab — Schema-Driven + Description */}
           {activeTab === 'properties' && (
-            <div className="nords-properties-list">
-              {schemaProperties.length > 0 ? (
-                schemaProperties.map((p) => (
-                  <PropertyField
-                    key={p.name}
-                    name={p.name}
-                    type={p.type}
-                    value={p.value}
-                    options={p.options}
-                    color={entity.typeColor}
-                    onChange={(v) => mutations.updateProperty(p.name, v as string)}
-                  />
-                ))
-              ) : (
-                <div className="nords-drawer-empty">
-                  No properties defined for this type.
-                  <span className="nords-drawer-empty__hint">
-                    Add properties in Manage Types.
-                  </span>
-                </div>
-              )}
-            </div>
+            <>
+              <div className="nords-properties-list">
+                {schemaProperties.length > 0 ? (
+                  schemaProperties.map((p) => (
+                    <PropertyField
+                      key={p.name}
+                      name={p.name}
+                      type={p.type}
+                      value={p.value}
+                      options={p.options}
+                      color={entity.typeColor}
+                      required={p.required}
+                      onChange={(v) => mutations.updateProperty(p.name, v as string)}
+                    />
+                  ))
+                ) : (
+                  <div className="nords-drawer-empty">
+                    No properties defined for this type.
+                    <span className="nords-drawer-empty__hint">
+                      Add properties in Manage Types.
+                    </span>
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
           {/* Categories Tab — Grouped by connection type */}
@@ -401,7 +507,10 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
               nordId={entity.id}
               graph={graph}
               onSelectConnection={onSelectConnection}
+              onSelectNord={onSelectNord}
               onDirectionChange={handleCategoryDirectionChange}
+              onDeleteConnection={handleDeleteConnection}
+              onSetActiveLens={setActiveConnectionTypeId}
             />
           )}
           {activeTab === 'connections' && !graph && (
@@ -409,22 +518,6 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
               Loading categories…
             </div>
           )}
-
-          {/* Comments Tab */}
-          {activeTab === 'comments' && (
-            <div className="nords-drawer-comments">
-              <div className="nords-drawer-empty">
-                Comments coming soon.
-              </div>
-            </div>
-          )}
-
-          {/* Description — Always visible below tabs */}
-          <MarkdownEditor
-            value={entity.properties.find(p => p.key === '_description')?.value || ''}
-            onChange={handleDescriptionChange}
-            placeholder="Write a description for this nord…"
-          />
         </div>
       </FloatingPanel>
     );
@@ -432,42 +525,100 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
 
   // ── Line Mode (Connection) ──
   if (entity?.kind === 'connection') {
-    const headerLabel = entity.verb
-      ? `${entity.type.toUpperCase()}: ${entity.verb}`
-      : entity.type.toUpperCase();
+    // Build the connection label based on verb + direction
+    // - direction === 'none' → "context only" (no verb, no direction)
+    // - direction === 'neither' → just the verb (generic, no preposition)
+    // - directional (to/from/both) → "verb preposition"
+    const hasVerb = !!entity.verb;
+    const directionPrep =
+      entity.direction === 'none'
+        ? 'context only'
+        : hasVerb
+          ? (entity.direction === 'neither'
+              ? entity.verb!
+              : `${entity.verb} ${
+                  entity.direction === 'to' ? entity.prepositions.forward
+                  : entity.direction === 'from' ? entity.prepositions.reverse
+                  : entity.direction === 'both' ? entity.prepositions.both
+                  : ''
+                }`.trim())
+          : 'context only';
+
+
 
     return (
       <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
         <header className="nords-drawer-header">
-          <div className="nords-drawer-type-badge" style={{
-            color: entity.typeColor,
-            borderColor: entity.typeColor,
-          }}>
-            {headerLabel}
+          <div className="nords-drawer-type-eyebrow" style={{ color: entity.typeColor }}>
+            {entity.type}
           </div>
-          <button className="nords-close-btn" onClick={onClose} aria-label="Close">×</button>
+          <div className="nords-drawer-header-actions">
+            <button
+              className="nords-drawer-delete-btn"
+              onClick={() => {
+                api.delete(`/api/connections/${entity.id}`)
+                  .then(() => {
+                    refetchGraph?.();
+                    onClose();
+                  })
+                  .catch((err: unknown) => console.error('Failed to delete connection:', err));
+              }}
+              title="Delete this connection"
+              aria-label="Delete connection"
+            >×</button>
+            <button className="nords-close-btn" onClick={onClose} aria-label="Close">×</button>
+          </div>
         </header>
 
         <div className="nords-drawer-content">
-          {/* Endpoints + verb sentence */}
-          <div className="nords-drawer-line-header">
-            <span className="nords-drawer-endpoint">{entity.sourceName}</span>
-            <span className="nords-drawer-direction" style={{ color: entity.typeColor }}>
-              {entity.direction === 'to' ? '→' : entity.direction === 'from' ? '←' : entity.direction === 'both' ? '↔' : '—'}
-            </span>
-            <span className="nords-drawer-endpoint">{entity.targetName}</span>
-          </div>
-          {entity.verb && (
-            <div className="nords-drawer-relationship" style={{ color: entity.typeColor }}>
-              {entity.sourceName}{' '}
-              <em>{entity.verb}</em>{' '}
-              {entity.direction === 'to' ? entity.prepositions.forward
-                : entity.direction === 'from' ? entity.prepositions.reverse
-                : entity.direction === 'both' ? entity.prepositions.both
-                : 'related to'}{' '}
-              {entity.targetName}
-            </div>
-          )}
+          {/* Interactive sentence: Source → verb (spectrum) → Target */}
+          {(() => {
+            // When reverse, swap visual order so it reads naturally
+            const isReversed = entity.direction === 'from';
+            const topName = isReversed ? entity.targetName : entity.sourceName;
+            const topId = isReversed ? entity.targetId : entity.sourceId;
+            const bottomName = isReversed ? entity.sourceName : entity.targetName;
+            const bottomId = isReversed ? entity.sourceId : entity.targetId;
+
+            // Always show → visually (because we swapped the nords for reverse)
+            const sentenceArrow =
+              entity.direction === 'to' ? '→'
+              : entity.direction === 'from' ? '→'  // swapped, so still forward visually
+              : entity.direction === 'both' ? '↔'
+              : entity.direction === 'neither' ? '—'
+              : '·';  // none / context only
+
+            return (
+              <div className="nords-connection-sentence">
+                <button
+                  className="nords-connection-sentence__nord"
+                  onClick={() => onSelectNord?.(topId)}
+                  title={`Open ${topName}`}
+                >
+                  {topName}
+                </button>
+                <span className="nords-connection-sentence__middle" style={{ color: entity.typeColor }}>
+                  <span className="nords-connection-sentence__arrow">{sentenceArrow}</span>
+                  <span className={`nords-connection-sentence__verb${!hasVerb ? ' nords-connection-sentence__verb--muted' : ''}`}>
+                    {directionPrep}
+                  </span>
+                  {resolvedSpectrumLabel && (
+                    <span className="nords-connection-sentence__spectrum" style={{ borderColor: entity.typeColor }}>
+                      {resolvedSpectrumLabel}
+                    </span>
+                  )}
+                  <span className="nords-connection-sentence__arrow">{sentenceArrow}</span>
+                </span>
+                <button
+                  className="nords-connection-sentence__nord"
+                  onClick={() => onSelectNord?.(bottomId)}
+                  title={`Open ${bottomName}`}
+                >
+                  {bottomName}
+                </button>
+              </div>
+            );
+          })()}
 
           {/* Direction Toggle */}
           <div className="nords-drawer-section">
@@ -479,38 +630,21 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
             />
           </div>
 
-          {/* Spectrum Position — closest label, read-only */}
-          {resolvedSpectrumLabel && (
-            <div className="nords-drawer-section">
-              <h3 className="nords-drawer-section-title">Position</h3>
-              <div className="nords-spectrum-label" style={{ borderColor: entity.typeColor }}>
-                <span className="nords-spectrum-label__value" style={{ color: entity.typeColor }}>
-                  {resolvedSpectrumLabel}
-                </span>
-                <span className="nords-spectrum-label__hint">
-                  Drag on the board to reposition
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Properties — schema-driven values (schema defined at type level) */}
+          {/* Schema-driven properties */}
           {connectionProperties.length > 0 && (
-            <div className="nords-drawer-section">
-              <h3 className="nords-drawer-section-title">Properties</h3>
-              <div className="nords-properties-list">
-                {connectionProperties.map((p) => (
-                  <PropertyField
-                    key={p.name}
-                    name={p.name}
-                    type={p.type}
-                    value={p.value}
-                    options={p.options}
-                    color={entity.typeColor}
-                    onChange={(v) => mutations.updateConnectionProperty(p.name, v as string)}
-                  />
-                ))}
-              </div>
+            <div className="nords-properties-list">
+              {connectionProperties.map((p) => (
+                <PropertyField
+                  key={p.name}
+                  name={p.name}
+                  type={p.type}
+                  value={p.value}
+                  options={p.options}
+                  color={entity.typeColor}
+                  required={p.required}
+                  onChange={(v) => mutations.updateConnectionProperty(p.name, v as string)}
+                />
+              ))}
             </div>
           )}
         </div>

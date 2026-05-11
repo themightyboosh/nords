@@ -5,7 +5,7 @@ interface ConnectionLabelProps {
   x: number;
   y: number;
   angleDeg: number;
-  direction: 'to' | 'from' | 'both' | 'none';
+  direction: 'to' | 'from' | 'both' | 'neither' | 'none';
   type: string;
   color: string;
   edgeId: string;

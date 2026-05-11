@@ -24,8 +24,8 @@ async function migrate() {
     `);
 
     // Get already-applied migrations
-    const { rows: applied } = await client.query('SELECT version FROM schema_migrations ORDER BY id');
-    const appliedVersions = new Set(applied.map((r: { version: string }) => r.version));
+    const { rows: applied } = await client.query('SELECT name FROM schema_migrations ORDER BY id');
+    const appliedVersions = new Set(applied.map((r: { name: string }) => r.name));
 
     // Read migration files in order
     const migrationsDir = path.join(__dirname, '..', 'migrations');

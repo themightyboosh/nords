@@ -4,12 +4,10 @@
  */
 
 .nords-drawer-header {
-  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--nords-color-border-subtle);
+  padding: 16px 20px 0;
   flex-shrink: 0;
 }
 
@@ -19,14 +17,21 @@
   color: var(--nords-color-text-secondary);
 }
 
-.nords-drawer-type-badge {
-  font-size: var(--nords-font-size-xs);
-  font-weight: var(--nords-font-weight-bold);
+.nords-drawer-type-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: var(--nords-letter-spacing-wide);
-  padding: 3px 10px;
-  border-radius: var(--nords-radius-pill);
-  border: 1px solid;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+/* Keep the old class for backwards compat but style like eyebrow */
+.nords-drawer-type-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
 }
 
 .nords-close-btn {
@@ -199,24 +204,107 @@
   font-weight: 700;
 }
 
-/* Relationship sentence: "Auth Service blocks from API Gateway" */
-.nords-drawer-relationship {
-  text-align: center;
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  opacity: 0.75;
+/* ── Connection Detail: Interactive Sentence ── */
+.nords-connection-sentence {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   margin-bottom: 20px;
-  padding: 0 16px;
-  line-height: 1.5;
+  padding: 12px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--nords-color-border-subtle);
 }
 
-.nords-drawer-relationship em {
-  font-style: italic;
+.nords-connection-sentence__nord {
+  font-size: 1.05rem;
   font-weight: 700;
-  opacity: 0.9;
+  color: var(--nords-color-text-primary);
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  border-radius: var(--nords-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
 }
 
+.nords-connection-sentence__nord:hover {
+  color: var(--nords-color-accent);
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom-color: var(--nords-color-accent);
+}
+
+.nords-connection-sentence__middle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nords-connection-sentence__arrow {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.nords-connection-sentence__verb {
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.nords-connection-sentence__verb--muted {
+  opacity: 0.45;
+  font-weight: 400;
+}
+
+.nords-connection-sentence__spectrum {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-style: normal;
+  color: var(--nords-color-text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+}
+
+/* ── Header Actions (delete + close) ── */
+.nords-drawer-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Delete button in header — gray ×, turns red on hover */
+.nords-drawer-delete-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--nords-color-text-disabled);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--nords-radius-sm);
+  transition: all 0.15s ease;
+}
+
+.nords-drawer-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
 
 /* ── Direction Toggle ── */
 .nords-direction-toggle {
@@ -251,6 +339,11 @@
 .nords-direction-toggle__btn.is-active {
   background: var(--nords-color-bg-hover);
   border-bottom: 2px solid;
+}
+.nords-direction-toggle__btn.is-disabled {
+  opacity: 0.25;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 /* ── Distance Sliders ── */
@@ -464,20 +557,18 @@
   background: var(--nords-color-bg-hover);
 }
 
-.nords-category-row__target {
+.nords-category-row__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nords-category-row__top {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: 1;
-  min-width: 0;
-  border: none;
-  background: transparent;
-  color: var(--nords-color-text-primary);
-  font-family: var(--nords-font-primary);
-  font-size: var(--nords-font-size-sm);
-  cursor: pointer;
-  text-align: left;
-  padding: 0;
 }
 
 .nords-category-row__dir-icon {
@@ -488,12 +579,61 @@
   text-align: center;
 }
 
-.nords-category-row__name {
+.nords-category-row__name-link {
   flex: 1;
+  min-width: 0;
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-sm);
   font-weight: 500;
+  color: var(--nords-color-text-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  border-bottom: 1px dashed transparent;
+  transition: all 0.15s ease;
+}
+
+.nords-category-row__name-link:hover {
+  color: var(--nords-color-accent);
+  border-bottom-color: var(--nords-color-accent);
+}
+
+/* Verb + Spectrum meta line — clickable, opens connection detail */
+.nords-category-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 0 0 22px; /* indent past dir-icon */
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.nords-category-row__meta:hover {
+  opacity: 0.8;
+}
+
+.nords-category-row__verb {
+  font-size: 0.68rem;
+  font-style: italic;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.nords-category-row__spectrum {
+  font-size: 0.62rem;
+  font-weight: 600;
+  font-style: normal;
+  padding: 0 5px;
+  border: 1px solid;
+  border-radius: 8px;
+  opacity: 0.75;
 }
 
 /* Compact direction toggle within category rows */
@@ -506,6 +646,44 @@
   padding: 4px 6px;
   font-size: 0.8rem;
 }
+
+/* Delete button — always visible, subtle gray */
+.nords-category-row__delete {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--nords-color-text-disabled);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--nords-radius-sm);
+  transition: all 0.15s ease;
+}
+
+.nords-category-row__delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Role badge (source / target) in connection detail */
+.nords-category-row__role {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--nords-color-text-disabled);
+  margin-left: auto;
+  padding: 1px 6px;
+  border-radius: var(--nords-radius-sm);
+  background: var(--nords-color-bg-hover);
+  flex-shrink: 0;
+}
+
 
 /* ── Tab Count Badge ── */
 .nords-drawer-tab__count {

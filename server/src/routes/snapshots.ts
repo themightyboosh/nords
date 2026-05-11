@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { query, queryOne } from '../db.js';
+import logger from '../lib/logger.js';
 import type { Snapshot } from '../types/entities.js';
 
 export const snapshotsRouter = Router();
@@ -39,7 +40,8 @@ snapshotsRouter.get('/projects/:id/snapshots', async (req: Request, res: Respons
       [req.params.id]
     );
     res.json(snapshots);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to load snapshots', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to load snapshots' });
   }
 });
@@ -92,7 +94,8 @@ snapshotsRouter.post('/projects/:id/snapshots', async (req: Request, res: Respon
       [req.params.id, name, description || null, req.body.user_id || null]
     );
     res.status(201).json(snapshot);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to capture snapshot', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to capture snapshot' });
   }
 });
@@ -132,7 +135,8 @@ snapshotsRouter.get('/snapshots/:id', async (req: Request, res: Response) => {
       return;
     }
     res.json(snapshot);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to load snapshot', { error: err.message, snapshotId: req.params.id });
     res.status(500).json({ error: 'Failed to load snapshot' });
   }
 });

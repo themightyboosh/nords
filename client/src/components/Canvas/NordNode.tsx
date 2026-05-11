@@ -28,6 +28,10 @@ interface NordNodeData {
   commentCount?: number;
   isGhosted?: boolean;
   properties: Array<{ key: string; value: string; color?: string }>;
+  /** Persona lens: 0.5–1.0 opacity (only set in persona mode) */
+  _personaOpacity?: number;
+  /** Persona lens: 0 = colored, 1 = grayscale (only set in persona mode) */
+  _personaGrayscale?: number;
 }
 
 export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<NordNodeData>) => {
@@ -45,8 +49,24 @@ export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<N
     (a, b) => a === b,
   );
 
+  // Persona lens visual layer — CSS-only, no layout math
+  const personaStyle: React.CSSProperties | undefined =
+    data._personaOpacity != null
+      ? {
+          opacity: data._personaOpacity,
+          filter: data._personaGrayscale ? `grayscale(${data._personaGrayscale})` : undefined,
+          transition: 'opacity 0.15s ease, filter 0.15s ease',
+        }
+      : undefined;
+
   return (
-    <div style={{ width: `${CARD_WIDTH}px`, position: 'relative' }}>
+    <div
+      style={{
+        width: `${CARD_WIDTH}px`,
+        position: 'relative',
+        ...personaStyle,
+      }}
+    >
       {/* DROP TARGET — covers entire card so releasing anywhere connects */}
       <Handle type="target" position={Position.Top} id="target" className="nords-node__handle--full" isConnectable={isConnectable} />
 

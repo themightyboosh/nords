@@ -1,8 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { query, queryOne } from '../db.js';
+import logger from '../lib/logger.js';
 import * as nordsRepo from '../repositories/nords.js';
 import * as connectionsRepo from '../repositories/connections.js';
 import * as boardPositionsRepo from '../repositories/boardPositions.js';
+import { nordTypesRepo, connectionTypesRepo } from '../repositories/types.js';
 
 export const graphRouter = Router();
 
@@ -44,7 +46,7 @@ graphRouter.get('/projects/:id/graph', async (req: Request, res: Response) => {
     }
     res.json(result.fn_load_project_graph);
   } catch (err: any) {
-    console.error('[graph] fn_load_project_graph error:', err.message, err.code);
+    logger.error('fn_load_project_graph failed', { code: err.code, message: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to load project graph' });
   }
 });
@@ -79,11 +81,14 @@ graphRouter.get('/projects/:id/graph', async (req: Request, res: Response) => {
  */
 graphRouter.post('/projects/:id/nords', async (req: Request, res: Response) => {
   try {
+    if (!req.body.type_id) {
+      res.status(400).json({ error: 'type_id is required' });
+      return;
+    }
     const nord = await nordsRepo.create({
       project_id: req.params.id,
       type_id: req.body.type_id,
       title: req.body.title || 'Untitled',
-      description: req.body.description || '',
       properties: req.body.properties || {},
       position_x: req.body.position_x ?? 0,
       position_y: req.body.position_y ?? 0,
@@ -91,7 +96,12 @@ graphRouter.post('/projects/:id/nords', async (req: Request, res: Response) => {
       created_by: req.body.created_by || null,
     });
     res.status(201).json(nord);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Nord creation failed', { code: err.code, message: err.message, projectId: req.params.id });
+    if (err.code === '23503') {
+      res.status(400).json({ error: 'Referenced type does not exist', detail: err.detail });
+      return;
+    }
     res.status(500).json({ error: 'Failed to create nord' });
   }
 });
@@ -127,13 +137,36 @@ graphRouter.post('/projects/:id/nords', async (req: Request, res: Response) => {
  */
 graphRouter.put('/nords/:id', async (req: Request, res: Response) => {
   try {
+    // Validate required properties if properties are being updated
+    if (req.body.properties) {
+      const existing = await nordsRepo.findById(req.params.id);
+      if (existing) {
+        const nordType = await nordTypesRepo.findById(existing.type_id);
+        if (nordType?.properties_schema) {
+          // Merge existing properties with incoming partial update
+          const mergedProps = { ...(existing.properties || {}), ...req.body.properties };
+          const missing = (nordType.properties_schema as any[])
+            .filter((s: any) => s.required && s.card_row)
+            .filter((s: any) => {
+              const val = mergedProps[s.name];
+              return val == null || (typeof val === 'string' && val.trim() === '') || (Array.isArray(val) && val.length === 0);
+            })
+            .map((s: any) => s.name);
+          if (missing.length > 0) {
+            res.status(400).json({ error: `Required properties missing: ${missing.join(', ')}` });
+            return;
+          }
+        }
+      }
+    }
     const nord = await nordsRepo.update(req.params.id, req.body);
     if (!nord) {
       res.status(404).json({ error: 'Nord not found' });
       return;
     }
     res.json(nord);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to update nord', { error: err.message, nordId: req.params.id });
     res.status(500).json({ error: 'Failed to update nord' });
   }
 });
@@ -166,7 +199,8 @@ graphRouter.delete('/nords/:id', async (req: Request, res: Response) => {
       return;
     }
     res.status(204).send();
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to delete nord', { error: err.message, nordId: req.params.id });
     res.status(500).json({ error: 'Failed to delete nord' });
   }
 });
@@ -202,18 +236,39 @@ graphRouter.delete('/nords/:id', async (req: Request, res: Response) => {
  */
 graphRouter.post('/projects/:id/connections', async (req: Request, res: Response) => {
   try {
+    const { type_id, source_nord_id, target_nord_id } = req.body;
+    if (!type_id || !source_nord_id || !target_nord_id) {
+      res.status(400).json({ error: 'type_id, source_nord_id, and target_nord_id are required' });
+      return;
+    }
     const connection = await connectionsRepo.create({
       project_id: req.params.id,
-      type_id: req.body.type_id,
-      source_nord_id: req.body.source_nord_id,
-      target_nord_id: req.body.target_nord_id,
+      type_id,
+      source_nord_id,
+      target_nord_id,
       direction: req.body.direction || 'none',
       distance_x: req.body.distance_x ?? 0.5,
       distance_y: req.body.distance_y ?? 0.5,
       properties: req.body.properties || {},
     });
     res.status(201).json(connection);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Connection creation failed', { code: err.code, message: err.message, projectId: req.params.id });
+    // Unique constraint: duplicate connection
+    if (err.code === '23505') {
+      res.status(409).json({ error: 'Connection already exists between these nords for this type' });
+      return;
+    }
+    // Foreign key: bad nord or type reference
+    if (err.code === '23503') {
+      res.status(400).json({ error: 'Referenced nord or connection type does not exist', detail: err.detail });
+      return;
+    }
+    // Check constraint: e.g. distance out of range
+    if (err.code === '23514') {
+      res.status(400).json({ error: 'Value out of allowed range', detail: err.detail });
+      return;
+    }
     res.status(500).json({ error: 'Failed to create connection' });
   }
 });
@@ -240,7 +295,7 @@ graphRouter.post('/projects/:id/connections', async (req: Request, res: Response
  *             properties:
  *               direction:
  *                 type: string
- *                 enum: [forward, reverse, none]
+ *                 enum: [forward, reverse, both, neither, none]
  *               distance_x:
  *                 type: number
  *                 format: float
@@ -265,13 +320,44 @@ graphRouter.post('/projects/:id/connections', async (req: Request, res: Response
  */
 graphRouter.put('/connections/:id', async (req: Request, res: Response) => {
   try {
+    // Validate required properties if properties are being updated
+    if (req.body.properties) {
+      const existing = await connectionsRepo.findById(req.params.id);
+      if (existing) {
+        const connType = await connectionTypesRepo.findById(existing.type_id);
+        if (connType?.properties_schema) {
+          // Merge existing properties with incoming partial update
+          const mergedProps = { ...(existing.properties || {}), ...req.body.properties };
+          const missing = (connType.properties_schema as any[])
+            .filter((s: any) => s.required && s.card_row)
+            .filter((s: any) => {
+              const val = mergedProps[s.name];
+              return val == null || (typeof val === 'string' && val.trim() === '') || (Array.isArray(val) && val.length === 0);
+            })
+            .map((s: any) => s.name);
+          if (missing.length > 0) {
+            res.status(400).json({ error: `Required properties missing: ${missing.join(', ')}` });
+            return;
+          }
+        }
+      }
+    }
     const connection = await connectionsRepo.update(req.params.id, req.body);
     if (!connection) {
       res.status(404).json({ error: 'Connection not found' });
       return;
     }
     res.json(connection);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Connection update failed', { code: err.code, message: err.message, connectionId: req.params.id });
+    if (err.code === '23505') {
+      res.status(409).json({ error: 'Duplicate connection would result from this update' });
+      return;
+    }
+    if (err.code === '23514') {
+      res.status(400).json({ error: 'Value out of allowed range', detail: err.detail });
+      return;
+    }
     res.status(500).json({ error: 'Failed to update connection' });
   }
 });
@@ -303,7 +389,8 @@ graphRouter.delete('/connections/:id', async (req: Request, res: Response) => {
       return;
     }
     res.status(204).send();
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to delete connection', { error: err.message, connectionId: req.params.id });
     res.status(500).json({ error: 'Failed to delete connection' });
   }
 });
@@ -356,7 +443,8 @@ graphRouter.put('/projects/:id/positions', async (req: Request, res: Response) =
       [JSON.stringify(updates)]
     );
     res.json({ updated: result?.fn_batch_update_positions ?? 0 });
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to batch update positions', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to batch update positions' });
   }
 });
@@ -376,7 +464,8 @@ graphRouter.put('/projects/:id/board-position', async (req: Request, res: Respon
       distance_y: distance_y ?? 0.5,
     });
     res.json(position);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to upsert board position', { error: err.message, nordId: req.body.nord_id });
     res.status(500).json({ error: 'Failed to upsert board position' });
   }
 });
@@ -391,7 +480,8 @@ graphRouter.put('/projects/:id/board-position/batch', async (req: Request, res: 
     }
     const results = await boardPositionsRepo.batchUpsert(positions);
     res.json({ updated: results.length });
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to batch upsert board positions', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to batch upsert board positions' });
   }
 });
@@ -401,7 +491,8 @@ graphRouter.delete('/board-position/:nordId/:typeId', async (req: Request, res: 
   try {
     await boardPositionsRepo.remove(req.params.nordId, req.params.typeId);
     res.status(204).send();
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to remove board position', { error: err.message, nordId: req.params.nordId });
     res.status(500).json({ error: 'Failed to remove board position' });
   }
 });

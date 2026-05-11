@@ -30,6 +30,10 @@ export interface Project {
 export interface PropertySchema {
   name: string;
   type: string;
+  required?: boolean;
+  defaultValue?: string | number | boolean | null;
+  options?: string[];
+  card_row?: number;
   config?: Record<string, unknown>;
 }
 
@@ -37,6 +41,7 @@ export interface NordType {
   id: string;
   user_id: string;
   name: string;
+  description: string;
   icon: string | null;
   accent_color: string | null;
   properties_schema: PropertySchema[];
@@ -50,7 +55,6 @@ export interface Nord {
   project_id: string;
   type_id: string;
   title: string;
-  description: string | null;
   properties: Record<string, unknown>;
   position_x: number;
   position_y: number;
@@ -70,6 +74,7 @@ export interface ConnectionType {
   id: string;
   user_id: string;
   name: string;
+  description: string;
   accent_color: string | null;
   stroke_style: string;
   measurement_mode: 'spectrum' | 'quadrant' | 'none';

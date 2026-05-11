@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { query, queryOne } from '../db.js';
+import logger from '../lib/logger.js';
 import type { Comment } from '../types/entities.js';
 
 export const commentsRouter = Router();
@@ -58,7 +59,8 @@ commentsRouter.get('/projects/:id/comments', async (req: Request, res: Response)
 
     const comments = await query<Comment>(sql, params);
     res.json(comments);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to load comments', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to load comments' });
   }
 });
@@ -109,7 +111,8 @@ commentsRouter.post('/projects/:id/comments', async (req: Request, res: Response
       RETURNING *
     `, [req.params.id, target_type || 'general', target_id || null, parent_comment_id || null, author_id || null, body]);
     res.status(201).json(comment);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to create comment', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to create comment' });
   }
 });
@@ -178,7 +181,8 @@ commentsRouter.put('/comments/:id', async (req: Request, res: Response) => {
       return;
     }
     res.json(comment);
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to update comment', { error: err.message, commentId: req.params.id });
     res.status(500).json({ error: 'Failed to update comment' });
   }
 });
@@ -213,7 +217,8 @@ commentsRouter.delete('/comments/:id', async (req: Request, res: Response) => {
       return;
     }
     res.status(204).send();
-  } catch (err) {
+  } catch (err: any) {
+    logger.error('Failed to delete comment', { error: err.message, commentId: req.params.id });
     res.status(500).json({ error: 'Failed to delete comment' });
   }
 });

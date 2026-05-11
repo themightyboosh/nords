@@ -45,10 +45,10 @@ export function SpectrumEditor({ labels, color, onChange }: SpectrumEditorProps)
     // Don't add if clicking on an existing point
     if ((e.target as HTMLElement).closest('.spectrum-editor__point')) return;
     const pos = getPosition(e.clientX);
-    const name = prompt('Label name (max 24 chars):');
-    if (!name || !name.trim()) return;
-    const trimmed = name.trim().slice(0, 24);
-    onChange([...labels, { label: trimmed, position: pos }]);
+    // Auto-generate name — user can double-click to rename
+    const nextNum = labels.length + 1;
+    const autoName = `Stage ${nextNum}`;
+    onChange([...labels, { label: autoName, position: pos }]);
   }, [labels, onChange, getPosition]);
 
   // ── Drag point ──
