@@ -20816,3 +20816,15 @@ ApiError: Failed to update connection
 14:03:43.981 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.090Z","userId":"dev-user-000"}
 14:03:43.981 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.090Z","userId":"dev-user-000"}
 14:03:43.981 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}
+14:04:21.335 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.329Z","userId":"dev-user-000"}
+14:04:21.335 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.329Z","userId":"dev-user-000"}
+14:04:21.335 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}
+14:04:21.336 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.326Z","userId":"dev-user-000"}
+14:04:21.337 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.327Z","userId":"dev-user-000"}
+14:04:21.337 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}
+14:04:21.338 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.326Z","userId":"dev-user-000"}
+14:04:21.339 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.327Z","userId":"dev-user-000"}
+14:04:21.339 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}
+14:04:21.339 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.326Z","userId":"dev-user-000"}
+14:04:21.339 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-11T18:03:30.327Z","userId":"dev-user-000"}
+14:04:21.340 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}

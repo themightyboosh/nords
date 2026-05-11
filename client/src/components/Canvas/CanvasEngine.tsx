@@ -164,7 +164,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         radialNodes.push({
           ...n,
           position: radialPos || n.position,
-          draggable: true,
+          draggable: false,
           data: {
             ...n.data,
             isGhosted: typeState === 'dim',

@@ -121,7 +121,7 @@ export function computeRadialPositions(
   const total = scores.size;
   if (total === 0) return { positions: new Map(), maxRadius: 0, neutralRadius: 0 };
 
-  const innerRadius = 200;
+  const innerRadius = 350;  // clears 240px avatar + card width margin
 
   // Span scales with node count but stays compact
   const span = Math.max(400, total * 18);
