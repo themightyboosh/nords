@@ -75,10 +75,6 @@ export function computePersonaScores(
  *
  * Background: green → yellow → red (HSL interpolation)
  * Text: dark on light backgrounds, light on dark backgrounds
- *
- * Uses relative luminance to decide text contrast:
- *   luminance > 0.45 → dark text (#1a1a2e)
- *   luminance ≤ 0.45 → light text (#fff)
  */
 export function scoreToHeatColors(normalized: number): { bg: string; text: string } {
   const t = (normalized + 1) / 2; // 0 = red, 0.5 = yellow, 1.0 = green
@@ -110,10 +106,8 @@ export function scoreToHeatColors(normalized: number): { bg: string; text: strin
 
 /**
  * Convert HSL to relative luminance (0-1).
- * Uses sRGB → linear → WCAG luminance formula.
  */
 function hslToRelativeLuminance(h: number, s: number, l: number): number {
-  // HSL → RGB
   const sNorm = s / 100;
   const lNorm = l / 100;
   const c = (1 - Math.abs(2 * lNorm - 1)) * sNorm;
@@ -130,7 +124,6 @@ function hslToRelativeLuminance(h: number, s: number, l: number): number {
 
   r += m; g += m; b += m;
 
-  // sRGB → linear
   const toLinear = (v: number) => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
   return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
 }
@@ -138,64 +131,77 @@ function hslToRelativeLuminance(h: number, s: number, l: number): number {
 /**
  * Compute radial positions using concentric rings.
  *
- * Strategy:
- *   1. Sort nodes by score descending (best → worst)
- *   2. Assign to concentric rings, each ring holding more nodes than the last
- *   3. Within each ring, distribute nodes evenly by angle
- *   4. First ring starts at an angular offset for visual variety
+ * Compact layout: cards overlap slightly on outer rings (that's OK — the
+ * user can zoom/pan). The goal is a recognizable circular pattern where
+ * the highest-scored cards are closest to center (green) and the
+ * lowest-scored cards are on the outer rings (red).
  *
- * Ring capacity follows: ring 0 = 1, ring 1 = 6, ring 2 = 12, ring 3 = 18...
- * This creates a natural density gradient: high-value nodes are uncrowded,
- * low-value nodes share space in wider rings.
+ * Card positions are returned as top-left coordinates (ReactFlow convention).
+ * The card's visual center is at (x + cardW/2, y + cardH/2).
  */
 export function computeRadialPositions(
   scores: Map<string, PersonaNodeScore>,
   _averagedPositions: Map<string, { x: number; y: number }>,
   center: { x: number; y: number },
-  minRadius: number = 250,
-  maxRadius: number = 1000,
+  cardWidth: number = 270,
+  cardHeight: number = 120,
 ): Map<string, { x: number; y: number }> {
   const sorted = [...scores.entries()].sort((a, b) => b[1].score - a[1].score);
   const totalNodes = sorted.length;
   if (totalNodes === 0) return new Map();
 
-  // Build ring capacities: [1, 6, 12, 18, 24, ...]
-  // First ring is special (1 node, closest to center)
+  // Fixed ring spacing — enough to clear card height + breathing room
+  const ringSpacing = cardHeight + 80; // 200px between rings
+  const innerRadius = 250; // first ring radius (clears 120px avatar + padding)
+
+  // Build rings: 8 cards per ring, growing by 4 each ring
   const ringCapacities: number[] = [];
   let placed = 0;
   let ringIdx = 0;
 
   while (placed < totalNodes) {
-    const capacity = ringIdx === 0 ? 1 : ringIdx * 6;
-    ringCapacities.push(Math.min(capacity, totalNodes - placed));
-    placed += capacity;
+    const cap = 6 + ringIdx * 4; // 6, 10, 14, 18, 22, ...
+    ringCapacities.push(Math.min(cap, totalNodes - placed));
+    placed += cap;
     ringIdx++;
   }
 
-  const totalRings = ringCapacities.length;
   const result = new Map<string, { x: number; y: number }>();
   let nodeIdx = 0;
+  const halfW = cardWidth / 2;
+  const halfH = cardHeight / 2;
 
-  for (let ring = 0; ring < totalRings; ring++) {
+  // Minimum arc spacing between card centers — use most of card width
+  const arcSpacing = cardWidth * 0.8; // 80% of card width (semantic zoom shrinks cards)
+
+  let prevRadius = 0;
+
+  for (let ring = 0; ring < ringCapacities.length; ring++) {
     const nodesInRing = ringCapacities[ring];
 
-    // Radius: lerp between min and max based on ring position
-    const ringT = totalRings > 1 ? ring / (totalRings - 1) : 0;
-    const radius = minRadius + ringT * (maxRadius - minRadius);
+    // Radius: must fit all cards at arcSpacing apart around the circumference
+    // circumference = nodesInRing × arcSpacing → r = circumference / (2π)
+    const fitRadius = (nodesInRing * arcSpacing) / (2 * Math.PI);
+    // Also enforce minimum gap from previous ring
+    const minRadius = prevRadius + ringSpacing;
+    const radius = Math.max(fitRadius, minRadius, innerRadius);
+    prevRadius = radius;
 
-    // Angular offset per ring — stagger rings so nodes don't align radially
-    const ringOffset = ring * 0.4;
+    // Stagger every other ring by half a slot to prevent radial alignment
+    const slotAngle = (2 * Math.PI) / nodesInRing;
+    const ringOffset = ring % 2 === 0 ? 0 : slotAngle / 2;
 
     for (let j = 0; j < nodesInRing; j++) {
       if (nodeIdx >= sorted.length) break;
       const [nodeId] = sorted[nodeIdx];
 
-      // Even angular distribution within the ring
-      const angle = ringOffset + (j / nodesInRing) * Math.PI * 2;
+      const angle = ringOffset + j * slotAngle;
 
+      // Position is the top-left corner of the card (ReactFlow convention)
+      // Subtract half card size so the card CENTER sits on the ring
       result.set(nodeId, {
-        x: center.x + radius * Math.cos(angle),
-        y: center.y + radius * Math.sin(angle),
+        x: center.x + radius * Math.cos(angle) - halfW,
+        y: center.y + radius * Math.sin(angle) - halfH,
       });
 
       nodeIdx++;

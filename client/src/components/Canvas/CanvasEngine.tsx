@@ -69,7 +69,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const { connectionTypes } = useTypeRegistry();
   const { activeConnectionTypeId, lens } = useLens();
   const isPersonaMode = lens === 'persona';
-  const { addNodes, screenToFlowPosition, getNodes } = useReactFlow();
+  const { addNodes, screenToFlowPosition, getNodes, fitView } = useReactFlow();
 
   // ── Click-to-place mode ──
   // When set, a ghost node follows the cursor until clicked to place
@@ -140,26 +140,29 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
 
     // Center at origin — ReactFlow will fitView after animation
     const center = { x: 0, y: 0 };
-    return computeRadialPositions(personaScores, avgPositions, center, 220, 900);
+    return computeRadialPositions(personaScores, avgPositions, center);
   }, [personaScores, rfNodes, graph]);
 
   const lensNodes = useMemo(() => {
     // ── Persona mode: radial heatmap ──
     if (isPersonaMode && personaScores) {
-      const heatNodes = rfNodes.map(n => {
+      // Only include nodes with persona scores (orphans with no connections are excluded)
+      const heatNodes: typeof rfNodes = [];
+      for (const n of rfNodes) {
         const ps = personaScores.get(n.id);
+        if (!ps) continue; // skip orphan nodes with no connections
         const radialPos = personaRadialPositions?.get(n.id);
-        return {
+        heatNodes.push({
           ...n,
           position: radialPos || n.position,
           draggable: false,
           data: {
             ...n.data,
-            _personaHeatColor: ps?.heatColor || undefined,
-            _personaTextColor: ps?.textColor || undefined,
+            _personaHeatColor: ps.heatColor,
+            _personaTextColor: ps.textColor,
           },
-        };
-      });
+        });
+      }
 
       // Add center avatar node
       if (activePersona) {
@@ -258,6 +261,20 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       });
     });
   }, [lensNodes, setNodes, isPersonaMode]);
+
+  // Fit viewport after persona layout positions are applied
+  const prevPersonaModeRef = React.useRef(isPersonaMode);
+  React.useEffect(() => {
+    if (isPersonaMode || prevPersonaModeRef.current !== isPersonaMode) {
+      // Short delay to allow React to reconcile new node positions
+      const timer = setTimeout(() => {
+        fitView({ padding: 0.15, duration: 400 });
+      }, 50);
+      prevPersonaModeRef.current = isPersonaMode;
+      return () => clearTimeout(timer);
+    }
+    prevPersonaModeRef.current = isPersonaMode;
+  }, [isPersonaMode, personaRadialPositions, fitView]);
 
   React.useEffect(() => {
     setEdges(lensEdges);

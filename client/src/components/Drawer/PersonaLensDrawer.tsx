@@ -39,7 +39,9 @@ interface PersonaLensDrawerProps {
   onClose: () => void;
   persona: Persona | null;
   connectionTypes: ConnectionType[];
-  /** Called on every slider change for live graph updates (debounced in parent) */
+  /** Live weight overrides (pre-commit slider state) */
+  liveWeights?: Map<string, number> | null;
+  /** Called on every slider change for live graph updates */
   onWeightChange: (connectionTypeId: string, weight: number) => void;
   /** Called on slider release to persist to DB */
   onWeightCommit: (connectionTypeId: string, weight: number) => void;
@@ -57,6 +59,7 @@ export function PersonaLensDrawer({
   onClose,
   persona,
   connectionTypes,
+  liveWeights,
   onWeightChange,
   onWeightCommit,
 }: PersonaLensDrawerProps) {
@@ -105,10 +108,12 @@ export function PersonaLensDrawer({
             </p>
             <div className="persona-lens-drawer__sliders">
               {connectionTypes.map(ct => {
-                const existingWeight = persona.category_weights.find(
+                // Use live weight if available, otherwise fall back to DB state
+                const liveVal = liveWeights?.get(ct.id);
+                const dbWeight = persona.category_weights.find(
                   w => w.connection_type_id === ct.id
-                );
-                const weight = existingWeight?.weight ?? 0;
+                )?.weight ?? 0;
+                const weight = liveVal !== undefined ? liveVal : dbWeight;
 
                 return (
                   <WeightSlider

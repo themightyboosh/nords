@@ -238,6 +238,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           onClose={() => {}}
           persona={activePersona}
           connectionTypes={(graph?.connection_types || []).filter(ct => !ct.is_system)}
+          liveWeights={liveWeights}
           onWeightChange={handleWeightChange}
           onWeightCommit={handleWeightCommit}
         />
