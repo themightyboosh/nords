@@ -5,6 +5,7 @@ import logger from './lib/logger.js';
 import { initFirebaseAdmin } from './lib/firebaseAdmin.js';
 import { requireAuth } from './middleware/auth.js';
 import { requestLogger } from './middleware/requestLogger.js';
+import { resolveAccount, meteringMiddleware } from './middleware/metering.js';
 import { swaggerSpec } from './swagger.js';
 import { projectsRouter } from './routes/projects.js';
 import { graphRouter } from './routes/graph.js';
@@ -14,6 +15,7 @@ import { seedRouter } from './routes/seed.js';
 import { typesRouter } from './routes/types.js';
 import { logsRouter } from './routes/logs.js';
 import { personasRouter } from './routes/personas.js';
+import { accountsRouter } from './routes/accounts.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -51,6 +53,8 @@ app.get('/health', (_req, res) => {
 
 // ── API Routes (protected by Firebase auth) ──
 app.use('/api', requireAuth);
+app.use('/api', resolveAccount);
+app.use('/api', meteringMiddleware);
 app.use('/api', projectsRouter);
 app.use('/api', graphRouter);
 app.use('/api', snapshotsRouter);
@@ -59,6 +63,7 @@ app.use('/api', seedRouter); // Dev only — bulk data seeding
 app.use('/api', typesRouter);
 app.use('/api', logsRouter);
 app.use('/api', personasRouter);
+app.use('/api', accountsRouter);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

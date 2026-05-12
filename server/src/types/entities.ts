@@ -9,10 +9,23 @@ export interface User {
   deleted_at: Date | null;
 }
 
+export interface Account {
+  id: string;
+  name: string;
+  owner_user_id: string | null;
+  billing_email: string | null;
+  stripe_customer_id: string | null;
+  plan: string;
+  status: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface Organization {
   id: string;
   name: string;
   slug: string;
+  account_id: string | null;
 }
 
 export interface Project {
@@ -130,4 +143,28 @@ export interface Comment {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
+}
+
+export interface UsageEvent {
+  id: number;
+  account_id: string;
+  project_id: string | null;
+  event_type: string;
+  quantity: number;
+  metadata: Record<string, unknown>;
+  created_at: Date;
+}
+
+export interface AccountInvoice {
+  id: string;
+  account_id: string;
+  period_start: Date;
+  period_end: Date;
+  total_requests: number;
+  gcp_cost_share_usd: number;
+  markup_pct: number;
+  total_billed_usd: number;
+  stripe_invoice_id: string | null;
+  status: string;
+  created_at: Date;
 }

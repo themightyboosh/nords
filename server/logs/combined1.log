@@ -458,3 +458,21 @@
 19:15:53.582 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":32,"rows":2}
 19:15:53.615 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":33,"rows":12}
 19:15:53.615 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"100ms"}
+19:24:37.134 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:24:37.134 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:24:37.137 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:24:37.137 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:24:37.137 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:24:37.137 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:24:37.134 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:24:37.137 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:24:37.137 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:25:01.026 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:25:01.030 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:25:01.030 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:25:01.027 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:25:01.030 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:25:01.030 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:25:01.027 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:25:01.030 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:25:01.030 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
