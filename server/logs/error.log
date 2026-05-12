@@ -5098,3 +5098,73 @@ ReferenceError: React is not defined
     at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:8325:37)
     at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:8309:6)
     at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:7994:27) {"service":"nords-client","clientTimestamp":"2026-05-12T18:45:24.037Z","errorMessage":"React is not defined","componentStack":"\n    at GlobalDock (http://localhost:5173/src/components/Layout/GlobalDock.tsx?t=1778611524000:24:38)\n    at div (<anonymous>)\n    at WorkspaceContent (http://localhost:5173/src/App.tsx?t=1778608035022:100:29)\n    at BoardSettingsProvider (http://localhost:5173/src/context/BoardSettingsContext.tsx:15:41)\n    at TypeRegistryProvider (http://localhost:5173/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5173/src/context/LensContext.tsx:67:32)\n    at WorkspaceShell (http://localhost:5173/src/App.tsx?t=1778608035022:48:27)\n    at BatchProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:6809:26)\n    at ReactFlowProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:9752:44)\n    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3332:8)\n    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3775:8)\n    at AuthProvider (http://localhost:5173/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5173/src/App.tsx?t=1778608035022:337:42)\n    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3723:18)\n    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:4402:8)\n    at ErrorBoundary (http://localhost:5173/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+19:27:03.812 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":164,"error":"relation \"usage_events\" does not exist"}
+19:27:03.817 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":172,"error":"relation \"usage_events\" does not exist"}
+19:27:03.817 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":176,"error":"relation \"usage_events\" does not exist"}
+19:27:03.852 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":31,"error":"relation \"usage_events\" does not exist"}
+19:27:03.912 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":30,"error":"relation \"usage_events\" does not exist"}
+19:27:03.950 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":28,"error":"relation \"usage_events\" does not exist"}
+19:27:04.127 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":29,"error":"relation \"usage_events\" does not exist"}
+19:27:04.221 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":31,"error":"relation \"usage_events\" does not exist"}
+19:27:04.458 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":32,"error":"relation \"usage_events\" does not exist"}
+19:28:52.008 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":158,"error":"relation \"usage_events\" does not exist"}
+19:28:52.018 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":162,"error":"relation \"usage_events\" does not exist"}
+19:28:52.023 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":168,"error":"relation \"usage_events\" does not exist"}
+19:28:52.029 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":177,"error":"relation \"usage_events\" does not exist"}
+19:28:52.037 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":183,"error":"relation \"usage_events\" does not exist"}

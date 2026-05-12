@@ -1,0 +1,144 @@
+{
+  "version": "1.0.0",
+  "description": "Domain glossary for the Nords Spatial Engine. This resource provides semantic context for every core concept, field, and relationship in the system.",
+
+  "concepts": {
+    "Nord": {
+      "definition": "A node card in the spatial graph. Represents any domain entity — a task, person, bug, milestone, artifact, etc.",
+      "properties": "Each nord has a title, description, 2D canvas position (position_x, position_y), visual scale, and a dynamic JSONB properties bag whose schema is defined by its NordType.",
+      "relationships": "Connected to other nords via Connections. Belongs to a Project."
+    },
+    "Connection": {
+      "definition": "A typed edge (relationship) between two Nords. Represents any relationship — 'blocks', 'depends on', 'reports to', etc.",
+      "properties": "Carries a spectrum position (distance_x, distance_y), direction, sort_order, and a dynamic JSONB properties bag.",
+      "key_insight": "The distance_x value (0.0–1.0) maps to the ConnectionType's x_stage_labels, determining which board column the connected nord appears in."
+    },
+    "NordType": {
+      "definition": "A schema definition for a category of Nords. Defines the property columns, icon, accent color, and visual behavior.",
+      "examples": ["Bug", "Person", "Task", "Milestone", "Artifact", "Decision"],
+      "analogy": "Similar to a database table definition — it defines what columns (properties) nords of this type have."
+    },
+    "ConnectionType": {
+      "definition": "A schema definition for a category of relationships. Defines stage labels, stroke style, direction rules, and property columns.",
+      "examples": ["Blocks", "Depends On", "Reports To", "Contains", "References"],
+      "key_fields": {
+        "x_stage_labels": "Ordered labels for the horizontal spectrum axis (e.g., ['To Do', 'In Progress', 'Done']). Each connection's distance_x maps to a position along these labels.",
+        "stroke_style": "Visual line rendering: solid, dashed, or dotted.",
+        "default_direction": "The default arrow direction for new connections of this type."
+      }
+    },
+    "Project": {
+      "definition": "A container for a complete graph — all nords, connections, types, and personas within a workspace.",
+      "key_fields": {
+        "purpose": "A free-text description of why this project exists. Used as context for AI persona interactions.",
+        "mcp_enabled": "Whether this project is exposed to external AI tools via the Model Context Protocol.",
+        "mcp_mutable": "Whether MCP integrations can modify graph data (experimental)."
+      }
+    },
+    "Persona": {
+      "definition": "An AI lens configuration. Personas weight different ConnectionTypes differently, prioritizing some relationships and suppressing others.",
+      "components": {
+        "mental_models": "Up to 5 focus areas with titles and detailed descriptions. Used as system prompt context for AI interactions.",
+        "category_weights": "Per-ConnectionType relevance weights (-100 to +100). Controls how strongly each relationship type influences the persona's view."
+      },
+      "example": "An 'Engineering Lead' persona might weight 'Blocks' at +80 and 'References' at -20, focusing attention on blockers while downplaying informational links."
+    },
+    "Snapshot": {
+      "definition": "An immutable capture of the entire graph state at a point in time. Includes all nords, connections, types, and positions.",
+      "use_case": "Version control for graph state — compare 'before refactor' vs 'after refactor'."
+    },
+    "Account": {
+      "definition": "A billing entity that owns one or more Organizations. Tracks API usage for cost attribution.",
+      "billing_model": "Usage-based: each account pays its proportional share of GCP infrastructure costs + 20% margin."
+    },
+    "Organization": {
+      "definition": "A logical grouping of users and projects. Belongs to an Account. Currently in single-user mode with a static placeholder org."
+    }
+  },
+
+  "fields": {
+    "distance_x": {
+      "type": "float",
+      "range": "0.0 – 1.0",
+      "meaning": "Horizontal spectrum position along the ConnectionType's x_stage_labels. 0.0 = first stage, 1.0 = last stage.",
+      "used_by": "Board view column placement, graph edge rendering."
+    },
+    "distance_y": {
+      "type": "float",
+      "range": "0.0 – 1.0",
+      "meaning": "Vertical axis position. Reserved for future quadrant mode. Currently unused in board view.",
+      "used_by": "Graph view only."
+    },
+    "position_x": {
+      "type": "float",
+      "meaning": "Horizontal canvas position in normalized coordinates. Not bounded to 0–1 — can be negative.",
+      "used_by": "Graph view node placement."
+    },
+    "position_y": {
+      "type": "float",
+      "meaning": "Vertical canvas position in normalized coordinates.",
+      "used_by": "Graph view node placement."
+    },
+    "scale": {
+      "type": "float",
+      "range": "0.1 – 10.0",
+      "meaning": "Visual size multiplier for the nord card. Can be driven by a property value via NordType.scale_property.",
+      "default": 1.0
+    },
+    "direction": {
+      "type": "enum",
+      "values": {
+        "forward": "Arrow points from source → target",
+        "reverse": "Arrow points from target → source",
+        "both": "Bidirectional arrows",
+        "none": "No arrows — undirected relationship"
+      }
+    },
+    "properties": {
+      "type": "JSONB object",
+      "meaning": "Dynamic key-value store on nords and connections. Keys correspond to PropertySchema names defined on the entity's type.",
+      "example": {"Status": "In Progress", "Priority": "High", "Story Points": 5}
+    },
+    "properties_schema": {
+      "type": "array of PropertySchema",
+      "meaning": "Column definitions for the properties JSONB bag. Each entry defines a name, data type, validation rules, and UI configuration.",
+      "analogy": "Like ALTER TABLE ADD COLUMN — it defines what data the properties bag can hold."
+    },
+    "sort_order": {
+      "type": "integer",
+      "meaning": "Display order within a list or within a board column. Lower values appear first.",
+      "used_by": "Type lists, persona lists, within-column card ordering."
+    },
+    "accent_hue": {
+      "type": "integer",
+      "range": "0 – 360",
+      "meaning": "HSL hue value for the persona's accent color. Used for visual distinction in the UI."
+    },
+    "accent_color": {
+      "type": "string",
+      "format": "#RRGGBB hex",
+      "meaning": "Visual accent color for types. Displayed on cards, edges, and UI chrome."
+    },
+    "weight": {
+      "type": "number",
+      "range": "-100 to +100",
+      "meaning": "Persona category weight. Positive = prioritize this relationship type, negative = suppress it, zero = neutral."
+    }
+  },
+
+  "relationships": {
+    "Account → Organization": "One-to-many. An account can own multiple orgs.",
+    "Organization → Project": "One-to-many. An org contains multiple projects.",
+    "Project → NordType": "Many-to-many via project_types. Types can be shared across projects.",
+    "Project → ConnectionType": "Many-to-many via project_types.",
+    "Project → Nord": "One-to-many. Nords belong to exactly one project.",
+    "Project → Connection": "One-to-many. Connections belong to exactly one project.",
+    "Project → Persona": "One-to-many. Personas are project-scoped.",
+    "Nord → NordType": "Many-to-one. Each nord has exactly one type.",
+    "Connection → ConnectionType": "Many-to-one. Each connection has exactly one type.",
+    "Connection → Nord (source)": "Many-to-one. The 'from' side of the edge.",
+    "Connection → Nord (target)": "Many-to-one. The 'to' side of the edge.",
+    "Persona → MentalModel": "One-to-many (max 5). Mental models are persona-scoped.",
+    "Persona → CategoryWeight": "One-to-many. One weight per ConnectionType per persona."
+  }
+}

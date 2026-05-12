@@ -12,6 +12,12 @@ import { Router, Request, Response } from 'express';
 import { nordTypesRepo, connectionTypesRepo } from '../repositories/types.js';
 import { query, queryOne } from '../db.js';
 import logger from '../lib/logger.js';
+import { validate } from '../middleware/validate.js';
+import {
+  CreateNordTypeSchema, UpdateNordTypeSchema,
+  CreateConnectionTypeSchema, UpdateConnectionTypeSchema,
+  AssociateTypeSchema, DissociateTypeSchema,
+} from '../schemas/types.js';
 
 export const typesRouter = Router();
 
@@ -19,12 +25,30 @@ export const typesRouter = Router();
 //  TYPES (Project-scoped queries, user-scoped ownership)
 // ══════════════════════════════════════════════════════════
 
-/** GET /api/projects/:id/types — all types associated with a project */
+/**
+ * @openapi
+ * /api/projects/{id}/types:
+ *   get:
+ *     tags: [Types]
+ *     summary: List all types for a project
+ *     description: Returns both nord types and connection types associated with the project.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *     responses:
+ *       200:
+ *         description: Object containing nord_types and connection_types arrays
+ */
 typesRouter.get('/projects/:id/types', async (req: Request, res: Response) => {
   try {
     const [nordTypes, connectionTypes] = await Promise.all([
-      nordTypesRepo.findByProject(req.params.id),
-      connectionTypesRepo.findByProject(req.params.id),
+      nordTypesRepo.findByProject(req.params.id as string),
+      connectionTypesRepo.findByProject(req.params.id as string),
     ]);
     res.json({ nord_types: nordTypes, connection_types: connectionTypes });
   } catch (err: any) {
@@ -42,15 +66,40 @@ typesRouter.get('/projects/:id/types', async (req: Request, res: Response) => {
 //  NORD TYPES
 // ══════════════════════════════════════════════════════════
 
-/** POST /api/projects/:id/nord-types — create a nord type and associate with project */
-typesRouter.post('/projects/:id/nord-types', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/projects/{id}/nord-types:
+ *   post:
+ *     tags: [Types]
+ *     summary: Create a nord type
+ *     description: Creates a new nord type and associates it with the project.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/NordType'
+ *     responses:
+ *       201:
+ *         description: Created nord type
+ *       400:
+ *         description: Validation error
+ */
+typesRouter.post('/projects/:id/nord-types', validate(CreateNordTypeSchema), async (req: Request, res: Response) => {
   try {
-    // Single-user mode: fall back to dev placeholder when auth is bypassed
     const userId = req.user?.uid || 'dev-user-000';
     const type = await nordTypesRepo.create({
       user_id: userId,
-      project_id: req.params.id,
-      name: req.body.name || 'New Type',
+      project_id: req.params.id as string,
+      name: req.body.name,
       description: req.body.description,
       icon: req.body.icon,
       accent_color: req.body.accent_color,
@@ -64,10 +113,34 @@ typesRouter.post('/projects/:id/nord-types', async (req: Request, res: Response)
   }
 });
 
-/** PUT /api/nord-types/:typeId — update a nord type */
-typesRouter.put('/nord-types/:typeId', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/nord-types/{typeId}:
+ *   put:
+ *     tags: [Types]
+ *     summary: Update a nord type
+ *     parameters:
+ *       - in: path
+ *         name: typeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/NordType'
+ *     responses:
+ *       200:
+ *         description: Updated nord type
+ *       404:
+ *         description: Not found
+ */
+typesRouter.put('/nord-types/:typeId', validate(UpdateNordTypeSchema), async (req: Request, res: Response) => {
   try {
-    const updated = await nordTypesRepo.update(req.params.typeId, req.body);
+    const updated = await nordTypesRepo.update(req.params.typeId as string, req.body);
     if (!updated) {
       res.status(404).json({ error: 'Nord type not found' });
       return;
@@ -79,10 +152,29 @@ typesRouter.put('/nord-types/:typeId', async (req: Request, res: Response) => {
   }
 });
 
-/** DELETE /api/nord-types/:typeId — soft-delete a nord type */
+/**
+ * @openapi
+ * /api/nord-types/{typeId}:
+ *   delete:
+ *     tags: [Types]
+ *     summary: Delete a nord type
+ *     description: Soft-deletes the type. Fails with 409 if nords still reference it.
+ *     parameters:
+ *       - in: path
+ *         name: typeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Deleted
+ *       409:
+ *         description: Cannot delete — type is in use
+ */
 typesRouter.delete('/nord-types/:typeId', async (req: Request, res: Response) => {
   try {
-    await nordTypesRepo.delete(req.params.typeId);
+    await nordTypesRepo.delete(req.params.typeId as string);
     res.status(204).end();
   } catch (err: any) {
     if (err.message?.includes('Cannot delete')) {
@@ -99,15 +191,39 @@ typesRouter.delete('/nord-types/:typeId', async (req: Request, res: Response) =>
 //  CONNECTION TYPES
 // ══════════════════════════════════════════════════════════
 
-/** POST /api/projects/:id/connection-types — create and associate with project */
-typesRouter.post('/projects/:id/connection-types', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/projects/{id}/connection-types:
+ *   post:
+ *     tags: [Types]
+ *     summary: Create a connection type
+ *     description: Creates a new connection (edge) type and associates it with the project.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ConnectionType'
+ *     responses:
+ *       201:
+ *         description: Created connection type
+ *       400:
+ *         description: Validation error
+ */
+typesRouter.post('/projects/:id/connection-types', validate(CreateConnectionTypeSchema), async (req: Request, res: Response) => {
   try {
-    // Single-user mode: fall back to dev placeholder when auth is bypassed
     const userId = req.user?.uid || 'dev-user-000';
     const type = await connectionTypesRepo.create({
       user_id: userId,
-      project_id: req.params.id,
-      name: req.body.name || 'New Connection',
+      project_id: req.params.id as string,
+      name: req.body.name,
       description: req.body.description,
       accent_color: req.body.accent_color,
       stroke_style: req.body.stroke_style,
@@ -125,10 +241,28 @@ typesRouter.post('/projects/:id/connection-types', async (req: Request, res: Res
   }
 });
 
-/** PUT /api/connection-types/:typeId — update a connection type */
-typesRouter.put('/connection-types/:typeId', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/connection-types/{typeId}:
+ *   put:
+ *     tags: [Types]
+ *     summary: Update a connection type
+ *     parameters:
+ *       - in: path
+ *         name: typeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Updated connection type
+ *       404:
+ *         description: Not found
+ */
+typesRouter.put('/connection-types/:typeId', validate(UpdateConnectionTypeSchema), async (req: Request, res: Response) => {
   try {
-    const updated = await connectionTypesRepo.update(req.params.typeId, req.body);
+    const updated = await connectionTypesRepo.update(req.params.typeId as string, req.body);
     if (!updated) {
       res.status(404).json({ error: 'Connection type not found' });
       return;
@@ -140,10 +274,29 @@ typesRouter.put('/connection-types/:typeId', async (req: Request, res: Response)
   }
 });
 
-/** DELETE /api/connection-types/:typeId — soft-delete a connection type */
+/**
+ * @openapi
+ * /api/connection-types/{typeId}:
+ *   delete:
+ *     tags: [Types]
+ *     summary: Delete a connection type
+ *     description: Soft-deletes the type. Fails with 409 if connections still reference it.
+ *     parameters:
+ *       - in: path
+ *         name: typeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Deleted
+ *       409:
+ *         description: Cannot delete — type is in use
+ */
 typesRouter.delete('/connection-types/:typeId', async (req: Request, res: Response) => {
   try {
-    await connectionTypesRepo.delete(req.params.typeId);
+    await connectionTypesRepo.delete(req.params.typeId as string);
     res.status(204).end();
   } catch (err: any) {
     if (err.message?.includes('Cannot delete')) {
@@ -160,24 +313,39 @@ typesRouter.delete('/connection-types/:typeId', async (req: Request, res: Respon
 //  PROJECT-TYPE ASSOCIATIONS
 // ══════════════════════════════════════════════════════════
 
-/** POST /api/projects/:id/types/associate — add an existing type to a project */
-typesRouter.post('/projects/:id/types/associate', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/projects/{id}/types/associate:
+ *   post:
+ *     tags: [Types]
+ *     summary: Associate a type with a project
+ *     description: Links an existing nord/connection type to a project.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       201:
+ *         description: Associated
+ *       400:
+ *         description: Validation error
+ */
+typesRouter.post('/projects/:id/types/associate', validate(AssociateTypeSchema), async (req: Request, res: Response) => {
   try {
     const { type_id, type_kind } = req.body;
-    if (!type_id || !type_kind) {
-      res.status(400).json({ error: 'type_id and type_kind required' });
-      return;
-    }
     const maxSort = await queryOne<{ max: number }>(
       `SELECT COALESCE(MAX(sort_order), -1) + 1 AS max FROM project_types
        WHERE project_id = $1 AND type_kind = $2`,
-      [req.params.id, type_kind]
+      [req.params.id as string, type_kind]
     );
     await queryOne(
       `INSERT INTO project_types (project_id, type_id, type_kind, sort_order)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT DO NOTHING`,
-      [req.params.id, type_id, type_kind, maxSort?.max ?? 0]
+      [req.params.id as string, type_id, type_kind, maxSort?.max ?? 0]
     );
     res.status(201).json({ associated: true });
   } catch (err: any) {
@@ -186,15 +354,29 @@ typesRouter.post('/projects/:id/types/associate', async (req: Request, res: Resp
   }
 });
 
-/** DELETE /api/projects/:id/types/dissociate — remove a type from a project (not delete it) */
-typesRouter.post('/projects/:id/types/dissociate', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/projects/{id}/types/dissociate:
+ *   post:
+ *     tags: [Types]
+ *     summary: Remove a type from a project
+ *     description: Unlinks a type from the project without deleting it. System types cannot be removed.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Dissociated
+ *       409:
+ *         description: Cannot remove system type
+ */
+typesRouter.post('/projects/:id/types/dissociate', validate(DissociateTypeSchema), async (req: Request, res: Response) => {
   try {
     const { type_id } = req.body;
-    if (!type_id) {
-      res.status(400).json({ error: 'type_id required' });
-      return;
-    }
-    // Don't allow dissociating system types
     const connType = await connectionTypesRepo.findById(type_id);
     if (connType?.is_system) {
       res.status(409).json({ error: 'Cannot remove system connection type from project' });
@@ -202,7 +384,7 @@ typesRouter.post('/projects/:id/types/dissociate', async (req: Request, res: Res
     }
     await query(
       'DELETE FROM project_types WHERE project_id = $1 AND type_id = $2',
-      [req.params.id, type_id]
+      [req.params.id as string, type_id]
     );
     res.json({ dissociated: true });
   } catch (err: any) {

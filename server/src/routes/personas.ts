@@ -16,6 +16,12 @@
 import { Router, Request, Response } from 'express';
 import { personasRepo } from '../repositories/personas.js';
 import logger from '../lib/logger.js';
+import { validate } from '../middleware/validate.js';
+import {
+  CreatePersonaSchema, UpdatePersonaSchema,
+  CreateMentalModelSchema, UpdateMentalModelSchema,
+  ReorderMentalModelsSchema, UpsertCategoryWeightSchema,
+} from '../schemas/personas.js';
 
 export const personasRouter = Router();
 
@@ -23,10 +29,28 @@ export const personasRouter = Router();
 //  PERSONAS
 // ══════════════════════════════════════════════════════════
 
-/** GET /api/projects/:id/personas — list all personas for a project */
+/**
+ * @openapi
+ * /api/projects/{id}/personas:
+ *   get:
+ *     tags: [Personas]
+ *     summary: List all personas for a project
+ *     description: Returns an array of persona objects with their mental models and category weights.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *     responses:
+ *       200:
+ *         description: Array of personas
+ */
 personasRouter.get('/projects/:id/personas', async (req: Request, res: Response) => {
   try {
-    const personas = await personasRepo.findByProject(req.params.id);
+    const personas = await personasRepo.findByProject(req.params.id as string);
     res.json(personas);
   } catch (err: any) {
     logger.error('Failed to list personas', { error: err.message, projectId: req.params.id });
@@ -34,11 +58,44 @@ personasRouter.get('/projects/:id/personas', async (req: Request, res: Response)
   }
 });
 
-/** POST /api/projects/:id/personas — create a new persona */
-personasRouter.post('/projects/:id/personas', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/projects/{id}/personas:
+ *   post:
+ *     tags: [Personas]
+ *     summary: Create a new persona
+ *     description: Creates an AI lens persona and associates it with the project.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name]
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Display name (e.g., "Engineering Lead")
+ *               avatar_seed:
+ *                 type: string
+ *                 description: DiceBear avatar seed
+ *     responses:
+ *       201:
+ *         description: Created persona
+ *       400:
+ *         description: Validation error
+ */
+personasRouter.post('/projects/:id/personas', validate(CreatePersonaSchema), async (req: Request, res: Response) => {
   try {
     const persona = await personasRepo.create({
-      project_id: req.params.id,
+      project_id: req.params.id as string,
       name: req.body.name,
       avatar_seed: req.body.avatar_seed,
     });
@@ -49,10 +106,28 @@ personasRouter.post('/projects/:id/personas', async (req: Request, res: Response
   }
 });
 
-/** PUT /api/personas/:id — update persona fields */
-personasRouter.put('/personas/:id', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/personas/{id}:
+ *   put:
+ *     tags: [Personas]
+ *     summary: Update persona fields
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Updated persona
+ *       404:
+ *         description: Not found
+ */
+personasRouter.put('/personas/:id', validate(UpdatePersonaSchema), async (req: Request, res: Response) => {
   try {
-    const persona = await personasRepo.update(req.params.id, req.body);
+    const persona = await personasRepo.update(req.params.id as string, req.body);
     if (!persona) return res.status(404).json({ error: 'Persona not found' });
     res.json(persona);
   } catch (err: any) {
@@ -61,10 +136,27 @@ personasRouter.put('/personas/:id', async (req: Request, res: Response) => {
   }
 });
 
-/** DELETE /api/personas/:id — soft-delete persona */
+/**
+ * @openapi
+ * /api/personas/{id}:
+ *   delete:
+ *     tags: [Personas]
+ *     summary: Delete a persona
+ *     description: Soft-deletes the persona.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Deleted
+ */
 personasRouter.delete('/personas/:id', async (req: Request, res: Response) => {
   try {
-    await personasRepo.delete(req.params.id);
+    await personasRepo.delete(req.params.id as string);
     res.json({ success: true });
   } catch (err: any) {
     logger.error('Failed to delete persona', { error: err.message, id: req.params.id });
@@ -76,10 +168,30 @@ personasRouter.delete('/personas/:id', async (req: Request, res: Response) => {
 //  MENTAL MODELS
 // ══════════════════════════════════════════════════════════
 
-/** POST /api/personas/:id/mental-models — add a mental model (max 5) */
-personasRouter.post('/personas/:id/mental-models', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/personas/{id}/mental-models:
+ *   post:
+ *     tags: [Personas]
+ *     summary: Add a mental model
+ *     description: Adds a mental model to a persona (max 5). Mental models define focus areas and behavioral guardrails for AI interactions.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Persona ID
+ *     responses:
+ *       201:
+ *         description: Created mental model
+ *       400:
+ *         description: Maximum of 5 mental models reached
+ */
+personasRouter.post('/personas/:id/mental-models', validate(CreateMentalModelSchema), async (req: Request, res: Response) => {
   try {
-    const model = await personasRepo.addMentalModel(req.params.id, req.body);
+    const model = await personasRepo.addMentalModel(req.params.id as string, req.body);
     if (!model) return res.status(400).json({ error: 'Maximum of 5 mental models reached' });
     res.status(201).json(model);
   } catch (err: any) {
@@ -88,10 +200,28 @@ personasRouter.post('/personas/:id/mental-models', async (req: Request, res: Res
   }
 });
 
-/** PUT /api/mental-models/:id — update a mental model */
-personasRouter.put('/mental-models/:id', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/mental-models/{id}:
+ *   put:
+ *     tags: [Personas]
+ *     summary: Update a mental model
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Updated mental model
+ *       404:
+ *         description: Not found
+ */
+personasRouter.put('/mental-models/:id', validate(UpdateMentalModelSchema), async (req: Request, res: Response) => {
   try {
-    const model = await personasRepo.updateMentalModel(req.params.id, req.body);
+    const model = await personasRepo.updateMentalModel(req.params.id as string, req.body);
     if (!model) return res.status(404).json({ error: 'Mental model not found' });
     res.json(model);
   } catch (err: any) {
@@ -100,10 +230,26 @@ personasRouter.put('/mental-models/:id', async (req: Request, res: Response) => 
   }
 });
 
-/** DELETE /api/mental-models/:id — delete a mental model */
+/**
+ * @openapi
+ * /api/mental-models/{id}:
+ *   delete:
+ *     tags: [Personas]
+ *     summary: Delete a mental model
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Deleted
+ */
 personasRouter.delete('/mental-models/:id', async (req: Request, res: Response) => {
   try {
-    await personasRepo.deleteMentalModel(req.params.id);
+    await personasRepo.deleteMentalModel(req.params.id as string);
     res.json({ success: true });
   } catch (err: any) {
     logger.error('Failed to delete mental model', { error: err.message, id: req.params.id });
@@ -111,12 +257,30 @@ personasRouter.delete('/mental-models/:id', async (req: Request, res: Response) 
   }
 });
 
-/** PUT /api/personas/:id/mental-models/reorder — reorder mental models */
-personasRouter.put('/personas/:id/mental-models/reorder', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/personas/{id}/mental-models/reorder:
+ *   put:
+ *     tags: [Personas]
+ *     summary: Reorder mental models
+ *     description: Sets the display order of mental models by providing an ordered array of IDs.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Persona ID
+ *     responses:
+ *       200:
+ *         description: Reordered
+ *       400:
+ *         description: Validation error
+ */
+personasRouter.put('/personas/:id/mental-models/reorder', validate(ReorderMentalModelsSchema), async (req: Request, res: Response) => {
   try {
-    const { orderedIds } = req.body;
-    if (!Array.isArray(orderedIds)) return res.status(400).json({ error: 'orderedIds must be an array' });
-    await personasRepo.reorderMentalModels(req.params.id, orderedIds);
+    await personasRepo.reorderMentalModels(req.params.id as string, req.body.orderedIds);
     res.json({ success: true });
   } catch (err: any) {
     logger.error('Failed to reorder mental models', { error: err.message, personaId: req.params.id });
@@ -128,14 +292,41 @@ personasRouter.put('/personas/:id/mental-models/reorder', async (req: Request, r
 //  CATEGORY WEIGHTS
 // ══════════════════════════════════════════════════════════
 
-/** PUT /api/personas/:id/weights/:connectionTypeId — upsert category weight */
-personasRouter.put('/personas/:id/weights/:connectionTypeId', async (req: Request, res: Response) => {
+/**
+ * @openapi
+ * /api/personas/{id}/weights/{connectionTypeId}:
+ *   put:
+ *     tags: [Personas]
+ *     summary: Set category weight
+ *     description: Upserts the relevance weight for a connection type category. -100 = suppress, 0 = neutral, 100 = prioritize.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Persona ID
+ *       - in: path
+ *         name: connectionTypeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Connection type ID
+ *     responses:
+ *       200:
+ *         description: Weight saved
+ *       400:
+ *         description: Validation error
+ */
+personasRouter.put('/personas/:id/weights/:connectionTypeId', validate(UpsertCategoryWeightSchema), async (req: Request, res: Response) => {
   try {
-    const { weight } = req.body;
-    if (typeof weight !== 'number' || weight < -100 || weight > 100) {
-      return res.status(400).json({ error: 'Weight must be a number between -100 and 100' });
-    }
-    const result = await personasRepo.upsertCategoryWeight(req.params.id, req.params.connectionTypeId, weight);
+    const result = await personasRepo.upsertCategoryWeight(
+      req.params.id as string,
+      req.params.connectionTypeId as string,
+      req.body.weight,
+    );
     res.json(result);
   } catch (err: any) {
     logger.error('Failed to update category weight', { error: err.message });

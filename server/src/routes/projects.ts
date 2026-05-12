@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import logger from '../lib/logger.js';
 import * as projectsRepo from '../repositories/projects.js';
+import { validate } from '../middleware/validate.js';
+import { CreateProjectSchema, UpdateProjectSchema } from '../schemas/projects.js';
 
 export const projectsRouter = Router();
 
@@ -57,17 +59,9 @@ projectsRouter.get('/projects', async (_req: Request, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-projectsRouter.post('/projects', async (req: Request, res: Response) => {
+projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Request, res: Response) => {
   try {
     const { org_id, name, description, purpose, icon, mcp_enabled, mcp_capture_data, mcp_mutable, default_persona_id, default_start_nord_id } = req.body;
-    const errors: string[] = [];
-    if (!name) errors.push('name is required');
-    if (!description) errors.push('description is required');
-    if (!purpose) errors.push('purpose is required');
-    if (errors.length > 0) {
-      res.status(400).json({ error: errors.join(', ') });
-      return;
-    }
     // Single-user mode: org_id is optional, defaults to a static placeholder
     const resolvedOrgId = org_id || '00000000-0000-0000-0000-000000000000';
     const project = await projectsRepo.create({

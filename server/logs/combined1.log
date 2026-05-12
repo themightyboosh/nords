@@ -476,3 +476,188 @@
 19:25:01.027 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
 19:25:01.030 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
 19:25:01.030 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:27:03.779 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:03.782 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:03.782 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:03.783 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:03.784 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:03.784 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:03.812 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":164,"error":"relation \"usage_events\" does not exist"}
+19:27:03.813 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:27:03.817 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":172,"error":"relation \"usage_events\" does not exist"}
+19:27:03.817 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:27:03.817 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":176,"error":"relation \"usage_events\" does not exist"}
+19:27:03.817 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:27:03.819 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":172,"rows":1}
+19:27:03.821 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d","status":304,"duration":"173ms"}
+19:27:03.821 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":175,"rows":2}
+19:27:03.850 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":29,"rows":2}
+19:27:03.852 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":31,"error":"relation \"usage_events\" does not exist"}
+19:27:03.852 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:27:03.881 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":31,"rows":12}
+19:27:03.882 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"237ms"}
+19:27:03.912 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":30,"error":"relation \"usage_events\" does not exist"}
+19:27:03.912 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:27:03.921 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":277,"rows":1}
+19:27:03.921 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph","status":304,"duration":"280ms"}
+19:27:03.943 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:03.950 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":28,"error":"relation \"usage_events\" does not exist"}
+19:27:03.950 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:27:03.974 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":153,"rows":1}
+19:27:03.974 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d","status":304,"duration":"153ms"}
+19:27:04.003 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:04.039 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":156,"rows":2}
+19:27:04.045 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:27:04.068 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":29,"rows":2}
+19:27:04.097 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":29,"rows":12}
+19:27:04.098 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"216ms"}
+19:27:04.127 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":29,"error":"relation \"usage_events\" does not exist"}
+19:27:04.127 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:27:04.128 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":29,"rows":2}
+19:27:04.158 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":30,"rows":2}
+19:27:04.176 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":253,"rows":1}
+19:27:04.176 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph","status":304,"duration":"254ms"}
+19:27:04.189 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":31,"rows":12}
+19:27:04.189 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"91ms"}
+19:27:04.221 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":31,"error":"relation \"usage_events\" does not exist"}
+19:27:04.221 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:27:04.221 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":31,"rows":2}
+19:27:04.251 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":30,"rows":2}
+19:27:04.280 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":29,"rows":12}
+19:27:04.280 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"90ms"}
+19:27:04.426 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-12T23:27:03.603Z","userId":"dev-user-000"}
+19:27:04.426 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-12T23:27:03.603Z","userId":"dev-user-000"}
+19:27:04.427 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}
+19:27:04.458 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":32,"error":"relation \"usage_events\" does not exist"}
+19:27:04.458 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:28:51.980 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:51.989 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:51.989 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:51.992 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:52.000 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:52.000 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:52.004 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:52.005 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:52.005 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:52.005 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:52.008 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":158,"error":"relation \"usage_events\" does not exist"}
+19:28:52.008 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:28:52.018 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":162,"error":"relation \"usage_events\" does not exist"}
+19:28:52.019 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:28:52.023 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":168,"error":"relation \"usage_events\" does not exist"}
+19:28:52.023 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:28:52.027 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+19:28:52.027 [32minfo[39m: PUT /api/connections/707ba283-35b4-4087-93ac-a54ff6f8504a 200 {"service":"nords-server","method":"PUT","path":"/api/connections/707ba283-35b4-4087-93ac-a54ff6f8504a","status":200,"duration":"178ms","bytes":"438"}
+19:28:52.029 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":177,"error":"relation \"usage_events\" does not exist"}
+19:28:52.029 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:28:52.033 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":181,"rows":1}
+19:28:52.033 [32minfo[39m: PUT /api/connections/23a7b110-9948-413a-96d7-0a41cc431116 200 {"service":"nords-server","method":"PUT","path":"/api/connections/23a7b110-9948-413a-96d7-0a41cc431116","status":200,"duration":"182ms","bytes":"419"}
+19:28:52.037 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":183,"error":"relation \"usage_events\" does not exist"}
+19:28:52.037 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+19:28:52.039 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":185,"rows":1}
+19:28:52.039 [32minfo[39m: PUT /api/connections/844c6096-c51e-492a-bdbd-8c3f9ce12abd 200 {"service":"nords-server","method":"PUT","path":"/api/connections/844c6096-c51e-492a-bdbd-8c3f9ce12abd","status":200,"duration":"186ms","bytes":"418"}
+19:28:52.044 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":189,"rows":1}
+19:28:52.044 [32minfo[39m: PUT /api/connections/5192717b-b5ee-4f93-91ee-d0f6aac0abba 200 {"service":"nords-server","method":"PUT","path":"/api/connections/5192717b-b5ee-4f93-91ee-d0f6aac0abba","status":200,"duration":"189ms","bytes":"419"}
+19:28:52.047 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":191,"rows":1}
+19:28:52.048 [32minfo[39m: PUT /api/connections/1130266a-18be-4d74-8091-6aa4b883d1c4 200 {"service":"nords-server","method":"PUT","path":"/api/connections/1130266a-18be-4d74-8091-6aa4b883d1c4","status":200,"duration":"192ms","bytes":"437"}
+19:49:59.593 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:49:59.596 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:49:59.597 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:49:59.594 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:49:59.594 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:49:59.597 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:49:59.597 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:49:59.597 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:49:59.597 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:51:02.664 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:51:02.667 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:51:02.667 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:51:02.663 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:51:02.668 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:51:02.668 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:51:02.664 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:51:02.668 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:51:02.669 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:51:40.040 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:51:40.040 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:51:40.043 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:51:40.043 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:51:40.043 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:51:40.043 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:51:40.040 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:51:40.043 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:51:40.043 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:52:04.789 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:52:04.789 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:52:04.792 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:52:04.792 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:52:04.792 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:52:04.792 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:52:04.791 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:52:04.794 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:52:04.794 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:52:18.048 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:52:18.052 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:52:18.052 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:52:18.051 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:52:18.054 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:52:18.054 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+19:52:18.053 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+19:52:18.056 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+19:52:18.056 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
