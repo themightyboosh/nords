@@ -10,7 +10,7 @@
  *   └───────────────────────────────────────────────────────┘
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Eye, Link2, LayoutGrid, Users,
   MessageSquare, Camera,
@@ -52,6 +52,15 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
   // Full resolved connection type (has directionFilter)
   const activeFullType = connectionTypes.find(ct => ct.id === activeConnectionTypeId) ?? null;
 
+  // Issue 4: Never start on "all categories" — auto-select the first connection type
+  // if nothing is persisted from localStorage. This fires once on mount.
+  useEffect(() => {
+    if (!activeConnectionTypeId && connectionTypes.length > 0) {
+      const first = connectionTypes[0];
+      setActiveConnectionTypeId(first.id);
+      setActiveLine(first.name);
+    }
+  }, [connectionTypes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelectConnectionType = (typeId: string, typeName: string) => {
     setActiveConnectionTypeId(typeId);

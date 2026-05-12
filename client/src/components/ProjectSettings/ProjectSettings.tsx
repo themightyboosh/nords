@@ -5,11 +5,11 @@
  * Allows editing:
  *   - Name, Description, Purpose (mandatory)
  *   - MCP toggles (Enable, Capture Data, Mutable)
- *   - Default Persona (dropdown)
- *   - Default Start Nord (dropdown)
+ *   - Default Persona (dropdown, if personas exist)
+ *   - Default Start Nord (category → nord cascading dropdown, if nords exist)
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { X, AlertTriangle, Save } from 'lucide-react';
 import { api } from '../../api/client';
 import './ProjectSettings.css';
@@ -35,6 +35,23 @@ interface ProjectData {
   default_start_nord_id: string | null;
 }
 
+interface PersonaSummary {
+  id: string;
+  name: string;
+}
+
+interface NordSummary {
+  id: string;
+  title: string;
+  type_id: string;
+}
+
+interface NordTypeSummary {
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChange }: ProjectSettingsProps) {
   const [project, setProject] = useState<ProjectData | null>(null);
   const [form, setForm] = useState<Partial<ProjectData>>({});
@@ -42,9 +59,17 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Load project data
+  // Reference data for dropdowns
+  const [personas, setPersonas] = useState<PersonaSummary[]>([]);
+  const [nords, setNords] = useState<NordSummary[]>([]);
+  const [nordTypes, setNordTypes] = useState<NordTypeSummary[]>([]);
+  const [selectedCategoryForNord, setSelectedCategoryForNord] = useState<string>('');
+
+  // Load project data + reference data for dropdowns
   useEffect(() => {
     if (!isOpen || !projectId) return;
+
+    // Load project
     api.get<ProjectData>(`/api/projects/${projectId}`)
       .then(data => {
         setProject(data);
@@ -56,10 +81,41 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           mcp_enabled: data.mcp_enabled,
           mcp_capture_data: data.mcp_capture_data,
           mcp_mutable: data.mcp_mutable,
+          default_persona_id: data.default_persona_id,
+          default_start_nord_id: data.default_start_nord_id,
         });
       })
       .catch(err => console.error('Failed to load project:', err));
+
+    // Load personas
+    api.get<PersonaSummary[]>(`/api/projects/${projectId}/personas`)
+      .then(data => setPersonas(data))
+      .catch(() => setPersonas([]));
+
+    // Load graph (nords + types)
+    api.get<{ nords: NordSummary[]; nord_types: NordTypeSummary[] }>(`/api/projects/${projectId}/graph`)
+      .then(data => {
+        setNords(data.nords || []);
+        setNordTypes(data.nord_types || []);
+      })
+      .catch(() => { setNords([]); setNordTypes([]); });
   }, [isOpen, projectId]);
+
+  // When project data loads, set the category filter to match the current default nord
+  useEffect(() => {
+    if (form.default_start_nord_id && nords.length > 0) {
+      const currentNord = nords.find(n => n.id === form.default_start_nord_id);
+      if (currentNord) {
+        setSelectedCategoryForNord(currentNord.type_id);
+      }
+    }
+  }, [form.default_start_nord_id, nords]);
+
+  // Nords filtered by the selected category
+  const filteredNords = useMemo(() => {
+    if (!selectedCategoryForNord) return [];
+    return nords.filter(n => n.type_id === selectedCategoryForNord);
+  }, [nords, selectedCategoryForNord]);
 
   const handleSave = useCallback(async () => {
     const errs: string[] = [];
@@ -79,6 +135,8 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
         mcp_enabled: form.mcp_enabled,
         mcp_capture_data: form.mcp_capture_data,
         mcp_mutable: form.mcp_mutable,
+        default_persona_id: form.default_persona_id || null,
+        default_start_nord_id: form.default_start_nord_id || null,
       });
       setProject(updated);
       onProjectNameChange?.(updated.name);
@@ -144,6 +202,65 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
 
           <div className="nords-modal__divider" />
 
+          {/* ── Default Persona ── */}
+          {personas.length > 0 && (
+            <label className="nords-modal__label">
+              Default Persona
+              <select
+                className="nords-modal__select"
+                value={form.default_persona_id || ''}
+                onChange={e => setForm({ ...form, default_persona_id: e.target.value || null })}
+              >
+                <option value="">— None —</option>
+                {personas.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {/* ── Default Start Nord (Category → Nord cascade) ── */}
+          {nordTypes.length > 0 && nords.length > 0 && (
+            <div className="nords-modal__cascade-group">
+              <span className="nords-modal__cascade-title">Default Start Nord</span>
+              <div className="nords-modal__cascade-row">
+                <label className="nords-modal__label nords-modal__label--half">
+                  Nord Type
+                  <select
+                    className="nords-modal__select"
+                    value={selectedCategoryForNord}
+                    onChange={e => {
+                      setSelectedCategoryForNord(e.target.value);
+                      setForm({ ...form, default_start_nord_id: null }); // Reset nord when type changes
+                    }}
+                  >
+                    <option value="">— Select type —</option>
+                    {nordTypes.map(t => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="nords-modal__label nords-modal__label--half">
+                  Nord
+                  <select
+                    className="nords-modal__select"
+                    value={form.default_start_nord_id || ''}
+                    onChange={e => setForm({ ...form, default_start_nord_id: e.target.value || null })}
+                    disabled={!selectedCategoryForNord || filteredNords.length === 0}
+                  >
+                    <option value="">— Select nord —</option>
+                    {filteredNords.map(n => (
+                      <option key={n.id} value={n.id}>{n.title}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </div>
+          )}
+
+          <div className="nords-modal__divider" />
+
+          {/* ── MCP Toggles ── */}
           <label className="nords-modal__checkbox-label">
             <input
               type="checkbox"

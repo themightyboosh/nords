@@ -67,6 +67,35 @@ interface ConnectionEntry {
   count: number;
 }
 
+/**
+ * Resolve a nord's current board position from its connection distances.
+ * Used to take a pre-drop snapshot so we can detect drift in non-mover cards.
+ */
+function resolvePositionForSnapshot(
+  nordId: string,
+  activeType: { id: string },
+  graph: ProjectGraph,
+  directionFilter: string,
+): { distance_x: number; distance_y: number } | null {
+  let sumX = 0, sumY = 0, count = 0;
+  for (const conn of graph.connections) {
+    if (conn.type_id !== activeType.id) continue;
+    if (directionFilter !== 'all' && conn.direction !== directionFilter) continue;
+    if (conn.source_nord_id !== nordId && conn.target_nord_id !== nordId) continue;
+    sumX += conn.distance_x ?? 0.5;
+    sumY += conn.distance_y ?? 0.5;
+    count++;
+  }
+  if (count === 0) {
+    // Check board_positions fallback
+    const pos = (graph.board_positions || []).find(
+      p => p.type_id === activeType.id && p.nord_id === nordId
+    );
+    return pos ? { distance_x: pos.distance_x, distance_y: pos.distance_y } : null;
+  }
+  return { distance_x: sumX / count, distance_y: sumY / count };
+}
+
 export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetchGraph }: MatrixViewProps) {
   const { activeConnectionTypeId, setActiveConnectionTypeId } = useLens();
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
@@ -186,11 +215,14 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     }
 
     // Resolve final position for a nord:
-    //   1. Derived from connection distances (source of truth for spectrum/grid values)
-    //   2. Explicit board_position (fallback for orphans with no connections of this type)
+    //   1. Explicit board_position (user drag override — always wins)
+    //   2. Derived from connection distances (fallback for un-dragged nords)
     //   3. null → not on this board
     const resolvePosition = (nordId: string): { distance_x: number; distance_y: number } | null => {
-      // Connections are the source of truth — they carry the real spectrum value
+      // Explicit board_positions always win — they represent user's drag intent
+      const explicit = explicitPositionByNord.get(nordId);
+      if (explicit) return explicit;
+      // Fallback: derive from connection distances
       const xAcc = derivedDistX.get(nordId);
       if (xAcc) {
         const yAcc = derivedDistY.get(nordId) ?? { sum: 0.5, count: 1 };
@@ -199,9 +231,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
           distance_y: yAcc.sum / yAcc.count,
         };
       }
-      // No connections of this type — fallback to explicit board_position (orphan placement)
-      const explicit = explicitPositionByNord.get(nordId);
-      if (explicit) return explicit;
       return null; // not on this board
     };
 
@@ -413,54 +442,32 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       }
     }
 
+    // ── Pre-drop snapshot: record every card's current position ──
+    const preDropPositions = new Map<string, { distance_x: number; distance_y: number }>();
+    if (graph) {
+      for (const nord of graph.nords) {
+        const pos = resolvePositionForSnapshot(
+          nord.id, activeType, graph, directionFilter
+        );
+        if (pos) preDropPositions.set(nord.id, pos);
+      }
+    }
+
+    // ── Write the moved card's connections to the target cell ──
+    // This updates connection.distance_x/y so the graph view reflects the move.
     const connectionIds = data.sourceConnectionIds;
     if (connectionIds.length > 0) {
-      // ── Micro-spread: distribute all cards in this cell across column bounds ──
-      // Instead of writing bounds.center for every card, spread them evenly so
-      // nords don't collapse to the same point in graph view.
-      const droppedCard = columnCards.find(c => c.id === data.nordId);
-      const droppedCardEntry = droppedCard
-        ? { ...droppedCard, sortOrder: newSortOrder }
-        : { id: data.nordId, sortOrder: newSortOrder, connectionIds } as Pick<MatrixCard, 'id' | 'sortOrder' | 'connectionIds'>;
-
-      // Build the full cell roster: existing cards + dropped card at new sort position
-      const allCellCards = [
-        ...existingCards,
-        droppedCardEntry,
-      ].sort((a, b) => a.sortOrder - b.sortOrder);
-
-      const n = allCellCards.length;
-
-      // Compute y-axis bounds for quadrant mode spread
-      const yLabelsArr = activeType.yStageLabels;
-      const yLabel = targetPositionY != null && yLabelsArr.length > 0
-        ? resolveStageLabel(targetPositionY, yLabelsArr)
-        : null;
-      const yBounds = yLabel ? getColumnBounds(yLabel, yLabelsArr) : null;
-
-      // Write spread distances for all cards in the cell
       await Promise.all(
-        allCellCards.map((card, i) => {
-          const spreadX = n === 1
-            ? bounds.center
-            : bounds.min + ((i + 1) / (n + 1)) * (bounds.max - bounds.min);
-          const spreadY = yBounds && n > 1
-            ? yBounds.min + ((i + 1) / (n + 1)) * (yBounds.max - yBounds.min)
-            : newDistY;
-
-          return Promise.all(
-            card.connectionIds.map(connId =>
-              updateConnection(connId, {
-                distance_x: spreadX,
-                distance_y: spreadY,
-                sort_order: card.sortOrder,
-              })
-            )
-          );
-        })
+        connectionIds.map(connId =>
+          updateConnection(connId, {
+            distance_x: bounds.center,
+            distance_y: newDistY,
+            sort_order: newSortOrder,
+          })
+        )
       );
     } else {
-      // Orphan: no connections yet — use board_positions fallback
+      // Orphan: no connections — use board_positions directly
       await upsertPosition({
         nord_id: data.nordId,
         type_id: activeType.id,
@@ -469,8 +476,34 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       });
     }
 
+    // ── Pin ALL other cards at their pre-drop positions ──
+    // Board drags update shared connections, which can shift any connected card.
+    // Blanket-pin every non-mover card so nothing moves except the one you dragged.
+    const pinPromises: Promise<void>[] = [];
+    for (const [nordId, pos] of preDropPositions) {
+      if (nordId === data.nordId) continue;
+      pinPromises.push(
+        upsertPosition({
+          nord_id: nordId,
+          type_id: activeType.id,
+          distance_x: pos.distance_x,
+          distance_y: pos.distance_y,
+        })
+      );
+    }
+    // Also pin the mover at its new position
+    pinPromises.push(
+      upsertPosition({
+        nord_id: data.nordId,
+        type_id: activeType.id,
+        distance_x: bounds.center,
+        distance_y: newDistY,
+      })
+    );
+    await Promise.all(pinPromises);
+
     await refetchGraph();
-  }, [activeType, updateConnection, upsertPosition, refetchGraph]);
+  }, [activeType, updateConnection, upsertPosition, refetchGraph, directionFilter, graph]);
 
   const handleConnectionEntryDrop = useCallback(async (e: React.DragEvent, targetTypeId: string) => {
     e.preventDefault();

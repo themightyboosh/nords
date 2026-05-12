@@ -185,6 +185,14 @@
   },
   "active": "09a60c5211c6dc2a",
   "lastOpenFiles": [
+    "server/logs/combined1.log",
+    "New 01/Screenshot 2026-05-12 at 5.38.04 PM.png",
+    "scripts/test_full_renorm_e2e.mjs",
+    "scripts/test_move_causes_drift.mjs",
+    "scripts/test_move_all_cells.mjs",
+    "scripts/test_board_renormalize.mjs",
+    "client/src/utils/boardRenormalize.ts",
+    "New 01/Screenshot 2026-05-12 at 4.07.19 PM.png",
     "client/src/components/ProjectSettings/ProjectSettings.css",
     "client/src/components/ProjectSettings/ProjectSettings.tsx",
     "client/src/components/ProjectSettings",
@@ -197,12 +205,7 @@
     "New 01/1/issue1_2dbdf1.png",
     "New 01/7/Screenshot 2026-05-12 at 12.29.22 PM.png",
     "New 01/7",
-    "New 01/untitled folder",
     "New 01/Screenshot 2026-05-12 at 12.29.22 PM.png",
-    "New 01/6/Screenshot 2026-05-12 at 12.27.32 PM.png",
-    "New 01/6",
-    "New 01/Screenshot 2026-05-12 at 12.27.32 PM.png",
-    "New 01/3",
     "New 01/Issues..md"
   ]
 }

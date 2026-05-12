@@ -12,3 +12,51 @@
   font-weight: 600;
   animation: nords-fade-in 0.2s ease;
 }
+
+/* ── Select dropdown ── */
+.nords-modal__select {
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 4px;
+  border-radius: var(--nords-radius-sm);
+  border: 1px solid var(--nords-color-border-default);
+  background: var(--nords-color-bg-surface);
+  color: var(--nords-color-text-primary);
+  font-size: var(--nords-font-size-sm);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.nords-modal__select:focus {
+  outline: none;
+  border-color: var(--nords-color-accent);
+}
+
+.nords-modal__select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Cascade dropdown group (category → nord) ── */
+.nords-modal__cascade-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nords-modal__cascade-title {
+  font-size: var(--nords-font-size-sm);
+  font-weight: 600;
+  color: var(--nords-color-text-secondary);
+}
+
+.nords-modal__cascade-row {
+  display: flex;
+  gap: 12px;
+}
+
+.nords-modal__label--half {
+  flex: 1;
+  min-width: 0;
+}

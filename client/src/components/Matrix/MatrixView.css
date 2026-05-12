@@ -252,11 +252,9 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
-/* Accent-colored drop target during drag */
+/* Accent-colored drop target during drag — subtle tint only */
 .nords-matrix__lane-banner.is-drag-over {
-  background: color-mix(in srgb, currentColor 12%, var(--nords-color-bg-secondary));
-  border-top-color: currentColor;
-  border-bottom-color: color-mix(in srgb, currentColor 30%, transparent);
+  background: color-mix(in srgb, currentColor 6%, var(--nords-color-bg-secondary));
 }
 
 .nords-matrix__lane-count {
@@ -306,13 +304,9 @@
   border-left: 2px dashed color-mix(in srgb, var(--nords-color-border) 60%, transparent);
 }
 
-.nords-matrix__grid-cell.is-drag-over {
-  background: color-mix(in srgb, var(--nords-color-accent) 8%, var(--nords-color-bg-secondary));
-}
-
-/* When the parent swimlane is the drop target, highlight all cells in the band */
+.nords-matrix__grid-cell.is-drag-over,
 .nords-matrix__grid-cell.is-lane-drag-over {
-  background: color-mix(in srgb, var(--nords-color-accent) 6%, var(--nords-color-bg-secondary));
+  background: color-mix(in srgb, var(--nords-color-accent) 5%, var(--nords-color-bg-secondary));
 }
 
 .nords-matrix__grid-extras {
@@ -672,24 +666,8 @@
 /* ── Drop Target Highlights ── */
 
 .nords-matrix__column.is-drag-over {
-  background: color-mix(in srgb, var(--nords-color-accent) 6%, var(--nords-color-bg-secondary));
+  background: color-mix(in srgb, var(--nords-color-accent) 4%, var(--nords-color-bg-secondary));
   transition: background-color 0.15s ease;
-}
-
-.nords-matrix__column.is-drag-over .nords-matrix__column-body {
-  outline: 2px dashed color-mix(in srgb, var(--nords-color-accent) 40%, transparent);
-  outline-offset: -2px;
-  border-radius: 6px;
-}
-
-.nords-matrix__column.is-drag-over .nords-matrix__column-header {
-  background: color-mix(in srgb, var(--nords-color-accent) 8%, var(--nords-color-bg-secondary));
-}
-
-.nords-matrix__grid-cell.is-drag-over {
-  background: color-mix(in srgb, var(--nords-color-accent) 10%, var(--nords-color-bg-secondary));
-  outline: 2px dashed color-mix(in srgb, var(--nords-color-accent) 35%, transparent);
-  outline-offset: -2px;
 }
 
 .nords-matrix__connection-entry.is-drag-over {
@@ -783,7 +761,7 @@
 
 .nords-matrix__quadrant-cell.is-drag-over,
 .nords-matrix__quadrant-cell.is-lane-drag-over {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .nords-matrix__quadrant-cell--orphans {

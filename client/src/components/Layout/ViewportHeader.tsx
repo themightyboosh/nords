@@ -29,13 +29,17 @@ interface ViewportHeaderProps {
   onOpenSettings?: () => void;
   /** Project name displayed in the center; clicking opens TBD settings */
   projectName?: string;
+  /** 'workspace' (default) = full nav; 'dashboard' = logo + center title only */
+  mode?: 'workspace' | 'dashboard';
 }
 
 export default function ViewportHeader({
   currentTheme, onThemeChange,
   onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenSettings,
   projectName = 'Product Launch Q3',
+  mode = 'workspace',
 }: ViewportHeaderProps) {
+  const isDashboard = mode === 'dashboard';
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -63,48 +67,62 @@ export default function ViewportHeader({
           <NordsLogo size={22} />
         </button>
 
-        {/* Top-level navigation items */}
-        <div className="nords-viewport-header__nav">
-          <button
-            className="nords-viewport-header__nav-item"
-            title="Manage Nord Types"
-            onClick={onOpenNordTypes}
-            data-testid="header-nords"
-          >
-            <Box size={14} strokeWidth={1.6} />
-            <span>Nords</span>
-          </button>
-          <button
-            className="nords-viewport-header__nav-item"
-            title="Manage Categories (Connection Types)"
-            onClick={onOpenCategoryTypes}
-            data-testid="header-categories"
-          >
-            <Link2 size={14} strokeWidth={1.6} />
-            <span>Categories</span>
-          </button>
-          <button
-            className="nords-viewport-header__nav-item"
-            title="Personas"
-            onClick={onOpenPersonas}
-            data-testid="header-personas"
-          >
-            <Users size={14} strokeWidth={1.6} />
-            <span>Personas</span>
-          </button>
-        </div>
+        {/* Top-level navigation items — only in workspace mode */}
+        {!isDashboard && (
+          <div className="nords-viewport-header__nav">
+            {onOpenNordTypes && (
+              <button
+                className="nords-viewport-header__nav-item"
+                title="Manage Nord Types"
+                onClick={onOpenNordTypes}
+                data-testid="header-nords"
+              >
+                <Box size={14} strokeWidth={1.6} />
+                <span>Nords</span>
+              </button>
+            )}
+            {onOpenCategoryTypes && (
+              <button
+                className="nords-viewport-header__nav-item"
+                title="Manage Categories (Connection Types)"
+                onClick={onOpenCategoryTypes}
+                data-testid="header-categories"
+              >
+                <Link2 size={14} strokeWidth={1.6} />
+                <span>Categories</span>
+              </button>
+            )}
+            {onOpenPersonas && (
+              <button
+                className="nords-viewport-header__nav-item"
+                title="Personas"
+                onClick={onOpenPersonas}
+                data-testid="header-personas"
+              >
+                <Users size={14} strokeWidth={1.6} />
+                <span>Personas</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* ═══ Center: Project Title ═══ */}
+      {/* ═══ Center: Project Title / Dashboard Title ═══ */}
       <div className="nords-viewport-header__center">
-        <button
-          className="nords-viewport-header__project-title"
-          onClick={onOpenSettings}
-          title="Project Settings"
-          data-testid="project-title-btn"
-        >
-          <span>{projectName}</span>
-        </button>
+        {isDashboard ? (
+          <span className="nords-viewport-header__project-title nords-viewport-header__project-title--static">
+            Projects
+          </span>
+        ) : (
+          <button
+            className="nords-viewport-header__project-title"
+            onClick={onOpenSettings}
+            title="Project Settings"
+            data-testid="project-title-btn"
+          >
+            <span>{projectName}</span>
+          </button>
+        )}
       </div>
 
       {/* ═══ Right: Theme + User ═══ */}

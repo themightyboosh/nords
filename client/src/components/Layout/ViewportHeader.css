@@ -120,6 +120,24 @@
   color: var(--nords-color-accent);
 }
 
+/* Static title variant (dashboard mode — no hover/click) */
+.nords-viewport-header__project-title--static {
+  cursor: default;
+  font-size: 1.05rem;
+  font-weight: var(--nords-font-weight-bold);
+}
+
+.nords-viewport-header__project-title--static:hover {
+  background: transparent;
+  color: var(--nords-color-text-primary);
+}
+
+/* When header is inside the dashboard layout, use relative positioning */
+.nords-dashboard > .nords-viewport-header {
+  position: relative;
+  flex-shrink: 0;
+}
+
 /* ── Right: Theme + User ── */
 .nords-viewport-header__right {
   display: flex;

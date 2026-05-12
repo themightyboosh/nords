@@ -477,9 +477,9 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
             <>
               <div className="nords-properties-list">
                 {schemaProperties.length > 0 ? (
-                  schemaProperties.map((p) => (
+                  schemaProperties.map((p, i) => (
                     <PropertyField
-                      key={p.name}
+                      key={`${p.name}-${i}`}
                       name={p.name}
                       type={p.type}
                       value={p.value}
@@ -633,9 +633,9 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
           {/* Schema-driven properties */}
           {connectionProperties.length > 0 && (
             <div className="nords-properties-list">
-              {connectionProperties.map((p) => (
+              {connectionProperties.map((p, i) => (
                 <PropertyField
-                  key={p.name}
+                  key={`${p.name}-${i}`}
                   name={p.name}
                   type={p.type}
                   value={p.value}

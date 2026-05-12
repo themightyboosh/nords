@@ -1147,3 +1147,48 @@
   color: #000;
   font-weight: 600;
 }
+
+/* ── MCP Properties Section ── */
+.manage-types__field--mcp {
+  margin-top: var(--nords-space-lg);
+  padding-top: var(--nords-space-lg);
+  border-top: 1px dashed rgba(139, 92, 246, 0.3);
+}
+
+.manage-types__field--mcp .manage-types__field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #a78bfa;
+}
+
+.manage-types__mcp-icon {
+  color: #a78bfa;
+}
+
+.manage-types__props-row--mcp {
+  border-left: 2px solid rgba(139, 92, 246, 0.25);
+}
+
+.manage-types__props-row--mcp:hover {
+  background: rgba(139, 92, 246, 0.04);
+}
+
+.manage-types__props-row--mcp.manage-types__props-row--expanded {
+  border-left-color: #a78bfa;
+  background: rgba(139, 92, 246, 0.06);
+}
+
+.manage-types__field--mcp .manage-types__prop-detail {
+  border-left-color: #a78bfa;
+}
+
+.manage-types__field--mcp .manage-types__add-prop-btn:hover {
+  border-color: #a78bfa;
+  color: #a78bfa;
+}
+
+.manage-types__field--mcp .manage-types__prop-edit.is-active {
+  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.1);
+}

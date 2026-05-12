@@ -47,6 +47,8 @@ export interface PropertySchema {
   defaultValue?: string | number | boolean | null;
   options?: string[];
   card_row?: number; // 1 or 2 — which row on the collapsed card
+  /** Property source: 'user' (default) or 'mcp' (managed by MCP server) */
+  source?: 'user' | 'mcp';
 }
 
 // ── Hook ──

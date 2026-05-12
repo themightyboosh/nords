@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
-import NordsLogo from '../NordsLogo';
+import ViewportHeader from '../Layout/ViewportHeader';
 import './ProjectDashboard.css';
 
 interface Project {
@@ -134,11 +134,24 @@ export default function ProjectDashboard() {
     setContextMenu(null);
   };
 
+  // Theme state (shared with header)
+  const [currentTheme] = useState(() => localStorage.getItem('nords-theme') || 'obsidian');
+  const handleThemeChange = useCallback((theme: string) => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('nords-theme', theme);
+  }, []);
+
   return (
     <div className="nords-dashboard" data-testid="project-dashboard" data-theme="obsidian">
+      <ViewportHeader
+        currentTheme={currentTheme}
+        onThemeChange={handleThemeChange}
+        mode="dashboard"
+      />
+      <div className="nords-dashboard__body">
       <aside className="nords-dashboard__sidebar">
         <div className="nords-dashboard__sidebar-header">
-          <NordsLogo size={28} />
+          <span className="nords-dashboard__sidebar-title">Workspace</span>
         </div>
 
         <nav className="nords-dashboard__sidebar-nav">
@@ -239,6 +252,7 @@ export default function ProjectDashboard() {
           </div>
         </div>
       </main>
+      </div>
 
       {/* ── Context Menu for card actions ── */}
       {contextMenu && (

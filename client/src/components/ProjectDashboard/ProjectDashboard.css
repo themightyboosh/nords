@@ -5,9 +5,22 @@
   inset: 0;
   z-index: 10000;
   display: flex;
+  flex-direction: column;
   background: var(--nords-color-bg-canvas);
   color: var(--nords-color-text-primary);
   animation: dashboard-fade-in 0.2s ease-out;
+}
+
+/* Push sidebar + main below the shared header */
+.nords-dashboard > .nords-viewport-header ~ * {
+  /* handled by flex layout below */
+}
+
+/* Sidebar + main row lives below the header */
+.nords-dashboard__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Faint grid background for spatial continuity */
@@ -44,6 +57,14 @@
   display: flex;
   align-items: center;
   gap: var(--nords-space-sm);
+}
+
+.nords-dashboard__sidebar-title {
+  font-size: var(--nords-font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nords-color-text-tertiary);
 }
 
 .nords-dashboard__workspace-name {
