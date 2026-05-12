@@ -27,12 +27,12 @@
   justify-self: start;
 }
 
-/* Logo button — slightly larger, gray background pill */
+/* Logo button — flush with header, no background */
 .nords-viewport-header__logo-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(128, 128, 128, 0.12);
+  background: transparent;
   border: none;
   color: var(--nords-color-text-secondary);
   cursor: pointer;
@@ -44,7 +44,7 @@
 }
 
 .nords-viewport-header__logo-btn:hover {
-  background: rgba(128, 128, 128, 0.22);
+  background: rgba(128, 128, 128, 0.08);
   color: var(--nords-color-text-primary);
 }
 

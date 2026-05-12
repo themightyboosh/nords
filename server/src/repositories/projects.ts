@@ -15,24 +15,39 @@ export async function findByOrg(orgId: string): Promise<Project[]> {
 
 export async function create(project: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>): Promise<Project> {
   return queryOne<Project>(`
-    INSERT INTO projects (org_id, name, description, icon, created_by)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_mutable, default_persona_id, default_start_nord_id)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     RETURNING *
   `, [
     project.org_id,
     project.name,
     project.description,
+    project.purpose,
     project.icon,
-    project.created_by
+    project.created_by,
+    project.mcp_enabled ?? false,
+    project.mcp_capture_data ?? false,
+    project.mcp_mutable ?? false,
+    project.default_persona_id ?? null,
+    project.default_start_nord_id ?? null,
   ]) as Promise<Project>;
 }
 
-export async function update(id: string, updates: Partial<Pick<Project, 'name' | 'description' | 'icon'>>): Promise<Project | null> {
+type UpdatableProjectFields = Pick<Project, 'name' | 'description' | 'purpose' | 'icon' | 'mcp_enabled' | 'mcp_capture_data' | 'mcp_mutable' | 'default_persona_id' | 'default_start_nord_id'>;
+
+export async function update(id: string, updates: Partial<UpdatableProjectFields>): Promise<Project | null> {
+  const allowedKeys: (keyof UpdatableProjectFields)[] = [
+    'name', 'description', 'purpose', 'icon',
+    'mcp_enabled', 'mcp_capture_data', 'mcp_mutable',
+    'default_persona_id', 'default_start_nord_id',
+  ];
+
   const setClauses: string[] = [];
   const values: unknown[] = [];
   let paramIdx = 1;
 
   for (const [key, value] of Object.entries(updates)) {
+    if (!allowedKeys.includes(key as keyof UpdatableProjectFields)) continue;
     setClauses.push(`${key} = $${paramIdx}`);
     values.push(value);
     paramIdx++;

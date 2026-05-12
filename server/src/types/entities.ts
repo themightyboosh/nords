@@ -20,8 +20,14 @@ export interface Project {
   org_id: string;
   name: string;
   description: string | null;
+  purpose: string | null;
   icon: string | null;
   created_by: string | null;
+  mcp_enabled: boolean;
+  mcp_capture_data: boolean;
+  mcp_mutable: boolean;
+  default_persona_id: string | null;
+  default_start_nord_id: string | null;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;

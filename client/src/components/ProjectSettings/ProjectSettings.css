@@ -1,0 +1,14 @@
+/* ═══════════════════════════════════════════════ */
+/* PROJECT SETTINGS PANEL                          */
+/* ═══════════════════════════════════════════════ */
+
+.nords-project-settings {
+  width: 520px;
+}
+
+.nords-project-settings__saved {
+  font-size: var(--nords-font-size-xs);
+  color: #22c55e;
+  font-weight: 600;
+  animation: nords-fade-in 0.2s ease;
+}

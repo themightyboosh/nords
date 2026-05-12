@@ -23,6 +23,8 @@ import { PersonaLensDrawer } from './components/Drawer/PersonaLensDrawer';
 import { BoardSettingsProvider } from './context/BoardSettingsContext';
 import { usePersonas } from './hooks/usePersonas';
 import { useLens } from './context/LensContext';
+import { api } from './api/client';
+import { ProjectSettings } from './components/ProjectSettings/ProjectSettings';
 
 /**
  * Safe ReactFlow access — returns null when ReactFlow isn't mounted (e.g. board view).
@@ -92,10 +94,20 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [selectedEntity, setSelectedEntity] = useState<{ id: string; type: 'nord' | 'connection' } | null>(null);
   const [manageTypesTab, setManageTypesTab] = useState<'nord' | 'connection' | null>(null);
   const [personasOpen, setPersonasOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [projectName, setProjectName] = useState<string>('Loading…');
 
   // Safe ReactFlow access — returns null in board view where ReactFlow isn't mounted
   const reactFlow = useOptionalReactFlow();
   const { lens, activePersonaId } = useLens();
+
+  // Fetch project name
+  useEffect(() => {
+    if (!projectId) return;
+    api.get<{ name: string }>(`/api/projects/${projectId}`)
+      .then(p => setProjectName(p.name))
+      .catch(() => setProjectName('Project'));
+  }, [projectId]);
 
   // Active persona for the Persona Lens
   const activePersona = useMemo(() => {
@@ -213,8 +225,17 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onOpenNordTypes={() => setManageTypesTab('nord')}
         onOpenCategoryTypes={() => setManageTypesTab('connection')}
         onOpenPersonas={() => setPersonasOpen(true)}
-        onOpenSettings={() => { /* placeholder */ }}
+        onOpenSettings={() => setSettingsOpen(true)}
+        projectName={projectName}
       />
+      {projectId && (
+        <ProjectSettings
+          isOpen={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          projectId={projectId}
+          onProjectNameChange={setProjectName}
+        />
+      )}
       <GlobalDock projectId={projectId} refetchGraph={refetch} graph={graph} personas={personas} />
       <CanvasEngine
         onNordClick={lens === 'persona' ? () => {} : handleNordClick}
