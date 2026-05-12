@@ -185,6 +185,8 @@
   },
   "active": "09a60c5211c6dc2a",
   "lastOpenFiles": [
+    "client/src/components/shared/HueSlider.tsx",
+    "client/src/styles/forms.css",
     "server/logs/combined1.log",
     "New 01/Screenshot 2026-05-12 at 5.38.04 PM.png",
     "scripts/test_full_renorm_e2e.mjs",
@@ -196,7 +198,6 @@
     "client/src/components/ProjectSettings/ProjectSettings.css",
     "client/src/components/ProjectSettings/ProjectSettings.tsx",
     "client/src/components/ProjectSettings",
-    "server/migrations/010_project_mcp_fields.sql",
     "New 01/7/issue7.png",
     "New 01/6/issue6.png",
     "New 01/3/issue3_dc2efd.png",
@@ -204,7 +205,6 @@
     "New 01/1/issue1_76a6ae.png",
     "New 01/1/issue1_2dbdf1.png",
     "New 01/7/Screenshot 2026-05-12 at 12.29.22 PM.png",
-    "New 01/7",
     "New 01/Screenshot 2026-05-12 at 12.29.22 PM.png",
     "New 01/Issues..md"
   ]

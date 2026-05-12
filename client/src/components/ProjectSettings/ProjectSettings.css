@@ -1,62 +1,67 @@
-/* ═══════════════════════════════════════════════ */
-/* PROJECT SETTINGS PANEL                          */
-/* ═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+ * ProjectSettings.css — Project-level settings panel
+ *
+ * Uses FloatingPanel for chrome. Form elements use shared
+ * nords-form__* classes from styles/forms.css.
+ * This file only holds panel-specific layout overrides.
+ * ═══════════════════════════════════════════════════════════ */
 
+/* ── Panel ── */
 .nords-project-settings {
-  width: 520px;
-}
-
-.nords-project-settings__saved {
-  font-size: var(--nords-font-size-xs);
-  color: #22c55e;
-  font-weight: 600;
-  animation: nords-fade-in 0.2s ease;
-}
-
-/* ── Select dropdown ── */
-.nords-modal__select {
-  width: 100%;
-  padding: 8px 12px;
-  margin-top: 4px;
-  border-radius: var(--nords-radius-sm);
-  border: 1px solid var(--nords-color-border-default);
-  background: var(--nords-color-bg-surface);
-  color: var(--nords-color-text-primary);
-  font-size: var(--nords-font-size-sm);
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-
-.nords-modal__select:focus {
-  outline: none;
-  border-color: var(--nords-color-accent);
-}
-
-.nords-modal__select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* ── Cascade dropdown group (category → nord) ── */
-.nords-modal__cascade-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  max-height: 80vh;
+  overflow: hidden;
 }
 
-.nords-modal__cascade-title {
-  font-size: var(--nords-font-size-sm);
-  font-weight: 600;
-  color: var(--nords-color-text-secondary);
-}
-
-.nords-modal__cascade-row {
+/* ── Header (matches ManageTypes / ManagePersonas chrome) ── */
+.nords-project-settings__header {
   display: flex;
-  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--nords-space-xl) var(--nords-space-xl) var(--nords-space-lg);
+  border-bottom: 1px solid var(--nords-color-border-subtle);
 }
 
-.nords-modal__label--half {
+.nords-project-settings__title {
+  font-size: var(--nords-font-size-xl);
+  font-weight: var(--nords-font-weight-bold);
+  color: var(--nords-color-text-primary);
+  margin: 0;
+  letter-spacing: var(--nords-letter-spacing-tight);
+}
+
+.nords-project-settings__subtitle {
+  font-size: var(--nords-font-size-sm);
+  color: var(--nords-color-text-tertiary);
+  margin: 4px 0 0;
+}
+
+.nords-project-settings__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--nords-radius-md);
+  background: transparent;
+  color: var(--nords-color-text-secondary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.nords-project-settings__close:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+
+/* ── Body ── */
+.nords-project-settings__body {
   flex: 1;
-  min-width: 0;
+  overflow-y: auto;
+  padding: var(--nords-space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--nords-space-lg);
 }

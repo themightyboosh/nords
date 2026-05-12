@@ -21,7 +21,7 @@ import { createAvatar } from '@dicebear/core';
 import { notionists } from '@dicebear/collection';
 import { usePersonas, type Persona } from '../../hooks/usePersonas';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
-import { hslToHex, hexToHSL } from '../../utils/color';
+import { HueSlider } from '../shared/HueSlider';
 import './ManagePersonas.css';
 
 // ── Types ──
@@ -240,27 +240,13 @@ function PersonaEditor({
             onBlur={() => handleBlur('name', name)}
             placeholder="Persona name"
           />
-          {/* ── Hue slider (same pattern as ManageTypes) ── */}
-          <div className="manage-personas__color-row">
-            <input
-              type="range"
-              min="0"
-              max="360"
-              value={hexToHSL(persona.accent_color || '#3d4f7c').h}
-              onChange={(e) => {
-                const hue = parseInt(e.target.value);
-                const hex = hslToHex(hue, 55, 35);
-                onUpdate(persona.id, { accent_color: hex });
-              }}
-              className="manage-personas__hue-slider"
-              style={{
-                background: `linear-gradient(to right, 
-                  hsl(0, 55%, 35%), hsl(60, 55%, 35%), hsl(120, 55%, 35%), 
-                  hsl(180, 55%, 35%), hsl(240, 55%, 35%), hsl(300, 55%, 35%), hsl(360, 55%, 35%))`,
-              }}
-            />
-            <span className="manage-personas__color-preview" style={{ backgroundColor: persona.accent_color || '#3d4f7c' }} />
-          </div>
+          {/* ── Hue slider ── */}
+          <HueSlider
+            color={persona.accent_color || '#3d4f7c'}
+            onChange={(hex) => onUpdate(persona.id, { accent_color: hex })}
+            saturation={55}
+            lightness={35}
+          />
         </div>
         <button className="manage-personas__delete-btn" onClick={onDelete} title="Delete persona">
           <Trash2 size={16} />

@@ -1,17 +1,20 @@
 /**
  * ProjectSettings.tsx — Project-level settings panel
  *
- * Opened by clicking the project title in ViewportHeader.
+ * Uses FloatingPanel (modal variant) with shared nords-form__* classes
+ * to match the design language of ManageTypes and ManagePersonas.
+ *
  * Allows editing:
  *   - Name, Description, Purpose (mandatory)
  *   - MCP toggles (Enable, Capture Data, Mutable)
  *   - Default Persona (dropdown, if personas exist)
- *   - Default Start Nord (category → nord cascading dropdown, if nords exist)
+ *   - Default Start Nord (category → nord cascading dropdown)
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { X, AlertTriangle, Save } from 'lucide-react';
 import { api } from '../../api/client';
+import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import './ProjectSettings.css';
 
 interface ProjectSettingsProps {
@@ -152,62 +155,73 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
   if (!isOpen) return null;
 
   return (
-    <div className="nords-modal-overlay" onClick={onClose}>
-      <div className="nords-modal nords-project-settings" onClick={e => e.stopPropagation()}>
-        <div className="nords-modal__header">
-          <h2>Project Settings</h2>
-          <button className="nords-modal__close" onClick={onClose}>
+    <FloatingPanel variant="modal" isOpen={isOpen} onClose={onClose} width="520px">
+      <div className="nords-project-settings">
+        {/* Header */}
+        <div className="nords-project-settings__header">
+          <div>
+            <h2 className="nords-project-settings__title">Project Settings</h2>
+            <p className="nords-project-settings__subtitle">Configure project details and integrations.</p>
+          </div>
+          <button className="nords-project-settings__close" onClick={onClose} title="Close">
             <X size={18} />
           </button>
         </div>
 
-        <div className="nords-modal__body">
+        {/* Body */}
+        <div className="nords-project-settings__body">
           {errors.length > 0 && (
-            <div className="nords-modal__errors">
-              {errors.map((e, i) => <div key={i} className="nords-modal__error"><AlertTriangle size={12} /> {e}</div>)}
+            <div className="nords-form__errors">
+              {errors.map((e, i) => <div key={i} className="nords-form__error"><AlertTriangle size={12} /> {e}</div>)}
             </div>
           )}
 
-          <label className="nords-modal__label">
-            Name <span className="nords-modal__required">*</span>
+          <div className="nords-form__field">
+            <label className="nords-form__label">
+              Name <span className="nords-form__required">*</span>
+            </label>
             <input
-              className="nords-modal__input"
+              className="nords-form__input"
               value={form.name || ''}
               onChange={e => setForm({ ...form, name: e.target.value })}
               placeholder="Project name"
             />
-          </label>
+          </div>
 
-          <label className="nords-modal__label">
-            Description <span className="nords-modal__required">*</span>
+          <div className="nords-form__field">
+            <label className="nords-form__label">
+              Description <span className="nords-form__required">*</span>
+            </label>
             <textarea
-              className="nords-modal__textarea"
+              className="nords-form__textarea"
               value={form.description || ''}
               onChange={e => setForm({ ...form, description: e.target.value })}
               placeholder="Describe the project"
               rows={3}
             />
-          </label>
+          </div>
 
-          <label className="nords-modal__label">
-            Purpose <span className="nords-modal__required">*</span>
+          <div className="nords-form__field">
+            <label className="nords-form__label">
+              Purpose <span className="nords-form__required">*</span>
+            </label>
             <textarea
-              className="nords-modal__textarea"
+              className="nords-form__textarea"
               value={form.purpose || ''}
               onChange={e => setForm({ ...form, purpose: e.target.value })}
               placeholder="Define the project's purpose"
               rows={2}
             />
-          </label>
+          </div>
 
-          <div className="nords-modal__divider" />
+          <div className="nords-form__divider" />
 
           {/* ── Default Persona ── */}
           {personas.length > 0 && (
-            <label className="nords-modal__label">
-              Default Persona
+            <div className="nords-form__field">
+              <label className="nords-form__label">Default Persona</label>
               <select
-                className="nords-modal__select"
+                className="nords-form__select"
                 value={form.default_persona_id || ''}
                 onChange={e => setForm({ ...form, default_persona_id: e.target.value || null })}
               >
@@ -216,22 +230,22 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
-            </label>
+            </div>
           )}
 
           {/* ── Default Start Nord (Category → Nord cascade) ── */}
           {nordTypes.length > 0 && nords.length > 0 && (
-            <div className="nords-modal__cascade-group">
-              <span className="nords-modal__cascade-title">Default Start Nord</span>
-              <div className="nords-modal__cascade-row">
-                <label className="nords-modal__label nords-modal__label--half">
-                  Nord Type
+            <div className="nords-form__cascade-group">
+              <span className="nords-form__cascade-title">Default Start Nord</span>
+              <div className="nords-form__cascade-row">
+                <div className="nords-form__field">
+                  <label className="nords-form__label">Nord Type</label>
                   <select
-                    className="nords-modal__select"
+                    className="nords-form__select"
                     value={selectedCategoryForNord}
                     onChange={e => {
                       setSelectedCategoryForNord(e.target.value);
-                      setForm({ ...form, default_start_nord_id: null }); // Reset nord when type changes
+                      setForm({ ...form, default_start_nord_id: null });
                     }}
                   >
                     <option value="">— Select type —</option>
@@ -239,11 +253,11 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
                       <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
                   </select>
-                </label>
-                <label className="nords-modal__label nords-modal__label--half">
-                  Nord
+                </div>
+                <div className="nords-form__field">
+                  <label className="nords-form__label">Nord</label>
                   <select
-                    className="nords-modal__select"
+                    className="nords-form__select"
                     value={form.default_start_nord_id || ''}
                     onChange={e => setForm({ ...form, default_start_nord_id: e.target.value || null })}
                     disabled={!selectedCategoryForNord || filteredNords.length === 0}
@@ -253,15 +267,15 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
                       <option key={n.id} value={n.id}>{n.title}</option>
                     ))}
                   </select>
-                </label>
+                </div>
               </div>
             </div>
           )}
 
-          <div className="nords-modal__divider" />
+          <div className="nords-form__divider" />
 
           {/* ── MCP Toggles ── */}
-          <label className="nords-modal__checkbox-label">
+          <label className="nords-form__checkbox">
             <input
               type="checkbox"
               checked={form.mcp_enabled || false}
@@ -271,8 +285,8 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           </label>
 
           {form.mcp_enabled && (
-            <div className="nords-modal__indent">
-              <label className="nords-modal__checkbox-label">
+            <div className="nords-form__indent">
+              <label className="nords-form__checkbox">
                 <input
                   type="checkbox"
                   checked={form.mcp_capture_data || false}
@@ -280,27 +294,28 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
                 />
                 <span>Capture Data</span>
               </label>
-              <label className="nords-modal__checkbox-label">
+              <label className="nords-form__checkbox">
                 <input
                   type="checkbox"
                   checked={form.mcp_mutable || false}
                   onChange={e => setForm({ ...form, mcp_mutable: e.target.checked })}
                 />
-                <span>Mutable <span className="nords-modal__experimental">(experimental)</span></span>
+                <span>Mutable <span className="nords-form__experimental">(experimental)</span></span>
               </label>
             </div>
           )}
         </div>
 
-        <div className="nords-modal__footer">
-          {saved && <span className="nords-project-settings__saved">✓ Saved</span>}
-          <button className="nords-modal__btn nords-modal__btn--secondary" onClick={onClose}>Cancel</button>
-          <button className="nords-modal__btn nords-modal__btn--primary" onClick={handleSave} disabled={saving}>
+        {/* Footer */}
+        <div className="nords-form__footer">
+          {saved && <span className="nords-form__saved">✓ Saved</span>}
+          <button className="nords-form__btn nords-form__btn--secondary" onClick={onClose}>Cancel</button>
+          <button className="nords-form__btn nords-form__btn--primary" onClick={handleSave} disabled={saving}>
             <Save size={14} />
             {saving ? 'Saving…' : 'Save'}
           </button>
         </div>
       </div>
-    </div>
+    </FloatingPanel>
   );
 }

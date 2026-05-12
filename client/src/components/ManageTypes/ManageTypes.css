@@ -400,41 +400,6 @@
 }
 
 
-/* ── Color slider ── */
-.manage-types__color-row {
-  display: flex;
-  align-items: center;
-  gap: var(--nords-space-md);
-}
-
-.manage-types__hue-slider {
-  flex: 1;
-  height: 8px;
-  -webkit-appearance: none;
-  appearance: none;
-  border-radius: var(--nords-radius-pill);
-  outline: none;
-  cursor: pointer;
-}
-
-.manage-types__hue-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--nords-color-bg-surface);
-  border: 2px solid var(--nords-color-text-primary);
-  box-shadow: var(--nords-shadow-sm);
-  cursor: grab;
-}
-
-.manage-types__color-preview {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--nords-radius-md);
-  border: 1px solid var(--nords-color-border-default);
-  flex-shrink: 0;
-}
 
 /* ── Properties Table ── */
 .manage-types__add-prop-btn {

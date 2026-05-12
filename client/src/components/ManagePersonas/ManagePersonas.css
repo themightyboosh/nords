@@ -539,38 +539,3 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Color slider (same pattern as ManageTypes) ── */
-.manage-personas__color-row {
-  display: flex;
-  align-items: center;
-  gap: var(--nords-space-md);
-}
-
-.manage-personas__hue-slider {
-  flex: 1;
-  height: 8px;
-  -webkit-appearance: none;
-  appearance: none;
-  border-radius: var(--nords-radius-pill);
-  outline: none;
-  cursor: pointer;
-}
-
-.manage-personas__hue-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--nords-color-bg-surface);
-  border: 2px solid var(--nords-color-text-primary);
-  box-shadow: var(--nords-shadow-sm);
-  cursor: grab;
-}
-
-.manage-personas__color-preview {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid var(--nords-color-border-default);
-  flex-shrink: 0;
-}

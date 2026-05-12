@@ -28,6 +28,7 @@ import { SpectrumEditor } from '../Spectrum/SpectrumEditor';
 import { normalizeStageLabels } from '../../utils/stageLabels';
 import { hslToHex, hexToHSL } from '../../utils/color';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
+import { HueSlider } from '../shared/HueSlider';
 import { api } from '../../api/client';
 import './ManageTypes.css';
 
@@ -497,26 +498,12 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                     )}
                     <div className="manage-types__popover-color">
                       <label className="manage-types__popover-color-label">Color</label>
-                      <div className="manage-types__color-row">
-                        <input
-                          type="range"
-                          min="0"
-                          max="360"
-                          value={currentHue}
-                          onChange={(e) => {
-                            const hue = parseInt(e.target.value);
-                            const hex = hslToHex(hue, 55, 50);
-                            handleUpdateField('accent_color', hex);
-                          }}
-                          className="manage-types__hue-slider"
-                          style={{
-                            background: `linear-gradient(to right, 
-                              hsl(0, 55%, 50%), hsl(60, 55%, 50%), hsl(120, 55%, 50%), 
-                              hsl(180, 55%, 50%), hsl(240, 55%, 50%), hsl(300, 55%, 50%), hsl(360, 55%, 50%))`,
-                          }}
-                        />
-                        <span className="manage-types__color-preview" style={{ backgroundColor: currentColor }} />
-                      </div>
+                      <HueSlider
+                        color={currentColor}
+                        onChange={(hex) => handleUpdateField('accent_color', hex)}
+                        saturation={55}
+                        lightness={50}
+                      />
                     </div>
                   </div>
                 )}

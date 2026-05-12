@@ -1,0 +1,318 @@
+/* ═══════════════════════════════════════════════════════════
+ * forms.css — Shared form primitives
+ *
+ * Canonical styling for form fields, inputs, textareas,
+ * labels, buttons, and layout used across all admin panels
+ * (ManageTypes, ManagePersonas, ProjectSettings, etc.)
+ *
+ * These classes are BEM-scoped under `.nords-form__*` and
+ * serve as the single source of truth for form element styling.
+ * ═══════════════════════════════════════════════════════════ */
+
+/* ── Field wrapper ── */
+.nords-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nords-space-sm);
+}
+
+.nords-form__field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Labels ── */
+.nords-form__label {
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-semibold);
+  color: var(--nords-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide);
+}
+
+.nords-form__hint {
+  display: block;
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-normal);
+  color: var(--nords-color-text-disabled);
+  text-transform: none;
+  letter-spacing: normal;
+  margin-top: 2px;
+}
+
+.nords-form__required {
+  color: var(--nords-color-danger, #ef4444);
+}
+
+/* ── Inputs ── */
+.nords-form__input {
+  width: 100%;
+  padding: var(--nords-space-sm) var(--nords-space-md);
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: var(--nords-radius-md);
+  background: var(--nords-color-bg-inset, var(--nords-color-bg-surface));
+  color: var(--nords-color-text-primary);
+  font-size: var(--nords-font-size-body);
+  font-family: var(--nords-font-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.nords-form__input:focus {
+  border-color: var(--nords-color-accent);
+}
+
+.nords-form__input::placeholder {
+  color: var(--nords-color-text-disabled);
+}
+
+/* ── Textareas ── */
+.nords-form__textarea {
+  width: 100%;
+  padding: var(--nords-space-sm) var(--nords-space-md);
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: var(--nords-radius-md);
+  background: var(--nords-color-bg-inset, var(--nords-color-bg-surface));
+  color: var(--nords-color-text-primary);
+  font-size: var(--nords-font-size-sm);
+  font-family: var(--nords-font-primary);
+  outline: none;
+  resize: vertical;
+  min-height: 44px;
+  max-height: 120px;
+  line-height: 1.5;
+  transition: border-color 0.15s ease;
+}
+
+.nords-form__textarea:focus {
+  border-color: var(--nords-color-accent);
+}
+
+.nords-form__textarea::placeholder {
+  color: var(--nords-color-text-tertiary);
+}
+
+/* ── Select ── */
+.nords-form__select {
+  width: 100%;
+  padding: var(--nords-space-sm) var(--nords-space-md);
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: var(--nords-radius-md);
+  background: var(--nords-color-bg-inset, var(--nords-color-bg-surface));
+  color: var(--nords-color-text-primary);
+  font-size: var(--nords-font-size-body);
+  font-family: var(--nords-font-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  appearance: auto;
+}
+
+.nords-form__select:focus {
+  border-color: var(--nords-color-accent);
+}
+
+.nords-form__select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Checkboxes ── */
+.nords-form__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--nords-font-size-sm);
+  color: var(--nords-color-text-secondary);
+  cursor: pointer;
+}
+
+.nords-form__checkbox input[type="checkbox"] {
+  accent-color: var(--nords-color-accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* ── Divider ── */
+.nords-form__divider {
+  height: 1px;
+  background: var(--nords-color-border-subtle);
+  margin: 4px 0;
+}
+
+/* ── Indent group (e.g. sub-options under a checkbox) ── */
+.nords-form__indent {
+  margin-left: 26px;
+  padding-left: 12px;
+  border-left: 2px solid var(--nords-color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Hue slider ── */
+.nords-form__hue-slider {
+  flex: 1;
+  height: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  border: 1px solid var(--nords-color-border-subtle);
+}
+
+.nords-form__hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--nords-color-border-default);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.nords-form__hue-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--nords-color-border-default);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.nords-form__color-row {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-md);
+}
+
+.nords-form__color-preview {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--nords-radius-sm);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+/* ── Errors ── */
+.nords-form__errors {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nords-form__error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-danger, #ef4444);
+}
+
+/* ── Cascade group (two dropdowns side-by-side) ── */
+.nords-form__cascade-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nords-space-sm);
+}
+
+.nords-form__cascade-title {
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-semibold);
+  color: var(--nords-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide);
+}
+
+.nords-form__cascade-row {
+  display: flex;
+  gap: var(--nords-space-md);
+}
+
+.nords-form__cascade-row > * {
+  flex: 1;
+}
+
+/* ── Experimental tag ── */
+.nords-form__experimental {
+  font-size: 10px;
+  color: var(--nords-color-text-disabled);
+  font-style: italic;
+}
+
+/* ── Footer (Save/Cancel bar) ── */
+.nords-form__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--nords-color-border-subtle);
+}
+
+.nords-form__saved {
+  display: flex;
+  align-items: center;
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-success, #22c55e);
+  margin-right: auto;
+  animation: nords-saved-in 0.3s ease;
+}
+
+@keyframes nords-saved-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Buttons ── */
+.nords-form__btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--nords-radius-md);
+  font-size: var(--nords-font-size-sm);
+  font-weight: 600;
+  font-family: var(--nords-font-primary);
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.nords-form__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.nords-form__btn--secondary {
+  background: transparent;
+  border: 1px solid var(--nords-color-border-default);
+  color: var(--nords-color-text-secondary);
+}
+
+.nords-form__btn--secondary:hover:not(:disabled) {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+
+.nords-form__btn--primary {
+  background: var(--nords-color-accent);
+  color: white;
+}
+
+.nords-form__btn--primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.nords-form__btn--danger {
+  background: var(--nords-color-danger, #ef4444);
+  color: white;
+}
+
+.nords-form__btn--danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
