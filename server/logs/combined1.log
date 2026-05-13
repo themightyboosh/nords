@@ -661,3 +661,412 @@ error: relation "usage_events" does not exist
 19:52:18.053 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
 19:52:18.056 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
 19:52:18.056 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+09:55:03.877 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:03.879 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:03.879 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:03.880 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:03.881 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:03.881 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:03.882 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:03.885 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:03.886 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:03.888 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:03.912 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":189,"error":"relation \"usage_events\" does not exist"}
+09:55:03.912 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:03.913 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":183,"error":"relation \"usage_events\" does not exist"}
+09:55:03.913 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:03.918 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":189,"error":"relation \"usage_events\" does not exist"}
+09:55:03.918 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:03.918 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":191,"error":"relation \"usage_events\" does not exist"}
+09:55:03.918 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:03.918 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":189,"error":"relation \"usage_events\" does not exist"}
+09:55:03.918 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:03.989 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":259,"rows":1}
+09:55:03.990 [32minfo[39m: PUT /api/connections/23a7b110-9948-413a-96d7-0a41cc431116 200 {"service":"nords-server","method":"PUT","path":"/api/connections/23a7b110-9948-413a-96d7-0a41cc431116","status":200,"duration":"260ms","bytes":"419"}
+09:55:03.992 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":263,"rows":1}
+09:55:03.992 [32minfo[39m: PUT /api/connections/a0cc1f6b-a9d2-4be4-a0be-a97202139915 200 {"service":"nords-server","method":"PUT","path":"/api/connections/a0cc1f6b-a9d2-4be4-a0be-a97202139915","status":200,"duration":"263ms","bytes":"418"}
+09:55:03.992 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":268,"rows":1}
+09:55:03.992 [32minfo[39m: PUT /api/connections/878d9318-9691-4500-b153-2fe62c3640a0 200 {"service":"nords-server","method":"PUT","path":"/api/connections/878d9318-9691-4500-b153-2fe62c3640a0","status":200,"duration":"270ms","bytes":"419"}
+09:55:03.993 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":266,"rows":1}
+09:55:03.993 [32minfo[39m: PUT /api/connections/8d39ddee-3638-411f-be60-fd768fa641cf 200 {"service":"nords-server","method":"PUT","path":"/api/connections/8d39ddee-3638-411f-be60-fd768fa641cf","status":200,"duration":"267ms","bytes":"419"}
+09:55:03.993 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":265,"rows":1}
+09:55:03.994 [32minfo[39m: PUT /api/connections/f0d80dc7-cb27-4841-aa85-8f63c6fda26b 200 {"service":"nords-server","method":"PUT","path":"/api/connections/f0d80dc7-cb27-4841-aa85-8f63c6fda26b","status":200,"duration":"266ms","bytes":"418"}
+09:55:05.937 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":34,"error":"relation \"usage_events\" does not exist"}
+09:55:05.938 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:05.938 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":35,"error":"relation \"usage_events\" does not exist"}
+09:55:05.938 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:05.939 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":35,"error":"relation \"usage_events\" does not exist"}
+09:55:05.939 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:05.939 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+09:55:05.939 [32minfo[39m: PUT /api/connections/878d9318-9691-4500-b153-2fe62c3640a0 200 {"service":"nords-server","method":"PUT","path":"/api/connections/878d9318-9691-4500-b153-2fe62c3640a0","status":200,"duration":"36ms","bytes":"401"}
+09:55:05.939 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":36,"rows":1}
+09:55:05.939 [32minfo[39m: PUT /api/connections/8d39ddee-3638-411f-be60-fd768fa641cf 200 {"service":"nords-server","method":"PUT","path":"/api/connections/8d39ddee-3638-411f-be60-fd768fa641cf","status":200,"duration":"36ms","bytes":"401"}
+09:55:06.042 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:06.047 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:06.047 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:06.047 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:06.054 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:06.079 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":175,"rows":1}
+09:55:06.079 [32minfo[39m: PUT /api/connections/a0cc1f6b-a9d2-4be4-a0be-a97202139915 200 {"service":"nords-server","method":"PUT","path":"/api/connections/a0cc1f6b-a9d2-4be4-a0be-a97202139915","status":200,"duration":"175ms","bytes":"401"}
+09:55:06.080 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":176,"error":"relation \"usage_events\" does not exist"}
+09:55:06.080 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:06.080 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":175,"rows":1}
+09:55:06.081 [32minfo[39m: PUT /api/connections/23a7b110-9948-413a-96d7-0a41cc431116 200 {"service":"nords-server","method":"PUT","path":"/api/connections/23a7b110-9948-413a-96d7-0a41cc431116","status":200,"duration":"176ms","bytes":"401"}
+09:55:06.083 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":179,"rows":1}
+09:55:06.083 [32minfo[39m: PUT /api/connections/f0d80dc7-cb27-4841-aa85-8f63c6fda26b 200 {"service":"nords-server","method":"PUT","path":"/api/connections/f0d80dc7-cb27-4841-aa85-8f63c6fda26b","status":200,"duration":"180ms","bytes":"401"}
+09:55:06.086 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":181,"error":"relation \"usage_events\" does not exist"}
+09:55:06.086 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:16.334 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.341 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.342 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.345 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.345 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.349 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.350 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.362 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.362 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.363 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.363 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.365 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:16.371 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":166,"rows":1}
+09:55:16.371 [32minfo[39m: PUT /api/connections/44ae275f-a945-4546-848d-e0e2f3098ee7 200 {"service":"nords-server","method":"PUT","path":"/api/connections/44ae275f-a945-4546-848d-e0e2f3098ee7","status":200,"duration":"167ms","bytes":"401"}
+09:55:16.372 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":168,"error":"relation \"usage_events\" does not exist"}
+09:55:16.372 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:16.372 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":166,"error":"relation \"usage_events\" does not exist"}
+09:55:16.372 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:16.375 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":166,"error":"relation \"usage_events\" does not exist"}
+09:55:16.375 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:16.379 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":168,"error":"relation \"usage_events\" does not exist"}
+09:55:16.379 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:16.379 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":173,"rows":1}
+09:55:16.379 [32minfo[39m: PUT /api/connections/0d7e4f40-bb4a-4d9c-a12c-f87847d61c14 200 {"service":"nords-server","method":"PUT","path":"/api/connections/0d7e4f40-bb4a-4d9c-a12c-f87847d61c14","status":200,"duration":"173ms","bytes":"401"}
+09:55:16.388 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+09:55:16.388 [32minfo[39m: PUT /api/connections/3014fd3e-65c9-44cd-9164-3007bc2292a7 200 {"service":"nords-server","method":"PUT","path":"/api/connections/3014fd3e-65c9-44cd-9164-3007bc2292a7","status":200,"duration":"177ms","bytes":"401"}
+09:55:16.393 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":181,"error":"relation \"usage_events\" does not exist"}
+09:55:16.393 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:16.394 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":184,"error":"relation \"usage_events\" does not exist"}
+09:55:16.394 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:16.400 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":191,"rows":1}
+09:55:16.401 [32minfo[39m: PUT /api/connections/039a7272-b5f0-43eb-81c8-40d49aa4baed 200 {"service":"nords-server","method":"PUT","path":"/api/connections/039a7272-b5f0-43eb-81c8-40d49aa4baed","status":200,"duration":"192ms","bytes":"416"}
+09:55:16.402 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":190,"rows":1}
+09:55:16.402 [32minfo[39m: PUT /api/connections/bb78af8f-d0bc-4dd7-bdaf-e60d7b665597 200 {"service":"nords-server","method":"PUT","path":"/api/connections/bb78af8f-d0bc-4dd7-bdaf-e60d7b665597","status":200,"duration":"190ms","bytes":"401"}
+09:55:16.403 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":195,"rows":1}
+09:55:16.403 [32minfo[39m: PUT /api/connections/0e681187-306f-4ccc-8f97-0e4a33d016a6 200 {"service":"nords-server","method":"PUT","path":"/api/connections/0e681187-306f-4ccc-8f97-0e4a33d016a6","status":200,"duration":"195ms","bytes":"434"}
+09:55:18.832 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":36,"error":"relation \"usage_events\" does not exist"}
+09:55:18.832 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:18.832 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":36,"error":"relation \"usage_events\" does not exist"}
+09:55:18.832 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:18.832 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":37,"error":"relation \"usage_events\" does not exist"}
+09:55:18.832 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:18.832 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+09:55:18.833 [32minfo[39m: PUT /api/connections/878d9318-9691-4500-b153-2fe62c3640a0 200 {"service":"nords-server","method":"PUT","path":"/api/connections/878d9318-9691-4500-b153-2fe62c3640a0","status":200,"duration":"38ms","bytes":"401"}
+09:55:18.833 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+09:55:18.833 [32minfo[39m: PUT /api/connections/f0d80dc7-cb27-4841-aa85-8f63c6fda26b 200 {"service":"nords-server","method":"PUT","path":"/api/connections/f0d80dc7-cb27-4841-aa85-8f63c6fda26b","status":200,"duration":"37ms","bytes":"418"}
+09:55:18.833 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":37,"rows":1}
+09:55:18.833 [32minfo[39m: PUT /api/connections/8d39ddee-3638-411f-be60-fd768fa641cf 200 {"service":"nords-server","method":"PUT","path":"/api/connections/8d39ddee-3638-411f-be60-fd768fa641cf","status":200,"duration":"37ms","bytes":"401"}
+09:55:18.929 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:18.933 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:18.939 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:18.939 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:18.959 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":163,"error":"relation \"usage_events\" does not exist"}
+09:55:18.960 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:18.973 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":168,"error":"relation \"usage_events\" does not exist"}
+09:55:18.973 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:18.973 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+09:55:18.974 [32minfo[39m: PUT /api/connections/a0cc1f6b-a9d2-4be4-a0be-a97202139915 200 {"service":"nords-server","method":"PUT","path":"/api/connections/a0cc1f6b-a9d2-4be4-a0be-a97202139915","status":200,"duration":"178ms","bytes":"401"}
+09:55:18.974 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+09:55:18.974 [32minfo[39m: PUT /api/connections/23a7b110-9948-413a-96d7-0a41cc431116 200 {"service":"nords-server","method":"PUT","path":"/api/connections/23a7b110-9948-413a-96d7-0a41cc431116","status":200,"duration":"177ms","bytes":"401"}
+09:55:21.343 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":36,"error":"relation \"usage_events\" does not exist"}
+09:55:21.344 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:21.345 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":38,"error":"relation \"usage_events\" does not exist"}
+09:55:21.345 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:21.347 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":38,"error":"relation \"usage_events\" does not exist"}
+09:55:21.347 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:21.347 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":41,"rows":1}
+09:55:21.348 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d","status":304,"duration":"42ms"}
+09:55:21.349 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":41,"rows":2}
+09:55:21.383 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":34,"rows":2}
+09:55:21.423 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":40,"rows":12}
+09:55:21.423 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"116ms"}
+09:55:21.448 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:21.627 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":318,"rows":1}
+09:55:21.628 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph","status":200,"duration":"320ms","bytes":"140580"}
+09:55:33.454 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:33.461 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:33.462 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:33.462 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:33.463 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:33.485 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":170,"error":"relation \"usage_events\" does not exist"}
+09:55:33.486 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:33.494 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":181,"rows":1}
+09:55:33.495 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d","status":304,"duration":"182ms"}
+09:55:33.495 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":182,"error":"relation \"usage_events\" does not exist"}
+09:55:33.495 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:33.500 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":184,"rows":10}
+09:55:33.501 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":185,"rows":6}
+09:55:33.501 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types","status":304,"duration":"186ms"}
+09:55:33.525 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":29,"error":"relation \"usage_events\" does not exist"}
+09:55:33.525 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:33.531 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":29,"error":"relation \"usage_events\" does not exist"}
+09:55:33.532 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+09:55:33.536 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":34,"rows":10}
+09:55:33.625 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:33.629 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+09:55:33.657 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":161,"rows":1}
+09:55:33.657 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d","status":304,"duration":"161ms"}
+09:55:33.667 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":165,"rows":6}
+09:55:33.667 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/types","status":304,"duration":"165ms"}
+11:36:21.440 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:21.441 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:21.442 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:21.449 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:21.453 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:21.454 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:21.455 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:21.455 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:21.473 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":166,"error":"relation \"usage_events\" does not exist"}
+11:36:21.473 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+11:36:21.474 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":171,"error":"relation \"usage_events\" does not exist"}
+11:36:21.474 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+11:36:21.480 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":172,"error":"relation \"usage_events\" does not exist"}
+11:36:21.480 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+11:36:21.500 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":195,"error":"relation \"usage_events\" does not exist"}
+11:36:21.500 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+11:36:21.522 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":217,"rows":1}
+11:36:21.522 [32minfo[39m: PUT /api/connections/71a8f603-438f-4973-96b2-0c917747fb68 200 {"service":"nords-server","method":"PUT","path":"/api/connections/71a8f603-438f-4973-96b2-0c917747fb68","status":200,"duration":"217ms","bytes":"418"}
+11:36:21.528 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":219,"rows":1}
+11:36:21.528 [32minfo[39m: PUT /api/connections/fe2c20a5-35fa-4aa3-8507-d00298ce3fe1 200 {"service":"nords-server","method":"PUT","path":"/api/connections/fe2c20a5-35fa-4aa3-8507-d00298ce3fe1","status":200,"duration":"220ms","bytes":"418"}
+11:36:21.528 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":221,"rows":1}
+11:36:21.528 [32minfo[39m: PUT /api/connections/1413d4e4-e756-4054-9786-7da8a1287512 200 {"service":"nords-server","method":"PUT","path":"/api/connections/1413d4e4-e756-4054-9786-7da8a1287512","status":200,"duration":"221ms","bytes":"418"}
+11:36:21.529 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":225,"rows":1}
+11:36:21.529 [32minfo[39m: PUT /api/connections/3e2880e2-b80e-4bd3-af35-043cf7ccb7a0 200 {"service":"nords-server","method":"PUT","path":"/api/connections/3e2880e2-b80e-4bd3-af35-043cf7ccb7a0","status":200,"duration":"226ms","bytes":"401"}
+11:36:43.004 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:43.006 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:43.007 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:43.008 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:43.012 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:43.013 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+11:36:43.039 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":175,"error":"relation \"usage_events\" does not exist"}
+11:36:43.040 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+11:36:43.040 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":174,"error":"relation \"usage_events\" does not exist"}
+11:36:43.040 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+11:36:43.040 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+11:36:43.040 [32minfo[39m: PUT /api/connections/0ca4be0b-bda5-40a0-b833-18f6cfc7cc80 200 {"service":"nords-server","method":"PUT","path":"/api/connections/0ca4be0b-bda5-40a0-b833-18f6cfc7cc80","status":200,"duration":"177ms","bytes":"398"}
+11:36:43.042 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":177,"rows":1}
+11:36:43.042 [32minfo[39m: PUT /api/connections/91a17c83-39a4-43c2-933a-3014474e282e 200 {"service":"nords-server","method":"PUT","path":"/api/connections/91a17c83-39a4-43c2-933a-3014474e282e","status":200,"duration":"178ms","bytes":"401"}
+11:36:43.045 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":182,"error":"relation \"usage_events\" does not exist"}
+11:36:43.045 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+11:36:43.047 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    UPDATE connections\n    SET distance_x = $1\n    WHERE id = $2 AND deleted_at","duration":181,"rows":1}
+11:36:43.048 [32minfo[39m: PUT /api/connections/6f30749b-e2a7-4013-9203-a1fabb1293eb 200 {"service":"nords-server","method":"PUT","path":"/api/connections/6f30749b-e2a7-4013-9203-a1fabb1293eb","status":200,"duration":"182ms","bytes":"401"}
+12:19:10.232 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+12:19:10.232 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+12:19:10.235 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+12:19:10.235 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+12:19:10.235 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+12:19:10.235 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+12:19:10.233 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+12:19:10.236 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+12:19:10.236 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+12:19:25.233 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+12:19:25.237 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+12:19:25.237 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+12:19:25.236 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+12:19:25.239 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+12:19:25.239 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+12:19:25.237 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+12:19:25.240 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+12:19:25.240 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+12:19:36.778 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+12:19:36.779 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+12:19:36.780 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+12:19:36.781 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+12:19:36.810 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":168,"error":"relation \"usage_events\" does not exist"}
+12:19:36.810 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+12:19:36.811 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":168,"error":"relation \"usage_events\" does not exist"}
+12:19:36.811 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+12:19:36.817 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":175,"rows":2}
+12:19:36.849 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":31,"rows":2}
+12:19:36.882 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":33,"rows":12}
+12:19:36.883 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"242ms"}
+12:19:36.913 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":29,"error":"relation \"usage_events\" does not exist"}
+12:19:36.914 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+12:19:36.936 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":292,"rows":1}
+12:19:36.937 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/graph","status":200,"duration":"294ms","bytes":"140572"}
+12:19:37.009 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+12:19:37.041 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":156,"rows":2}
+12:19:37.070 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":28,"rows":2}
+12:19:37.101 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":30,"rows":12}
+12:19:37.101 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"217ms"}
+12:19:54.863 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+12:19:54.864 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+12:19:54.895 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":173,"error":"relation \"usage_events\" does not exist"}
+12:19:54.895 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}
+12:19:54.897 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":174,"rows":2}
+12:19:54.930 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":32,"rows":2}
+12:19:54.963 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":33,"rows":12}
+12:19:54.963 [32minfo[39m: GET /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/personas","status":304,"duration":"241ms"}
+12:20:04.444 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-13T16:19:36.450Z","userId":"dev-user-000"}
+12:20:04.444 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-13T16:19:36.451Z","userId":"dev-user-000"}
+12:20:04.446 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"2ms","bytes":"14"}
+12:20:04.478 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":34,"error":"relation \"usage_events\" does not exist"}
+12:20:04.478 [34mdebug[39m: Metering insert failed (non-fatal) {"service":"nords-server","error":"relation \"usage_events\" does not exist"}

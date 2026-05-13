@@ -35,6 +35,7 @@ export interface Persona {
   primary_motivation: string;
   voice_and_tone: string;
   guardrails: Array<{ mode: 'always' | 'never'; text: string }>;
+  temperature: number;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -72,7 +73,7 @@ export function usePersonas(projectId: string | null) {
 
   const updatePersona = useCallback(async (
     id: string,
-    fields: Partial<Pick<Persona, 'name' | 'avatar_seed' | 'accent_color' | 'background' | 'primary_motivation' | 'voice_and_tone' | 'guardrails' | 'sort_order'>>
+    fields: Partial<Pick<Persona, 'name' | 'avatar_seed' | 'accent_color' | 'background' | 'primary_motivation' | 'voice_and_tone' | 'guardrails' | 'temperature' | 'sort_order'>>
   ) => {
     try {
       const data = await api.put<Persona>(`/api/personas/${id}`, fields);

@@ -185,6 +185,7 @@
   },
   "active": "09a60c5211c6dc2a",
   "lastOpenFiles": [
+    "server/migrations/012_persona_temperature.sql",
     "server/src/glossary.json",
     "server/src/middleware/validate.ts",
     "server/src/schemas/index.ts",
@@ -195,7 +196,6 @@
     "server/src/schemas/projects.ts",
     "server/src/schemas",
     "server/src/routes/accounts.ts",
-    "server/src/middleware/metering.ts",
     "New 01/Screenshot 2026-05-12 at 5.38.04 PM.png",
     "New 01/Screenshot 2026-05-12 at 4.07.19 PM.png",
     "New 01/7/issue7.png",

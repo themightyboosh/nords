@@ -311,6 +311,30 @@ function PersonaEditor({
         />
       </div>
 
+      {/* ── AI Temperature ── */}
+      <div className="manage-personas__section">
+        <label className="manage-personas__section-title">
+          AI Temperature
+          <span className="manage-personas__temp-value">{(persona.temperature ?? 1.0).toFixed(1)}</span>
+        </label>
+        <div className="manage-personas__temp-row">
+          <span className="manage-personas__temp-label">Precise</span>
+          <input
+            type="range"
+            className="manage-personas__temp-slider"
+            min={0}
+            max={2}
+            step={0.1}
+            value={persona.temperature ?? 1.0}
+            onChange={e => onUpdate(persona.id, { temperature: parseFloat(e.target.value) })}
+          />
+          <span className="manage-personas__temp-label">Creative</span>
+        </div>
+        <p className="manage-personas__temp-hint">
+          Controls randomness in AI responses. Lower values produce more focused, deterministic output. Higher values encourage creativity and variation. Default: 1.0 (Gemini balanced).
+        </p>
+      </div>
+
       {/* ── Mental Models ── */}
       <div className="manage-personas__section">
         <label className="manage-personas__section-title">

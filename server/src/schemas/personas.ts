@@ -26,6 +26,8 @@ export const UpdatePersonaSchema = z.object({
     .describe('Avatar generation seed'),
   accent_hue: z.number().int().min(0).max(360).optional()
     .describe('HSL hue value (0–360) for the persona accent color'),
+  temperature: z.number().min(0).max(2).optional()
+    .describe('AI response temperature (0.0 = deterministic, 1.0 = balanced/Gemini default, 2.0 = maximum creativity)'),
   sort_order: z.number().int().min(0).optional()
     .describe('Display order in the persona list'),
 });
