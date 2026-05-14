@@ -75,7 +75,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
   const { upsertPosition } = useBoardPositionMutations(projectId);
 
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
-  const [dragOverTarget, setDragOverTarget] = useState<string | null>(null); // "typeId|label"
   const [undoToast, setUndoToast] = useState<{ message: string; undoFn: () => Promise<void> } | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -227,7 +226,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   const handleDragEnd = useCallback(() => {
     setDraggingCardId(null);
-    setDragOverTarget(null);
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -242,7 +240,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     columnCards: SwimCard[],
   ) => {
     e.preventDefault();
-    setDragOverTarget(null);
     setDraggingCardId(null);
 
     const data = getDragData(e);
@@ -387,12 +384,8 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
               {!collapsed && (
                 <div className="nords-matrix__lane-body">
                   <div className="nords-matrix__columns">
-                    {lane.columns.map(col => {
-                      const dropKey = `${ct.id}|${col.label}`;
-                      const isOver = dragOverTarget === dropKey;
-
-                      return (
-                        <div key={col.label} className={`nords-matrix__column ${isOver ? 'is-drag-over' : ''}`}>
+                    {lane.columns.map(col => (
+                        <div key={col.label} className="nords-matrix__column">
                           <div className="nords-matrix__column-header">
                             <span className="nords-matrix__column-label" style={{ color: ct.color }}>
                               {col.label}
@@ -402,13 +395,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                           <div
                             className="nords-matrix__column-body"
                             onDragOver={handleDragOver}
-                            onDragEnter={() => setDragOverTarget(dropKey)}
-                            onDragLeave={(e) => {
-                              const related = e.relatedTarget as HTMLElement | null;
-                              if (!related || !(e.currentTarget as HTMLElement).contains(related)) {
-                                setDragOverTarget(null);
-                              }
-                            }}
                             onDrop={(e) => handleColumnDrop(e, ct.id, col.position, col.cards)}
                           >
                             {col.cards.map(card => (
@@ -427,8 +413,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                             )}
                           </div>
                         </div>
-                      );
-                    })}
+                    ))}
                   </div>
                 </div>
               )}
