@@ -1157,3 +1157,32 @@
   color: #a78bfa;
   background: rgba(139, 92, 246, 0.1);
 }
+
+/* ── Computed Properties: Formula Editor ── */
+
+.manage-types__prop-formula-section {
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.manage-types__prop-formula-input {
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace !important;
+  font-size: 12px !important;
+}
+
+.manage-types__formula-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+  font-size: 10px;
+  font-style: italic;
+  font-weight: 700;
+  font-family: serif;
+  margin-right: 2px;
+}
+

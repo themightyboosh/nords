@@ -16,6 +16,7 @@ import { typesRouter } from './routes/types.js';
 import { logsRouter } from './routes/logs.js';
 import { personasRouter } from './routes/personas.js';
 import { accountsRouter } from './routes/accounts.js';
+import { mcpSessionsRouter } from './routes/mcpSessions.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -29,6 +30,11 @@ app.use(cors({
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
+    'http://localhost:5176',
+    'http://localhost:5177',
+    'http://localhost:5178',
+    'http://localhost:5179',
+    'http://localhost:5180',
   ],
   credentials: true,
 }));
@@ -64,6 +70,7 @@ app.use('/api', typesRouter);
 app.use('/api', logsRouter);
 app.use('/api', personasRouter);
 app.use('/api', accountsRouter);
+app.use('/api', mcpSessionsRouter);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

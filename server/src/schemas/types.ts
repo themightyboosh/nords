@@ -15,7 +15,7 @@ export const PropertySchemaItem = z.object({
   type: z.enum([
     'short_text', 'long_text', 'url', 'number', 'currency', 'percentage',
     'stage', 'select', 'multi_select', 'boolean', 'date', 'date_range',
-    'user', 'nord_reference', 'file',
+    'user', 'nord_reference', 'file', 'computed',
   ]).describe('Data type of the property — determines the UI control and validation'),
   required: z.boolean().optional().default(false)
     .describe('Whether this property must have a value'),

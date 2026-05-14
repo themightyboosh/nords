@@ -333,3 +333,40 @@
   color: var(--nords-color-text-muted, #8b8b9a);
   opacity: 0.5;
 }
+
+/* ── Computed Field (read-only) ── */
+
+.nords-pf--computed {
+  gap: 2px;
+}
+
+.nords-pf__computed-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+  font-size: 10px;
+  font-style: italic;
+  font-weight: 700;
+  font-family: serif;
+  margin-right: 2px;
+}
+
+.nords-pf__computed-value {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--nords-color-text-primary, #e8e8ed);
+  padding: 4px 0;
+}
+
+.nords-pf__computed-value--empty {
+  color: var(--nords-color-text-muted, #8b8b9a);
+  font-weight: 400;
+  font-style: italic;
+}
+

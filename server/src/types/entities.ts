@@ -39,6 +39,7 @@ export interface Project {
   mcp_enabled: boolean;
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
+  mcp_system_prompt: string | null;
   default_persona_id: string | null;
   default_start_nord_id: string | null;
   created_at: Date;
@@ -82,6 +83,53 @@ export interface Nord {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
+}
+
+export interface McpSession {
+  id: string;
+  project_id: string;
+  persona_id: string | null;
+  started_at: Date;
+  ended_at: Date | null;
+  status: 'active' | 'completed' | 'abandoned';
+  summary: string | null;
+  created_at: Date;
+}
+
+export interface McpTraversal {
+  id: string;
+  session_id: string;
+  connection_id: string;
+  source_nord_id: string;
+  target_nord_id: string;
+  direction: 'forward' | 'backward';
+  traversal_type: 'read' | 'advance' | 'rework' | 'create' | 'assign' | 'evaluate';
+  context: Record<string, unknown>;
+  traversed_at: Date;
+}
+
+export interface McpNordVisit {
+  id: string;
+  session_id: string;
+  nord_id: string;
+  visit_type: 'inspect' | 'update' | 'complete' | 'create' | 'gate_check';
+  properties_before: Record<string, unknown> | null;
+  properties_after: Record<string, unknown> | null;
+  context: Record<string, unknown>;
+  visited_at: Date;
+}
+
+/** Per-session, per-nord completion state — the INSTANCE layer */
+export interface McpSessionNord {
+  id: string;
+  session_id: string;
+  nord_id: string;
+  properties: Record<string, unknown>;
+  complete: boolean;
+  filled_count: number;
+  required_count: number;
+  first_visited: Date;
+  last_visited: Date;
 }
 
 export interface StageLabel {

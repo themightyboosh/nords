@@ -53,6 +53,95 @@ graphRouter.get('/projects/:id/graph', async (req: Request, res: Response) => {
 
 /**
  * @openapi
+ * /api/projects/{id}/nords/query:
+ *   get:
+ *     tags: [Nords]
+ *     summary: Query nords by type and property filters
+ *     description: |
+ *       Filters nords using JSONB operators. Designed for MCP agent use cases
+ *       like "find all Team Members with React skills and <80% utilization."
+ *       Filter syntax: "property operator value" where operator is =, <, >, <=, >=, or contains.
+ */
+graphRouter.get('/projects/:id/nords/query', async (req: Request, res: Response) => {
+  try {
+    const projectId = req.params.id;
+    const typeName = req.query.type_name as string | undefined;
+    const filters = (Array.isArray(req.query.filter) ? req.query.filter : req.query.filter ? [req.query.filter] : []) as string[];
+    const sortParam = req.query.sort as string | undefined;
+    const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 50, 1), 100);
+
+    // Build the query
+    const conditions: string[] = ['n.project_id = $1', 'n.deleted_at IS NULL'];
+    const params: unknown[] = [projectId];
+    let paramIdx = 2;
+
+    // Type name filter — join nord_types
+    let joinClause = '';
+    if (typeName) {
+      joinClause = 'JOIN nord_types nt ON n.type_id = nt.id';
+      conditions.push(`nt.name = $${paramIdx}`);
+      params.push(typeName);
+      paramIdx++;
+    }
+
+    // Parse property filters
+    const operatorRegex = /^(.+?)\s+(=|<|>|<=|>=|contains)\s+(.+)$/;
+    for (const f of filters) {
+      const match = f.match(operatorRegex);
+      if (!match) continue;
+
+      const [, propName, op, rawValue] = match;
+      const prop = propName.trim();
+      const val = rawValue.trim();
+
+      if (op === 'contains') {
+        // JSONB containment — works for arrays and strings
+        conditions.push(`n.properties->'${prop}' @> $${paramIdx}::jsonb`);
+        params.push(JSON.stringify(val));
+        paramIdx++;
+      } else if (op === '=') {
+        conditions.push(`n.properties->>'${prop}' = $${paramIdx}`);
+        params.push(val);
+        paramIdx++;
+      } else {
+        // Numeric comparison: <, >, <=, >=
+        const numVal = parseFloat(val);
+        if (isNaN(numVal)) continue;
+        conditions.push(`(n.properties->>'${prop}')::numeric ${op} $${paramIdx}`);
+        params.push(numVal);
+        paramIdx++;
+      }
+    }
+
+    // Sort
+    let orderClause = 'ORDER BY n.created_at DESC';
+    if (sortParam) {
+      const sortMatch = sortParam.match(/^(.+?)\s+(asc|desc)$/i);
+      if (sortMatch) {
+        const [, sortProp, sortDir] = sortMatch;
+        orderClause = `ORDER BY n.properties->>'${sortProp.trim()}' ${sortDir.toUpperCase()}`;
+      }
+    }
+
+    const sql = `
+      SELECT n.*
+      FROM nords n
+      ${joinClause}
+      WHERE ${conditions.join(' AND ')}
+      ${orderClause}
+      LIMIT ${limit}
+    `;
+
+    const rows = await query<Record<string, unknown>>(sql, params);
+    res.json({ results: rows, count: rows.length, limit });
+  } catch (err: any) {
+    logger.error('Nord query failed', { code: err.code, message: err.message, projectId: req.params.id });
+    res.status(500).json({ error: 'Failed to query nords' });
+  }
+});
+
+/**
+ * @openapi
  * /api/projects/{id}/nords:
  *   post:
  *     tags: [Nords]

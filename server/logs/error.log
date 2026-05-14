@@ -5368,3 +5368,31 @@ error: relation "usage_events" does not exist
     at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
     at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":34,"error":"relation \"usage_events\" does not exist"}
+13:39:17.479 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":162,"error":"relation \"usage_events\" does not exist"}
+13:39:23.998 [31merror[39m: Query failed
+error: relation "usage_events" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":29,"error":"relation \"usage_events\" does not exist"}
+15:57:49.557 [31merror[39m: Query failed
+error: invalid input syntax for type integer: "0.9"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/personas.ts:325:20) {"service":"nords-server","text":"INSERT INTO persona_category_weights (persona_id, connection_type_id, weight)\n       VALUES ($1, $2, $3)\n       ON CONFL","duration":28,"error":"invalid input syntax for type integer: \"0.9\""}
+15:57:49.557 [31merror[39m: Failed to update category weight {"service":"nords-server","error":"invalid input syntax for type integer: \"0.9\""}
+15:57:49.558 [31merror[39m: PUT /api/personas/dabe8ba5-2111-4381-9f82-6012b6f5d72a/weights/ca5f1494-efca-486d-8b6b-9fcb87867a9f 500 {"service":"nords-server","method":"PUT","path":"/api/personas/dabe8ba5-2111-4381-9f82-6012b6f5d72a/weights/ca5f1494-efca-486d-8b6b-9fcb87867a9f","status":500,"duration":"29ms","bytes":"44"}
+19:45:45.259 [31merror[39m: Query failed
+error: insert or update on table "projects" violates foreign key constraint "projects_org_id_fkey"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:67:21) {"service":"nords-server","text":"\n    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_muta","duration":34,"error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\""}
+19:45:45.259 [31merror[39m: Failed to create project {"service":"nords-server","error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\"","name":"Proposal Director Demo"}
+19:45:45.259 [31merror[39m: POST /api/projects 500 {"service":"nords-server","method":"POST","path":"/api/projects","status":500,"duration":"37ms","bytes":"36"}

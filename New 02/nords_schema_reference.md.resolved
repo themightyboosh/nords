@@ -1,0 +1,596 @@
+# Nords Data Model — Complete Schema Reference
+
+> **Purpose:** This document fully describes the Nords spatial engine data model. It is self-contained — you can hand it to any AI, developer, or designer and they will have complete context to create realistic demo data, build integrations, or generate seed scripts.
+
+---
+
+## Core Concept
+
+Nords is a **spatial graph engine** for structured thinking. Users create **nodes** (called "Nords") and connect them with **typed edges** (called "Connections"). Every node and edge has a **type** that defines its schema, visual style, and behavior. **Personas** provide AI lens configurations that weight certain relationship types higher or lower.
+
+The system has three visual modes:
+- **Graph View** — force-directed or manual node layout with edge lines
+- **Board View** — Kanban-style columns where a connection's `distance_x` determines which column a card appears in
+- **Spectrum View** — continuous horizontal slider showing relationship progression
+
+---
+
+## Entity Hierarchy
+
+```
+Project
+├── NordType[]           (schema definitions for nodes)
+├── ConnectionType[]     (schema definitions for edges)
+├── Nord[]               (node instances)
+├── Connection[]         (edge instances linking two nords)
+├── Persona[]            (AI lens configurations)
+│   ├── MentalModel[]    (focus areas, max 5)
+│   └── CategoryWeight[] (per-connection-type relevance weights)
+├── Snapshot[]           (immutable graph state captures)
+└── Comment[]            (threaded discussion on any entity)
+```
+
+---
+
+## 1. Project
+
+A container for an entire graph workspace.
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `id` | UUID | auto | `gen_random_uuid()` | Primary key |
+| `org_id` | UUID | yes | — | Organization this project belongs to |
+| `name` | string (1–200) | yes | — | Human-readable project name |
+| `description` | string (≤2000) | yes | — | What this project is about |
+| `purpose` | string (≤2000) | yes | — | **Why** this project exists — guides AI persona context |
+| `icon` | string (≤10) | no | `null` | Emoji identifier (e.g., "🚀") |
+| `mcp_enabled` | boolean | no | `false` | Whether MCP (Model Context Protocol) integration is active for this project |
+| `mcp_capture_data` | boolean | no | `false` | Whether MCP interactions capture data into the graph as new Nords/Connections |
+| `mcp_mutable` | boolean | no | `false` | Whether MCP can write/mutate existing graph data (create, update, delete) |
+| `default_persona_id` | UUID | no | `null` | Default AI persona lens — determines which persona's mental models and category weights apply during MCP sessions |
+| `default_start_nord_id` | UUID | no | `null` | Default entry point for graph navigation — the nord an MCP session begins focus on |
+
+### MCP Configuration Fields (Detail)
+
+These three flags control the project's exposure to external AI agents:
+
+| Flag | Off (`false`) | On (`true`) |
+|------|--------------|-------------|
+| `mcp_enabled` | Project is invisible to MCP tools | Project graph is readable by MCP agents |
+| `mcp_capture_data` | MCP sessions are read-only conversations | MCP interactions can create new Nords and Connections as session artifacts |
+| `mcp_mutable` | Existing graph data cannot be changed via MCP | MCP can update titles, properties, positions, and connections on existing Nords |
+
+**Typical configurations:**
+- **Read-only advisor:** `mcp_enabled: true`, `mcp_capture_data: false`, `mcp_mutable: false` — AI can see the graph and answer questions but cannot change anything.
+- **Session capture:** `mcp_enabled: true`, `mcp_capture_data: true`, `mcp_mutable: false` — AI creates new nords during a session (e.g., generating action items) but cannot edit existing ones.
+- **Full agent:** `mcp_enabled: true`, `mcp_capture_data: true`, `mcp_mutable: true` — AI has full read/write access (experimental).
+
+---
+
+## 2. Nord Type (Node Schema)
+
+Defines a **category of nodes** — what kind of thing a nord represents, what properties it carries, and how it looks.
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `id` | UUID | auto | `gen_random_uuid()` | Primary key |
+| `user_id` | string | yes | — | Owner (creator) of this type |
+| `project_id` | UUID | yes | — | Project this type is associated with |
+| `name` | string (1–100) | yes | `"New Type"` | Display name (e.g., "Bug", "Person", "Milestone", "Feature") |
+| `description` | string (≤500) | no | `""` | What this type represents in the domain |
+| `icon` | string (≤50) | no | `"Square"` | Lucide icon name (e.g., `"Bug"`, `"User"`, `"Flag"`, `"Lightbulb"`) |
+| `accent_color` | hex string | no | `"#888888"` | Hex color for visual distinction (e.g., `"#ef4444"` for bugs) |
+| `properties_schema` | PropertySchema[] | no | `[]` | **Column definitions** for the dynamic JSONB properties (see §7) |
+| `scale_property` | string | no | `null` | Property name whose value controls visual node size in graph view |
+| `sort_order` | integer (≥0) | no | `0` | Display order in the type list sidebar |
+
+**Analogy:** A NordType is like a database table definition — it defines what "columns" (properties) nords of this type have.
+
+**Examples of NordTypes:**
+- **Bug** — icon: `"Bug"`, color: `"#ef4444"` (red), properties: Priority, Severity, Steps to Reproduce
+- **Feature** — icon: `"Lightbulb"`, color: `"#f59e0b"` (amber), properties: Business Value, Effort Estimate
+- **Person** — icon: `"User"`, color: `"#3b82f6"` (blue), properties: Role, Department, Email
+- **Milestone** — icon: `"Flag"`, color: `"#10b981"` (green), properties: Target Date, Status
+
+---
+
+## 3. Nord (Node Instance)
+
+A single **node card** in the graph. Every nord has exactly one NordType.
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `id` | UUID | auto | `gen_random_uuid()` | Primary key |
+| `project_id` | UUID | yes | — | Project this nord belongs to |
+| `type_id` | UUID | yes | — | NordType ID — determines the property schema, icon, and color |
+| `title` | string (1–500) | yes | `"Untitled"` | Display title shown on the card |
+| `description` | string (≤5000) | no | `""` | Rich text description (markdown) |
+| `properties` | JSONB object | no | `{}` | **Dynamic key-value data** matching the NordType's properties_schema |
+| `position_x` | float | no | `0.0` | Horizontal position on the graph canvas (normalized coords, can be negative) |
+| `position_y` | float | no | `0.0` | Vertical position on the graph canvas |
+| `scale` | float (0.1–10) | no | `1.0` | Visual size multiplier (1.0 = default) |
+
+**Key behaviors:**
+- `position_x` / `position_y` — used only in **Graph View**. These are canvas coordinates, not bounded to 0–1.
+- `scale` — can be driven automatically by a property value if `NordType.scale_property` is set (e.g., "Story Points" → bigger card = more effort).
+- `properties` — a free-form JSONB bag. The keys should match names from the NordType's `properties_schema`, but this is not enforced at the DB level.
+
+---
+
+## 4. Connection Type (Edge Schema)
+
+Defines a **category of relationships** — what kind of link exists between two nords, what stages it tracks, and how it's visualized.
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `id` | UUID | auto | `gen_random_uuid()` | Primary key |
+| `user_id` | string | yes | — | Owner of this type |
+| `project_id` | UUID | yes | — | Project association |
+| `name` | string (1–100) | yes | `"New Connection"` | Relationship name (e.g., "Blocks", "Depends On", "Assigned To") |
+| `description` | string (≤500) | no | `""` | What this relationship represents |
+| `accent_color` | hex string | no | `"#888888"` | Hex color for the edge line |
+| `stroke_style` | enum | no | `"solid"` | Visual line style: `"solid"`, `"dashed"`, or `"dotted"` |
+| `default_direction` | enum | no | `"none"` | Default arrow direction for new connections |
+| `verb` | string (≤50) | no | `null` | Action verb (e.g., "blocks", "depends on", "reports to") |
+| `direction_filter` | enum | no | `"all"` | Which direction options are available in UI |
+| `is_system` | boolean | no | `false` | System types cannot be deleted or removed from projects |
+| `x_stage_labels` | StageLabel[] | no | `[]` | **Horizontal spectrum stage definitions** (see §6) |
+| `y_stage_labels` | StageLabel[] | no | `[]` | Vertical axis labels (reserved for future quadrant mode) |
+| `properties_schema` | PropertySchema[] | no | `[]` | Dynamic property column definitions for connections of this type |
+| `sort_order` | integer (≥0) | no | `0` | Display order |
+
+**Examples of ConnectionTypes:**
+
+| Name | Verb | Stages (x_stage_labels) | Color | Style |
+|------|------|------------------------|-------|-------|
+| **Status** | "is at" | Backlog → To Do → In Progress → Review → Done | `#6366f1` | solid |
+| **Blocks** | "blocks" | Soft Block → Hard Block | `#ef4444` | dashed |
+| **Assigned To** | "assigned to" | *(no stages)* | `#3b82f6` | solid |
+| **Depends On** | "depends on" | Weak → Strong | `#f59e0b` | dotted |
+| **Contains** | "contains" | *(no stages)* | `#8b5cf6` | solid |
+
+---
+
+## 5. Connection (Edge Instance)
+
+A single **relationship** between two nords. Every connection has exactly one ConnectionType.
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `id` | UUID | auto | `gen_random_uuid()` | Primary key |
+| `project_id` | UUID | yes | — | Project this connection belongs to |
+| `type_id` | UUID | yes | — | ConnectionType ID — defines the relationship category and stage labels |
+| `source_nord_id` | UUID | yes | — | **Source** nord (the "from" side) |
+| `target_nord_id` | UUID | yes | — | **Target** nord (the "to" side) |
+| `direction` | enum | no | `"none"` | Arrow direction (see below) |
+| `distance_x` | float (0.0–1.0) | no | `0.5` | **Spectrum position** along the x-axis stage labels (see §6) |
+| `distance_y` | float (0.0–1.0) | no | `0.5` | Vertical axis position (reserved for future quadrant mode) |
+| `sort_order` | integer (≥0) | no | `0` | Within-column ordering in board view (lower = higher in column) |
+| `properties` | JSONB object | no | `{}` | Dynamic properties matching the ConnectionType's properties_schema |
+
+**Direction values:**
+
+| Value | Meaning | Arrow rendering |
+|-------|---------|----------------|
+| `"forward"` | Source → Target | Arrow points at target |
+| `"reverse"` | Target → Source | Arrow points at source |
+| `"both"` | Bidirectional | Arrows on both ends |
+| `"none"` | Undirected | No arrows, plain line |
+
+**Constraint:** Only one connection of a given type can exist between the same source and target pair.
+
+---
+
+## 6. The Distance / Spectrum System ⚡
+
+> **This is the most important concept for demo data.**
+
+### How it works
+
+Every `Connection` has a `distance_x` value (float, 0.0–1.0). This value maps to the `ConnectionType`'s `x_stage_labels` — an ordered array of labeled positions along a spectrum.
+
+**Example:** A "Status" ConnectionType with these stage labels:
+
+```json
+[
+  { "label": "Backlog",     "position": 0.0  },
+  { "label": "To Do",       "position": 0.25 },
+  { "label": "In Progress", "position": 0.5  },
+  { "label": "Review",      "position": 0.75 },
+  { "label": "Done",        "position": 1.0  }
+]
+```
+
+When a Connection has `distance_x: 0.25`, the connected nord appears in the **"To Do"** column in board view.
+
+### How it drives three views
+
+| View | What `distance_x` controls |
+|------|---------------------------|
+| **Board View** | Which **column** the target nord appears in. The stage label at that position becomes the column header. |
+| **Spectrum View** | Horizontal **slider position** along a continuous axis. |
+| **Graph View** | Does NOT affect position (graph uses `position_x` / `position_y` on the Nord itself). |
+
+### Key insight for demo data
+
+When creating connections, the `distance_x` value determines "how far along" the relationship is. For a status tracker:
+- `0.0` = Backlog (not started)
+- `0.5` = In Progress (halfway)
+- `1.0` = Done (complete)
+
+**You must create a Connection** between a nord and another nord (or the same pattern) to place it on a board. Without a connection of the right type, the nord won't appear in board view for that category.
+
+---
+
+## 7. PropertySchema (Dynamic Column Definitions)
+
+Both NordTypes and ConnectionTypes carry a `properties_schema` array. Each entry defines one "column" in the dynamic JSONB properties bag.
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `name` | string | yes | — | Property name / column heading. Must be unique within the type. |
+| `type` | enum | yes | — | Data type (see below) |
+| `required` | boolean | no | `false` | **Whether this property must have a value for the Nord to be considered "complete"** (see §12) |
+| `defaultValue` | string\|number\|boolean\|null | no | — | Default when a new entity is created |
+| `options` | string[] | no | — | Valid choices for `select` / `multi_select` types |
+| `card_row` | integer (0–5) | no | — | Which row of the card UI displays this (0 = hidden) |
+| `config` | object | no | — | Type-specific config (currency symbol, date format, etc.) |
+
+### The `required` Flag and Nord Completeness
+
+The `required` flag on a property has a dual purpose:
+
+1. **UI validation** — The detail drawer shows a visual indicator when required fields are empty.
+2. **MCP completeness** — During MCP sessions, a Nord's **completion status** is determined by whether all `required: true` properties in its NordType's `properties_schema` have non-null, non-empty values in the Nord's `properties` JSONB.
+
+**Completeness calculation:**
+```
+complete = every property where schema.required === true
+           has a corresponding non-null, non-empty value in nord.properties[schema.name]
+```
+
+A Nord with 0 required properties is always considered **complete**. See §12 for how this drives MCP session behavior.
+
+**Available property types:**
+
+| Type | UI Control | Value Format | Empty Value (= incomplete) |
+|------|-----------|--------------|---------------------------|
+| `short_text` | Single-line text input | `"string"` | `""` or `null` |
+| `long_text` | Multi-line textarea | `"string"` | `""` or `null` |
+| `url` | URL input with link icon | `"https://..."` | `""` or `null` |
+| `number` | Number input | `42` | `null` |
+| `currency` | Currency field with symbol | `99.99` | `null` |
+| `percentage` | Percentage input (0–100) | `75` | `null` |
+| `select` | Dropdown single-select | `"Option A"` | `""` or `null` |
+| `multi_select` | Multi-select tags | `["Tag1", "Tag2"]` | `[]` or `null` |
+| `boolean` | Toggle switch | `true` / `false` | `null` (note: `false` is a valid value, not empty) |
+| `date` | Date picker | `"2026-03-15"` | `""` or `null` |
+| `date_range` | Start/end date picker | `{"start": "...", "end": "..."}` | `null` or missing keys |
+| `user` | User selector | `"user-id"` | `""` or `null` |
+| `nord_reference` | Link to another nord | `"nord-uuid"` | `""` or `null` |
+| `file` | File attachment | `"file-url"` | `""` or `null` |
+
+**Example properties_schema for a "Bug" NordType:**
+
+```json
+[
+  { "name": "Priority", "type": "select", "required": true, "options": ["Critical", "High", "Medium", "Low"], "card_row": 1 },
+  { "name": "Severity", "type": "select", "required": true, "options": ["Blocker", "Major", "Minor", "Trivial"], "card_row": 1 },
+  { "name": "Steps to Reproduce", "type": "long_text", "required": true },
+  { "name": "Found In Version", "type": "short_text" },
+  { "name": "Estimated Hours", "type": "number", "card_row": 2 }
+]
+```
+
+In this example, a Bug nord is **complete** when `Priority`, `Severity`, and `Steps to Reproduce` all have values. `Found In Version` and `Estimated Hours` are optional — they don't affect completeness.
+
+---
+
+## 8. Persona (AI Lens Configuration)
+
+A persona is a **viewpoint character** that filters and weights the graph differently. Think of it as an AI role-play configuration.
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `id` | UUID | auto | `gen_random_uuid()` | Primary key |
+| `project_id` | UUID | yes | — | Project this persona belongs to |
+| `name` | string (1–100) | yes | `"New Persona"` | Display name (e.g., "Engineering Lead", "Product Owner", "QA Analyst") |
+| `avatar_seed` | string | no | random UUID | DiceBear Notionists seed for deterministic avatar generation |
+| `accent_color` | string | no | — | CSS color for visual distinction |
+| `background` | string | yes (empty ok) | `""` | 1–2 sentence character history / role context |
+| `primary_motivation` | string | yes (empty ok) | `""` | The persona's ultimate goal / driving question |
+| `voice_and_tone` | string | yes (empty ok) | `""` | How this persona communicates (formal, casual, data-driven, etc.) |
+| `temperature` | float (0.0–2.0) | no | `1.0` | **AI response temperature.** 0.0 = deterministic, 1.0 = balanced (Gemini default), 2.0 = maximum creativity |
+| `guardrails` | JSON array | no | `[]` | Behavioral rules: `[{ "mode": "always"|"never", "text": "..." }]` |
+| `sort_order` | integer (≥0) | no | `0` | Display order in the persona list |
+
+**Temperature guide:**
+
+| Value | Behavior | Use Case |
+|-------|----------|----------|
+| `0.0` | Fully deterministic — always picks the most probable token | Structured data extraction, code generation |
+| `0.5` | Low creativity — focused and consistent | Technical writing, analysis |
+| `1.0` | Balanced (Gemini default) — good mix of focus and variety | General conversation, brainstorming |
+| `1.5` | High creativity — more varied and unexpected outputs | Creative writing, ideation |
+| `2.0` | Maximum randomness — most diverse outputs | Experimental, edge-case exploration |
+
+**Example persona:**
+
+```json
+{
+  "name": "Engineering Lead",
+  "background": "10 years in backend systems. Focuses on scalability and tech debt.",
+  "primary_motivation": "Ship reliable software without accumulating unsustainable complexity.",
+  "voice_and_tone": "Direct, data-driven, prefers concrete trade-offs over abstract discussion.",
+  "temperature": 0.7,
+  "guardrails": [
+    { "mode": "always", "text": "Consider production impact of every decision." },
+    { "mode": "never", "text": "Never skip code review for velocity reasons." }
+  ]
+}
+```
+
+---
+
+## 9. Mental Model (Persona Sub-Record)
+
+Each persona has up to **5 mental models** — named focus areas with detailed descriptions used as AI system prompt context.
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `id` | UUID | auto | `gen_random_uuid()` | Primary key |
+| `persona_id` | UUID | yes | — | Parent persona |
+| `name` | string (1–200) | yes | `""` | Short title (e.g., "Risk Assessment", "Resource Allocation") |
+| `body` | string (≤5000) | no | `""` | Detailed description — used as system prompt context |
+| `sort_order` | integer (≥0) | no | `0` | Display order (0 = first) |
+
+**Example mental models for "Engineering Lead":**
+
+1. **Risk Assessment** — "Evaluate technical risk by considering blast radius, reversibility, and time-to-detect. High-risk changes need feature flags."
+2. **Dependency Management** — "Track upstream and downstream dependencies. A change to a shared service affects all consumers."
+3. **Capacity Planning** — "Balance new feature work against tech debt reduction. Target 70/30 split per sprint."
+
+---
+
+## 10. Category Weight (Persona ↔ ConnectionType)
+
+Controls how strongly each **ConnectionType** influences a persona's view of the graph. One weight per ConnectionType per Persona.
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `id` | UUID | auto | — | Primary key |
+| `persona_id` | UUID | yes | — | Parent persona |
+| `connection_type_id` | UUID | yes | — | Which ConnectionType this weight applies to |
+| `weight` | integer (-100 to +100) | yes | `0` | Relevance weight |
+
+**Weight semantics:**
+
+| Value | Meaning | Effect |
+|-------|---------|--------|
+| `+100` | Maximum priority | These relationships dominate the persona's attention |
+| `+50` | High relevance | Strong emphasis |
+| `0` | Neutral | Default — no boost or suppression |
+| `-50` | Low relevance | De-emphasized in persona's view |
+| `-100` | Suppressed | Hidden from the persona's attention |
+
+**Example:** An "Engineering Lead" persona might set:
+- Status: `+80` (care deeply about what stage things are in)
+- Blocks: `+90` (blockers are the top priority)
+- Assigned To: `+40` (need to know who owns what)
+- References: `-30` (informational links are low priority)
+
+---
+
+## 11. StageLabel (Spectrum Axis Definition)
+
+Used in `ConnectionType.x_stage_labels` and `ConnectionType.y_stage_labels`.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `label` | string | yes | Display name for this stage (e.g., "To Do", "In Progress", "Done") |
+| `position` | float (0.0–1.0) | yes | Normalized position along the axis |
+
+**Rules:**
+- Labels should be ordered by `position` (ascending).
+- `position: 0.0` = start, `position: 1.0` = end.
+- Even spacing is common but not required — you can cluster stages.
+- In board view, each stage becomes a **column header**.
+
+**Common patterns:**
+
+```json
+// Simple 3-stage (even spacing)
+[
+  { "label": "To Do",       "position": 0.0 },
+  { "label": "In Progress", "position": 0.5 },
+  { "label": "Done",        "position": 1.0 }
+]
+
+// 5-stage workflow
+[
+  { "label": "Backlog",     "position": 0.0  },
+  { "label": "To Do",       "position": 0.25 },
+  { "label": "In Progress", "position": 0.5  },
+  { "label": "Review",      "position": 0.75 },
+  { "label": "Done",        "position": 1.0  }
+]
+
+// Binary (no intermediate stages)
+[
+  { "label": "Open",   "position": 0.0 },
+  { "label": "Closed", "position": 1.0 }
+]
+```
+
+---
+
+## 12. MCP Session Behavior & Nord Completeness ⚡
+
+> **Nords created during MCP sessions are session-based stored items. Their `required` properties determine when they are "complete."**
+
+### Session Lifecycle
+
+When an MCP agent interacts with a project (`mcp_enabled: true`), it operates in a **session context**:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  MCP SESSION                                            │
+│                                                         │
+│  1. Agent loads project graph (read)                    │
+│  2. Agent selects persona → loads mental models + weights│
+│  3. Agent navigates from default_start_nord_id           │
+│  4. Agent creates/updates Nords (if mcp_capture_data)    │
+│  5. Each Nord is evaluated for COMPLETENESS             │
+│  6. Session ends → incomplete Nords are flagged          │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Nord as a Session-Based Stored Item
+
+Every Nord created or touched during an MCP session is treated as a **stored item** — a persistent artifact of that interaction. The Nord persists in the graph after the session ends. It is **not** ephemeral.
+
+However, its **completeness** is evaluated in real time:
+
+| Status | Condition | Visual Indicator |
+|--------|-----------|------------------|
+| **Complete** ✅ | All `required: true` properties in the NordType's `properties_schema` have non-null, non-empty values | Solid card border, no warnings |
+| **Incomplete** ⚠️ | One or more `required: true` properties are missing or empty | Dashed card border, warning badge |
+
+### How Completeness Is Calculated
+
+For a given Nord:
+
+```
+1. Look up the Nord's NordType via type_id
+2. Get the NordType's properties_schema
+3. Filter to properties where required === true
+4. For each required property:
+   a. Check if nord.properties[property.name] exists
+   b. Check if the value is non-null and non-empty
+5. If ALL required properties pass → status = COMPLETE
+6. If ANY required property fails → status = INCOMPLETE
+```
+
+**Empty value rules by property type:**
+
+| Property Type | Considered Empty |
+|---------------|------------------|
+| `short_text`, `long_text`, `url` | `""`, `null`, or missing |
+| `number`, `currency`, `percentage` | `null` or missing |
+| `select` | `""`, `null`, or missing |
+| `multi_select` | `[]`, `null`, or missing |
+| `boolean` | `null` or missing (note: `false` is a **valid** value) |
+| `date` | `""`, `null`, or missing |
+| `date_range` | `null`, missing, or missing `start`/`end` keys |
+| `user`, `nord_reference`, `file` | `""`, `null`, or missing |
+
+### Example: MCP Agent Creating a Bug
+
+Given a "Bug" NordType with this schema:
+```json
+[
+  { "name": "Priority",          "type": "select", "required": true, "options": ["Critical","High","Medium","Low"] },
+  { "name": "Severity",          "type": "select", "required": true, "options": ["Blocker","Major","Minor","Trivial"] },
+  { "name": "Steps to Reproduce", "type": "long_text", "required": true },
+  { "name": "Found In Version",   "type": "short_text", "required": false },
+  { "name": "Estimated Hours",    "type": "number", "required": false }
+]
+```
+
+**Incomplete Nord** (created mid-session, agent hasn't finished):
+```json
+{
+  "title": "Login page crashes on Safari",
+  "properties": {
+    "Priority": "High",
+    "Severity": null,
+    "Steps to Reproduce": ""
+  }
+}
+// Status: INCOMPLETE ⚠️ — Severity is null, Steps to Reproduce is empty
+```
+
+**Complete Nord** (agent has populated all required fields):
+```json
+{
+  "title": "Login page crashes on Safari",
+  "properties": {
+    "Priority": "High",
+    "Severity": "Major",
+    "Steps to Reproduce": "1. Open Safari 17\n2. Navigate to /login\n3. Click 'Sign In'\n4. Page crashes"
+  }
+}
+// Status: COMPLETE ✅ — all 3 required fields have values
+// Note: Found In Version and Estimated Hours are optional, don't affect status
+```
+
+### MCP Agent Guidelines
+
+When an MCP agent creates or updates Nords:
+
+1. **Always check the NordType's `properties_schema`** before creating a Nord — know what fields are required.
+2. **Populate required fields first** — these determine completeness.
+3. **A session may end with incomplete Nords** — this is expected. The UI will flag them for human follow-up.
+4. **Connections also have properties** — if a ConnectionType has `required` properties, those follow the same completeness rules.
+5. **Completeness is type-scoped** — changing a NordType's schema (adding/removing required fields) retroactively changes which existing Nords are complete.
+
+---
+
+## Relationship Map
+
+```
+Account 1──* Organization 1──* Project
+
+Project 1──* NordType        (many-to-many via project_types)
+Project 1──* ConnectionType  (many-to-many via project_types)
+Project 1──* Nord
+Project 1──* Connection
+Project 1──* Persona
+
+NordType 1──* Nord            (each nord has exactly one type)
+ConnectionType 1──* Connection (each connection has exactly one type)
+
+Connection *──1 Nord (source)  (source_nord_id)
+Connection *──1 Nord (target)  (target_nord_id)
+
+Persona 1──* MentalModel      (max 5)
+Persona 1──* CategoryWeight   (one per ConnectionType)
+CategoryWeight *──1 ConnectionType
+```
+
+---
+
+## Quick Reference: Creating Demo Data
+
+### Minimum viable demo
+
+1. **Create a Project** — name, description, purpose, set MCP flags if needed
+2. **Create 2–4 NordTypes** — e.g., Feature, Bug, Person, Milestone — **mark key properties as `required: true`**
+3. **Create 1–3 ConnectionTypes** — e.g., Status (with stages), Assigned To, Blocks
+4. **Create 8–15 Nords** — mix of types, realistic titles and properties. **Include some with incomplete required fields** to demonstrate the completeness system.
+5. **Create Connections** — link nords with appropriate `distance_x` values to place them in board columns
+6. *(Optional)* **Create 1–2 Personas** — with mental models and category weights
+
+### Data flow for board placement
+
+```
+1. ConnectionType "Status" has x_stage_labels:
+   [Backlog: 0.0, To Do: 0.25, In Progress: 0.5, Review: 0.75, Done: 1.0]
+
+2. Nord "Fix login bug" (type: Bug) exists
+
+3. Connection links "Fix login bug" → any target nord (or a milestone)
+   with type_id = Status connection type
+   and distance_x = 0.5
+
+4. Result: "Fix login bug" appears in the "In Progress" column on the board
+```
+
+### Tips for realistic data
+
+- **Vary distance_x** — don't put everything at 0.5. Spread items across stages.
+- **Use multiple connection types** — a nord can have connections of different types (Status AND Assigned To AND Blocks).
+- **Properties should match the schema** — if a NordType has a "Priority" select with options ["Critical", "High", "Medium", "Low"], use one of those values.
+- **Mix complete and incomplete Nords** — realistic projects have items in various states of data entry. Some nords should have all required fields, others should be missing 1–2.
+- **Spread graph positions** — use a range of `position_x` (-3 to 3) and `position_y` (-3 to 3) to avoid node overlap.
+- **Scale variation** — use `scale: 0.4–1.5` to create visual hierarchy.

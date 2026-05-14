@@ -753,10 +753,12 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                             <option value="markdown">Markdown</option>
                             <option value="url">URL</option>
                             <option value="tags">Tags</option>
+                            <option value="computed">Computed ƒ</option>
                           </select>
-                          {/* Req checkbox — disabled when hidden */}
                           <div className="manage-types__prop-req-cell">
-                            {prop.card_row ? (
+                            {prop.type === 'computed' ? (
+                              <span className="manage-types__prop-req-na" title="Computed fields cannot be required">—</span>
+                            ) : prop.card_row ? (
                               <input
                                 type="checkbox"
                                 className="manage-types__prop-req-check"
@@ -856,6 +858,55 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                                 options={prop.options || []}
                                 onChange={(opts) => updateProperty(i, { options: opts })}
                               />
+                            )}
+                            {prop.type === 'computed' && (
+                              <div className="manage-types__prop-detail-row manage-types__prop-formula-section">
+                                <div className="manage-types__prop-detail-field">
+                                  <span className="manage-types__prop-detail-label">
+                                    <span className="manage-types__formula-icon">ƒ</span> Formula
+                                  </span>
+                                  <input
+                                    type="text"
+                                    className="manage-types__prop-default-input manage-types__prop-formula-input"
+                                    value={(prop.config as any)?.formula || ''}
+                                    onChange={(e) => updateProperty(i, {
+                                      config: { ...(prop.config || {}), formula: e.target.value }
+                                    })}
+                                    placeholder="e.g. Allocated Hours * Effective Rate"
+                                  />
+                                </div>
+                                <div className="manage-types__prop-detail-field" style={{ maxWidth: '180px' }}>
+                                  <span className="manage-types__prop-detail-label">Display as</span>
+                                  <select
+                                    className="manage-types__prop-default-select"
+                                    value={(prop.config as any)?.output_type || 'number'}
+                                    onChange={(e) => updateProperty(i, {
+                                      config: { ...(prop.config || {}), output_type: e.target.value }
+                                    })}
+                                  >
+                                    <option value="number">Number</option>
+                                    <option value="currency">Currency</option>
+                                    <option value="percentage">Percentage</option>
+                                  </select>
+                                </div>
+                                {(prop.config as any)?.output_type === 'currency' && (
+                                  <div className="manage-types__prop-detail-field" style={{ maxWidth: '80px' }}>
+                                    <span className="manage-types__prop-detail-label">Symbol</span>
+                                    <input
+                                      type="text"
+                                      className="manage-types__prop-default-input"
+                                      value={(prop.config as any)?.output_config?.symbol || '$'}
+                                      onChange={(e) => updateProperty(i, {
+                                        config: {
+                                          ...(prop.config || {}),
+                                          output_config: { ...((prop.config as any)?.output_config || {}), symbol: e.target.value }
+                                        }
+                                      })}
+                                      maxLength={3}
+                                    />
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
                         )}

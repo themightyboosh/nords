@@ -15,15 +15,19 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
+import { evaluateFormula, formatComputedValue } from '../../utils/formulaEvaluator';
 import './PropertyField.css';
 
 export interface PropertyFieldProps {
   name: string;
-  type: 'string' | 'number' | 'select' | 'date' | 'markdown' | 'url' | 'spectrum_1d' | 'tags';
+  type: 'string' | 'number' | 'select' | 'date' | 'markdown' | 'url' | 'spectrum_1d' | 'tags' | 'computed';
   value: unknown;
   options?: string[];
   color?: string;
   required?: boolean;
+  config?: Record<string, unknown>;
+  /** Full properties bag — needed for computed field evaluation */
+  allProperties?: Record<string, unknown>;
   onChange: (value: unknown) => void;
 }
 
@@ -34,6 +38,8 @@ export const PropertyField: React.FC<PropertyFieldProps> = ({
   options = [],
   color,
   required,
+  config,
+  allProperties,
   onChange,
 }) => {
   const label = required ? `${name} *` : name;
@@ -64,6 +70,8 @@ export const PropertyField: React.FC<PropertyFieldProps> = ({
       return <SpectrumField name={label} value={value as number} color={color} />;
     case 'tags':
       return <TagsField name={label} value={value as string[]} onChange={onChange} missing={missing} />;
+    case 'computed':
+      return <ComputedField name={name} formula={config?.formula as string} properties={allProperties || {}} config={config} />;
     default:
       return <StringField name={label} value={String(value ?? '')} onChange={onChange} missing={missing} />;
   }
@@ -281,6 +289,37 @@ function TagsField({ name, value, onChange, missing }: { name: string; value: st
           }}
         />
       </div>
+    </div>
+  );
+}
+
+function ComputedField({ name, formula, properties, config }: {
+  name: string; formula?: string; properties: Record<string, unknown>; config?: Record<string, unknown>;
+}) {
+  if (!formula) {
+    return (
+      <div className="nords-pf nords-pf--computed">
+        <label className="nords-pf__label">
+          <span className="nords-pf__computed-icon">ƒ</span> {name}
+        </label>
+        <span className="nords-pf__computed-value nords-pf__computed-value--empty">No formula set</span>
+      </div>
+    );
+  }
+
+  const result = evaluateFormula(formula, properties);
+  const outputType = config?.output_type as string | undefined;
+  const outputConfig = config?.output_config as Record<string, unknown> | undefined;
+  const formatted = formatComputedValue(result, outputType, outputConfig);
+
+  return (
+    <div className="nords-pf nords-pf--computed">
+      <label className="nords-pf__label">
+        <span className="nords-pf__computed-icon">ƒ</span> {name}
+      </label>
+      <span className={`nords-pf__computed-value${result === null ? ' nords-pf__computed-value--empty' : ''}`}>
+        {formatted}
+      </span>
     </div>
   );
 }

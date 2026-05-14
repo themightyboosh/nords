@@ -350,8 +350,15 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
       options: s.options,
       cardRow: s.card_row,
       required: s.required,
+      config: (s as any).config,
     }));
   }, [entity, schema]);
+
+  // All properties as a flat object — needed for computed field evaluation
+  const allPropertiesBag = useMemo(() => {
+    if (entity?.kind !== 'nord') return {};
+    return Object.fromEntries(entity.properties.map(p => [p.key, p.value]));
+  }, [entity]);
 
   // Connection properties
   const connectionProperties = useMemo(() => {
@@ -486,6 +493,8 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
                       options={p.options}
                       color={entity.typeColor}
                       required={p.required}
+                      config={p.config}
+                      allProperties={allPropertiesBag}
                       onChange={(v) => mutations.updateProperty(p.name, v as string)}
                     />
                   ))

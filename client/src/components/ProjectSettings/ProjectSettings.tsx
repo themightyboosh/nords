@@ -34,6 +34,7 @@ interface ProjectData {
   mcp_enabled: boolean;
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
+  mcp_system_prompt: string | null;
   default_persona_id: string | null;
   default_start_nord_id: string | null;
 }
@@ -84,6 +85,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           mcp_enabled: data.mcp_enabled,
           mcp_capture_data: data.mcp_capture_data,
           mcp_mutable: data.mcp_mutable,
+          mcp_system_prompt: data.mcp_system_prompt || '',
           default_persona_id: data.default_persona_id,
           default_start_nord_id: data.default_start_nord_id,
         });
@@ -138,6 +140,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
         mcp_enabled: form.mcp_enabled,
         mcp_capture_data: form.mcp_capture_data,
         mcp_mutable: form.mcp_mutable,
+        mcp_system_prompt: form.mcp_system_prompt?.trim() || null,
         default_persona_id: form.default_persona_id || null,
         default_start_nord_id: form.default_start_nord_id || null,
       });
@@ -302,6 +305,25 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
                 />
                 <span>Mutable <span className="nords-form__experimental">(experimental)</span></span>
               </label>
+
+              <div className="nords-form__field" style={{ marginTop: '12px' }}>
+                <label className="nords-form__label">
+                  System Prompt
+                  <span className="nords-form__char-count">
+                    {(form.mcp_system_prompt || '').length.toLocaleString()} / 50,000
+                  </span>
+                </label>
+                <textarea
+                  className="nords-form__textarea nords-form__textarea--mono"
+                  value={form.mcp_system_prompt || ''}
+                  onChange={e => setForm({ ...form, mcp_system_prompt: e.target.value })}
+                  placeholder="Define the AI agent's behavior, business logic, and workflow rules. Schema context and persona are injected automatically."
+                  rows={10}
+                />
+                <span className="nords-form__hint">
+                  💡 NordType schemas, persona context, and graph data are injected automatically — write business logic only.
+                </span>
+              </div>
             </div>
           )}
         </div>
