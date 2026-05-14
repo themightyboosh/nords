@@ -1,786 +1,182 @@
-/* ═══════════════════════════════════════════════ */
-/* BOARD VIEW — Full-screen kanban per connection  */
-/* ═══════════════════════════════════════════════ */
+/**
+ * MatrixView.css — Multi-swimlane board styling.
+ *
+ * Each connection type is a collapsible lane row.
+ * Columns within each lane use the same card-column pattern.
+ */
 
+/* ── Container ── */
 .nords-matrix {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  background: var(--nords-color-bg-primary);
-  /* Offset for viewport header at top + breathing room for dock at bottom */
-  padding-top: var(--nords-header-height);
-  padding-bottom: 0;
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; position: relative;
+  background: var(--nords-color-bg-base, #0d0f13);
 }
 
-/* ── Header Bar ── */
-
-.nords-matrix__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--nords-color-border);
-  backdrop-filter: blur(12px);
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 80%, transparent);
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 6;
+/* ── Lanes Container ── */
+.nords-matrix__lanes {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-direction: column; gap: 0;
 }
 
-.nords-matrix__header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* ── Lane ── */
+.nords-matrix__lane {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
-.nords-matrix__header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* ── Lane Header ── */
+.nords-matrix__lane-header {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 10px 16px;
+  border: none; background: rgba(255,255,255,0.02);
+  color: var(--nords-color-text-primary, #e8e8ec);
+  cursor: pointer; font-size: 13px; font-weight: 500;
+  text-align: left; transition: background 0.12s;
+  position: sticky; top: 0; z-index: 5;
 }
-
-/* ── Large Title (matches products page) ── */
-.nords-matrix__title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0;
+.nords-matrix__lane-header:hover {
+  background: rgba(255,255,255,0.04);
 }
-
-.nords-matrix__title-verb {
-  font-size: inherit;
-  font-weight: 400;
-  color: var(--nords-color-text-secondary);
-  letter-spacing: -0.01em;
+.nords-matrix__lane-chevron {
+  color: var(--nords-color-text-tertiary, #6b7280);
+  display: flex; align-items: center;
 }
-
-.nords-matrix__title-sep {
-  margin: 0 0.35em;
-  color: var(--nords-color-text-disabled);
-  font-weight: 300;
+.nords-matrix__lane-color {
+  width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0;
 }
-
-.nords-matrix__header-count {
-  font-size: 12px;
-  color: var(--nords-color-text-secondary);
-  font-weight: 500;
-}
-
-.nords-matrix__hidden-count {
-  color: var(--nords-color-text-disabled);
-  font-style: italic;
-}
-
-/* ── Direction Filter ── */
-.nords-matrix__direction-filter {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 3px;
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 50%, transparent);
-  border-radius: var(--nords-radius-pill);
-  border: 1px solid color-mix(in srgb, var(--nords-color-border) 40%, transparent);
-}
-
-.nords-matrix__direction-btn {
-  padding: 4px 10px;
-  border: none;
-  border-radius: var(--nords-radius-pill);
-  font-size: 11px;
-  font-weight: 600;
-  font-family: var(--nords-font-primary);
-  color: var(--nords-color-text-disabled);
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-
-.nords-matrix__direction-btn:hover {
-  color: var(--nords-color-text-secondary);
-  background: color-mix(in srgb, var(--nords-color-border) 20%, transparent);
-}
-
-.nords-matrix__direction-btn.is-active {
-  color: var(--nords-color-text-primary);
-  background: color-mix(in srgb, var(--nords-color-accent) 15%, var(--nords-color-bg-secondary));
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-/* ── Bottom Toolbar ── */
-.nords-matrix__bottom-bar {
-  position: absolute;
-  bottom: 56px; /* just above the dock */
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 10;
-  padding: 0 24px;
-}
-
-.nords-matrix__bottom-bar .nords-matrix__type-pills {
-  pointer-events: auto;
-  background: var(--nords-glass-bg);
-  backdrop-filter: blur(var(--nords-glass-blur));
-  -webkit-backdrop-filter: blur(var(--nords-glass-blur));
-  border: 1px solid var(--nords-color-border-default);
-  border-radius: var(--nords-radius-pill);
-  padding: 4px 8px;
-  box-shadow: var(--nords-shadow-lg);
-  max-width: min(90vw, 800px);
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;         /* Firefox */
-  -ms-overflow-style: none;      /* IE */
-}
-.nords-matrix__bottom-bar .nords-matrix__type-pills::-webkit-scrollbar {
-  display: none;                  /* Chrome/Safari */
-}
-
-/* ── Type Pill Strip (segmented control) ── */
-
-.nords-matrix__type-pills {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px;
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 50%, transparent);
-  border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--nords-color-border) 30%, transparent);
-}
-
-.nords-matrix__type-pill {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: none;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--nords-color-text-disabled);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  letter-spacing: 0.01em;
-}
-
-.nords-matrix__type-pill:hover {
-  color: var(--nords-color-text-secondary);
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 60%, transparent);
-}
-
-.nords-matrix__type-pill.is-active {
-  background: color-mix(in srgb, var(--nords-color-bg-surface) 80%, transparent);
-  border-color: currentColor;
-  opacity: 1;
-}
-
-.nords-matrix__type-pill--orphans {
-  margin-left: 4px;
-  border-left: 1px solid color-mix(in srgb, var(--nords-color-border) 40%, transparent);
-  padding-left: 12px;
-  border-radius: 0 6px 6px 0;
-}
-
-.nords-matrix__type-pill--orphans.is-active {
-  color: var(--nords-color-text-secondary);
-  border-color: var(--nords-color-border);
-}
-
-/* ── Column Container ── */
-/* ── Swimlane Grid (quadrant mode) ── */
-
-.nords-matrix__grid {
-  display: grid;
-  gap: 0;
-  padding: 0;
-  padding-bottom: 80px; /* breathing room for dock */
-}
-
-.nords-matrix__grid-col-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-bottom: 2px solid var(--nords-color-border);
-  border-right: 1px solid var(--nords-color-border);
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 90%, var(--nords-color-bg-primary));
-}
-
-.nords-matrix__grid-col-header--muted {
-  color: var(--nords-color-text-disabled) !important;
+.nords-matrix__lane-name {
   font-weight: 600;
 }
-
-.nords-matrix__grid-col-header:last-child {
-  border-right: none;
+.nords-matrix__lane-verb {
+  font-size: 11px; font-style: italic;
+  color: var(--nords-color-text-tertiary, #6b7280);
 }
-
-/* ── Swimlane Banner Bar (replaces vertical row headers) ── */
-
-.nords-matrix__lane-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: rgba(255, 255, 255, 0.06);
-  border-bottom: 1px solid color-mix(in srgb, var(--nords-color-border) 60%, transparent);
-  border-top: none;
-  border-left: 4px solid currentColor;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-  cursor: default;
-  user-select: none;
-}
-
-/* Zebra-stripe alternation for swimlane bands */
-.nords-matrix__lane-banner:nth-of-type(4n+3) {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-/* Accent-colored drop target during drag — subtle tint only */
-.nords-matrix__lane-banner.is-drag-over {
-  background: color-mix(in srgb, currentColor 6%, var(--nords-color-bg-secondary));
-}
-
 .nords-matrix__lane-count {
-  font-size: 11px;
-  color: var(--nords-color-text-disabled);
-  background: color-mix(in srgb, var(--nords-color-border) 30%, transparent);
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+  font-size: 11px; font-weight: 600;
+  padding: 1px 7px; border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  color: var(--nords-color-text-tertiary, #6b7280);
 }
 
-.nords-matrix__grid-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 8px;
-  min-height: 120px;
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 25%, transparent);
-  transition: background-color 0.15s ease;
-  border-right: 1px solid var(--nords-color-border);
-  border-bottom: 1px solid var(--nords-color-border);
+/* ── Lane Body ── */
+.nords-matrix__lane-body {
+  padding: 0 8px 12px;
+  animation: laneSlideIn 0.2s ease;
+}
+@keyframes laneSlideIn {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 2000px; }
+}
+.nords-matrix__lane.is-collapsed .nords-matrix__lane-body {
+  display: none;
 }
 
-/* Full row-span cells (orphans, connections in grid) */
-.nords-matrix__grid-cell--span {
-  overflow-y: auto;
-  border-left: 2px dashed color-mix(in srgb, var(--nords-color-border) 60%, transparent);
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 15%, transparent);
-}
-
-/* Connections column in grid: match flat-mode .nords-matrix__column--connections appearance */
-.nords-matrix__grid-cell--connections {
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 20%, transparent);
-  border-left: 2px dashed color-mix(in srgb, var(--nords-color-border) 60%, transparent);
-  padding: 8px;
-  gap: 8px;
-}
-
-.nords-matrix__grid-col-header--muted {
-  color: var(--nords-color-text-disabled) !important;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0;
-  gap: 4px;
-  border-left: 2px dashed color-mix(in srgb, var(--nords-color-border) 60%, transparent);
-}
-
-.nords-matrix__grid-cell.is-drag-over,
-.nords-matrix__grid-cell.is-lane-drag-over {
-  background: color-mix(in srgb, var(--nords-color-accent) 5%, var(--nords-color-bg-secondary));
-}
-
-.nords-matrix__grid-extras {
-  flex: none;
-  max-height: 180px;
-  overflow-y: auto;
-  border-top: 1px solid var(--nords-color-border);
-}
-
-/* ── Column Container (flat mode) ── */
-
+/* ── Columns (within a lane) ── */
 .nords-matrix__columns {
-  display: flex;
-  gap: 2px;
-  padding: 0;
-  padding-bottom: 80px; /* breathing room for dock */
-  align-items: flex-start;
+  display: flex; gap: 8px;
+  overflow-x: auto; padding: 4px 0;
+  min-height: 80px;
 }
-
-/* ── Individual Column ── */
 
 .nords-matrix__column {
-  display: flex;
-  flex-direction: column;
-  min-width: 280px;
-  width: 280px;
-  flex-shrink: 0;
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 40%, transparent);
-  border-right: 2px solid var(--nords-color-border);
+  min-width: 240px; max-width: 320px; flex: 1;
+  display: flex; flex-direction: column;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-
-/* Zebra-stripe: subtle alternating tint for flat columns */
-.nords-matrix__column:nth-child(even) {
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 55%, transparent);
-}
-
-.nords-matrix__column:last-child {
-  border-right: none;
-}
-
-.nords-matrix__column--orphans {
-  opacity: 0.7;
-  min-width: 220px;
-  flex: 0.5;
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 20%, transparent);
-  border-left: 2px dashed color-mix(in srgb, var(--nords-color-border) 60%, transparent);
-}
-
-.nords-matrix__column--connections {
-  min-width: 200px;
-  max-width: 260px;
-  flex: 0 0 auto;
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 20%, transparent);
-  border-left: 2px dashed color-mix(in srgb, var(--nords-color-border) 60%, transparent);
+.nords-matrix__column.is-drag-over {
+  border-color: rgba(99,102,241,0.4);
+  box-shadow: inset 0 0 12px rgba(99,102,241,0.08);
+  background: rgba(99,102,241,0.04);
 }
 
 /* ── Column Header ── */
-
 .nords-matrix__column-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px 10px;
-  backdrop-filter: blur(8px);
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 70%, transparent);
-  border-bottom: 2px solid var(--nords-color-border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
-
 .nords-matrix__column-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em;
 }
-
-.nords-matrix__column-label--muted {
-  color: var(--nords-color-text-disabled) !important;
-}
-
 .nords-matrix__column-count {
-  font-size: 11px;
-  color: var(--nords-color-text-disabled);
-  background: color-mix(in srgb, var(--nords-color-border) 30%, transparent);
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  font-size: 10px; font-weight: 600;
+  padding: 1px 6px; border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  color: var(--nords-color-text-tertiary, #6b7280);
 }
 
-/* ── Column Body (flows naturally, no per-column scroll) ── */
-
+/* ── Column Body ── */
 .nords-matrix__column-body {
-  padding: 8px 8px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+  flex: 1; padding: 6px 8px;
+  display: flex; flex-direction: column; gap: 6px;
+  min-height: 60px;
 }
-
 .nords-matrix__column-empty {
-  padding: 24px 12px;
-  text-align: center;
-  font-size: 12px;
-  color: var(--nords-color-text-disabled);
-  font-style: italic;
-  pointer-events: none;  /* let drag events pass through to parent cell */
-  width: 100%;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
+  flex: 1; font-size: 11px;
+  color: var(--nords-color-text-tertiary, #4b5563);
+  opacity: 0.5;
 }
 
-/* ── Card Wrapper ──
- * Cards use .nords-node classes from CanvasEngine.css.
- * This wrapper is for drag handle + click semantics. */
-
+/* ── Card Wrapper ── */
 .nords-matrix__card-wrapper {
-  display: flex;
-  width: 272px;
-  min-width: 200px;
-  cursor: grab;
+  cursor: grab; transition: opacity 0.15s, transform 0.15s;
+  position: relative;
 }
-
-.nords-matrix__card-wrapper:active {
-  cursor: grabbing;
-}
-
-.nords-matrix__card-wrapper .nords-node {
-  width: 100%;
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
-}
-
-.nords-matrix__card-wrapper:hover .nords-node {
+.nords-matrix__card-wrapper:hover {
   transform: translateY(-1px);
 }
-
-/* ── Drag states ── */
-
-/* ── Mouse-held tilt (fires on mousedown, before dragstart) ── */
-.nords-matrix__card-wrapper.is-mouse-held .nords-node {
-  transform: rotate(-3deg) scale(1.02) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  cursor: grabbing;
-  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.12s ease;
-  z-index: 10;
-}
-
 .nords-matrix__card-wrapper.is-dragging {
-  cursor: grabbing;
-  position: relative;
+  opacity: 0.35; transform: scale(0.97);
 }
-
-/* Source card becomes a flat placeholder — tilt lives in the ghost image only */
-.nords-matrix__card-wrapper.is-dragging .nords-node {
-  opacity: 0.25;
-  transform: none !important;  /* override hover lift */
-  box-shadow: none;
-  border-style: dashed;
-  pointer-events: none;
-  transition: opacity 0.1s ease;
-}
-
-/* ── Clone mode (Option held) ── */
-.nords-matrix__card-wrapper.is-clone-dragging {
-  cursor: copy;
-}
-
-.nords-matrix__card-wrapper.is-clone-dragging .nords-node {
-  opacity: 0.2;
-  transform: none !important;
-  border-style: dashed;
-  /* Green glow to signal copy intent */
-  border-color: #22c55e !important;
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25), 0 0 12px rgba(34, 197, 94, 0.15);
-  pointer-events: none;
-  transition: opacity 0.1s ease, box-shadow 0.1s ease;
-}
-
-/* + COPY badge */
-.nords-matrix__card-wrapper.is-clone-dragging .nords-matrix__clone-badge {
-  display: flex;
-}
-
-/* ── Dimmed state (filtered out by type filter) ── */
 .nords-matrix__card-wrapper.is-dimmed {
-  opacity: 0.2;
-  pointer-events: none;
-  filter: grayscale(0.8);
-  transition: opacity 0.2s ease, filter 0.2s ease;
+  opacity: 0.3; filter: saturate(0.3);
 }
 
-.nords-matrix__clone-badge {
-  display: none; /* shown only in clone mode */
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  z-index: 10;
-  align-items: center;
-  gap: 3px;
-  background: #22c55e;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  padding: 3px 7px;
-  border-radius: 99px;
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.45);
-  pointer-events: none;
-  animation: nords-badge-pop 0.12s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  white-space: nowrap;
+/* ── Undo Toast ── */
+.nords-matrix__undo-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 300;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px; border-radius: 10px;
+  background: rgba(30,30,40,0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #e8e8ec; font-size: 13px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  animation: toastIn 0.25s ease;
+  backdrop-filter: blur(12px);
 }
-
-@keyframes nords-badge-pop {
-  from { transform: scale(0.6); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
-
-
-/* ── Connection Entries (🔗 column) ── */
-
-.nords-matrix__connection-entry {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  background: var(--nords-color-bg-primary);
-  border: 1px dashed var(--nords-color-border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease, background-color 0.15s ease;
-  position: relative;
+.nords-matrix__undo-toast button {
+  padding: 4px 12px; border: none; border-radius: 6px;
+  background: #6366f1; color: white;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: opacity 0.12s;
 }
-
-.nords-matrix__connection-entry::after {
-  content: '→';
-  font-size: 14px;
-  color: var(--nords-color-text-disabled);
-  transition: color 0.15s ease, transform 0.15s ease;
-}
-
-.nords-matrix__connection-entry:hover {
-  border-color: var(--nords-color-text-secondary);
-  border-style: solid;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
-  background: color-mix(in srgb, var(--nords-color-bg-secondary) 40%, transparent);
-}
-
-.nords-matrix__connection-entry:hover::after {
-  color: var(--nords-color-accent);
-  transform: translateX(2px);
-}
-
-/* Drop target hint text */
-.nords-matrix__connection-hint {
-  font-size: 9px;
-  color: var(--nords-color-text-disabled);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  font-weight: 500;
-  transition: color 0.15s ease;
-}
-
-/* ⌥ Option held = clone mode */
-.nords-matrix__connection-hint.is-clone {
-  color: #34d399;  /* emerald green */
-}
-
-.nords-matrix__connection-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.nords-matrix__connection-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--nords-color-text-primary);
-  flex: 1;
-}
-
-.nords-matrix__connection-count {
-  font-size: 11px;
-  color: var(--nords-color-text-disabled);
-  background: color-mix(in srgb, var(--nords-color-border) 30%, transparent);
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Mode badge: shows → move or + clone */
-.nords-matrix__connection-mode {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--nords-color-text-disabled);
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--nords-color-border) 20%, transparent);
-  transition: all 0.15s ease;
-}
-
-.nords-matrix__connection-mode.is-clone {
-  color: #34d399;
-  background: color-mix(in srgb, #34d399 15%, transparent);
-}
-
-/* Clone mode: entry gets a green left accent */
-.nords-matrix__connection-entry.is-clone-mode {
-  border-left-color: #34d399;
-  background: color-mix(in srgb, #34d399 5%, var(--nords-color-bg-surface));
-}
+.nords-matrix__undo-toast button:hover { opacity: 0.85; }
 
 /* ── Empty State ── */
-
 .nords-matrix-empty {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: var(--nords-color-text-secondary);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex: 1; gap: 12px;
+  color: var(--nords-color-text-tertiary, #6b7280);
+  text-align: center; padding: 40px;
 }
-
 .nords-matrix-empty__icon {
-  font-size: 48px;
-  opacity: 0.3;
-  line-height: 1;
+  font-size: 48px; opacity: 0.3;
 }
-
 .nords-matrix-empty__title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--nords-color-text-primary);
-  margin: 0;
+  font-size: 18px; font-weight: 600; margin: 0;
+  color: var(--nords-color-text-primary, #e8e8ec);
 }
-
 .nords-matrix-empty__desc {
-  font-size: 13px;
-  max-width: 320px;
-  text-align: center;
-  line-height: 1.5;
-  margin: 0;
-  color: var(--nords-color-text-disabled);
-}
-
-/* ── Drop Target Highlights ── */
-
-.nords-matrix__column.is-drag-over {
-  background: color-mix(in srgb, var(--nords-color-accent) 4%, var(--nords-color-bg-secondary));
-  transition: background-color 0.15s ease;
-}
-
-.nords-matrix__connection-entry.is-drag-over {
-  border-color: var(--nords-color-accent);
-  box-shadow: 0 0 0 1px var(--nords-color-accent);
-}
-
-/* ═══════════════════════════════════════════
-   QUADRANT MODE — Square Grid Layout
-   ═══════════════════════════════════════════ */
-
-.nords-matrix__quadrant {
-  display: grid;
-  flex: 1;
-  overflow: auto;
-  gap: 0;
-  /* Force square aspect ratio for the grid area */
-  aspect-ratio: 1;
-  max-height: calc(100vh - 120px);
-  max-width: calc(100vh - 120px);
-  margin: 0 auto; /* center the square */
-}
-
-/* Corner cell (top-left, above Y headers + left of X headers) */
-.nords-matrix__quadrant-corner {
-  background: transparent;
-  border-bottom: 1px solid var(--nords-color-border);
-  border-right: 1px solid var(--nords-color-border);
-}
-
-/* X-axis column headers (top) */
-.nords-matrix__quadrant-col-header {
-  padding: 8px 6px;
-  font-size: var(--nords-font-size-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-align: center;
-  border-bottom: 1px solid var(--nords-color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.nords-matrix__quadrant-col-header--muted {
-  color: var(--nords-color-text-tertiary) !important;
-  font-weight: 500;
-}
-
-/* Y-axis row headers (left) */
-.nords-matrix__quadrant-row-header {
-  padding: 6px 8px;
-  font-size: var(--nords-font-size-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-right: 1px solid var(--nords-color-border);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  writing-mode: vertical-lr;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-}
-
-.nords-matrix__quadrant-row-header.is-drag-over {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.nords-matrix__quadrant-row-label {
-  white-space: nowrap;
-}
-
-/* Grid cells */
-.nords-matrix__quadrant-cell {
-  border-right: 1px solid rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  padding: 6px;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 4px;
-  min-height: 80px;
-  overflow: auto;
-  transition: background 0.15s ease;
-}
-
-.nords-matrix__quadrant-cell.is-drag-over,
-.nords-matrix__quadrant-cell.is-lane-drag-over {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.nords-matrix__quadrant-cell--orphans {
-  border-left: 1px solid var(--nords-color-border);
-  background: rgba(255, 255, 255, 0.01);
-}
-
-.nords-matrix__quadrant-cell-empty {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--nords-color-text-disabled);
-  font-size: var(--nords-font-size-xs);
-  opacity: 0.4;
-}
-
-/* Make cards smaller in quadrant cells */
-.nords-matrix__quadrant-cell .nords-board-card {
-  width: 100%;
-  max-width: 180px;
+  font-size: 13px; margin: 0; max-width: 360px; line-height: 1.5;
 }

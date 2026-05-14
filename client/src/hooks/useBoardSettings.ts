@@ -16,14 +16,15 @@ interface PerBoardSettings {
   nordTypeFilters: Record<string, boolean>;
   hiddenNordIds: string[];
   showOrphans: boolean;
+  collapsedLanes: Record<string, boolean>;
 }
 
 export interface BoardSettings {
   boards: Record<string, PerBoardSettings>;
 }
 
-// v2: reset to clear stale showOrphans:true from old sessions
-const STORAGE_PREFIX = 'nords-board-settings-v2-';
+// v3: added collapsedLanes for swimlane board
+const STORAGE_PREFIX = 'nords-board-settings-v3-';
 
 
 function loadSettings(projectId: string): BoardSettings {
@@ -69,6 +70,7 @@ export function useBoardSettings(projectId: string | null) {
       nordTypeFilters: {},
       hiddenNordIds: [],
       showOrphans: false,
+      collapsedLanes: {},
     };
   }, [settings]);
 
@@ -168,6 +170,35 @@ export function useBoardSettings(projectId: string | null) {
     });
   }, []);
 
+  /** Check if a swimlane (connection type) is collapsed */
+  const isLaneCollapsed = useCallback((connectionTypeId: string): boolean => {
+    // Lane collapse is stored at the top-level boards key using a special 'global' board entry
+    const globalBoard = settings.boards['__lanes__'];
+    if (!globalBoard) return false;
+    return globalBoard.collapsedLanes?.[connectionTypeId] ?? false;
+  }, [settings]);
+
+  /** Toggle a swimlane's collapsed state */
+  const toggleLaneCollapse = useCallback((connectionTypeId: string) => {
+    setSettings(prev => {
+      const globalBoard = prev.boards['__lanes__'] || { nordTypeFilters: {}, hiddenNordIds: [], showOrphans: false, collapsedLanes: {} };
+      const current = globalBoard.collapsedLanes?.[connectionTypeId] ?? false;
+      return {
+        ...prev,
+        boards: {
+          ...prev.boards,
+          ['__lanes__']: {
+            ...globalBoard,
+            collapsedLanes: {
+              ...globalBoard.collapsedLanes,
+              [connectionTypeId]: !current,
+            },
+          },
+        },
+      };
+    });
+  }, []);
+
   return {
     settings,
     getBoard,
@@ -177,5 +208,7 @@ export function useBoardSettings(projectId: string | null) {
     toggleOrphans,
     isNordHidden,
     toggleNordFilter,
+    isLaneCollapsed,
+    toggleLaneCollapse,
   };
 }

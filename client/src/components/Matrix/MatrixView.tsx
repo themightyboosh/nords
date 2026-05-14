@@ -1,36 +1,31 @@
 /**
- * MatrixView.tsx — Full-screen kanban board for one connection type.
+ * MatrixView.tsx — Multi-swimlane board view.
  *
  * DATA MODEL:
- *   One board fills the screen. The active connection type (from the dock)
- *   determines which board is shown. Columns = x-axis stage labels.
- *   Swimlane rows = y-axis stage labels (quadrant mode only).
+ *   Every connection type with connections in this project gets its own
+ *   collapsible swimlane row. Columns = x-axis stage labels for that type.
+ *   Types with no spectrum get a single "All" column.
  *
- * FEATURES:
- *   - Cards use shared NordCard component (same as canvas)
- *   - Per-board nord type filter dropdown (persisted per connection type)
- *   - 👻 Orphans pseudo-column (nords with no connections of this type)
- *   - 🔗 Connections pseudo-column (other board-capable types)
- *   - Drag cards between columns → updates distance_x
- *   - Drag cards onto 🔗 entries → re-link (⌥ Option = add-link)
- *   - Double-click 🔗 entry → switch to that board
- *
- * INTERACTION:
- *   - Click a card → opens drawer (same as canvas)
- *   - Connection type switching via dock OR 🔗 double-click
+ * INTERACTIONS:
+ *   - Click card → opens drawer (same as canvas)
+ *   - Drag within lane → updates distance_x on existing connection
+ *   - Drag cross-lane → creates new connection under target category (duplicate)
+ *   - Shift+drag cross-lane → breaks old connection + creates new
+ *   - Option+drag → explicit duplicate (keep both connections)
+ *   - Delete/Backspace on selected card → deletes that connection (with undo toast)
+ *   - Click lane header → collapse/expand (persisted in localStorage)
  */
 
-import React, { useMemo, useState, useCallback, memo } from 'react';
-import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
-import { useLens } from '../../context/LensContext';
+import React, { useMemo, useState, useCallback, useEffect, useRef, memo } from 'react';
+import { useTypeRegistryContext, type ResolvedConnectionType } from '../../context/TypeRegistryContext';
 import { resolveStageLabel, getColumnBounds } from '../../utils/stageLabels';
-import type { ProjectGraph } from '../../hooks/useProjectGraph';
+import type { ProjectGraph, Connection } from '../../hooks/useProjectGraph';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { useBoardSettingsContext } from '../../context/BoardSettingsContext';
-import { setDragData, getDragData, isAddLinkMode, type BoardDragData } from '../../hooks/useBoardDragDrop';
+import { setDragData, getDragData, type BoardDragData } from '../../hooks/useBoardDragDrop';
 import { useConnectionMutations, useBoardPositionMutations } from '../../hooks/useNordMutations';
 import { NordCard } from '../shared/NordCard';
-import { Link2, Unlink } from 'lucide-react';
+import { ChevronDown, ChevronRight, Unlink } from 'lucide-react';
 import '../Canvas/CanvasEngine.css';
 import './MatrixView.css';
 
@@ -42,959 +37,461 @@ interface MatrixViewProps {
   refetchGraph: () => Promise<void>;
 }
 
-interface MatrixCard {
-  id: string;
+interface SwimCard {
+  id: string;            // nordId
   title: string;
   typeName: string;
   typeColor: string;
   typeIcon: any;
   typeId: string;
+  connectionId: string;  // the specific connection placing this card
+  connectionTypeId: string;
   resolvedLabel: string;
-  resolvedYLabel: string;
   distance: number;
-  distanceY: number;
   sortOrder: number;
-  connectionIds: string[];
-  connectionDirection: string;
+  direction: string;
   isDimmed: boolean;
   properties: Array<{ key: string; value: string; color?: string }>;
 }
 
-interface ConnectionEntry {
-  typeId: string;
-  typeName: string;
-  typeColor: string;
-  count: number;
+interface LaneColumn {
+  label: string;
+  position: number;
+  cards: SwimCard[];
 }
 
-/**
- * Resolve a nord's current board position from its connection distances.
- * Used to take a pre-drop snapshot so we can detect drift in non-mover cards.
- */
-function resolvePositionForSnapshot(
-  nordId: string,
-  activeType: { id: string },
-  graph: ProjectGraph,
-  directionFilter: string,
-): { distance_x: number; distance_y: number } | null {
-  let sumX = 0, sumY = 0, count = 0;
-  for (const conn of graph.connections) {
-    if (conn.type_id !== activeType.id) continue;
-    if (directionFilter !== 'all' && conn.direction !== directionFilter) continue;
-    if (conn.source_nord_id !== nordId && conn.target_nord_id !== nordId) continue;
-    sumX += conn.distance_x ?? 0.5;
-    sumY += conn.distance_y ?? 0.5;
-    count++;
-  }
-  if (count === 0) {
-    // Check board_positions fallback
-    const pos = (graph.board_positions || []).find(
-      p => p.type_id === activeType.id && p.nord_id === nordId
-    );
-    return pos ? { distance_x: pos.distance_x, distance_y: pos.distance_y } : null;
-  }
-  return { distance_x: sumX / count, distance_y: sumY / count };
+interface Swimlane {
+  connectionType: ResolvedConnectionType;
+  columns: LaneColumn[];
+  cardCount: number;
 }
+
+// ── Component ──
 
 export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetchGraph }: MatrixViewProps) {
-  const { activeConnectionTypeId, setActiveConnectionTypeId } = useLens();
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
-  const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, ensureNordTypeVisible, isNordHidden } = useBoardSettingsContext();
+  const { isNordTypeVisible, isLaneCollapsed, toggleLaneCollapse } = useBoardSettingsContext();
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
-  const { upsertPosition, removePosition } = useBoardPositionMutations(projectId);
+  const { upsertPosition } = useBoardPositionMutations(projectId);
 
-  // ── Drag interaction state ──
-  const [optionHeld, setOptionHeld] = useState(false);
-  const [mouseHeldCardId, setMouseHeldCardId] = useState<string | null>(null); // Phase 1: track WHICH card is held
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
-  const [isDragCloning, setIsDragCloning] = useState(false);
-  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null); // Phase 3: visual drop target
-  const [dragOverLane, setDragOverLane] = useState<string | null>(null);     // Swimlane-level drop target
+  const [dragOverTarget, setDragOverTarget] = useState<string | null>(null); // "typeId|label"
+  const [undoToast, setUndoToast] = useState<{ message: string; undoFn: () => Promise<void> } | null>(null);
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Keyboard listener — also handles Option toggle mid-drag
-  React.useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.altKey) {
-        setOptionHeld(true);
-        if (mouseHeldCardId || draggingCardId) setIsDragCloning(true);
+  // ── Keyboard: Delete selected card's connection ──
+  useEffect(() => {
+    const handler = async (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        // Only act if no input is focused
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        if (!selectedNord || !graph) return;
+
+        // Find the first connection involving this nord (pick from any lane)
+        const conn = graph.connections.find(
+          c => (c.source_nord_id === selectedNord || c.target_nord_id === selectedNord) && !c.deleted_at
+        );
+        if (!conn) return;
+
+        e.preventDefault();
+        const nord = graph.nords.find(n => n.id === selectedNord);
+        const ct = connectionTypes.find(t => t.id === conn.type_id);
+
+        // Save for undo
+        const savedConn = { ...conn };
+        await deleteConnection(conn.id);
+        await refetchGraph();
+
+        showUndoToast(
+          `Removed "${nord?.title || 'Nord'}" from ${ct?.name || 'category'}`,
+          async () => {
+            await createConnection({
+              type_id: savedConn.type_id,
+              source_nord_id: savedConn.source_nord_id,
+              target_nord_id: savedConn.target_nord_id,
+              direction: savedConn.direction as any,
+              distance_x: savedConn.distance_x,
+              distance_y: savedConn.distance_y,
+            });
+            await refetchGraph();
+          }
+        );
       }
     };
-    const up = (e: KeyboardEvent) => {
-      if (!e.altKey) {
-        setOptionHeld(false);
-        if (mouseHeldCardId || draggingCardId) setIsDragCloning(false);
-      }
-    };
-    window.addEventListener('keydown', down);
-    window.addEventListener('keyup', up);
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
-  }, [mouseHeldCardId, draggingCardId]);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [selectedNord, graph, connectionTypes, deleteConnection, createConnection, refetchGraph]);
 
-  // Find the active connection type
-  const activeType = useMemo(() => {
-    if (!activeConnectionTypeId) return null;
-    return connectionTypes.find(ct => ct.id === activeConnectionTypeId) || null;
-  }, [activeConnectionTypeId, connectionTypes]);
+  function showUndoToast(message: string, undoFn: () => Promise<void>) {
+    if (undoTimer.current) clearTimeout(undoTimer.current);
+    setUndoToast({ message, undoFn });
+    undoTimer.current = setTimeout(() => setUndoToast(null), 5000);
+  }
 
-  // Direction filter: read from the connection type (type-level DB setting)
-  const directionFilter = activeType?.directionFilter || 'all';
+  // ── Build swimlanes ──
+  const swimlanes = useMemo<Swimlane[]>(() => {
+    if (!graph) return [];
 
-  // setDirectionFilter is no longer needed in MatrixView — handled by GlobalDock
-  // Listen for refetch events dispatched by GlobalDock when filter changes
-  React.useEffect(() => {
-    const handler = () => { refetchGraph(); };
-    window.addEventListener('nords:refetch', handler);
-    return () => window.removeEventListener('nords:refetch', handler);
-  }, [refetchGraph]);
-
-  const boardSettings = activeType ? getBoard(activeType.id) : null;
-
-  // Board-capable connection types (for 🔗 column)
-  const boardCapableTypes = useMemo(() => {
-    return connectionTypes.filter(ct =>
-      ct.id !== activeConnectionTypeId &&
-      ct.measurementMode !== 'none' &&
-      ct.xStageLabels.length > 0
-    );
-  }, [connectionTypes, activeConnectionTypeId]);
-
-  // Build columns + cards (+ swimlane grid for quadrant mode)
-  const isQuadrant = activeType?.measurementMode === 'quadrant' && (activeType?.yStageLabels?.length ?? 0) > 0;
-  const yLabels = isQuadrant ? activeType!.yStageLabels : [];
-
-  const { columns, unlinked, connectionEntries, gridCells } = useMemo(() => {
-    if (!graph || !activeType || activeType.xStageLabels.length === 0) {
-      return { columns: [], unlinked: [], connectionEntries: [], gridCells: new Map<string, MatrixCard[]>() };
-    }
-
-    const labels = activeType.xStageLabels;
     const typeMap = new Map(graph.nord_types.map(t => [t.id, t]));
+    const lanes: Swimlane[] = [];
 
-    // Explicit board positions (user drag overrides): nord_id → position
-    const explicitPositionByNord = new Map<string, { distance_x: number; distance_y: number }>();
-    for (const pos of (graph.board_positions || [])) {
-      if (pos.type_id === activeType.id) {
-        explicitPositionByNord.set(pos.nord_id, { distance_x: pos.distance_x, distance_y: pos.distance_y });
-      }
-    }
+    for (const ct of connectionTypes) {
+      // Get connections of this type
+      const conns = graph.connections.filter(c => c.type_id === ct.id);
+      if (conns.length === 0 && ct.count === 0) continue; // skip empty types
 
-    // True orphans: nords with ZERO connections of ANY kind
-    const nordsWithAnyConnection = new Set<string>();
-    for (const conn of graph.connections) {
-      nordsWithAnyConnection.add(conn.source_nord_id);
-      nordsWithAnyConnection.add(conn.target_nord_id);
-    }
+      const hasSpectrum = ct.xStageLabels.length > 0;
+      const labels = hasSpectrum ? ct.xStageLabels : [{ label: 'All', position: 0.5 }];
 
-    // Auto-derive board position from connection distances for this type.
-    // Accumulate sum of distance_x and count per nord, then average.
-    const derivedDistX = new Map<string, { sum: number; count: number }>();
-    const derivedDistY = new Map<string, { sum: number; count: number }>();
-    const connectionsByNord = new Map<string, string[]>();
+      const columnMap = new Map<string, SwimCard[]>();
+      for (const lbl of labels) columnMap.set(lbl.label, []);
 
-    for (const conn of graph.connections) {
-      if (conn.type_id !== activeType.id) continue;
-      if (directionFilter !== 'all' && conn.direction !== directionFilter) continue;
+      for (const conn of conns) {
+        // Each connection produces cards for BOTH endpoints
+        for (const nordId of [conn.source_nord_id, conn.target_nord_id]) {
+          const nord = graph.nords.find(n => n.id === nordId);
+          if (!nord) continue;
 
-      for (const nordId of [conn.source_nord_id, conn.target_nord_id]) {
-        // Track connection IDs per nord
-        if (!connectionsByNord.has(nordId)) connectionsByNord.set(nordId, []);
-        if (!connectionsByNord.get(nordId)!.includes(conn.id)) {
-          connectionsByNord.get(nordId)!.push(conn.id);
-        }
-        // Accumulate distance_x
-        const xAcc = derivedDistX.get(nordId) ?? { sum: 0, count: 0 };
-        xAcc.sum += conn.distance_x ?? 0.5;
-        xAcc.count++;
-        derivedDistX.set(nordId, xAcc);
-        // Accumulate distance_y
-        const yAcc = derivedDistY.get(nordId) ?? { sum: 0, count: 0 };
-        yAcc.sum += conn.distance_y ?? 0.5;
-        yAcc.count++;
-        derivedDistY.set(nordId, yAcc);
-      }
-    }
+          const nordType = typeMap.get(nord.type_id);
+          const isDimmed = !isNordTypeVisible(ct.id, nord.type_id);
 
-    // Resolve final position for a nord:
-    //   1. Explicit board_position (user drag override — always wins)
-    //   2. Derived from connection distances (fallback for un-dragged nords)
-    //   3. null → not on this board
-    const resolvePosition = (nordId: string): { distance_x: number; distance_y: number } | null => {
-      // Explicit board_positions always win — they represent user's drag intent
-      const explicit = explicitPositionByNord.get(nordId);
-      if (explicit) return explicit;
-      // Fallback: derive from connection distances
-      const xAcc = derivedDistX.get(nordId);
-      if (xAcc) {
-        const yAcc = derivedDistY.get(nordId) ?? { sum: 0.5, count: 1 };
-        return {
-          distance_x: xAcc.sum / xAcc.count,
-          distance_y: yAcc.sum / yAcc.count,
-        };
-      }
-      return null; // not on this board
-    };
+          // Avoid duplicate cards: same nord + same connection = same card
+          // But same nord can appear via different connections
+          const distX = conn.distance_x ?? 0.5;
+          const resolved = hasSpectrum ? (resolveStageLabel(distX, ct.xStageLabels) || labels[0].label) : 'All';
 
-    // Build column buckets
-    const columnMap = new Map<string, MatrixCard[]>();
-    for (const lbl of labels) {
-      columnMap.set(lbl.label, []);
-    }
-    const unlinkedCards: MatrixCard[] = [];
+          const card: SwimCard = {
+            id: nord.id,
+            title: nord.title || 'Untitled',
+            typeName: nordType?.name || 'Unknown',
+            typeColor: nordType?.accent_color || '#4da6ff',
+            typeIcon: resolveIcon(nordType?.icon || null),
+            typeId: nord.type_id,
+            connectionId: conn.id,
+            connectionTypeId: ct.id,
+            resolvedLabel: resolved,
+            distance: distX,
+            sortOrder: conn.sort_order ?? 0,
+            direction: conn.direction || 'forward',
+            isDimmed,
+            properties: (() => {
+              const schema = nordType?.properties_schema || [];
+              const propsObj = nord.properties || {};
+              return schema
+                .filter((s: any) => s.card_row === 1 || s.card_row === 2)
+                .sort((a: any, b: any) => (a.card_row || 999) - (b.card_row || 999))
+                .map((s: any) => ({ key: s.name, value: String((propsObj as any)[s.name] ?? '') }))
+                .filter(p => p.value !== '');
+            })(),
+          };
 
-    // Grid cells for quadrant mode: key = "xLabel|yLabel"
-    const cells = new Map<string, MatrixCard[]>();
-    if (isQuadrant) {
-      for (const xl of labels) {
-        for (const yl of yLabels) {
-          cells.set(`${xl.label}|${yl.label}`, []);
+          const col = columnMap.get(resolved);
+          if (col) {
+            // Dedup: don't show same nord twice in same column from same connection
+            if (!col.some(c => c.id === nord.id && c.connectionId === conn.id)) {
+              col.push(card);
+            }
+          }
         }
       }
+
+      const columns: LaneColumn[] = labels.map(lbl => ({
+        label: lbl.label,
+        position: lbl.position,
+        cards: (columnMap.get(lbl.label) || []).sort((a, b) => {
+          if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+          return a.title.localeCompare(b.title);
+        }),
+      }));
+
+      const cardCount = columns.reduce((sum, col) => sum + col.cards.length, 0);
+      lanes.push({ connectionType: ct, columns, cardCount });
     }
 
-    // Track visible nord IDs for scoping 🔗 column
-    const visibleNordIds = new Set<string>();
-
-    for (const nord of graph.nords) {
-      const nordType = typeMap.get(nord.type_id);
-
-      // Nord type filter: dimmed instead of hidden
-      const isDimmed = !isNordTypeVisible(activeType.id, nord.type_id);
-
-      const isOrphan = !nordsWithAnyConnection.has(nord.id);
-      const pos = resolvePosition(nord.id);
-
-      // Nord has no connections of this type AND is not a true orphan → skip (belongs only on other boards)
-      if (!isOrphan && !pos) continue;
-
-      visibleNordIds.add(nord.id);
-
-      const connIds = connectionsByNord.get(nord.id) || [];
-      const firstConn = graph.connections.find(c =>
-        c.type_id === activeType.id &&
-        (c.source_nord_id === nord.id || c.target_nord_id === nord.id)
-      );
-
-      const card: MatrixCard = {
-        id: nord.id,
-        title: nord.title || 'Untitled',
-        typeName: nordType?.name || 'Unknown',
-        typeColor: nordType?.accent_color || '#4da6ff',
-        typeIcon: resolveIcon(nordType?.icon || null),
-        typeId: nord.type_id,
-        resolvedLabel: '',
-        resolvedYLabel: '',
-        distance: pos?.distance_x ?? 0.5,
-        distanceY: pos?.distance_y ?? 0.5,
-        sortOrder: (() => {
-          // Min sort_order across this nord's connections of this type
-          if (connIds.length === 0) return 0;
-          const orders = connIds.map(cid => {
-            const c = graph.connections.find(cc => cc.id === cid);
-            return c?.sort_order ?? 0;
-          });
-          return Math.min(...orders);
-        })(),
-        connectionIds: connIds,
-        connectionDirection: firstConn?.direction || 'forward',
-        isDimmed,
-        properties: (() => {
-          // Schema-ordered card preview: same logic as graphToReactFlow.
-          // Show only properties with card_row 1 or 2, sorted by row.
-          const schema = nordType?.properties_schema || [];
-          const propsObj = nord.properties || {};
-          return schema
-            .filter((s: any) => s.card_row === 1 || s.card_row === 2)
-            .sort((a: any, b: any) => (a.card_row || 999) - (b.card_row || 999))
-            .map((s: any) => ({ key: s.name, value: String((propsObj as any)[s.name] ?? '') }))
-            .filter(p => p.value !== '');
-        })(),
-      };
-
-      if (isOrphan) {
-        // True orphan: no connections anywhere — show in orphan section on every board
-        unlinkedCards.push(card);
-        continue;
-      }
-
-      // Place card: use resolved position (derived or explicit override)
-      const distX = pos!.distance_x;
-      const distY = pos!.distance_y;
-      const resolved = resolveStageLabel(distX, labels);
-      card.resolvedLabel = resolved || labels[0].label;
-      card.distance = distX;
-      card.distanceY = distY;
-
-      if (isQuadrant && yLabels.length > 0) {
-        const resolvedY = resolveStageLabel(distY, yLabels);
-        card.resolvedYLabel = resolvedY || yLabels[0].label;
-        const cellKey = `${card.resolvedLabel}|${card.resolvedYLabel}`;
-        const cell = cells.get(cellKey);
-        if (cell) {
-          cell.push(card);
-        } else {
-          unlinkedCards.push(card);
-        }
-        const col = columnMap.get(card.resolvedLabel);
-        if (col) col.push(card);
-      } else {
-        const col = columnMap.get(card.resolvedLabel);
-        if (col) {
-          col.push(card);
-        } else {
-          unlinkedCards.push(card);
-        }
-      }
-    } // end for nord
-
-    // Build 🔗 connection entries scoped to visible nords
-    const entries: ConnectionEntry[] = [];
-    for (const ct of boardCapableTypes) {
-      let count = 0;
-      for (const conn of graph.connections) {
-        if (conn.type_id !== ct.id) continue;
-        if (visibleNordIds.has(conn.source_nord_id) || visibleNordIds.has(conn.target_nord_id)) {
-          count++;
-        }
-      }
-      if (count > 0) {
-        entries.push({
-          typeId: ct.id,
-          typeName: ct.name,
-          typeColor: ct.color || '#888',
-          count,
-        });
-      }
-    }
-
-    const columns = labels.map(lbl => ({
-      label: lbl.label,
-      position: lbl.position,
-      cards: (columnMap.get(lbl.label) || []).sort((a, b) => {
-        // Primary: sort_order (Trello-style), secondary: title
-        if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
-        return a.title.localeCompare(b.title);
-      }),
-    }));
-
-    return { columns, unlinked: unlinkedCards, connectionEntries: entries, gridCells: cells };
-  }, [graph, activeType, boardCapableTypes, isNordTypeVisible, isNordHidden, isQuadrant, yLabels, directionFilter]);
+    return lanes;
+  }, [graph, connectionTypes, isNordTypeVisible]);
 
   // ── Drag handlers ──
 
-  const handleDragStart = useCallback((e: React.DragEvent, card: MatrixCard) => {
+  const handleDragStart = useCallback((e: React.DragEvent, card: SwimCard) => {
     setDragData(e, {
       nordId: card.id,
       nordTitle: card.title,
-      sourceConnectionIds: card.connectionIds,
-      sourceConnectionTypeId: activeType?.id || '',
-      sourceDirection: card.connectionDirection,
+      sourceConnectionIds: [card.connectionId],
+      sourceConnectionTypeId: card.connectionTypeId,
+      sourceDirection: card.direction,
     });
-  }, [activeType]);
+    setDraggingCardId(card.id);
+  }, []);
 
-  /**
-   * Board drop handler.
-   *
-   * Cross-column/swimlane drag: writes connections.distance_x = column canonical center.
-   * This is intentional — the connection carries the real spectrum/grid value, and
-   * all nords on that connection move to the same column together (correct semantics).
-   *
-   * Within-column ordering: writes connections.sort_order (LexoRank bisect).
-   * board_positions is only used as fallback for orphan nords with no connections.
-   */
-  const handleCellDrop = useCallback(async (
-    e: React.DragEvent,
-    columnPosition: number,       // the stage label's 0-1 position
-    columnCards: MatrixCard[],    // current sorted cards in this column
-    targetPositionY?: number
-  ) => {
-    e.preventDefault();
-    setDragOverColumn(null);
-    setDragOverLane(null);
-    const data = getDragData(e);
-    if (!data || !activeType) {
-      console.warn('[Board] Drop ignored — no drag data or no active type');
-      return;
-    }
-
-    const labels = activeType.xStageLabels;
-    const targetLabel = resolveStageLabel(columnPosition, labels) || labels[0]?.label || '';
-    const bounds = getColumnBounds(targetLabel, labels);
-    const newDistY = targetPositionY ?? 0.5;
-
-    // ── Within-column sort order (LexoRank bisect) ──
-    const existingCards = columnCards.filter(c => c.id !== data.nordId);
-    let newSortOrder: number;
-    if (existingCards.length === 0) {
-      newSortOrder = 1000;
-    } else {
-      const colBody = e.currentTarget as HTMLElement;
-      const rect = colBody.getBoundingClientRect();
-      const relativeY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-      const insertIdx = Math.round(relativeY * existingCards.length);
-      if (insertIdx === 0) {
-        newSortOrder = existingCards[0].sortOrder - 1000;
-      } else if (insertIdx >= existingCards.length) {
-        newSortOrder = existingCards[existingCards.length - 1].sortOrder + 1000;
-      } else {
-        const above = existingCards[insertIdx - 1].sortOrder;
-        const below = existingCards[insertIdx].sortOrder;
-        newSortOrder = Math.round((above + below) / 2);
-      }
-    }
-
-    // ── Pre-drop snapshot: record every card's current position ──
-    const preDropPositions = new Map<string, { distance_x: number; distance_y: number }>();
-    if (graph) {
-      for (const nord of graph.nords) {
-        const pos = resolvePositionForSnapshot(
-          nord.id, activeType, graph, directionFilter
-        );
-        if (pos) preDropPositions.set(nord.id, pos);
-      }
-    }
-
-    // ── Write the moved card's connections to the target cell ──
-    // This updates connection.distance_x/y so the graph view reflects the move.
-    const connectionIds = data.sourceConnectionIds;
-    if (connectionIds.length > 0) {
-      await Promise.all(
-        connectionIds.map(connId =>
-          updateConnection(connId, {
-            distance_x: bounds.center,
-            distance_y: newDistY,
-            sort_order: newSortOrder,
-          })
-        )
-      );
-    } else {
-      // Orphan: no connections — use board_positions directly
-      await upsertPosition({
-        nord_id: data.nordId,
-        type_id: activeType.id,
-        distance_x: bounds.center,
-        distance_y: newDistY,
-      });
-    }
-
-    // ── Pin ALL other cards at their pre-drop positions ──
-    // Board drags update shared connections, which can shift any connected card.
-    // Blanket-pin every non-mover card so nothing moves except the one you dragged.
-    const pinPromises: Promise<void>[] = [];
-    for (const [nordId, pos] of preDropPositions) {
-      if (nordId === data.nordId) continue;
-      pinPromises.push(
-        upsertPosition({
-          nord_id: nordId,
-          type_id: activeType.id,
-          distance_x: pos.distance_x,
-          distance_y: pos.distance_y,
-        })
-      );
-    }
-    // Also pin the mover at its new position
-    pinPromises.push(
-      upsertPosition({
-        nord_id: data.nordId,
-        type_id: activeType.id,
-        distance_x: bounds.center,
-        distance_y: newDistY,
-      })
-    );
-    await Promise.all(pinPromises);
-
-    await refetchGraph();
-  }, [activeType, updateConnection, upsertPosition, refetchGraph, directionFilter, graph]);
-
-  const handleConnectionEntryDrop = useCallback(async (e: React.DragEvent, targetTypeId: string) => {
-    e.preventDefault();
-    const data = getDragData(e);
-    if (!data) return;
-
-    const addMode = isAddLinkMode(e);
-
-    if (!addMode) {
-      // MOVE mode: remove position from current board, create position on target, switch board
-      await removePosition(data.nordId, activeType?.id || '');
-      await upsertPosition({
-        nord_id: data.nordId,
-        type_id: targetTypeId,
-        distance_x: 0.5,
-        distance_y: 0.5,
-      });
-      await refetchGraph();
-      setActiveConnectionTypeId(targetTypeId);
-    } else {
-      // CLONE mode (Option held): create position on target type, STAY on current board
-      await upsertPosition({
-        nord_id: data.nordId,
-        type_id: targetTypeId,
-        distance_x: 0.5,
-        distance_y: 0.5,
-      });
-      await refetchGraph();
-    }
-  }, [upsertPosition, removePosition, activeType, refetchGraph, setActiveConnectionTypeId]);
-
-  const handleConnectionEntryDoubleClick = useCallback((typeId: string) => {
-    setActiveConnectionTypeId(typeId);
-  }, [setActiveConnectionTypeId]);
+  const handleDragEnd = useCallback(() => {
+    setDraggingCardId(null);
+    setDragOverTarget(null);
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    e.dataTransfer.dropEffect = e.shiftKey ? 'move' : 'copy';
   }, []);
 
-  const handleColumnDragEnter = useCallback((columnLabel: string) => {
-    setDragOverColumn(columnLabel);
-  }, []);
+  const handleColumnDrop = useCallback(async (
+    e: React.DragEvent,
+    targetTypeId: string,
+    columnPosition: number,
+    columnCards: SwimCard[],
+  ) => {
+    e.preventDefault();
+    setDragOverTarget(null);
+    setDraggingCardId(null);
 
-  const handleColumnDragLeave = useCallback((e: React.DragEvent) => {
-    // Only clear if we actually left the column (not entering a child)
-    const related = e.relatedTarget as HTMLElement | null;
-    if (!related || !(e.currentTarget as HTMLElement).contains(related)) {
-      setDragOverColumn(null);
+    const data = getDragData(e);
+    if (!data || !graph) return;
+
+    const isCrossLane = data.sourceConnectionTypeId !== targetTypeId;
+    const isShift = e.shiftKey;
+    const isOption = e.altKey;
+
+    // Resolve target column center
+    const targetType = connectionTypes.find(t => t.id === targetTypeId);
+    const hasSpectrum = targetType && targetType.xStageLabels.length > 0;
+    const labels = hasSpectrum ? targetType.xStageLabels : [{ label: 'All', position: 0.5 }];
+    const targetLabel = resolveStageLabel(columnPosition, labels) || labels[0].label;
+    const bounds = getColumnBounds(targetLabel, labels);
+
+    // Sort order for within-column placement
+    const existingCards = columnCards.filter(c => c.id !== data.nordId);
+    let newSortOrder = 1000;
+    if (existingCards.length > 0) {
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const relY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+      const idx = Math.round(relY * existingCards.length);
+      if (idx === 0) newSortOrder = existingCards[0].sortOrder - 1000;
+      else if (idx >= existingCards.length) newSortOrder = existingCards[existingCards.length - 1].sortOrder + 1000;
+      else newSortOrder = Math.round((existingCards[idx - 1].sortOrder + existingCards[idx].sortOrder) / 2);
     }
-  }, []);
 
-  const handleLaneDragEnter = useCallback((laneLabel: string) => {
-    setDragOverLane(laneLabel);
-  }, []);
+    if (!isCrossLane) {
+      // Same lane: just update distance_x on existing connection(s)
+      await Promise.all(
+        data.sourceConnectionIds.map(cid =>
+          updateConnection(cid, { distance_x: bounds.center, sort_order: newSortOrder })
+        )
+      );
+    } else {
+      // Cross-lane: need to find a "partner" nord for the new connection
+      // Use the other end of the source connection
+      const sourceConn = graph.connections.find(c => c.id === data.sourceConnectionIds[0]);
+      const partnerNordId = sourceConn
+        ? (sourceConn.source_nord_id === data.nordId ? sourceConn.target_nord_id : sourceConn.source_nord_id)
+        : null;
 
-  const handleLaneDragLeave = useCallback((e: React.DragEvent) => {
-    const related = e.relatedTarget as HTMLElement | null;
-    if (!related || !(e.currentTarget as HTMLElement).contains(related)) {
-      setDragOverLane(null);
+      if (isShift && sourceConn) {
+        // SHIFT+drag: break old + create new
+        const savedConn = { ...sourceConn };
+        await deleteConnection(sourceConn.id);
+
+        if (partnerNordId) {
+          await createConnection({
+            type_id: targetTypeId,
+            source_nord_id: data.nordId,
+            target_nord_id: partnerNordId,
+            direction: sourceConn.direction as any,
+            distance_x: bounds.center,
+            distance_y: 0.5,
+          });
+        }
+
+        const ct = connectionTypes.find(t => t.id === savedConn.type_id);
+        showUndoToast(
+          `Moved "${data.nordTitle}" from ${ct?.name || '?'} → ${targetType?.name || '?'}`,
+          async () => {
+            // Undo: recreate old, delete new
+            await createConnection({
+              type_id: savedConn.type_id,
+              source_nord_id: savedConn.source_nord_id,
+              target_nord_id: savedConn.target_nord_id,
+              direction: savedConn.direction as any,
+              distance_x: savedConn.distance_x,
+              distance_y: savedConn.distance_y,
+            });
+            await refetchGraph();
+          }
+        );
+      } else {
+        // Default or Option: create new connection (duplicate into target lane)
+        if (partnerNordId) {
+          await createConnection({
+            type_id: targetTypeId,
+            source_nord_id: data.nordId,
+            target_nord_id: partnerNordId,
+            distance_x: bounds.center,
+            distance_y: 0.5,
+          });
+        }
+      }
     }
-  }, []);
+
+    await refetchGraph();
+  }, [graph, connectionTypes, updateConnection, createConnection, deleteConnection, refetchGraph]);
 
   // ── Render ──
-  // BoardCard is defined below as a React.memo component to prevent N² re-renders.
 
-  // ── No active type state ──
-  if (!activeType) {
+  if (!graph || swimlanes.length === 0) {
     return (
       <div className="nords-matrix-empty">
         <div className="nords-matrix-empty__icon">⊞</div>
         <h2 className="nords-matrix-empty__title">Board View</h2>
         <p className="nords-matrix-empty__desc">
-          Select a connection type from the dock to view a kanban board organized by stage labels.
+          Create connections between nords to see them organized by category.
         </p>
       </div>
     );
   }
-
-  if (activeType.xStageLabels.length === 0) {
-    return (
-      <div className="nords-matrix-empty">
-        <div className="nords-matrix-empty__icon">⊞</div>
-        <h2 className="nords-matrix-empty__title">No stage labels defined</h2>
-        <p className="nords-matrix-empty__desc">
-          Add stage labels to "{activeType.name}" in Manage Types → Spectrum Editor to use Board View.
-        </p>
-      </div>
-    );
-  }
-
-  const totalCards = columns.reduce((sum, col) => sum + col.cards.length, 0) + unlinked.length;
-
-  // Count dimmed nords (type-filtered, shown grayed out)
-  const dimmedCount = columns.reduce((sum, col) => sum + col.cards.filter(c => c.isDimmed).length, 0)
-    + unlinked.filter(c => c.isDimmed).length;
 
   return (
     <div className="nords-matrix">
-      <div className="nords-matrix__header">
-        <div className="nords-matrix__header-left">
-          <h1 className="nords-matrix__title">
-            <span style={{ color: activeType.color }}>{activeType.name}</span>
-            {activeType.verb && (
-              <span className="nords-matrix__title-verb">
-                <span className="nords-matrix__title-sep">:</span>
-                {activeType.verb}
-              </span>
-            )}
-          </h1>
-          <span className="nords-matrix__header-count">
-            {totalCards} nords{dimmedCount > 0 && <span className="nords-matrix__hidden-count"> ({dimmedCount} dimmed)</span>}
-          </span>
-        </div>
-      </div>
-
-      {/* Render swimlane grid OR flat columns */}
-      {isQuadrant ? (() => {
-        const hasOrphans = boardSettings?.showOrphans;
-        const totalRows = yLabels.length;
-        // Compute card counts per lane for the banner badge
-        const laneCardCounts = new Map<string, number>();
-        yLabels.forEach(yl => {
-          let count = 0;
-          columns.forEach(col => {
-            count += (gridCells.get(`${col.label}|${yl.label}`) || []).length;
-          });
-          laneCardCounts.set(yl.label, count);
-        });
-        return (
-        /* ── Quadrant Mode: CSS Grid with horizontal swimlane banners ── */
-        <div className="nords-matrix__grid" style={{
-          gridTemplateColumns: `repeat(${columns.length}, minmax(260px, 1fr))${hasOrphans ? ' minmax(200px, 260px)' : ''}`,
-          gridTemplateRows: `auto ${yLabels.map(() => 'auto minmax(120px, auto)').join(' ')}`,
-        }}>
-          {/* Column headers (x-axis) */}
-          {columns.map(col => (
-            <div key={col.label} className="nords-matrix__grid-col-header" style={{ color: activeType.color }}>
-              {col.label}
-              <span className="nords-matrix__column-count">
-                {col.cards.length}
-              </span>
-            </div>
-          ))}
-
-          {/* Orphans column header */}
-          {hasOrphans && (
-            <div className="nords-matrix__grid-col-header nords-matrix__grid-col-header--muted">
-              <Unlink size={12} /> Orphans
-              <span className="nords-matrix__column-count">{unlinked.length}</span>
-            </div>
-          )}
-
-
-
-          {/* Swimlane banners + cells */}
-          {yLabels.map((yl, rowIdx) => {
-            const dataColCount = columns.length + (hasOrphans ? 1 : 0);
-            return (
-            <React.Fragment key={yl.label}>
-              {/* Full-span swimlane banner bar */}
-              <div
-                className={`nords-matrix__lane-banner ${dragOverLane === yl.label ? 'is-drag-over' : ''}`}
-                style={{ gridColumn: `1 / ${dataColCount + 1}`, color: activeType.color }}
-                onDragOver={handleDragOver}
-                onDragEnter={() => handleLaneDragEnter(yl.label)}
-                onDragLeave={handleLaneDragLeave}
-                onDrop={(e) => {
-                  // Dropping on the banner places the card in the first column of this lane
-                  const firstCol = columns[0];
-                  if (firstCol) {
-                    const cellKey = `${firstCol.label}|${yl.label}`;
-                    handleCellDrop(e, firstCol.position, gridCells.get(cellKey) || [], yl.position);
-                  }
-                }}
-              >
-                {yl.label}
-                <span className="nords-matrix__lane-count">{laneCardCounts.get(yl.label) || 0}</span>
-              </div>
-
-              {/* Grid cells for this swimlane row */}
-              {columns.map(col => {
-                const cellKey = `${col.label}|${yl.label}`;
-                const cellCards = gridCells.get(cellKey) || [];
-                return (
-                  <div
-                    key={cellKey}
-                    className={`nords-matrix__grid-cell ${dragOverColumn === cellKey ? 'is-drag-over' : ''} ${dragOverLane === yl.label ? 'is-lane-drag-over' : ''}`}
-                    onDragOver={handleDragOver}
-                    onDragEnter={() => handleColumnDragEnter(cellKey)}
-                    onDragLeave={handleColumnDragLeave}
-                    onDrop={(e) => handleCellDrop(e, col.position, gridCells.get(cellKey) || [], yl.position)}
-                  >
-                    {cellCards.map(card => (
-                      <BoardCard
-                        key={card.id}
-                        card={card}
-                        isSelected={selectedNord === card.id}
-                        isDragging={draggingCardId === card.id}
-                        isCloneDragging={draggingCardId === card.id && isDragCloning}
-                        isMouseHeld={mouseHeldCardId === card.id}
-                        isDimmed={card.isDimmed}
-                        optionHeld={optionHeld}
-                        onMouseDown={setMouseHeldCardId}
-                        onMouseUp={() => setMouseHeldCardId(null)}
-                        onDragStart={(e, c) => {
-                          setDraggingCardId(c.id);
-                          setIsDragCloning(e.altKey || optionHeld);
-                          handleDragStart(e, c);
-                        }}
-                        onDragEnd={() => {
-                          setDraggingCardId(null);
-                          setIsDragCloning(false);
-                          setMouseHeldCardId(null);
-                          setDragOverColumn(null);
-                          setDragOverLane(null);
-                        }}
-                        onClick={onNordClick}
-                      />
-                    ))}
-                    {cellCards.length === 0 && (
-                      <div className="nords-matrix__column-empty">—</div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* Orphans: only in the FIRST row, spanning all swimlane sub-rows */}
-              {hasOrphans && rowIdx === 0 && (
-                <div
-                  className="nords-matrix__grid-cell nords-matrix__grid-cell--span"
-                  style={{ gridRow: `2 / ${totalRows * 2 + 2}` }}
-                >
-                  {unlinked.length > 0 ? (
-                    unlinked.map(card => (
-                      <BoardCard
-                        key={card.id}
-                        card={card}
-                        isSelected={selectedNord === card.id}
-                        isDragging={draggingCardId === card.id}
-                        isCloneDragging={draggingCardId === card.id && isDragCloning}
-                        isMouseHeld={mouseHeldCardId === card.id}
-                        isDimmed={card.isDimmed}
-                        optionHeld={optionHeld}
-                        onMouseDown={setMouseHeldCardId}
-                        onMouseUp={() => setMouseHeldCardId(null)}
-                        onDragStart={(e, c) => {
-                          setDraggingCardId(c.id);
-                          setIsDragCloning(e.altKey || optionHeld);
-                          handleDragStart(e, c);
-                        }}
-                        onDragEnd={() => {
-                          setDraggingCardId(null);
-                          setIsDragCloning(false);
-                          setMouseHeldCardId(null);
-                        }}
-                        onClick={onNordClick}
-                      />
-                    ))
-                  ) : (
-                    <div className="nords-matrix__column-empty">No orphans</div>
-                  )}
-                </div>
-              )}
-
-
-            </React.Fragment>
-            );
-          })}
-        </div>
-        );
-      })() : (
-        /* ── Flat Column Mode ── */
-        <div className="nords-matrix__columns">
-          {columns.map((col) => (
-            <div
-              key={col.label}
-              className={`nords-matrix__column ${dragOverColumn === col.label ? 'is-drag-over' : ''}`}
-            >
-              <div className="nords-matrix__column-header">
-                <span className="nords-matrix__column-label" style={{ color: activeType.color }}>
-                  {col.label}
-                </span>
-                <span className="nords-matrix__column-count">{col.cards.length}</span>
-              </div>
-              <div
-                className="nords-matrix__column-body"
-                onDragOver={handleDragOver}
-                onDragEnter={() => handleColumnDragEnter(col.label)}
-                onDragLeave={handleColumnDragLeave}
-                onDrop={(e) => handleCellDrop(e, col.position, col.cards)}
-              >
-                {col.cards.map(card => (
-                  <BoardCard
-                    key={card.id}
-                    card={card}
-                    isSelected={selectedNord === card.id}
-                    isDragging={draggingCardId === card.id}
-                    isCloneDragging={draggingCardId === card.id && isDragCloning}
-                    isMouseHeld={mouseHeldCardId === card.id}
-                    isDimmed={card.isDimmed}
-                    optionHeld={optionHeld}
-                    onMouseDown={setMouseHeldCardId}
-                    onMouseUp={() => setMouseHeldCardId(null)}
-                    onDragStart={(e, c) => {
-                      setDraggingCardId(c.id);
-                      setIsDragCloning(e.altKey || optionHeld);
-                      handleDragStart(e, c);
-                    }}
-                    onDragEnd={() => {
-                      setDraggingCardId(null);
-                      setIsDragCloning(false);
-                      setMouseHeldCardId(null);
-                      setDragOverColumn(null);
-                    }}
-                    onClick={onNordClick}
-                  />
-                ))}
-                {col.cards.length === 0 && (
-                  <div className="nords-matrix__column-empty">No nords</div>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {/* 👻 Orphans column — always present in flat mode */}
-          {boardSettings?.showOrphans && (
-            <div className="nords-matrix__column nords-matrix__column--orphans">
-              <div className="nords-matrix__column-header">
-                <span className="nords-matrix__column-label nords-matrix__column-label--muted">
-                  <Unlink size={12} /> Orphans
-                </span>
-                <span className="nords-matrix__column-count">{unlinked.length}</span>
-              </div>
-              <div className="nords-matrix__column-body">
-                {unlinked.length > 0 ? (
-                  unlinked.map(card => (
-                    <BoardCard
-                      key={card.id}
-                      card={card}
-                      isSelected={selectedNord === card.id}
-                      isDragging={draggingCardId === card.id}
-                      isCloneDragging={draggingCardId === card.id && isDragCloning}
-                      isMouseHeld={mouseHeldCardId === card.id}
-                      isDimmed={card.isDimmed}
-                      optionHeld={optionHeld}
-                      onMouseDown={setMouseHeldCardId}
-                      onMouseUp={() => setMouseHeldCardId(null)}
-                      onDragStart={(e, c) => {
-                        setDraggingCardId(c.id);
-                        setIsDragCloning(e.altKey || optionHeld);
-                        handleDragStart(e, c);
-                      }}
-                      onDragEnd={() => {
-                        setDraggingCardId(null);
-                        setIsDragCloning(false);
-                        setMouseHeldCardId(null);
-                      }}
-                      onClick={onNordClick}
-                    />
-                  ))
-                ) : (
-                  <div className="nords-matrix__column-empty">No orphans</div>
-                )}
-              </div>
-            </div>
-          )}
-
-
+      {/* Undo toast */}
+      {undoToast && (
+        <div className="nords-matrix__undo-toast">
+          <span>{undoToast.message}</span>
+          <button onClick={async () => {
+            await undoToast.undoFn();
+            setUndoToast(null);
+          }}>Undo</button>
         </div>
       )}
 
+      <div className="nords-matrix__lanes">
+        {swimlanes.map(lane => {
+          const ct = lane.connectionType;
+          const collapsed = isLaneCollapsed(ct.id);
+
+          return (
+            <div key={ct.id} className={`nords-matrix__lane ${collapsed ? 'is-collapsed' : ''}`}>
+              {/* Lane Header — always visible */}
+              <button
+                className="nords-matrix__lane-header"
+                onClick={() => toggleLaneCollapse(ct.id)}
+              >
+                <span className="nords-matrix__lane-chevron">
+                  {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                </span>
+                <span className="nords-matrix__lane-color" style={{ background: ct.color }} />
+                <span className="nords-matrix__lane-name">{ct.name}</span>
+                {ct.verb && <span className="nords-matrix__lane-verb">{ct.verb}</span>}
+                <span className="nords-matrix__lane-count">{lane.cardCount}</span>
+              </button>
+
+              {/* Lane Body — columns */}
+              {!collapsed && (
+                <div className="nords-matrix__lane-body">
+                  <div className="nords-matrix__columns">
+                    {lane.columns.map(col => {
+                      const dropKey = `${ct.id}|${col.label}`;
+                      const isOver = dragOverTarget === dropKey;
+
+                      return (
+                        <div key={col.label} className={`nords-matrix__column ${isOver ? 'is-drag-over' : ''}`}>
+                          <div className="nords-matrix__column-header">
+                            <span className="nords-matrix__column-label" style={{ color: ct.color }}>
+                              {col.label}
+                            </span>
+                            <span className="nords-matrix__column-count">{col.cards.length}</span>
+                          </div>
+                          <div
+                            className="nords-matrix__column-body"
+                            onDragOver={handleDragOver}
+                            onDragEnter={() => setDragOverTarget(dropKey)}
+                            onDragLeave={(e) => {
+                              const related = e.relatedTarget as HTMLElement | null;
+                              if (!related || !(e.currentTarget as HTMLElement).contains(related)) {
+                                setDragOverTarget(null);
+                              }
+                            }}
+                            onDrop={(e) => handleColumnDrop(e, ct.id, col.position, col.cards)}
+                          >
+                            {col.cards.map(card => (
+                              <BoardCard
+                                key={`${card.connectionId}-${card.id}`}
+                                card={card}
+                                isSelected={selectedNord === card.id}
+                                isDragging={draggingCardId === card.id}
+                                onDragStart={handleDragStart}
+                                onDragEnd={handleDragEnd}
+                                onClick={onNordClick}
+                              />
+                            ))}
+                            {col.cards.length === 0 && (
+                              <div className="nords-matrix__column-empty">—</div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 
 // ═══════════════════════════════════════════════════════════
-// BoardCard — Memoized card wrapper for the board view.
-//
-// Extracted from the inline `renderCard` to prevent N² re-renders.
-// Each card only re-renders when its own prop values change.
+// BoardCard — Memoized card for the swimlane board.
 // ═══════════════════════════════════════════════════════════
 
 interface BoardCardProps {
-  card: MatrixCard;
+  card: SwimCard;
   isSelected: boolean;
   isDragging: boolean;
-  isCloneDragging: boolean;
-  isMouseHeld: boolean;
-  isDimmed: boolean;
-  optionHeld: boolean;
-  onMouseDown: (cardId: string) => void;
-  onMouseUp: () => void;
-  onDragStart: (e: React.DragEvent<HTMLDivElement>, card: MatrixCard) => void;
+  onDragStart: (e: React.DragEvent<HTMLDivElement>, card: SwimCard) => void;
   onDragEnd: () => void;
   onClick: (cardId: string) => void;
 }
 
 const BoardCard = memo(function BoardCard({
-  card,
-  isSelected,
-  isDragging,
-  isCloneDragging,
-  isMouseHeld,
-  isDimmed,
-  optionHeld,
-  onMouseDown,
-  onMouseUp,
-  onDragStart,
-  onDragEnd,
-  onClick,
+  card, isSelected, isDragging, onDragStart, onDragEnd, onClick,
 }: BoardCardProps) {
 
   const handleDragStart = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     onDragStart(e, card);
 
-    // Create a tilted ghost for the drag image
+    // Tilted ghost drag image
     const cardEl = e.currentTarget.querySelector('.nords-node') as HTMLElement;
     if (cardEl) {
-      const isCloning = e.altKey || optionHeld;
       const ghost = cardEl.cloneNode(true) as HTMLElement;
       ghost.style.transform = 'rotate(-3deg)';
       ghost.style.width = `${cardEl.offsetWidth}px`;
       ghost.style.position = 'absolute';
       ghost.style.top = '-9999px';
       ghost.style.left = '-9999px';
-      ghost.style.zIndex = '9999';
-      ghost.style.pointerEvents = 'none';
       ghost.style.opacity = '0.92';
-
-      // Helper: remove the ghost from the DOM after browser captures it.
-      // Must survive long enough for Chrome to snapshot it for the drag image.
-      const deferRemove = (el: HTMLElement) => {
-        setTimeout(() => {
-          if (el.parentNode) el.parentNode.removeChild(el);
-        }, 100);
-      };
-
-      if (isCloning) {
-        const wrapper = document.createElement('div');
-        wrapper.style.position = 'absolute';
-        wrapper.style.top = '-9999px';
-        wrapper.style.left = '-9999px';
-
-        const bgCard = cardEl.cloneNode(true) as HTMLElement;
-        bgCard.style.position = 'absolute';
-        bgCard.style.top = '6px';
-        bgCard.style.left = '6px';
-        bgCard.style.transform = 'rotate(-1deg)';
-        bgCard.style.opacity = '0.5';
-        bgCard.style.width = `${cardEl.offsetWidth}px`;
-
-        ghost.style.position = 'relative';
-        ghost.style.top = '0';
-        ghost.style.left = '0';
-
-        wrapper.style.width = `${cardEl.offsetWidth + 10}px`;
-        wrapper.style.height = `${cardEl.offsetHeight + 10}px`;
-        wrapper.appendChild(bgCard);
-        wrapper.appendChild(ghost);
-        document.body.appendChild(wrapper);
-        e.dataTransfer.setDragImage(wrapper, cardEl.offsetWidth / 2, 20);
-        deferRemove(wrapper);
-      } else {
-        document.body.appendChild(ghost);
-        e.dataTransfer.setDragImage(ghost, cardEl.offsetWidth / 2, 20);
-        deferRemove(ghost);
-      }
+      ghost.style.pointerEvents = 'none';
+      document.body.appendChild(ghost);
+      e.dataTransfer.setDragImage(ghost, cardEl.offsetWidth / 2, 20);
+      setTimeout(() => { if (ghost.parentNode) ghost.parentNode.removeChild(ghost); }, 100);
     }
-  }, [card, optionHeld, onDragStart]);
+  }, [card, onDragStart]);
 
   const wrapperClass = [
     'nords-matrix__card-wrapper',
     isDragging ? 'is-dragging' : '',
-    isCloneDragging ? 'is-clone-dragging' : '',
-    isMouseHeld ? 'is-mouse-held' : '',
-    isDimmed ? 'is-dimmed' : '',
+    card.isDimmed ? 'is-dimmed' : '',
   ].filter(Boolean).join(' ');
 
   return (
     <div
       className={wrapperClass}
       draggable
-      onMouseDown={() => onMouseDown(card.id)}
-      onMouseUp={onMouseUp}
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
       onClick={() => onClick(card.id)}
     >
-      <span className="nords-matrix__clone-badge">+ COPY</span>
       <NordCard
         title={card.title}
         typeName={card.typeName}
