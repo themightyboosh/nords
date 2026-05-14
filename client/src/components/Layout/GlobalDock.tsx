@@ -45,22 +45,21 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
 
   const { visibleNodeTypes, visibleConnectionTypes, toggleNodeType } = useTypeVisibility();
   const { nordTypes, connectionTypes } = useTypeRegistryContext();
-  const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, isNordHidden, toggleNordFilter } = useBoardSettingsContext();
+  const { isNordTypeVisible, toggleNordTypeFilter, getBoard, toggleOrphans, isNordHidden, toggleNordFilter, isLaneCollapsed, toggleLaneCollapse } = useBoardSettingsContext();
   const { updateConnectionType } = useConnectionTypeMutations();
   const boardSettings = activeConnectionTypeId ? getBoard(activeConnectionTypeId) : null;
 
   // Full resolved connection type (has directionFilter)
   const activeFullType = connectionTypes.find(ct => ct.id === activeConnectionTypeId) ?? null;
 
-  // Issue 4: Never start on "all categories" — auto-select the first connection type
-  // if nothing is persisted from localStorage. This fires once on mount.
+  // Issue 4: Auto-select first connection type for graph/persona modes (not board)
   useEffect(() => {
-    if (!activeConnectionTypeId && connectionTypes.length > 0) {
+    if (!activeConnectionTypeId && connectionTypes.length > 0 && lens !== 'board') {
       const first = connectionTypes[0];
       setActiveConnectionTypeId(first.id);
       setActiveLine(first.name);
     }
-  }, [connectionTypes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [connectionTypes, lens]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelectConnectionType = (typeId: string, typeName: string) => {
     setActiveConnectionTypeId(typeId);
@@ -156,7 +155,12 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
                 onClick={() => togglePanel('relationship')}
                 data-testid="dock-connection-type"
               >
-                {activeConnectionType ? (
+                {lens === 'board' ? (
+                  <>
+                    <EyeIcon size={14} strokeWidth={1.6} />
+                    <span className="nords-dock__label">Lanes</span>
+                  </>
+                ) : activeConnectionType ? (
                   <>
                     <span className="nords-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />
                     <span className="nords-dock__label">{activeConnectionType.name}</span>
@@ -219,8 +223,8 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
             </div>
           )}
 
-          {/* Direction filter — board mode only, inline segmented control */}
-          {lens === 'board' && activeConnectionTypeId && (
+          {/* Direction filter — graph mode only, when a specific type is active */}
+          {lens === 'canvas' && activeConnectionTypeId && (
             <>
               <div className="nords-dock__separator" />
               <div className="nords-dock__direction-filter">
@@ -234,7 +238,6 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
                       onClick={async () => {
                         if (!activeConnectionTypeId) return;
                         await updateConnectionType(activeConnectionTypeId, { direction_filter: dir });
-                        // Refetch graph so TypeRegistryContext updates and the active button re-highlights
                         await refetchGraph?.();
                       }}
                     >
@@ -255,50 +258,84 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
         {/* ═══ FLYOUT PANELS ═══ */}
 
 
-        {/* Connection Type Switcher Flyout */}
+        {/* Connection Type Switcher Flyout (graph/persona mode) or Lane Visibility (board mode) */}
         <div className={`nords-flyout nords-glass ${openPanel === 'relationship' ? 'is-open' : ''}`} data-testid="flyout-connection-type">
-          <div className="nords-flyout__header">
-            <h3 className="nords-flyout__title">Categories</h3>
-            <span className="nords-flyout__count">
-              {visibleConnectionTypes.filter(t => !t.isSystem).length} types
-            </span>
-          </div>
-          <div className="nords-flyout__list">
-            {/* All Lines (Relevance) — commented out per user request */}
-            {/* {lens !== 'board' && (
-              <div
-                className={`nords-flyout__row nords-flyout__row--selectable ${!activeConnectionTypeId ? 'is-active' : ''}`}
-                onClick={() => { setActiveConnectionTypeId(null); setActiveLine('All'); setOpenPanel(null); }}
-              >
-                <div className="nords-flyout__row-left">
-                  <Link2 size={14} strokeWidth={1.6} style={{ color: 'var(--nords-color-text-tertiary)', flexShrink: 0 }} />
-                  <span className="nords-flyout__row-name">All Lines (Relevance)</span>
-                </div>
+          {lens === 'board' ? (
+            /* Board mode: checkboxes to show/hide swimlanes */
+            <>
+              <div className="nords-flyout__header">
+                <h3 className="nords-flyout__title">Lane Visibility</h3>
+                <span className="nords-flyout__count">
+                  {visibleConnectionTypes.filter(t => !t.isSystem).length} categories
+                </span>
               </div>
-            )} */}
-            {visibleConnectionTypes
-              .filter(t => !t.isSystem)
-              .filter(t => lens !== 'board' || (t.measurementMode !== 'none' && t.xStageLabels.length > 0))
-              .map((type) => (
-              <div
-                key={type.id}
-                className={`nords-flyout__row nords-flyout__row--selectable ${activeConnectionTypeId === type.id ? 'is-active' : ''}`}
-                onClick={() => handleSelectConnectionType(type.id, type.name)}
-              >
-                <div className="nords-flyout__row-left">
-                  <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
-                  <span className="nords-flyout__row-name">{type.name}</span>
-                  <span className="nords-flyout__row-count">{type.count}</span>
-                </div>
+              <div className="nords-flyout__list">
+                {visibleConnectionTypes
+                  .filter(t => !t.isSystem)
+                  .map((type) => {
+                    const collapsed = isLaneCollapsed(type.id);
+                    return (
+                      <div
+                        key={type.id}
+                        className={`nords-flyout__row nords-flyout__row--selectable ${!collapsed ? 'is-active' : ''}`}
+                        onClick={() => toggleLaneCollapse(type.id)}
+                      >
+                        <div className="nords-flyout__row-left">
+                          <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
+                          <span className="nords-flyout__row-name">{type.name}</span>
+                          <span className="nords-flyout__row-count">{type.count}</span>
+                        </div>
+                        <div className="nords-flyout__row-right">
+                          {!collapsed
+                            ? <EyeIcon size={13} style={{ color: type.color }} />
+                            : <EyeOff size={13} style={{ opacity: 0.3 }} />
+                          }
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
-            ))}
-          </div>
-          <div className="nords-flyout__footer">
-            <span className="nords-flyout__footer-hint">
-              <ArrowLeftRight size={10} />
-              Selecting a type focuses the canvas on that relationship
-            </span>
-          </div>
+              <div className="nords-flyout__footer">
+                <span className="nords-flyout__footer-hint">
+                  <EyeIcon size={10} />
+                  Toggle which swimlanes are visible on the board
+                </span>
+              </div>
+            </>
+          ) : (
+            /* Graph/persona mode: select one active connection type */
+            <>
+              <div className="nords-flyout__header">
+                <h3 className="nords-flyout__title">Categories</h3>
+                <span className="nords-flyout__count">
+                  {visibleConnectionTypes.filter(t => !t.isSystem).length} types
+                </span>
+              </div>
+              <div className="nords-flyout__list">
+                {visibleConnectionTypes
+                  .filter(t => !t.isSystem)
+                  .map((type) => (
+                  <div
+                    key={type.id}
+                    className={`nords-flyout__row nords-flyout__row--selectable ${activeConnectionTypeId === type.id ? 'is-active' : ''}`}
+                    onClick={() => handleSelectConnectionType(type.id, type.name)}
+                  >
+                    <div className="nords-flyout__row-left">
+                      <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
+                      <span className="nords-flyout__row-name">{type.name}</span>
+                      <span className="nords-flyout__row-count">{type.count}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="nords-flyout__footer">
+                <span className="nords-flyout__footer-hint">
+                  <ArrowLeftRight size={10} />
+                  Selecting a type focuses the canvas on that relationship
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Nord Filter Flyout (board mode) — shows individual nords in this category */}
