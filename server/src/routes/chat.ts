@@ -99,7 +99,76 @@ ${persona.voice_and_tone}
     }
   }
 
+  // Session resume context — human-readable orientation
+  const horizon = await mcpRepo.getSessionHorizon(sessionId);
+  if (horizon.current_nord || horizon.completion.required > 0) {
+    prompt += `\n## Session Context (auto-generated)\n`;
+    prompt += buildResumeContext(horizon);
+    prompt += `\nYou already have this context — skip calling nords_get_horizon unless the user moves to a new nord.\n`;
+  }
+
   return { prompt, temperature };
+}
+
+/**
+ * Build a human-readable resume paragraph from the session horizon.
+ * Injected into the system prompt so the AI knows where things stand
+ * without burning tool calls to re-orient.
+ */
+function buildResumeContext(horizon: mcpRepo.SessionHorizon): string {
+  const parts: string[] = [];
+
+  // Current position
+  if (horizon.current_nord) {
+    const cn = horizon.current_nord;
+    let pos = `You are currently at **${cn.title}** (${cn.type_name}).`;
+    if (cn.session_progress) {
+      pos += cn.session_progress.complete
+        ? ` This nord is complete.`
+        : ` ${cn.session_progress.filled}/${cn.session_progress.required} required properties are filled.`;
+    }
+    parts.push(pos);
+  } else {
+    parts.push(`No current position — the session hasn't started traversing yet.`);
+  }
+
+  // Overall completion
+  const c = horizon.completion;
+  if (c.required > 0) {
+    parts.push(`Overall progress: ${c.percentage}% (${c.filled}/${c.required} required fields across all tracked nords).`);
+  }
+
+  // Persona
+  if (horizon.persona) {
+    parts.push(`Active persona: **${horizon.persona.name}**.`);
+  }
+
+  // Traversal history (last 5)
+  if (horizon.traversal_history.length > 0) {
+    const recent = horizon.traversal_history.slice(-5);
+    parts.push(`Recent path: ${recent.join(' → ')}`);
+  }
+
+  // Neighbors summary
+  if (horizon.neighbors.length > 0) {
+    const top3 = horizon.neighbors.slice(0, 3);
+    const neighborSummary = top3.map(n => {
+      let s = `${n.nord.title} (${n.nord.type_name})`;
+      if (n.relationship.verb) s += ` [${n.relationship.verb}]`;
+      if (n.session_progress && !n.session_progress.complete) {
+        s += ` — ${n.session_progress.filled}/${n.session_progress.required} filled`;
+      }
+      return s;
+    }).join('; ');
+    parts.push(`Nearest neighbors: ${neighborSummary}`);
+  }
+
+  // Suggested next
+  if (horizon.suggested_next) {
+    parts.push(`Suggested next: **${horizon.suggested_next.title}** — ${horizon.suggested_next.reason}`);
+  }
+
+  return parts.join('\n');
 }
 
 // ── Conversation History → Gemini Format ──

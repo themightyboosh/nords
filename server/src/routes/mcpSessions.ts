@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import logger from '../lib/logger.js';
 import * as mcpRepo from '../repositories/mcpSessions.js';
 import { personasRepo } from '../repositories/personas.js';
+import * as analyticsRepo from '../repositories/sessionAnalytics.js';
 
 export const mcpSessionsRouter = Router();
 
@@ -368,5 +369,45 @@ mcpSessionsRouter.get('/projects/:id/dictionary', async (req: Request, res: Resp
   } catch (err: any) {
     logger.error('Failed to get project dictionary', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to get project dictionary' });
+  }
+});
+
+// ── Session Analytics ──
+
+/**
+ * @openapi
+ * /api/projects/{id}/analytics:
+ *   get:
+ *     tags: [MCP Sessions]
+ *     summary: Get aggregated analytics for all sessions in a project
+ *     description: |
+ *       Returns overview metrics, session summaries, nord visit heatmap,
+ *       popular traversal paths, persona distribution, and bottleneck nords.
+ */
+mcpSessionsRouter.get('/projects/:id/analytics', async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string || '50', 10);
+    const analytics = await analyticsRepo.getProjectAnalytics(req.params.id as string, limit);
+    res.json(analytics);
+  } catch (err: any) {
+    logger.error('Failed to get project analytics', { error: err.message, projectId: req.params.id });
+    res.status(500).json({ error: 'Failed to get project analytics' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/mcp-sessions/{id}/analytics:
+ *   get:
+ *     tags: [MCP Sessions]
+ *     summary: Get analytics for a single session
+ */
+mcpSessionsRouter.get('/mcp-sessions/:id/analytics', async (req: Request, res: Response) => {
+  try {
+    const analytics = await analyticsRepo.getSessionAnalytics(req.params.id as string);
+    res.json(analytics);
+  } catch (err: any) {
+    logger.error('Failed to get session analytics', { error: err.message, sessionId: req.params.id });
+    res.status(500).json({ error: 'Failed to get session analytics' });
   }
 });
