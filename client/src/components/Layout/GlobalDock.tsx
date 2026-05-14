@@ -178,23 +178,14 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
 
           {lens === 'canvas' && (
             <>
-              {/* Graph: Category (single-select) */}
+              {/* Graph: Category (show/dim/hide) */}
               <div className="nords-dock__section">
                 <button
                   className={`nords-dock__item ${openPanel === 'relationship' ? 'is-active' : ''}`}
                   onClick={() => togglePanel('relationship')}
                 >
-                  {activeConnectionType ? (
-                    <>
-                      <span className="nords-dock__rel-swatch" style={{ backgroundColor: activeConnectionType.color }} />
-                      <span className="nords-dock__label">{activeConnectionType.name}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Link2 size={14} strokeWidth={1.6} />
-                      <span className="nords-dock__label">Category</span>
-                    </>
-                  )}
+                  <Layers size={14} strokeWidth={1.6} />
+                  <span className="nords-dock__label">Category</span>
                   <ChevronDown size={10} className="nords-dock__chevron" />
                 </button>
               </div>
@@ -208,18 +199,6 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
                 >
                   {showContext ? <EyeIcon size={14} strokeWidth={1.6} /> : <EyeOff size={14} strokeWidth={1.6} />}
                   <span className="nords-dock__label">Others</span>
-                </button>
-              </div>
-
-              {/* Graph: Direction filter */}
-              <div className="nords-dock__section">
-                <button
-                  className={`nords-dock__item ${openPanel === 'direction' ? 'is-active' : ''}`}
-                  onClick={() => togglePanel('direction')}
-                >
-                  <ArrowLeftRight size={14} strokeWidth={1.6} />
-                  <span className="nords-dock__label">Direction</span>
-                  <ChevronDown size={10} className="nords-dock__chevron" />
                 </button>
               </div>
             </>
@@ -289,24 +268,37 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
               </div>
             </>
           ) : (
+            /* Graph mode: 3-state show/dim/hide per category */
             <>
               <div className="nords-flyout__header">
                 <h3 className="nords-flyout__title">Category</h3>
                 <span className="nords-flyout__count">{nonSystemTypes.length} types</span>
               </div>
               <div className="nords-flyout__list">
-                {nonSystemTypes.map(type => (
-                  <div key={type.id} className={`nords-flyout__row nords-flyout__row--selectable ${activeConnectionTypeId === type.id ? 'is-active' : ''}`} onClick={() => handleSelectConnectionType(type.id, type.name)}>
-                    <div className="nords-flyout__row-left">
-                      <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
-                      <span className="nords-flyout__row-name">{type.name}</span>
-                      <span className="nords-flyout__row-count">{type.count}</span>
+                {nonSystemTypes.map(type => {
+                  const state = personaTypeFilter.get(type.name) || 'show';
+                  return (
+                    <div key={type.id} className={`nords-flyout__row nords-flyout__row--selectable ${state === 'show' ? 'is-active' : ''}`}
+                      onClick={() => cyclePersonaTypeFilter(type.name)}
+                      style={{ opacity: state === 'hide' ? 0.3 : state === 'dim' ? 0.55 : 1 }}
+                    >
+                      <div className="nords-flyout__row-left">
+                        <span className="nords-flyout__line-swatch" style={{ background: type.color }} />
+                        <span className="nords-flyout__row-name">{type.name}</span>
+                        <span className="nords-flyout__row-count">{type.count}</span>
+                      </div>
+                      <div className="nords-flyout__row-right" style={{ gap: '4px', display: 'flex', alignItems: 'center' }}>
+                        {state === 'show' && <EyeIcon size={13} style={{ color: type.color }} />}
+                        {state === 'dim' && <CircleDot size={13} style={{ opacity: 0.5 }} />}
+                        {state === 'hide' && <EyeOff size={13} style={{ opacity: 0.3 }} />}
+                        <span style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--nords-color-text-disabled)', minWidth: '24px' }}>{state}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="nords-flyout__footer">
-                <span className="nords-flyout__footer-hint"><ArrowLeftRight size={10} /> Selecting a type focuses the canvas on that relationship</span>
+                <span className="nords-flyout__footer-hint">Click to cycle: show → dim → hide</span>
               </div>
             </>
           )}
