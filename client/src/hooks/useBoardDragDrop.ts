@@ -33,7 +33,7 @@ const DRAG_PREFIX = '__nords_board__';
 export function setDragData(e: React.DragEvent, data: BoardDragData) {
   // Prefix the JSON so we can identify nords board drags vs other text drops
   e.dataTransfer.setData(DRAG_TYPE, DRAG_PREFIX + JSON.stringify(data));
-  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.effectAllowed = 'copyMove';
 }
 
 /** Read drag data from a drop event. Returns null if not a board drag. */

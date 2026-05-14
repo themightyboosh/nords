@@ -211,8 +211,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     return lanes;
   }, [graph, connectionTypes, isNordTypeVisible]);
 
-  // ── Drag handlers ──
-
   const handleDragStart = useCallback((e: React.DragEvent, card: SwimCard) => {
     setDragData(e, {
       nordId: card.id,
@@ -230,7 +228,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = e.shiftKey ? 'move' : 'copy';
+    e.dataTransfer.dropEffect = 'move';
   }, []);
 
   const handleColumnDrop = useCallback(async (
@@ -246,8 +244,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     if (!data || !graph) return;
 
     const isCrossLane = data.sourceConnectionTypeId !== targetTypeId;
-    const isShift = e.shiftKey;
-    const isOption = e.altKey;
+    const isCopy = e.shiftKey || e.altKey;
 
     // Resolve target column center
     const targetType = connectionTypes.find(t => t.id === targetTypeId);
@@ -256,7 +253,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const targetLabel = resolveStageLabel(columnPosition, labels) || labels[0].label;
     const bounds = getColumnBounds(targetLabel, labels);
 
-    // Sort order for within-column placement
+    // Sort order: cosmetic within-column ordering
     const existingCards = columnCards.filter(c => c.id !== data.nordId);
     let newSortOrder = 1000;
     if (existingCards.length > 0) {
@@ -269,62 +266,62 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     }
 
     if (!isCrossLane) {
-      // Same lane: just update distance_x on existing connection(s)
+      // Same lane: update distance_x on the connection (column placement)
       await Promise.all(
         data.sourceConnectionIds.map(cid =>
           updateConnection(cid, { distance_x: bounds.center, sort_order: newSortOrder })
         )
       );
     } else {
-      // Cross-lane: need to find a "partner" nord for the new connection
-      // Use the other end of the source connection
+      // Cross-lane drop
       const sourceConn = graph.connections.find(c => c.id === data.sourceConnectionIds[0]);
       const partnerNordId = sourceConn
         ? (sourceConn.source_nord_id === data.nordId ? sourceConn.target_nord_id : sourceConn.source_nord_id)
         : null;
 
-      if (isShift && sourceConn) {
-        // SHIFT+drag: break old + create new
-        const savedConn = { ...sourceConn };
-        await deleteConnection(sourceConn.id);
-
+      if (isCopy) {
+        // COPY: keep old connection, create new in target lane
         if (partnerNordId) {
           await createConnection({
             type_id: targetTypeId,
             source_nord_id: data.nordId,
             target_nord_id: partnerNordId,
-            direction: sourceConn.direction as any,
             distance_x: bounds.center,
             distance_y: 0.5,
           });
         }
-
-        const ct = connectionTypes.find(t => t.id === savedConn.type_id);
-        showUndoToast(
-          `Moved "${data.nordTitle}" from ${ct?.name || '?'} → ${targetType?.name || '?'}`,
-          async () => {
-            // Undo: recreate old, delete new
-            await createConnection({
-              type_id: savedConn.type_id,
-              source_nord_id: savedConn.source_nord_id,
-              target_nord_id: savedConn.target_nord_id,
-              direction: savedConn.direction as any,
-              distance_x: savedConn.distance_x,
-              distance_y: savedConn.distance_y,
-            });
-            await refetchGraph();
-          }
-        );
       } else {
-        // Default or Option: create new connection (duplicate into target lane)
-        if (partnerNordId) {
-          await createConnection({
-            type_id: targetTypeId,
-            source_nord_id: data.nordId,
-            target_nord_id: partnerNordId,
-            distance_x: bounds.center,
-            distance_y: 0.5,
-          });
+        // MOVE: break old connection, create new in target lane
+        if (sourceConn) {
+          const savedConn = { ...sourceConn };
+          await deleteConnection(sourceConn.id);
+
+          if (partnerNordId) {
+            await createConnection({
+              type_id: targetTypeId,
+              source_nord_id: data.nordId,
+              target_nord_id: partnerNordId,
+              direction: sourceConn.direction as any,
+              distance_x: bounds.center,
+              distance_y: 0.5,
+            });
+          }
+
+          const srcType = connectionTypes.find(t => t.id === savedConn.type_id);
+          showUndoToast(
+            `Moved "${data.nordTitle}" from ${srcType?.name || '?'} → ${targetType?.name || '?'}`,
+            async () => {
+              await createConnection({
+                type_id: savedConn.type_id,
+                source_nord_id: savedConn.source_nord_id,
+                target_nord_id: savedConn.target_nord_id,
+                direction: savedConn.direction as any,
+                distance_x: savedConn.distance_x,
+                distance_y: savedConn.distance_y,
+              });
+              await refetchGraph();
+            }
+          );
         }
       }
     }
