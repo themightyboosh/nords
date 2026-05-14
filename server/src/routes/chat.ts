@@ -21,7 +21,7 @@ import * as mcpRepo from '../repositories/mcpSessions.js';
 import * as projectsRepo from '../repositories/projects.js';
 import { dispatchTool, type ToolContext } from '../lib/toolDispatch.js';
 import { buildToolDeclarations } from '../lib/geminiTools.js';
-import { queryOne } from '../db.js';
+import { query, queryOne } from '../db.js';
 
 export const chatRouter = Router();
 
@@ -65,7 +65,7 @@ Your job is to help the user accomplish tasks by traversing nodes (nords) and co
     if (project.purpose) prompt += `Purpose: ${project.purpose}\n`;
   }
 
-  // Persona injection (#3: apply voice, guardrails, temperature)
+  // Persona injection: apply voice, guardrails, temperature, mental models, category weights
   if (personaId) {
     const persona = await queryOne<{
       name: string; background: string; primary_motivation: string;
@@ -86,7 +86,42 @@ Motivation: ${persona.primary_motivation}
 ${persona.voice_and_tone}
 `;
 
-      // Parse and apply guardrails
+      // Mental models — cognitive frameworks the AI should reason through
+      const mentalModels = await query<{ name: string; body: string }>(
+        'SELECT name, body FROM persona_mental_models WHERE persona_id = $1 ORDER BY sort_order',
+        [personaId]
+      );
+      if (mentalModels.length > 0) {
+        prompt += `\n### Decision Frameworks
+When evaluating information or making decisions at each nord, apply these mental models:
+`;
+        for (const mm of mentalModels) {
+          prompt += `- **${mm.name}**: ${mm.body}\n`;
+        }
+        prompt += `Use these frameworks to structure your reasoning. When presenting analysis, reference which framework led to your conclusion.\n`;
+      }
+
+      // Category weights — which connection types this persona cares most about
+      const catWeights = await query<{ connection_type_name: string; weight: number }>(
+        `SELECT ct.name AS connection_type_name, cw.weight
+         FROM persona_category_weights cw
+         JOIN connection_types ct ON ct.id = cw.connection_type_id
+         WHERE cw.persona_id = $1
+         ORDER BY cw.weight DESC`,
+        [personaId]
+      );
+      if (catWeights.length > 0) {
+        prompt += `\n### Attention Bias
+This persona weighs different relationship types differently. Higher weight = more important to explore:
+`;
+        for (const cw of catWeights) {
+          const label = cw.weight > 50 ? '🔴 HIGH' : cw.weight > 0 ? '🟡 MED' : cw.weight > -50 ? '⚪ LOW' : '⬛ IGNORE';
+          prompt += `- ${label} (${cw.weight}): ${cw.connection_type_name}\n`;
+        }
+        prompt += `When choosing which neighbor to traverse next, prefer connections with higher persona weight. This shapes your exploration priority.\n`;
+      }
+
+      // Guardrails — behavioral constraints
       try {
         const guardrails = JSON.parse(persona.guardrails || '[]') as Array<{ mode: string; text: string }>;
         if (guardrails.length > 0) {

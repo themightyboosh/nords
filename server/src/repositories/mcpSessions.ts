@@ -3,12 +3,18 @@ import type { McpSession, McpTraversal, McpNordVisit, McpSessionNord, Project } 
 
 // ── Sessions ──
 
-export async function createSession(projectId: string, personaId?: string | null, startNordId?: string | null): Promise<McpSession> {
+export async function createSession(
+  projectId: string,
+  personaId?: string | null,
+  startNordId?: string | null,
+  userId?: string | null,
+  tokenId?: string | null
+): Promise<McpSession> {
   return queryOne<McpSession>(`
-    INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id)
-    VALUES ($1, $2, $3)
+    INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id, user_id, token_id)
+    VALUES ($1, $2, $3, $4, $5)
     RETURNING *
-  `, [projectId, personaId || null, startNordId || null]) as Promise<McpSession>;
+  `, [projectId, personaId || null, startNordId || null, userId || null, tokenId || null]) as Promise<McpSession>;
 }
 
 /** Update the session's current nord position */

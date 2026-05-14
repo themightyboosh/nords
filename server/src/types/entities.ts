@@ -91,6 +91,8 @@ export interface McpSession {
   project_id: string;
   persona_id: string | null;
   current_nord_id: string | null;
+  user_id: string | null;
+  token_id: string | null;
   started_at: Date;
   ended_at: Date | null;
   status: 'active' | 'completed' | 'abandoned';

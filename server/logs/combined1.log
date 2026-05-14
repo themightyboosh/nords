@@ -4117,3 +4117,40 @@ TypeError: Cannot read properties of undefined (reading 'send')
 18:14:46.206 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
 18:14:46.206 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
 18:14:46.206 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+18:15:44.359 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:15:44.363 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:15:44.365 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:15:44.366 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:15:44.367 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+18:15:44.398 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":185,"rows":7}
+18:15:44.401 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":188,"rows":8}
+18:15:44.403 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types","status":304,"duration":"191ms"}
+18:15:44.404 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":196,"rows":1}
+18:15:44.404 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"199ms"}
+18:15:44.405 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":192,"rows":1}
+18:15:44.405 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":200,"rows":1}
+18:15:44.436 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":30,"rows":1}
+18:15:44.436 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"30ms"}
+18:15:44.438 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":32,"rows":8}
+18:15:44.438 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":33,"rows":1}
+18:15:44.439 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":33,"rows":7}
+18:15:44.439 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types","status":304,"duration":"34ms"}
+18:15:44.441 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":35,"rows":1}
+18:21:27.851 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+18:21:27.851 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+18:21:27.854 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+18:21:27.854 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+18:21:27.854 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+18:21:27.854 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+18:21:51.688 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+18:21:51.691 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+18:21:51.691 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+18:21:51.688 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+18:21:51.691 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+18:21:51.691 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+18:21:59.453 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+18:21:59.453 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+18:21:59.456 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+18:21:59.456 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+18:21:59.456 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+18:21:59.456 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
