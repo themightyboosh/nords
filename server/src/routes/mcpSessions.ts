@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import logger from '../lib/logger.js';
 import * as mcpRepo from '../repositories/mcpSessions.js';
+import { personasRepo } from '../repositories/personas.js';
 
 export const mcpSessionsRouter = Router();
 
@@ -107,7 +108,12 @@ mcpSessionsRouter.post('/mcp-sessions/:id/traversals', async (req: Request, res:
       traversal_type,
       context: context || {},
     });
-    res.status(201).json(traversal);
+
+    // #1: Auto-update current position and return updated horizon
+    await mcpRepo.updateCurrentNord(req.params.id as string, target_nord_id);
+    const horizon = await mcpRepo.getSessionHorizon(req.params.id as string);
+
+    res.status(201).json({ traversal, horizon });
   } catch (err: any) {
     logger.error('Failed to log traversal', { error: err.message, sessionId: req.params.id });
     res.status(500).json({ error: 'Failed to log traversal' });
@@ -238,5 +244,126 @@ mcpSessionsRouter.get('/mcp-sessions/:id/nords/incomplete', async (req: Request,
   } catch (err: any) {
     logger.error('Failed to get incomplete nords', { error: err.message, sessionId: req.params.id });
     res.status(500).json({ error: 'Failed to get incomplete nords' });
+  }
+});
+
+// ── Session Horizon (Sliding-Window Context) ──
+
+/**
+ * @openapi
+ * /api/mcp-sessions/{id}/horizon:
+ *   get:
+ *     tags: [MCP Sessions]
+ *     summary: Get the Session Horizon — full situational awareness
+ *     description: |
+ *       Returns a computed view combining: current nord position,
+ *       persona-weighted neighbor relevance, overall completion %,
+ *       traversal breadcrumb history, and suggested next nord.
+ *       The AI should call this when resuming a session or after
+ *       any traversal, persona switch, or session nord update.
+ */
+mcpSessionsRouter.get('/mcp-sessions/:id/horizon', async (req: Request, res: Response) => {
+  try {
+    const horizon = await mcpRepo.getSessionHorizon(req.params.id as string);
+    res.json(horizon);
+  } catch (err: any) {
+    logger.error('Failed to get session horizon', { error: err.message, sessionId: req.params.id });
+    res.status(500).json({ error: 'Failed to get session horizon' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/mcp-sessions/{id}/persona:
+ *   put:
+ *     tags: [MCP Sessions]
+ *     summary: Switch the active persona for this session
+ *     description: |
+ *       Changes the persona lens, which alters how neighbor nords are
+ *       weighted in the horizon. The AI should call nords_get_horizon
+ *       after switching to see the reweighted view.
+ */
+mcpSessionsRouter.put('/mcp-sessions/:id/persona', async (req: Request, res: Response) => {
+  try {
+    const { persona_id } = req.body;
+    if (persona_id === undefined) {
+      res.status(400).json({ error: 'persona_id is required (use null to clear)' });
+      return;
+    }
+    const session = await mcpRepo.updateSessionPersona(req.params.id as string, persona_id);
+    if (!session) {
+      res.status(404).json({ error: 'Session not found' });
+      return;
+    }
+
+    // Auto-return updated horizon with new persona weights
+    const horizon = await mcpRepo.getSessionHorizon(req.params.id as string);
+    res.json({ session, horizon });
+  } catch (err: any) {
+    logger.error('Failed to switch persona', { error: err.message, sessionId: req.params.id });
+    res.status(500).json({ error: 'Failed to switch persona' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/projects/{id}/personas:
+ *   get:
+ *     tags: [MCP Sessions]
+ *     summary: List all personas available in this project
+ *     description: |
+ *       Returns personas with their names, category weights, mental models,
+ *       and configuration. The AI uses this to discover which personas are
+ *       available and decide when to switch.
+ */
+mcpSessionsRouter.get('/projects/:id/personas', async (req: Request, res: Response) => {
+  try {
+    const personas = await personasRepo.findByProject(req.params.id as string);
+    res.json(personas.map(p => ({
+      id: p.id,
+      name: p.name,
+      background: p.background,
+      primary_motivation: p.primary_motivation,
+      voice_and_tone: p.voice_and_tone,
+      temperature: p.temperature,
+      guardrails: p.guardrails,
+      category_weights: (p.category_weights || []).map(w => ({
+        connection_type_id: w.connection_type_id,
+        weight: w.weight,
+      })),
+      mental_models: (p.mental_models || []).map(m => ({
+        name: m.name,
+        body: m.body,
+      })),
+    })));
+  } catch (err: any) {
+    logger.error('Failed to list personas', { error: err.message, projectId: req.params.id });
+    res.status(500).json({ error: 'Failed to list personas' });
+  }
+});
+
+// ── Project Dictionary (Ontology for AI) ──
+
+/**
+ * @openapi
+ * /api/projects/{id}/dictionary:
+ *   get:
+ *     tags: [MCP Sessions]
+ *     summary: Get the project dictionary — full ontology for the AI
+ *     description: |
+ *       Returns the complete vocabulary: nord types (with descriptions and
+ *       property schemas), connection types (with verbs, measurement modes,
+ *       stage labels, and direction prepositions), and personas (with
+ *       backgrounds, motivations, mental models, and category weights).
+ *       The AI should call this FIRST to understand the project before
+ *       making any decisions.
+ */
+mcpSessionsRouter.get('/projects/:id/dictionary', async (req: Request, res: Response) => {
+  try {
+    const dictionary = await mcpRepo.getProjectDictionary(req.params.id as string);
+    res.json(dictionary);
+  } catch (err: any) {
+    logger.error('Failed to get project dictionary', { error: err.message, projectId: req.params.id });
+    res.status(500).json({ error: 'Failed to get project dictionary' });
   }
 });

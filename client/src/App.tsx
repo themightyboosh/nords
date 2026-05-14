@@ -25,6 +25,7 @@ import { usePersonas } from './hooks/usePersonas';
 import { useLens } from './context/LensContext';
 import { api } from './api/client';
 import { ProjectSettings } from './components/ProjectSettings/ProjectSettings';
+import { PreviewChat } from './components/PreviewChat/PreviewChat';
 
 /**
  * Safe ReactFlow access — returns null when ReactFlow isn't mounted (e.g. board view).
@@ -95,6 +96,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [manageTypesTab, setManageTypesTab] = useState<'nord' | 'connection' | null>(null);
   const [personasOpen, setPersonasOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [projectName, setProjectName] = useState<string>('Loading…');
 
   // Safe ReactFlow access — returns null in board view where ReactFlow isn't mounted
@@ -226,6 +228,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onOpenCategoryTypes={() => setManageTypesTab('connection')}
         onOpenPersonas={() => setPersonasOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenPreview={() => setPreviewOpen(true)}
         projectName={projectName}
       />
       {projectId && (
@@ -290,6 +293,12 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onClose={() => setPersonasOpen(false)}
         connectionTypes={graph?.connection_types || []}
       />
+      {previewOpen && projectId && (
+        <PreviewChat
+          projectId={projectId}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
     </div>
   );
 }

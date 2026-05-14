@@ -20,12 +20,21 @@ export const CreatePersonaSchema = z.object({
 export const UpdatePersonaSchema = z.object({
   name: z.string().min(1).max(100).optional()
     .describe('Display name'),
-  description: z.string().max(1000).optional().nullable()
-    .describe('Role description and behavioral context for AI interactions'),
   avatar_seed: z.string().max(100).optional().nullable()
     .describe('Avatar generation seed'),
-  accent_hue: z.number().int().min(0).max(360).optional()
-    .describe('HSL hue value (0–360) for the persona accent color'),
+  accent_color: z.string().max(20).optional().nullable()
+    .describe('Hex color string for the persona accent (e.g., "#3d4f7c")'),
+  background: z.string().max(2000).optional().nullable()
+    .describe('Persona background and role context'),
+  primary_motivation: z.string().max(2000).optional().nullable()
+    .describe('Core motivation driving this persona'),
+  voice_and_tone: z.string().max(2000).optional().nullable()
+    .describe('Communication style and tone'),
+  guardrails: z.array(z.object({
+    mode: z.enum(['always', 'never']),
+    text: z.string().max(500),
+  })).optional().nullable()
+    .describe('Behavioral guardrails — always/never rules for AI responses'),
   temperature: z.number().min(0).max(2).optional()
     .describe('AI response temperature (0.0 = deterministic, 1.0 = balanced/Gemini default, 2.0 = maximum creativity)'),
   sort_order: z.number().int().min(0).optional()

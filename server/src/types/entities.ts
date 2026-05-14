@@ -42,6 +42,7 @@ export interface Project {
   mcp_system_prompt: string | null;
   default_persona_id: string | null;
   default_start_nord_id: string | null;
+  default_end_nord_id: string | null;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
@@ -89,6 +90,7 @@ export interface McpSession {
   id: string;
   project_id: string;
   persona_id: string | null;
+  current_nord_id: string | null;
   started_at: Date;
   ended_at: Date | null;
   status: 'active' | 'completed' | 'abandoned';
@@ -214,5 +216,32 @@ export interface AccountInvoice {
   total_billed_usd: number;
   stripe_invoice_id: string | null;
   status: string;
+  created_at: Date;
+}
+
+export interface ProjectAccessToken {
+  id: string;
+  project_id: string;
+  label: string;
+  token_hash: string;
+  token_prefix: string;
+  scopes: string[];
+  created_at: Date;
+  expires_at: Date | null;
+  last_used_at: Date | null;
+  revoked_at: Date | null;
+}
+
+export interface McpMessage {
+  id: string;
+  session_id: string;
+  role: 'user' | 'assistant' | 'system' | 'tool';
+  content: string;
+  tool_calls: Array<{ name: string; arguments: Record<string, unknown>; result?: unknown }> | null;
+  context: Record<string, unknown> | null;
+  tokens_in: number | null;
+  tokens_out: number | null;
+  model: string | null;
+  latency_ms: number | null;
   created_at: Date;
 }

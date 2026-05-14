@@ -12,8 +12,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronDown, Menu, X,
-  LogOut, User,
-  Box, Link2, Users,
+  LogOut, User, Settings,
+  Box, Link2, Users, Eye,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NordsLogo from '../NordsLogo';
@@ -27,6 +27,7 @@ interface ViewportHeaderProps {
   onOpenCategoryTypes?: () => void;
   onOpenPersonas?: () => void;
   onOpenSettings?: () => void;
+  onOpenPreview?: () => void;
   /** Project name displayed in the center; clicking opens TBD settings */
   projectName?: string;
   /** 'workspace' (default) = full nav; 'dashboard' = logo + center title only */
@@ -35,7 +36,7 @@ interface ViewportHeaderProps {
 
 export default function ViewportHeader({
   currentTheme, onThemeChange,
-  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenSettings,
+  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenSettings, onOpenPreview,
   projectName = 'Product Launch Q3',
   mode = 'workspace',
 }: ViewportHeaderProps) {
@@ -103,6 +104,28 @@ export default function ViewportHeader({
                 <span>Personas</span>
               </button>
             )}
+            {onOpenSettings && (
+              <button
+                className="nords-viewport-header__nav-item"
+                title="Project Settings"
+                onClick={onOpenSettings}
+                data-testid="header-settings"
+              >
+                <Settings size={14} strokeWidth={1.6} />
+                <span>Settings</span>
+              </button>
+            )}
+            {onOpenPreview && (
+              <button
+                className="nords-viewport-header__nav-item"
+                title="Preview Chat"
+                onClick={onOpenPreview}
+                data-testid="header-preview"
+              >
+                <Eye size={14} strokeWidth={1.6} />
+                <span>Preview</span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -114,14 +137,12 @@ export default function ViewportHeader({
             Projects
           </span>
         ) : (
-          <button
-            className="nords-viewport-header__project-title"
-            onClick={onOpenSettings}
-            title="Project Settings"
-            data-testid="project-title-btn"
+          <span
+            className="nords-viewport-header__project-title nords-viewport-header__project-title--static"
+            data-testid="project-title-display"
           >
-            <span>{projectName}</span>
-          </button>
+            {projectName}
+          </span>
         )}
       </div>
 
@@ -207,6 +228,10 @@ export default function ViewportHeader({
         <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenPersonas?.(); setMobileMenuOpen(false); }}>
           <Users size={14} strokeWidth={1.6} />
           <span>Personas</span>
+        </button>
+        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenSettings?.(); setMobileMenuOpen(false); }}>
+          <Settings size={14} strokeWidth={1.6} />
+          <span>Settings</span>
         </button>
         <div className="nords-context-menu__divider" style={{ margin: '4px 12px', height: '1px', background: 'var(--nords-color-border-subtle)' }} />
         <div style={{ padding: '0 8px' }}>

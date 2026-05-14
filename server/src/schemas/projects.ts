@@ -30,6 +30,8 @@ export const CreateProjectSchema = z.object({
     .describe('Default persona lens for AI interactions'),
   default_start_nord_id: z.string().uuid().optional().nullable()
     .describe('Default starting nord for graph navigation'),
+  default_end_nord_id: z.string().uuid().optional().nullable()
+    .describe('Default end nord — session transitions here when all required properties are met'),
 });
 
 export const UpdateProjectSchema = z.object({
@@ -53,4 +55,6 @@ export const UpdateProjectSchema = z.object({
     .describe('Default persona lens for AI interactions'),
   default_start_nord_id: z.string().uuid().optional().nullable()
     .describe('Default starting nord for navigation'),
+  default_end_nord_id: z.string().uuid().optional().nullable()
+    .describe('Default end nord for session completion'),
 });

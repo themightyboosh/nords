@@ -5396,3 +5396,501 @@ error: insert or update on table "projects" violates foreign key constraint "pro
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:67:21) {"service":"nords-server","text":"\n    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_muta","duration":34,"error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\""}
 19:45:45.259 [31merror[39m: Failed to create project {"service":"nords-server","error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\"","name":"Proposal Director Demo"}
 19:45:45.259 [31merror[39m: POST /api/projects 500 {"service":"nords-server","method":"POST","path":"/api/projects","status":500,"duration":"37ms","bytes":"36"}
+15:09:32.105 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "mock-1"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Object.findByProject (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/personas.ts:51:22)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/personas.ts:53:22) {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sort_order, name","duration":36,"error":"invalid input syntax for type uuid: \"mock-1\""}
+15:09:32.105 [31merror[39m: Failed to list personas {"service":"nords-server","error":"invalid input syntax for type uuid: \"mock-1\"","projectId":"mock-1"}
+15:09:32.106 [31merror[39m: GET /api/projects/mock-1/personas 500 {"service":"nords-server","method":"GET","path":"/api/projects/mock-1/personas","status":500,"duration":"41ms","bytes":"35"}
+15:09:32.224 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "mock-1"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:39:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":157,"error":"invalid input syntax for type uuid: \"mock-1\""}
+15:09:32.224 [31merror[39m: fn_load_project_graph failed invalid input syntax for type uuid: "mock-1" {"service":"nords-server","code":"22P02","projectId":"mock-1"}
+15:09:32.225 [31merror[39m: GET /api/projects/mock-1/graph 500 {"service":"nords-server","method":"GET","path":"/api/projects/mock-1/graph","status":500,"duration":"159ms","bytes":"40"}
+15:09:32.269 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "mock-1"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Object.findByProject (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/personas.ts:51:22)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/personas.ts:53:22) {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sort_order, name","duration":160,"error":"invalid input syntax for type uuid: \"mock-1\""}
+15:09:32.269 [31merror[39m: Failed to list personas {"service":"nords-server","error":"invalid input syntax for type uuid: \"mock-1\"","projectId":"mock-1"}
+15:09:32.269 [31merror[39m: GET /api/projects/mock-1/personas 500 {"service":"nords-server","method":"GET","path":"/api/projects/mock-1/personas","status":500,"duration":"162ms","bytes":"35"}
+15:09:32.300 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "mock-1"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Object.findByProject (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/personas.ts:51:22)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/personas.ts:53:22) {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sort_order, name","duration":30,"error":"invalid input syntax for type uuid: \"mock-1\""}
+15:09:32.300 [31merror[39m: Failed to list personas {"service":"nords-server","error":"invalid input syntax for type uuid: \"mock-1\"","projectId":"mock-1"}
+15:09:32.301 [31merror[39m: GET /api/projects/mock-1/personas 500 {"service":"nords-server","method":"GET","path":"/api/projects/mock-1/personas","status":500,"duration":"31ms","bytes":"35"}
+15:09:32.384 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "mock-1"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/graph.ts:39:20) {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":158,"error":"invalid input syntax for type uuid: \"mock-1\""}
+15:09:32.384 [31merror[39m: fn_load_project_graph failed invalid input syntax for type uuid: "mock-1" {"service":"nords-server","code":"22P02","projectId":"mock-1"}
+15:09:32.384 [31merror[39m: GET /api/projects/mock-1/graph 500 {"service":"nords-server","method":"GET","path":"/api/projects/mock-1/graph","status":500,"duration":"158ms","bytes":"40"}
+15:09:32.458 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "mock-1"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Object.findByProject (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/personas.ts:51:22)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/personas.ts:53:22) {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sort_order, name","duration":156,"error":"invalid input syntax for type uuid: \"mock-1\""}
+15:09:32.458 [31merror[39m: Failed to list personas {"service":"nords-server","error":"invalid input syntax for type uuid: \"mock-1\"","projectId":"mock-1"}
+15:09:32.458 [31merror[39m: GET /api/projects/mock-1/personas 500 {"service":"nords-server","method":"GET","path":"/api/projects/mock-1/personas","status":500,"duration":"156ms","bytes":"35"}
+15:09:36.420 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.124Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.421 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.139Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.421 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.139Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.421 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.warn (http://localhost:5173/src/lib/logger.ts:66:3)
+    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx:16:10)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:12868:12) {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.167Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.421 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.warn (http://localhost:5173/src/lib/logger.ts:66:3)
+    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx:16:10)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:12868:12) {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.168Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.421 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.170Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.421 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.170Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.421 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.170Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.422 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.170Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.422 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.185Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.422 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.185Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.422 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.185Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.422 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.185Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.422 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.189Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.422 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.189Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.422 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.189Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.189Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.189Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.189Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.189Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.189Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.190Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.190Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.190Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.190Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.190Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.190Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.190Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.190Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.warn (http://localhost:5173/src/lib/logger.ts:66:3)
+    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx:16:10)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:12868:12) {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.190Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.warn (http://localhost:5173/src/lib/logger.ts:66:3)
+    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx:16:10)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:12868:12) {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.190Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.423 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.424 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.424 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.424 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.424 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.424 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.424 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.424 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.424 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendLog (http://localhost:5173/@vite/client:494:13)
+    at console.<computed> (http://localhost:5173/@vite/client:511:4)
+    at emit (http://localhost:5173/src/lib/logger.ts:32:3)
+    at Object.error (http://localhost:5173/src/lib/logger.ts:60:3)
+    at http://localhost:5173/src/main.tsx:12:9 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}
+15:09:36.424 [31merror[39m: Unhandled promise rejection
+TypeError: Cannot read properties of undefined (reading 'send')
+    at Object.send (http://localhost:5173/@vite/client:438:7)
+    at Object.send (http://localhost:5173/@vite/client:876:16)
+    at Object.send (http://localhost:5173/@vite/client:307:21)
+    at Object.send (http://localhost:5173/@vite/client:385:30)
+    at sendError (http://localhost:5173/@vite/client:480:13)
+    at http://localhost:5173/@vite/client:519:4 {"service":"nords-client","clientTimestamp":"2026-05-14T19:09:18.191Z","reason":"Cannot read properties of undefined (reading 'send')","userId":"dev-user-000"}

@@ -17,6 +17,8 @@ import { logsRouter } from './routes/logs.js';
 import { personasRouter } from './routes/personas.js';
 import { accountsRouter } from './routes/accounts.js';
 import { mcpSessionsRouter } from './routes/mcpSessions.js';
+import { accessTokensRouter } from './routes/accessTokens.js';
+import { chatRouter } from './routes/chat.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -71,6 +73,8 @@ app.use('/api', logsRouter);
 app.use('/api', personasRouter);
 app.use('/api', accountsRouter);
 app.use('/api', mcpSessionsRouter);
+app.use('/api', accessTokensRouter);
+app.use('/api', chatRouter);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

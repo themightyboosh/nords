@@ -16,10 +16,13 @@ import {
   FolderKanban, Plus, MoreHorizontal,
   Layers, Star, BookOpen,
   Trash2, Download, X, AlertTriangle,
+  ShieldCheck, BarChart3, CreditCard, Settings2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import ViewportHeader from '../Layout/ViewportHeader';
+import { IconPicker } from '../shared/IconPicker';
+import { resolveIcon } from '../../utils/iconRegistry';
 import './ProjectDashboard.css';
 
 interface Project {
@@ -58,6 +61,7 @@ export default function ProjectDashboard() {
   // Delete modal state
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showCreateIconPicker, setShowCreateIconPicker] = useState(false);
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{ projectId: string; x: number; y: number } | null>(null);
@@ -103,7 +107,8 @@ export default function ProjectDashboard() {
         mcp_mutable: createForm.mcp_mutable,
       });
       setShowCreateModal(false);
-      setCreateForm({ name: '', description: '', purpose: '', icon: '📁', mcp_enabled: false, mcp_capture_data: false, mcp_mutable: false });
+      setShowCreateIconPicker(false);
+      setCreateForm({ name: '', description: '', purpose: '', icon: 'Folder', mcp_enabled: false, mcp_capture_data: false, mcp_mutable: false });
       await loadProjects();
     } catch (err: any) {
       setCreateErrors([err.message || 'Failed to create project']);
@@ -180,6 +185,28 @@ export default function ProjectDashboard() {
           </button>
         </nav>
 
+        {/* ── Admin Section ── */}
+        <div className="nords-dashboard__sidebar-header" style={{ marginTop: 8 }}>
+          <span className="nords-dashboard__sidebar-title">
+            <ShieldCheck size={12} style={{ marginRight: 4 }} />
+            Admin
+          </span>
+        </div>
+        <nav className="nords-dashboard__sidebar-nav">
+          <button className="nords-dashboard__nav-item">
+            <BarChart3 size={14} strokeWidth={1.5} />
+            Analytics
+          </button>
+          <button className="nords-dashboard__nav-item">
+            <CreditCard size={14} strokeWidth={1.5} />
+            Billing
+          </button>
+          <button className="nords-dashboard__nav-item">
+            <Settings2 size={14} strokeWidth={1.5} />
+            Platform Settings
+          </button>
+        </nav>
+
         <button
           className="nords-dashboard__create-btn"
           data-testid="create-project-btn"
@@ -211,7 +238,12 @@ export default function ProjectDashboard() {
               data-testid={`project-card-${project.id}`}
             >
               <div className="nords-dashboard__card-header">
-                <span className="nords-dashboard__card-icon">{project.icon || '📁'}</span>
+                <span className="nords-dashboard__card-icon">
+                {(() => {
+                  const CardIcon = resolveIcon(project.icon);
+                  return <CardIcon size={18} strokeWidth={1.6} />;
+                })()}
+              </span>
                 <div className="nords-dashboard__card-header-right">
                   {project.mcp_enabled && (
                     <span className="nords-dashboard__mcp-badge" title="MCP Enabled">MCP</span>
@@ -289,13 +321,40 @@ export default function ProjectDashboard() {
 
               <label className="nords-modal__label">
                 Name <span className="nords-modal__required">*</span>
-                <input
-                  className="nords-modal__input"
-                  value={createForm.name}
-                  onChange={e => setCreateForm({ ...createForm, name: e.target.value })}
-                  placeholder="Product Launch Q3"
-                  autoFocus
-                />
+                <div className="nords-form__icon-name-row">
+                  {(() => {
+                    const CreateIcon = resolveIcon(createForm.icon || 'Folder');
+                    return (
+                      <button
+                        type="button"
+                        className="nords-form__icon-btn"
+                        onClick={() => setShowCreateIconPicker(!showCreateIconPicker)}
+                        title="Choose project icon"
+                        data-testid="create-project-icon-btn"
+                      >
+                        <CreateIcon size={20} strokeWidth={1.6} />
+                      </button>
+                    );
+                  })()}
+                  <input
+                    className="nords-modal__input"
+                    value={createForm.name}
+                    onChange={e => setCreateForm({ ...createForm, name: e.target.value })}
+                    placeholder="Product Launch Q3"
+                    autoFocus
+                  />
+                </div>
+                {showCreateIconPicker && (
+                  <div style={{ marginTop: '8px' }}>
+                    <IconPicker
+                      currentIcon={createForm.icon || 'Folder'}
+                      onSelect={(iconName) => {
+                        setCreateForm({ ...createForm, icon: iconName });
+                        setShowCreateIconPicker(false);
+                      }}
+                    />
+                  </div>
+                )}
               </label>
 
               <label className="nords-modal__label">
