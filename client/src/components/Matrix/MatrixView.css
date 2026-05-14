@@ -86,6 +86,16 @@
   border: 1px solid rgba(255,255,255,0.04);
 }
 
+/* Orphan column variant */
+.nords-matrix__column--orphans {
+  border-style: dashed;
+  opacity: 0.7;
+}
+.nords-matrix__column-label--muted {
+  display: flex; align-items: center; gap: 4px;
+  color: var(--nords-color-text-tertiary, #6b7280) !important;
+}
+
 /* ── Column Header ── */
 .nords-matrix__column-header {
   display: flex; align-items: center; justify-content: space-between;

@@ -60,9 +60,16 @@ interface LaneColumn {
   cards: SwimCard[];
 }
 
+interface SelectedCard {
+  nordId: string;
+  connectionTypeId: string;
+  connectionId: string;
+}
+
 interface Swimlane {
   connectionType: ResolvedConnectionType;
   columns: LaneColumn[];
+  orphans: SwimCard[];
   cardCount: number;
 }
 
@@ -70,36 +77,40 @@ interface Swimlane {
 
 export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetchGraph }: MatrixViewProps) {
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
-  const { isNordTypeVisible, isLaneCollapsed, toggleLaneCollapse } = useBoardSettingsContext();
+  const { isNordTypeVisible, isLaneCollapsed, toggleLaneCollapse, getBoard } = useBoardSettingsContext();
   const { createConnection, deleteConnection } = useConnectionMutations(projectId);
   const { upsertPosition } = useBoardPositionMutations(projectId);
 
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
+  const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
   const [undoToast, setUndoToast] = useState<{ message: string; undoFn: () => Promise<void> } | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Keyboard: Delete selected card's connection ──
+  // Card click: set scoped selection + open drawer
+  const handleCardClick = useCallback((card: SwimCard) => {
+    setSelectedCard({ nordId: card.id, connectionTypeId: card.connectionTypeId, connectionId: card.connectionId });
+    onNordClick(card.id);
+  }, [onNordClick]);
+
+  // ── Keyboard: Delete selected card's connection (scoped to lane) ──
   useEffect(() => {
     const handler = async (e: KeyboardEvent) => {
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        // Only act if no input is focused
         const tag = (e.target as HTMLElement)?.tagName;
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-        if (!selectedNord || !graph) return;
+        if (!selectedCard || !graph) return;
 
-        // Find the first connection involving this nord (pick from any lane)
-        const conn = graph.connections.find(
-          c => (c.source_nord_id === selectedNord || c.target_nord_id === selectedNord) && !c.deleted_at
-        );
+        // Find the specific connection for this card in this lane
+        const conn = graph.connections.find(c => c.id === selectedCard.connectionId);
         if (!conn) return;
 
         e.preventDefault();
-        const nord = graph.nords.find(n => n.id === selectedNord);
+        const nord = graph.nords.find(n => n.id === selectedCard.nordId);
         const ct = connectionTypes.find(t => t.id === conn.type_id);
 
-        // Save for undo
         const savedConn = { ...conn };
         await deleteConnection(conn.id);
+        setSelectedCard(null);
         await refetchGraph();
 
         showUndoToast(
@@ -120,7 +131,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [selectedNord, graph, connectionTypes, deleteConnection, createConnection, refetchGraph]);
+  }, [selectedCard, graph, connectionTypes, deleteConnection, createConnection, refetchGraph]);
 
   function showUndoToast(message: string, undoFn: () => Promise<void>) {
     if (undoTimer.current) clearTimeout(undoTimer.current);
@@ -218,8 +229,33 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         cards: (columnMap.get(lbl.label) || []).sort((a, b) => a.title.localeCompare(b.title)),
       }));
 
+      // Build orphan cards: nords with NO connections of this type
+      const connectedNordIds = new Set(nordInfo.keys());
+      const orphanCards: SwimCard[] = [];
+      for (const nord of graph.nords) {
+        if (connectedNordIds.has(nord.id)) continue;
+        const nordType = typeMap.get(nord.type_id);
+        const isDimmed = !isNordTypeVisible(ct.id, nord.type_id);
+        orphanCards.push({
+          id: nord.id,
+          title: nord.title || 'Untitled',
+          typeName: nordType?.name || 'Unknown',
+          typeColor: nordType?.accent_color || '#4da6ff',
+          typeIcon: resolveIcon(nordType?.icon || null),
+          typeId: nord.type_id,
+          connectionId: '',  // no connection
+          connectionTypeId: ct.id,
+          resolvedLabel: 'None',
+          distance: -1,
+          sortOrder: 0,
+          direction: 'forward',
+          isDimmed,
+          properties: [],
+        });
+      }
+
       const cardCount = columns.reduce((sum, col) => sum + col.cards.length, 0);
-      lanes.push({ connectionType: ct, columns, cardCount });
+      lanes.push({ connectionType: ct, columns, orphans: orphanCards, cardCount });
     }
 
     return lanes;
@@ -391,7 +427,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                 <span className="nords-matrix__lane-count">{lane.cardCount}</span>
               </button>
 
-              {/* Lane Body — columns */}
+              {/* Lane Body — columns + optional orphan column */}
               {!collapsed && (
                 <div className="nords-matrix__lane-body">
                   <div className="nords-matrix__columns">
@@ -412,11 +448,11 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                               <BoardCard
                                 key={`${card.connectionId}-${card.id}`}
                                 card={card}
-                                isSelected={selectedNord === card.id}
+                                isSelected={selectedCard?.nordId === card.id && selectedCard?.connectionTypeId === card.connectionTypeId}
                                 isDragging={draggingCardId === card.id}
                                 onDragStart={handleDragStart}
                                 onDragEnd={handleDragEnd}
-                                onClick={onNordClick}
+                                onClick={() => handleCardClick(card)}
                               />
                             ))}
                             {col.cards.length === 0 && (
@@ -425,6 +461,31 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                           </div>
                         </div>
                     ))}
+
+                    {/* Orphan column — hidden by default, toggled by showOrphans */}
+                    {getBoard(ct.id).showOrphans && lane.orphans.length > 0 && (
+                      <div className="nords-matrix__column nords-matrix__column--orphans">
+                        <div className="nords-matrix__column-header">
+                          <span className="nords-matrix__column-label nords-matrix__column-label--muted">
+                            <Unlink size={11} /> None
+                          </span>
+                          <span className="nords-matrix__column-count">{lane.orphans.length}</span>
+                        </div>
+                        <div className="nords-matrix__column-body">
+                          {lane.orphans.map(card => (
+                            <BoardCard
+                              key={`orphan-${card.id}`}
+                              card={card}
+                              isSelected={selectedCard?.nordId === card.id && selectedCard?.connectionTypeId === card.connectionTypeId}
+                              isDragging={draggingCardId === card.id}
+                              onDragStart={handleDragStart}
+                              onDragEnd={handleDragEnd}
+                              onClick={() => handleCardClick(card)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -447,7 +508,7 @@ interface BoardCardProps {
   isDragging: boolean;
   onDragStart: (e: React.DragEvent<HTMLDivElement>, card: SwimCard) => void;
   onDragEnd: () => void;
-  onClick: (cardId: string) => void;
+  onClick: () => void;
 }
 
 const BoardCard = memo(function BoardCard({
@@ -486,7 +547,7 @@ const BoardCard = memo(function BoardCard({
       draggable
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
-      onClick={() => onClick(card.id)}
+      onClick={onClick}
     >
       <NordCard
         title={card.title}

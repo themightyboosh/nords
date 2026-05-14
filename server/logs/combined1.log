@@ -4420,3 +4420,129 @@ Error: Rendered more hooks than during the previous render.
 19:09:01.422 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":35,"rows":1}
 19:09:01.423 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
 19:09:01.424 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":200,"duration":"37ms","bytes":"17477"}
+19:14:04.436 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:04.437 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:04.473 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":176,"rows":1}
+19:14:04.481 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":184,"rows":1}
+19:14:04.482 [32minfo[39m: PUT /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/board-position 200 {"service":"nords-server","method":"PUT","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/board-position","status":200,"duration":"186ms","bytes":"258"}
+19:14:04.520 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":33,"rows":1}
+19:14:04.557 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":69,"rows":1}
+19:14:04.557 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":200,"duration":"70ms","bytes":"17655"}
+19:14:10.757 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":38,"rows":1}
+19:14:10.757 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":38,"rows":1}
+19:14:10.758 [32minfo[39m: PUT /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/board-position 200 {"service":"nords-server","method":"PUT","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/board-position","status":200,"duration":"39ms","bytes":"258"}
+19:14:10.795 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":33,"rows":1}
+19:14:10.797 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+19:14:10.798 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":200,"duration":"36ms","bytes":"17834"}
+19:14:58.165 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:58.165 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:58.170 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:58.171 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:58.171 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:58.204 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":172,"rows":1}
+19:14:58.204 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"173ms"}
+19:14:58.222 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":187,"rows":7}
+19:14:58.229 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":195,"rows":8}
+19:14:58.229 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types","status":304,"duration":"195ms"}
+19:14:58.229 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":198,"rows":1}
+19:14:58.232 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":198,"rows":1}
+19:14:58.249 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":44,"rows":1}
+19:14:58.263 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":33,"rows":8}
+19:14:58.264 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":34,"rows":7}
+19:14:58.264 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types","status":304,"duration":"34ms"}
+19:14:58.264 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:14:58.335 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:14:58.365 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":160,"rows":1}
+19:14:58.366 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"161ms"}
+19:15:04.794 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":42,"rows":1}
+19:15:04.795 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":38,"rows":1}
+19:15:04.795 [32minfo[39m: PUT /api/nord-types/7acdb912-e8b7-467b-94a4-7e0773060aba 200 {"service":"nords-server","method":"PUT","path":"/api/nord-types/7acdb912-e8b7-467b-94a4-7e0773060aba","status":200,"duration":"43ms","bytes":"1023"}
+19:15:04.829 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":31,"rows":1}
+19:15:04.864 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":66,"rows":1}
+19:15:04.865 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":200,"duration":"67ms","bytes":"17834"}
+19:15:06.737 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":36,"rows":1}
+19:15:06.740 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET properties_schema = $1 WHERE id = $2 AND deleted_at IS NUL","duration":40,"rows":1}
+19:15:06.741 [32minfo[39m: PUT /api/nord-types/7acdb912-e8b7-467b-94a4-7e0773060aba 200 {"service":"nords-server","method":"PUT","path":"/api/nord-types/7acdb912-e8b7-467b-94a4-7e0773060aba","status":200,"duration":"41ms","bytes":"1023"}
+19:15:06.778 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":35,"rows":1}
+19:15:06.778 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+19:15:06.778 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":200,"duration":"35ms","bytes":"17834"}
+19:15:13.252 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":30,"rows":1}
+19:15:13.253 [34mdebug[39m: Query executed {"service":"nords-server","text":"UPDATE nord_types SET icon = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING *","duration":31,"rows":1}
+19:15:13.253 [32minfo[39m: PUT /api/nord-types/5cecf5b1-35b6-48eb-a8cc-bca4f531bf47 200 {"service":"nords-server","method":"PUT","path":"/api/nord-types/5cecf5b1-35b6-48eb-a8cc-bca4f531bf47","status":200,"duration":"31ms","bytes":"646"}
+19:15:13.285 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":30,"rows":1}
+19:15:13.291 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":36,"rows":1}
+19:15:13.291 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":200,"duration":"36ms","bytes":"17831"}
+19:15:18.399 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:15:18.399 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM mcp_sessions WHERE project_id = $1 ORDER BY started_at DESC LIMIT ","duration":33,"rows":2}
+19:15:18.400 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/mcp-sessions 200 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/mcp-sessions","status":200,"duration":"36ms","bytes":"571"}
+19:15:18.434 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM mcp_sessions WHERE project_id = $1 ORDER BY started_at DESC LIMIT ","duration":32,"rows":2}
+19:15:18.435 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/mcp-sessions 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/mcp-sessions","status":304,"duration":"34ms"}
+19:15:18.436 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:15:23.157 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":36,"rows":1}
+19:15:23.159 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":40,"rows":1}
+19:15:23.191 [31merror[39m: Query failed
+error: column "user_id" of relation "mcp_sessions" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:271:17) {"service":"nords-server","text":"\n    INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id, user_id, token_id)\n    VALUES ($1, $2, $3, $4, $","duration":29,"error":"column \"user_id\" of relation \"mcp_sessions\" does not exist"}
+19:15:23.192 [31merror[39m: Chat proxy error
+error: column "user_id" of relation "mcp_sessions" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:271:17) {"service":"nords-server","error":"column \"user_id\" of relation \"mcp_sessions\" does not exist","projectId":"bf84e9fc-8c1e-4ffe-ac1c-415d13de0967"}
+19:15:23.193 [31merror[39m: POST /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/chat","status":500,"duration":"74ms","bytes":"98"}
+19:15:35.201 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:15:35.201 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:15:35.231 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":161,"rows":2}
+19:15:35.231 [32minfo[39m: GET /api/projects 304 {"service":"nords-server","method":"GET","path":"/api/projects","status":304,"duration":"161ms"}
+19:15:35.234 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":163,"rows":1}
+19:15:35.267 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:15:35.355 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:15:35.392 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":159,"rows":2}
+19:15:35.392 [32minfo[39m: GET /api/projects 304 {"service":"nords-server","method":"GET","path":"/api/projects","status":304,"duration":"159ms"}
+19:15:36.899 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":29,"rows":4}
+19:15:36.900 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":31,"rows":1}
+19:15:36.902 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:15:36.929 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":30,"rows":0}
+19:15:36.959 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":30,"rows":8}
+19:15:36.959 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"91ms"}
+19:15:36.990 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":30,"rows":1}
+19:15:36.990 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":30,"rows":4}
+19:15:36.993 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:15:36.996 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:15:36.996 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:15:37.021 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":31,"rows":0}
+19:15:37.023 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":154,"rows":1}
+19:15:37.023 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"154ms"}
+19:15:37.031 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":162,"rows":1}
+19:15:37.052 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":31,"rows":8}
+19:15:37.052 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"92ms"}
+19:15:37.052 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":28,"rows":1}
+19:15:37.053 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"29ms"}
+19:15:37.056 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":32,"rows":1}
+19:15:37.071 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":202,"rows":1}
+19:15:37.071 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":304,"duration":"202ms"}
+19:15:37.083 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":30,"rows":4}
+19:15:37.084 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":31,"rows":1}
+19:15:37.106 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:15:37.115 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":32,"rows":0}
+19:15:37.143 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":28,"rows":8}
+19:15:37.143 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"90ms"}
+19:15:37.146 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":74,"rows":1}
+19:15:37.146 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":304,"duration":"74ms"}
+19:15:37.176 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":32,"rows":1}
+19:15:37.176 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":32,"rows":4}
+19:15:37.206 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":30,"rows":0}
+19:15:37.236 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":30,"rows":8}
+19:15:37.237 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"93ms"}
+19:16:01.716 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:15:35.050Z","userId":"dev-user-000"}
+19:16:01.716 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:15:35.050Z","userId":"dev-user-000"}
+19:16:01.716 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:15:36.844Z","userId":"dev-user-000"}
+19:16:01.716 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:15:36.844Z","userId":"dev-user-000"}
+19:16:01.719 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"5ms","bytes":"14"}
+19:16:01.844 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:16:01.878 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":164,"rows":1}
