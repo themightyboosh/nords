@@ -71,7 +71,7 @@ interface Swimlane {
 export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetchGraph }: MatrixViewProps) {
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
   const { isNordTypeVisible, isLaneCollapsed, toggleLaneCollapse } = useBoardSettingsContext();
-  const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
+  const { createConnection, deleteConnection } = useConnectionMutations(projectId);
   const { upsertPosition } = useBoardPositionMutations(projectId);
 
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
@@ -133,75 +133,89 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     if (!graph) return [];
 
     const typeMap = new Map(graph.nord_types.map(t => [t.id, t]));
+
+    // Index board_positions by "nordId|typeId" for O(1) lookup
+    const posKey = (nordId: string, typeId: string) => `${nordId}|${typeId}`;
+    const boardPosMap = new Map<string, { distance_x: number; distance_y: number }>();
+    for (const bp of (graph.board_positions || [])) {
+      boardPosMap.set(posKey(bp.nord_id, bp.type_id), { distance_x: bp.distance_x, distance_y: bp.distance_y });
+    }
+
     const lanes: Swimlane[] = [];
 
     for (const ct of connectionTypes) {
-      // Get connections of this type
       const conns = graph.connections.filter(c => c.type_id === ct.id);
-      if (conns.length === 0 && ct.count === 0) continue; // skip empty types
+      if (conns.length === 0 && ct.count === 0) continue;
 
       const hasSpectrum = ct.xStageLabels.length > 0;
       const labels = hasSpectrum ? ct.xStageLabels : [{ label: 'All', position: 0.5 }];
 
+      // Gather per-nord data: which nords appear in this lane, their connection IDs,
+      // and their average connection distance_x (used as seed if no board_position exists)
+      const nordInfo = new Map<string, { connIds: string[]; avgDistX: number; count: number }>();
+
+      for (const conn of conns) {
+        for (const nordId of [conn.source_nord_id, conn.target_nord_id]) {
+          const info = nordInfo.get(nordId) || { connIds: [], avgDistX: 0, count: 0 };
+          if (!info.connIds.includes(conn.id)) info.connIds.push(conn.id);
+          info.avgDistX += (conn.distance_x ?? 0.5);
+          info.count++;
+          nordInfo.set(nordId, info);
+        }
+      }
+
+      // Build one card per nord (deduped)
       const columnMap = new Map<string, SwimCard[]>();
       for (const lbl of labels) columnMap.set(lbl.label, []);
 
-      for (const conn of conns) {
-        // Each connection produces cards for BOTH endpoints
-        for (const nordId of [conn.source_nord_id, conn.target_nord_id]) {
-          const nord = graph.nords.find(n => n.id === nordId);
-          if (!nord) continue;
+      for (const [nordId, info] of nordInfo) {
+        const nord = graph.nords.find(n => n.id === nordId);
+        if (!nord) continue;
 
-          const nordType = typeMap.get(nord.type_id);
-          const isDimmed = !isNordTypeVisible(ct.id, nord.type_id);
+        const nordType = typeMap.get(nord.type_id);
+        const isDimmed = !isNordTypeVisible(ct.id, nord.type_id);
 
-          // Avoid duplicate cards: same nord + same connection = same card
-          // But same nord can appear via different connections
-          const distX = conn.distance_x ?? 0.5;
-          const resolved = hasSpectrum ? (resolveStageLabel(distX, ct.xStageLabels) || labels[0].label) : 'All';
+        // Position: board_position wins, then average connection distance_x as seed
+        const bp = boardPosMap.get(posKey(nordId, ct.id));
+        const distX = bp ? bp.distance_x : (info.avgDistX / info.count);
 
-          const card: SwimCard = {
-            id: nord.id,
-            title: nord.title || 'Untitled',
-            typeName: nordType?.name || 'Unknown',
-            typeColor: nordType?.accent_color || '#4da6ff',
-            typeIcon: resolveIcon(nordType?.icon || null),
-            typeId: nord.type_id,
-            connectionId: conn.id,
-            connectionTypeId: ct.id,
-            resolvedLabel: resolved,
-            distance: distX,
-            sortOrder: conn.sort_order ?? 0,
-            direction: conn.direction || 'forward',
-            isDimmed,
-            properties: (() => {
-              const schema = nordType?.properties_schema || [];
-              const propsObj = nord.properties || {};
-              return schema
-                .filter((s: any) => s.card_row === 1 || s.card_row === 2)
-                .sort((a: any, b: any) => (a.card_row || 999) - (b.card_row || 999))
-                .map((s: any) => ({ key: s.name, value: String((propsObj as any)[s.name] ?? '') }))
-                .filter(p => p.value !== '');
-            })(),
-          };
+        const resolved = hasSpectrum
+          ? (resolveStageLabel(distX, ct.xStageLabels) || labels[0].label)
+          : 'All';
 
-          const col = columnMap.get(resolved);
-          if (col) {
-            // Dedup: don't show same nord twice in same column from same connection
-            if (!col.some(c => c.id === nord.id && c.connectionId === conn.id)) {
-              col.push(card);
-            }
-          }
-        }
+        const card: SwimCard = {
+          id: nord.id,
+          title: nord.title || 'Untitled',
+          typeName: nordType?.name || 'Unknown',
+          typeColor: nordType?.accent_color || '#4da6ff',
+          typeIcon: resolveIcon(nordType?.icon || null),
+          typeId: nord.type_id,
+          connectionId: info.connIds[0],   // primary connection (for cross-lane ops)
+          connectionTypeId: ct.id,
+          resolvedLabel: resolved,
+          distance: distX,
+          sortOrder: 0,
+          direction: 'forward',
+          isDimmed,
+          properties: (() => {
+            const schema = nordType?.properties_schema || [];
+            const propsObj = nord.properties || {};
+            return schema
+              .filter((s: any) => s.card_row === 1 || s.card_row === 2)
+              .sort((a: any, b: any) => (a.card_row || 999) - (b.card_row || 999))
+              .map((s: any) => ({ key: s.name, value: String((propsObj as any)[s.name] ?? '') }))
+              .filter(p => p.value !== '');
+          })(),
+        };
+
+        const col = columnMap.get(resolved);
+        if (col) col.push(card);
       }
 
       const columns: LaneColumn[] = labels.map(lbl => ({
         label: lbl.label,
         position: lbl.position,
-        cards: (columnMap.get(lbl.label) || []).sort((a, b) => {
-          if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
-          return a.title.localeCompare(b.title);
-        }),
+        cards: (columnMap.get(lbl.label) || []).sort((a, b) => a.title.localeCompare(b.title)),
       }));
 
       const cardCount = columns.reduce((sum, col) => sum + col.cards.length, 0);
@@ -235,7 +249,6 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     e: React.DragEvent,
     targetTypeId: string,
     columnPosition: number,
-    columnCards: SwimCard[],
   ) => {
     e.preventDefault();
     setDraggingCardId(null);
@@ -253,25 +266,13 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     const targetLabel = resolveStageLabel(columnPosition, labels) || labels[0].label;
     const bounds = getColumnBounds(targetLabel, labels);
 
-    // Sort order: cosmetic within-column ordering
-    const existingCards = columnCards.filter(c => c.id !== data.nordId);
-    let newSortOrder = 1000;
-    if (existingCards.length > 0) {
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const relY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-      const idx = Math.round(relY * existingCards.length);
-      if (idx === 0) newSortOrder = existingCards[0].sortOrder - 1000;
-      else if (idx >= existingCards.length) newSortOrder = existingCards[existingCards.length - 1].sortOrder + 1000;
-      else newSortOrder = Math.round((existingCards[idx - 1].sortOrder + existingCards[idx].sortOrder) / 2);
-    }
-
     if (!isCrossLane) {
-      // Same lane: update distance_x on the connection (column placement)
-      await Promise.all(
-        data.sourceConnectionIds.map(cid =>
-          updateConnection(cid, { distance_x: bounds.center, sort_order: newSortOrder })
-        )
-      );
+      // Same lane: update this nord's board_position (independent of connections)
+      await upsertPosition({
+        nord_id: data.nordId,
+        type_id: targetTypeId,
+        distance_x: bounds.center,
+      });
     } else {
       // Cross-lane drop
       const sourceConn = graph.connections.find(c => c.id === data.sourceConnectionIds[0]);
@@ -288,6 +289,12 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
             target_nord_id: partnerNordId,
             distance_x: bounds.center,
             distance_y: 0.5,
+          });
+          // Seed board_position for the new lane
+          await upsertPosition({
+            nord_id: data.nordId,
+            type_id: targetTypeId,
+            distance_x: bounds.center,
           });
         }
       } else {
@@ -306,6 +313,13 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
               distance_y: 0.5,
             });
           }
+
+          // Seed board_position for the new lane
+          await upsertPosition({
+            nord_id: data.nordId,
+            type_id: targetTypeId,
+            distance_x: bounds.center,
+          });
 
           const srcType = connectionTypes.find(t => t.id === savedConn.type_id);
           showUndoToast(
@@ -327,7 +341,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     }
 
     await refetchGraph();
-  }, [graph, connectionTypes, updateConnection, createConnection, deleteConnection, refetchGraph]);
+  }, [graph, connectionTypes, upsertPosition, createConnection, deleteConnection, refetchGraph]);
 
   // ── Render ──
 
@@ -392,7 +406,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                           <div
                             className="nords-matrix__column-body"
                             onDragOver={handleDragOver}
-                            onDrop={(e) => handleColumnDrop(e, ct.id, col.position, col.cards)}
+                            onDrop={(e) => handleColumnDrop(e, ct.id, col.position)}
                           >
                             {col.cards.map(card => (
                               <BoardCard
