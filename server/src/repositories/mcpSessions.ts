@@ -228,7 +228,11 @@ export function invalidateDictionaryCache(projectId: string): void {
 }
 
 export interface HorizonNeighbor {
-  nord: { id: string; title: string; type_id: string; type_name: string; properties: Record<string, unknown> };
+  nord: {
+    id: string; title: string; type_id: string; type_name: string;
+    properties: Record<string, unknown>;
+    properties_schema: unknown[]; // inline type context — what fields to collect
+  };
   relationship: {
     connection_id: string;
     type_name: string;
@@ -239,24 +243,31 @@ export interface HorizonNeighbor {
     stage: string | null;
     distance_x: number;
     distance_y: number;
-    connection_properties: Record<string, unknown>; // #3: connection-level properties
+    connection_properties: Record<string, unknown>;
   };
-  session_progress: { filled: number; required: number; complete: boolean } | null; // #2: session state for this neighbor
+  session_progress: { filled: number; required: number; complete: boolean } | null;
   persona_bias: number;
   spectrum_position: number;
+}
+
+export interface HorizonGaps {
+  unvisited_required: Array<{ nord_id: string; title: string; type_name: string }>;
+  orphan_nords: Array<{ nord_id: string; title: string; type_name: string }>;
 }
 
 export interface SessionHorizon {
   current_nord: {
     id: string; title: string; type_name: string; properties: Record<string, unknown>;
-    session_progress: { filled: number; required: number; complete: boolean } | null; // #7: current nord completion
+    properties_schema: unknown[]; // inline type context for current nord
+    session_progress: { filled: number; required: number; complete: boolean } | null;
   } | null;
   persona: { id: string; name: string; weights: Record<string, number> } | null;
   completion: { filled: number; required: number; percentage: number };
   neighbors: HorizonNeighbor[];
+  gaps: HorizonGaps;
   traversal_history: string[];
   suggested_next: { nord_id: string; title: string; reason: string } | null;
-  predicted_path: Array<{ nord_id: string; title: string; type_name: string }>; // predictive 2-hop lookahead
+  predicted_path: Array<{ nord_id: string; title: string; type_name: string }>;
 }
 
 /**
@@ -275,7 +286,7 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     [sessionId]
   );
   if (!session) {
-    return { current_nord: null, persona: null, completion: { filled: 0, required: 0, percentage: 0 }, neighbors: [], traversal_history: [], suggested_next: null, predicted_path: [] };
+    return { current_nord: null, persona: null, completion: { filled: 0, required: 0, percentage: 0 }, neighbors: [], gaps: { unvisited_required: [], orphan_nords: [] }, traversal_history: [], suggested_next: null, predicted_path: [] };
   }
 
   // Pre-fetch all session nords (used for completion + neighbor progress)
@@ -290,10 +301,11 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       [session.current_nord_id]
     );
     if (nord) {
-      const nordType = await queryOne<{ name: string }>('SELECT name FROM nord_types WHERE id = $1', [nord.type_id]);
+      const nordType = await queryOne<{ name: string; properties_schema: string }>('SELECT name, properties_schema::text FROM nord_types WHERE id = $1', [nord.type_id]);
       const sn = sessionNordMap.get(nord.id);
       currentNord = {
         id: nord.id, title: nord.title, type_name: nordType?.name || 'Unknown', properties: nord.properties,
+        properties_schema: safeParseJSON(nordType?.properties_schema || '[]', []),
         session_progress: sn ? { filled: sn.filled_count, required: sn.required_count, complete: sn.complete } : null,
       };
     }
@@ -321,10 +333,11 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       conn_id: string; conn_type_id: string; conn_type_name: string;
       conn_verb: string | null; conn_measurement_mode: string;
       conn_x_stage_labels: string; conn_direction_prepositions: string | null;
-      conn_properties: string; // #3: connection-level properties
+      conn_properties: string;
       distance_x: number; distance_y: number; direction: string;
       neighbor_id: string; neighbor_title: string; neighbor_type_id: string;
       neighbor_type_name: string; neighbor_properties: Record<string, unknown>;
+      neighbor_properties_schema: string;
     }>(`
       SELECT
         c.id AS conn_id, c.type_id AS conn_type_id, ct.name AS conn_type_name,
@@ -334,7 +347,8 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
         c.properties::text AS conn_properties,
         c.distance_x, c.distance_y, c.direction,
         n.id AS neighbor_id, n.title AS neighbor_title, n.type_id AS neighbor_type_id,
-        nt.name AS neighbor_type_name, n.properties AS neighbor_properties
+        nt.name AS neighbor_type_name, n.properties AS neighbor_properties,
+        nt.properties_schema::text AS neighbor_properties_schema
       FROM connections c
       JOIN nords n ON n.id = CASE
         WHEN c.source_nord_id = $1 THEN c.target_nord_id
@@ -359,7 +373,11 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       const session_progress = sn ? { filled: sn.filled_count, required: sn.required_count, complete: sn.complete } : null;
 
       neighbors.push({
-        nord: { id: row.neighbor_id, title: row.neighbor_title, type_id: row.neighbor_type_id, type_name: row.neighbor_type_name, properties: row.neighbor_properties },
+        nord: {
+          id: row.neighbor_id, title: row.neighbor_title, type_id: row.neighbor_type_id, type_name: row.neighbor_type_name,
+          properties: row.neighbor_properties,
+          properties_schema: safeParseJSON(row.neighbor_properties_schema, []),
+        },
         relationship: {
           connection_id: row.conn_id, type_name: row.conn_type_name, verb: row.conn_verb,
           direction: row.direction, direction_prepositions: dirPreps,
@@ -443,7 +461,39 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     );
   }
 
-  return { current_nord: currentNord, persona, completion, neighbors, traversal_history, suggested_next, predicted_path };
+  // 9. Gaps detection — surfaces what's missing
+  const visitedNordIds = new Set(sessionNords.map(sn => sn.nord_id));
+  const neighborNordIds = new Set(neighbors.map(n => n.nord.id));
+  const allNordIds = new Set([...(currentNord ? [currentNord.id] : []), ...neighborNordIds]);
+
+  // Unvisited required: nords in the project that have required properties but no session state
+  const unvisitedRequired = await query<{ nord_id: string; title: string; type_name: string }>(`
+    SELECT n.id AS nord_id, n.title, nt.name AS type_name
+    FROM nords n
+    JOIN nord_types nt ON nt.id = n.type_id
+    WHERE n.project_id = $1 AND n.deleted_at IS NULL
+      AND n.id NOT IN (SELECT nord_id FROM mcp_session_nords WHERE session_id = $2)
+      AND nt.properties_schema::text != '[]'
+    ORDER BY n.title
+    LIMIT 10
+  `, [session.project_id, sessionId]);
+
+  // Orphan nords: nords with zero connections
+  const orphanNords = await query<{ nord_id: string; title: string; type_name: string }>(`
+    SELECT n.id AS nord_id, n.title, nt.name AS type_name
+    FROM nords n
+    JOIN nord_types nt ON nt.id = n.type_id
+    WHERE n.project_id = $1 AND n.deleted_at IS NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM connections c
+        WHERE (c.source_nord_id = n.id OR c.target_nord_id = n.id) AND c.deleted_at IS NULL
+      )
+    LIMIT 10
+  `, [session.project_id]);
+
+  const gaps: HorizonGaps = { unvisited_required: unvisitedRequired, orphan_nords: orphanNords };
+
+  return { current_nord: currentNord, persona, completion, neighbors, gaps, traversal_history, suggested_next, predicted_path };
 }
 
 export async function checkSessionCompletion(

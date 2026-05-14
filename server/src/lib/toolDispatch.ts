@@ -144,7 +144,14 @@ const tools: Record<string, ToolHandler> = {
     const session = await mcpRepo.updateSessionPersona(ctx.sessionId, args.persona_id as string | null);
     if (!session) return { success: false, error: 'Session not found' };
     const horizon = await mcpRepo.getSessionHorizon(ctx.sessionId);
-    return { success: true, data: { session, horizon } };
+    return {
+      success: true,
+      data: {
+        session,
+        horizon,
+        reframe_prompt: 'You are now viewing this session through a new persona lens. Re-examine the nords you have already visited — what did the previous persona miss? What would you prioritize differently? Reference your new Decision Frameworks and Attention Bias weights.',
+      },
+    };
   },
 
   // ── Tier 3: Mutable ──

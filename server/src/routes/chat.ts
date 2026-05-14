@@ -26,6 +26,7 @@ import { query, queryOne } from '../db.js';
 export const chatRouter = Router();
 
 const MAX_TOOL_LOOPS = 10; // safety limit on tool-calling rounds
+const MAX_CONTEXT_TOKENS = 900_000; // token budget — bail before hitting the context window ceiling
 
 // ── System Prompt Assembly (#2 + #3) ──
 
@@ -37,22 +38,48 @@ async function buildSystemPrompt(
   const project = await projectsRepo.findById(projectId);
   let temperature = 0.7; // default
 
-  // Base protocol
+  // Base system prompt — structured for transformer attention:
+  // Reference material FIRST, critical instructions LAST (recency bias)
   let prompt = `You are an AI assistant navigating a knowledge graph called "Nords."
 Your job is to help the user accomplish tasks by traversing nodes (nords) and collecting required information.
 
-## Protocol
-1. ALWAYS call \`nords_get_dictionary\` first if you haven't already this session — it gives you the project vocabulary.
-2. Call \`nords_get_horizon\` to understand your current position, neighbors, completion %, and suggested next actions.
-3. Use \`nords_traverse_connection\` to move between nords — it auto-returns the updated horizon.
-4. Use \`nords_update_session_nord\` to save collected properties — it validates against the schema.
-5. Use \`nords_switch_persona\` when the conversation domain shifts to get a reweighted view.
+## Semantic Reference
 
-## Important
+### Connection Verbs
+Connection verbs encode causal logic — not just labels:
+- "flows into" / "leads to" → prerequisite gate: the source must be completed before the target can begin
+- "depends on" → dependency: the target must be resolved before the source can proceed
+- "assigned to" → resource binding: the target is responsible for the source
+- "blocks" → blocker: the source prevents progress on the target
+- "contains" / "has" → composition: the source is a parent of the target
+Use these to infer sequencing, gates, and dependencies when navigating.
+
+### Spectrum Positions
+Connection distance_x and distance_y are semantic coordinates (0.0–1.0) that map to stage labels.
+For example, distance_x = 0.2 with stages ["Backlog", "In Progress", "Review", "Done"] means "Backlog."
+Use stage labels in your responses instead of raw numbers.
+
+### Gaps & Absences
+The horizon includes a \`gaps\` field. Pay attention to:
+- **unvisited_required**: nords with required properties that haven't been touched yet — these need attention
+- **orphan_nords**: nords with zero connections — these may be misconfigured or need linking
+
+### Inline Schemas
+Each nord in the horizon includes its \`properties_schema\` — the exact fields and types expected.
+Use this to know what to ask the user for. Don't call nords_get_dictionary for schema lookups.
+
+## Protocol (follow this order)
+1. Call \`nords_get_horizon\` to understand your position. The horizon includes inline schemas and gaps — you may not need the dictionary at all.
+2. Only call \`nords_get_dictionary\` if you need the FULL ontology (all types, all personas, all connection types) for broad context.
+3. Use \`nords_traverse_connection\` to move — it auto-returns the updated horizon.
+4. Use \`nords_update_session_nord\` to save collected properties — it validates against the schema and returns the updated horizon.
+5. Use \`nords_switch_persona\` when the conversation domain shifts.
+
+## Critical Rules (read these carefully)
 - You navigate a real, structured graph. Don't make up nords or connections — use your tools to discover them.
-- Properties have types and constraints defined in the dictionary. Validate user input before saving.
-- The horizon's \`suggested_next\` and \`predicted_path\` guide you toward completion — follow them unless the user directs otherwise.
-- Connection verbs and stage labels give you semantic context — use them in your responses.
+- Infer prerequisite gates from connection verbs. Don't skip a "depends on" target.
+- The horizon's \`suggested_next\` and \`predicted_path\` guide you — follow them unless the user directs otherwise.
+- When the horizon shows gaps, proactively mention them to the user.
 `;
 
   // Project-specific prompt
@@ -327,6 +354,13 @@ Set GEMINI_API_KEY in .env to enable AI responses.`;
     ];
 
     for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
+      // Token budget check — bail before hitting context window ceiling
+      if (tokensIn + tokensOut > MAX_CONTEXT_TOKENS) {
+        logger.warn('Token budget exceeded, breaking tool loop', { tokensIn, tokensOut, loop });
+        finalReply = '[Token budget reached — ending tool loop. Please continue in a follow-up message.]';
+        break;
+      }
+
       const response = await genai.models.generateContent({
         model,
         contents: currentContents,
