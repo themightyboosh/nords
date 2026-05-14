@@ -4184,3 +4184,9 @@ TypeError: Cannot read properties of undefined (reading 'send')
 18:28:28.477 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
 18:28:28.481 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
 18:28:28.481 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+18:33:22.929 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+18:33:22.929 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+18:33:22.932 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+18:33:22.932 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+18:33:22.932 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+18:33:22.932 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}

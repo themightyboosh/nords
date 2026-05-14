@@ -427,7 +427,7 @@ Set GEMINI_API_KEY in .env to enable AI responses.`;
       role: 'assistant',
       content: finalReply,
       tool_calls: allToolCalls.length > 0 ? allToolCalls : null,
-      context: { toolCallCount: allToolCalls.length, temperature, model },
+      context: { toolCallCount: allToolCalls.length, temperature, model, systemPrompt },
       tokens_in: tokensIn,
       tokens_out: tokensOut,
       model,
@@ -437,12 +437,17 @@ Set GEMINI_API_KEY in .env to enable AI responses.`;
     // 10. Check session completion
     const completionCheck = await mcpRepo.checkSessionCompletion(sessionId);
 
+    // Fetch current horizon for dev panel
+    const finalHorizon = await mcpRepo.getSessionHorizon(sessionId);
+
     res.json({
       reply: finalReply,
       sessionId,
       message: assistantMsg,
       toolCalls: allToolCalls,
       completion: completionCheck,
+      systemPrompt,
+      horizon: finalHorizon,
     });
 
   } catch (err: any) {
