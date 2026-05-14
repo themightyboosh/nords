@@ -2,8 +2,9 @@
  * useBoardSettings.ts — Per-user board view settings persisted to localStorage.
  *
  * Stores per-connection-type preferences:
- *   - Nord type visibility filters (which nord types show on each board)
- *   - Orphans column visibility
+ *   - Nord type visibility filters (3-state: show/dim/hide)
+ *   - Direction filters (per-direction toggles)
+ *   - Lane collapse state
  *
  * Key: nords-board-settings-${projectId}
  *
@@ -12,25 +13,42 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
+export type NordVisibility = 'show' | 'dim' | 'hide';
+
+// Direction filter keys: which connection directions to display
+export type DirectionKey = 'forward' | 'reverse' | 'both' | 'none' | 'unconnected';
+
 interface PerBoardSettings {
-  nordTypeFilters: Record<string, boolean>;
+  nordTypeFilters: Record<string, NordVisibility | boolean>; // boolean for backward compat
   hiddenNordIds: string[];
-  showOrphans: boolean;
+  showOrphans: boolean;        // Legacy — now controlled by directionFilters.unconnected
   collapsedLanes: Record<string, boolean>;
+  directionFilters: Record<DirectionKey, boolean>;
 }
 
 export interface BoardSettings {
   boards: Record<string, PerBoardSettings>;
 }
 
-// v3: added collapsedLanes for swimlane board
-const STORAGE_PREFIX = 'nords-board-settings-v3-';
+// Default direction filters: all directions shown, unconnected hidden
+const DEFAULT_DIRECTION_FILTERS: Record<DirectionKey, boolean> = {
+  forward: true,
+  reverse: true,
+  both: true,
+  none: true,        // undirected connections (—)
+  unconnected: false, // orphans (no connection) — defaults OFF in board mode
+};
 
+// v4: added directionFilters, 3-state nord visibility
+const STORAGE_PREFIX = 'nords-board-settings-v4-';
 
 function loadSettings(projectId: string): BoardSettings {
   try {
     const raw = localStorage.getItem(`${STORAGE_PREFIX}${projectId}`);
     if (raw) return JSON.parse(raw);
+    // Try migrating from v3
+    const v3 = localStorage.getItem(`nords-board-settings-v3-${projectId}`);
+    if (v3) return JSON.parse(v3);
   } catch {
     // corrupt data — start fresh
   }
@@ -43,6 +61,24 @@ function saveSettings(projectId: string, settings: BoardSettings) {
   } catch {
     // localStorage full or unavailable
   }
+}
+
+function defaultBoard(): PerBoardSettings {
+  return {
+    nordTypeFilters: {},
+    hiddenNordIds: [],
+    showOrphans: false,
+    collapsedLanes: {},
+    directionFilters: { ...DEFAULT_DIRECTION_FILTERS },
+  };
+}
+
+/** Normalize old boolean filters to 3-state */
+function resolveVisibility(val: NordVisibility | boolean | undefined): NordVisibility {
+  if (val === undefined) return 'show';
+  if (val === true) return 'show';
+  if (val === false) return 'hide';
+  return val;
 }
 
 export function useBoardSettings(projectId: string | null) {
@@ -66,26 +102,32 @@ export function useBoardSettings(projectId: string | null) {
 
   /** Get settings for a specific connection type, with defaults */
   const getBoard = useCallback((connectionTypeId: string): PerBoardSettings => {
-    return settings.boards[connectionTypeId] || {
-      nordTypeFilters: {},
-      hiddenNordIds: [],
-      showOrphans: false,
-      collapsedLanes: {},
-    };
+    return settings.boards[connectionTypeId] || defaultBoard();
   }, [settings]);
 
-  /** Check if a specific nord type is visible on a board (defaults to true if unset) */
-  const isNordTypeVisible = useCallback((connectionTypeId: string, nordTypeId: string): boolean => {
+  /** Get the 3-state visibility for a nord type (show/dim/hide) */
+  const getNordTypeVisibility = useCallback((connectionTypeId: string, nordTypeId: string): NordVisibility => {
     const board = settings.boards[connectionTypeId];
-    if (!board || !(nordTypeId in board.nordTypeFilters)) return true; // default visible
-    return board.nordTypeFilters[nordTypeId];
+    if (!board) return 'show';
+    return resolveVisibility(board.nordTypeFilters[nordTypeId]);
   }, [settings]);
 
-  /** Toggle a nord type's visibility on a specific board */
-  const toggleNordTypeFilter = useCallback((connectionTypeId: string, nordTypeId: string) => {
+  /** Check if a specific nord type is visible (not hidden) on a board */
+  const isNordTypeVisible = useCallback((connectionTypeId: string, nordTypeId: string): boolean => {
+    return getNordTypeVisibility(connectionTypeId, nordTypeId) !== 'hide';
+  }, [getNordTypeVisibility]);
+
+  /** Check if a specific nord type is dimmed */
+  const isNordTypeDimmed = useCallback((connectionTypeId: string, nordTypeId: string): boolean => {
+    return getNordTypeVisibility(connectionTypeId, nordTypeId) === 'dim';
+  }, [getNordTypeVisibility]);
+
+  /** Cycle a nord type's visibility: show → dim → hide → show */
+  const cycleNordTypeVisibility = useCallback((connectionTypeId: string, nordTypeId: string) => {
     setSettings(prev => {
-      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, hiddenNordIds: [], showOrphans: false };
-      const current = board.nordTypeFilters[nordTypeId] ?? true;
+      const board = prev.boards[connectionTypeId] || defaultBoard();
+      const current = resolveVisibility(board.nordTypeFilters[nordTypeId]);
+      const next: NordVisibility = current === 'show' ? 'dim' : current === 'dim' ? 'hide' : 'show';
       return {
         ...prev,
         boards: {
@@ -94,7 +136,7 @@ export function useBoardSettings(projectId: string | null) {
             ...board,
             nordTypeFilters: {
               ...board.nordTypeFilters,
-              [nordTypeId]: !current,
+              [nordTypeId]: next,
             },
           },
         },
@@ -102,10 +144,32 @@ export function useBoardSettings(projectId: string | null) {
     });
   }, []);
 
-  /** Toggle orphans column for a specific board */
+  /** Toggle a nord type's visibility on a specific board (legacy 2-state: show/hide) */
+  const toggleNordTypeFilter = useCallback((connectionTypeId: string, nordTypeId: string) => {
+    setSettings(prev => {
+      const board = prev.boards[connectionTypeId] || defaultBoard();
+      const current = resolveVisibility(board.nordTypeFilters[nordTypeId]);
+      const next: NordVisibility = current === 'hide' ? 'show' : 'hide';
+      return {
+        ...prev,
+        boards: {
+          ...prev.boards,
+          [connectionTypeId]: {
+            ...board,
+            nordTypeFilters: {
+              ...board.nordTypeFilters,
+              [nordTypeId]: next,
+            },
+          },
+        },
+      };
+    });
+  }, []);
+
+  /** Toggle orphans column for a specific board (legacy) */
   const toggleOrphans = useCallback((connectionTypeId: string) => {
     setSettings(prev => {
-      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, hiddenNordIds: [], showOrphans: false };
+      const board = prev.boards[connectionTypeId] || defaultBoard();
       return {
         ...prev,
         boards: {
@@ -122,8 +186,9 @@ export function useBoardSettings(projectId: string | null) {
   /** Force a nord type to be visible on a board (for auto-show on drag/create) */
   const ensureNordTypeVisible = useCallback((connectionTypeId: string, nordTypeId: string) => {
     setSettings(prev => {
-      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, hiddenNordIds: [], showOrphans: false };
-      if (board.nordTypeFilters[nordTypeId] === false) {
+      const board = prev.boards[connectionTypeId] || defaultBoard();
+      const current = resolveVisibility(board.nordTypeFilters[nordTypeId]);
+      if (current === 'hide') {
         return {
           ...prev,
           boards: {
@@ -132,13 +197,13 @@ export function useBoardSettings(projectId: string | null) {
               ...board,
               nordTypeFilters: {
                 ...board.nordTypeFilters,
-                [nordTypeId]: true,
+                [nordTypeId]: 'show',
               },
             },
           },
         };
       }
-      return prev; // already visible or unset (defaults to visible)
+      return prev;
     });
   }, []);
 
@@ -152,7 +217,7 @@ export function useBoardSettings(projectId: string | null) {
   /** Toggle a specific nord's visibility on a board */
   const toggleNordFilter = useCallback((connectionTypeId: string, nordId: string) => {
     setSettings(prev => {
-      const board = prev.boards[connectionTypeId] || { nordTypeFilters: {}, hiddenNordIds: [], showOrphans: false };
+      const board = prev.boards[connectionTypeId] || defaultBoard();
       const hiddenIds = board.hiddenNordIds || [];
       const isHidden = hiddenIds.includes(nordId);
       return {
@@ -172,7 +237,6 @@ export function useBoardSettings(projectId: string | null) {
 
   /** Check if a swimlane (connection type) is collapsed */
   const isLaneCollapsed = useCallback((connectionTypeId: string): boolean => {
-    // Lane collapse is stored at the top-level boards key using a special 'global' board entry
     const globalBoard = settings.boards['__lanes__'];
     if (!globalBoard) return false;
     return globalBoard.collapsedLanes?.[connectionTypeId] ?? false;
@@ -181,7 +245,7 @@ export function useBoardSettings(projectId: string | null) {
   /** Toggle a swimlane's collapsed state */
   const toggleLaneCollapse = useCallback((connectionTypeId: string) => {
     setSettings(prev => {
-      const globalBoard = prev.boards['__lanes__'] || { nordTypeFilters: {}, hiddenNordIds: [], showOrphans: false, collapsedLanes: {} };
+      const globalBoard = prev.boards['__lanes__'] || defaultBoard();
       const current = globalBoard.collapsedLanes?.[connectionTypeId] ?? false;
       return {
         ...prev,
@@ -199,10 +263,48 @@ export function useBoardSettings(projectId: string | null) {
     });
   }, []);
 
+  /** Get direction filter state for a board (all default to true except unconnected) */
+  const getDirectionFilter = useCallback((connectionTypeId: string, direction: DirectionKey): boolean => {
+    const board = settings.boards[connectionTypeId];
+    if (!board?.directionFilters) {
+      // Legacy: if no directionFilters, use showOrphans for 'unconnected'
+      if (direction === 'unconnected') return board?.showOrphans ?? false;
+      return true;
+    }
+    return board.directionFilters[direction] ?? DEFAULT_DIRECTION_FILTERS[direction];
+  }, [settings]);
+
+  /** Toggle a direction filter for a board */
+  const toggleDirectionFilter = useCallback((connectionTypeId: string, direction: DirectionKey) => {
+    setSettings(prev => {
+      const board = prev.boards[connectionTypeId] || defaultBoard();
+      const filters = board.directionFilters || { ...DEFAULT_DIRECTION_FILTERS };
+      const current = filters[direction] ?? DEFAULT_DIRECTION_FILTERS[direction];
+      return {
+        ...prev,
+        boards: {
+          ...prev.boards,
+          [connectionTypeId]: {
+            ...board,
+            directionFilters: {
+              ...filters,
+              [direction]: !current,
+            },
+            // Sync legacy showOrphans
+            ...(direction === 'unconnected' ? { showOrphans: !current } : {}),
+          },
+        },
+      };
+    });
+  }, []);
+
   return {
     settings,
     getBoard,
     isNordTypeVisible,
+    isNordTypeDimmed,
+    getNordTypeVisibility,
+    cycleNordTypeVisibility,
     toggleNordTypeFilter,
     ensureNordTypeVisible,
     toggleOrphans,
@@ -210,5 +312,7 @@ export function useBoardSettings(projectId: string | null) {
     toggleNordFilter,
     isLaneCollapsed,
     toggleLaneCollapse,
+    getDirectionFilter,
+    toggleDirectionFilter,
   };
 }

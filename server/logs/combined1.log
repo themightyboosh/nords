@@ -4764,3 +4764,299 @@ ReferenceError: isLaneCollapsed is not defined
 19:23:26.997 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"2ms","bytes":"14"}
 19:23:27.130 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
 19:23:27.166 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":171,"rows":1}
+19:24:11.687 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:24:11.688 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:24:11.694 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:24:11.700 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:24:11.701 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:24:11.719 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":161,"rows":8}
+19:24:11.721 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":163,"rows":1}
+19:24:11.725 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":167,"rows":1}
+19:24:11.725 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"168ms"}
+19:24:11.732 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":173,"rows":7}
+19:24:11.732 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types","status":304,"duration":"174ms"}
+19:24:11.735 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":178,"rows":1}
+19:24:11.757 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":31,"rows":1}
+19:24:11.757 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"31ms"}
+19:24:11.758 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":32,"rows":1}
+19:24:11.764 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":31,"rows":8}
+19:24:11.765 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":32,"rows":1}
+19:24:11.860 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:24:11.892 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":159,"rows":7}
+19:24:11.893 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types","status":304,"duration":"160ms"}
+19:28:26.062 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:26.063 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:26.094 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types WHERE id = $1 AND deleted_at IS NULL","duration":175,"rows":1}
+19:28:26.094 [32minfo[39m: PUT /api/connection-types/1c234195-6ecb-4c1a-9df0-9bb1bd10f27a 200 {"service":"nords-server","method":"PUT","path":"/api/connection-types/1c234195-6ecb-4c1a-9df0-9bb1bd10f27a","status":200,"duration":"176ms","bytes":"448"}
+19:28:26.099 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":181,"rows":1}
+19:28:26.131 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":33,"rows":1}
+19:28:26.228 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:28:26.304 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":206,"rows":1}
+19:28:26.304 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":304,"duration":"206ms"}
+19:28:26.660 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types WHERE id = $1 AND deleted_at IS NULL","duration":36,"rows":1}
+19:28:26.660 [32minfo[39m: PUT /api/connection-types/1c234195-6ecb-4c1a-9df0-9bb1bd10f27a 200 {"service":"nords-server","method":"PUT","path":"/api/connection-types/1c234195-6ecb-4c1a-9df0-9bb1bd10f27a","status":200,"duration":"36ms","bytes":"448"}
+19:28:26.660 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":36,"rows":1}
+19:28:26.692 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":30,"rows":1}
+19:28:26.727 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":65,"rows":1}
+19:28:26.728 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":304,"duration":"66ms"}
+19:28:28.365 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types WHERE id = $1 AND deleted_at IS NULL","duration":33,"rows":1}
+19:28:28.366 [32minfo[39m: PUT /api/connection-types/1c234195-6ecb-4c1a-9df0-9bb1bd10f27a 200 {"service":"nords-server","method":"PUT","path":"/api/connection-types/1c234195-6ecb-4c1a-9df0-9bb1bd10f27a","status":200,"duration":"36ms","bytes":"448"}
+19:28:28.368 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":37,"rows":1}
+19:28:28.403 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":32,"rows":1}
+19:28:28.413 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":42,"rows":1}
+19:28:28.413 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":304,"duration":"42ms"}
+19:28:30.000 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types WHERE id = $1 AND deleted_at IS NULL","duration":35,"rows":1}
+19:28:30.002 [32minfo[39m: PUT /api/connection-types/1c234195-6ecb-4c1a-9df0-9bb1bd10f27a 200 {"service":"nords-server","method":"PUT","path":"/api/connection-types/1c234195-6ecb-4c1a-9df0-9bb1bd10f27a","status":200,"duration":"38ms","bytes":"448"}
+19:28:30.009 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":45,"rows":1}
+19:28:30.041 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":32,"rows":1}
+19:28:30.047 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":37,"rows":1}
+19:28:30.048 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":304,"duration":"39ms"}
+19:41:15.580 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:41:15.580 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:41:15.615 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":160,"rows":1}
+19:41:15.615 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":161,"rows":1}
+19:41:15.615 [32minfo[39m: PUT /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/board-position 200 {"service":"nords-server","method":"PUT","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/board-position","status":200,"duration":"161ms","bytes":"258"}
+19:41:15.655 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":36,"rows":1}
+19:41:15.689 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":70,"rows":1}
+19:41:15.689 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":200,"duration":"70ms","bytes":"17466"}
+19:41:19.421 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":36,"rows":1}
+19:41:19.421 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":36,"rows":1}
+19:41:19.422 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"37ms"}
+19:41:19.454 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":30,"rows":1}
+19:41:19.454 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"30ms"}
+19:41:19.457 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":33,"rows":1}
+19:41:19.517 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:41:19.526 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:41:19.527 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:41:19.550 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":164,"rows":1}
+19:41:19.565 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":179,"rows":7}
+19:41:19.565 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":179,"rows":8}
+19:41:19.565 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types","status":304,"duration":"179ms"}
+19:41:19.598 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM connection_types\n       WHERE project_id = $1 AND deleted_at IS NU","duration":32,"rows":7}
+19:41:19.599 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM nord_types\n       WHERE project_id = $1 AND deleted_at IS NULL\n   ","duration":33,"rows":8}
+19:41:19.600 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/types","status":304,"duration":"35ms"}
+19:41:19.600 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:41:36.789 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:41:36.793 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:41:36.830 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":188,"rows":1}
+19:41:36.831 [34mdebug[39m: Query executed {"service":"nords-server","text":"\n    INSERT INTO connections (project_id, type_id, source_nord_id, target_nord_i","duration":189,"rows":1}
+19:41:36.831 [32minfo[39m: POST /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/connections 201 {"service":"nords-server","method":"POST","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/connections","status":201,"duration":"189ms","bytes":"400"}
+19:41:36.873 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":39,"rows":1}
+19:41:36.873 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO nord_board_positions (nord_id, type_id, distance_x, distance_y)\n    ","duration":39,"rows":1}
+19:41:36.874 [32minfo[39m: PUT /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/board-position 200 {"service":"nords-server","method":"PUT","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/board-position","status":200,"duration":"40ms","bytes":"257"}
+19:41:36.907 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":30,"rows":1}
+19:41:36.947 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":70,"rows":1}
+19:41:36.947 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":200,"duration":"70ms","bytes":"18020"}
+19:43:26.997 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.536Z","userId":"dev-user-000"}
+19:43:26.998 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.536Z","userId":"dev-user-000"}
+19:43:26.998 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.537Z","userId":"dev-user-000"}
+19:43:26.998 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.537Z","userId":"dev-user-000"}
+19:43:26.998 [31merror[39m: React Error Boundary caught error
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4327:12)
+    at updateCallback (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4921:15)
+    at Object.useCallback (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:13243:12)
+    at exports.useCallback (http://localhost:5177/node_modules/.vite/deps/react.js?v=ac061a41:701:31)
+    at useBoardSettings (http://localhost:5177/src/hooks/useBoardSettings.ts?t=1778802188492:175:27)
+    at BoardSettingsProvider (http://localhost:5177/src/context/BoardSettingsContext.tsx?t=1778802188492:17:16)
+    at Object.react_stack_bottom_frame (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:12868:12)
+    at renderWithHooks (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4213:19)
+    at updateFunctionComponent (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:5569:16)
+    at beginWork (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:6140:20) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.538Z","errorMessage":"Rendered more hooks than during the previous render.","componentStack":"\n    at BoardSettingsProvider (http://localhost:5177/src/context/BoardSettingsContext.tsx?t=1778802188492:15:41)\n    at TypeRegistryProvider (http://localhost:5177/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5177/src/context/LensContext.tsx:67:32)\n    at WorkspaceShell (http://localhost:5177/src/App.tsx?t=1778802188492:49:27)\n    at BatchProvider (http://localhost:5177/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:6809:26)\n    at ReactFlowProvider (http://localhost:5177/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:9752:44)\n    at ProtectedRoute (http://localhost:5177/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3332:8)\n    at Routes (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3775:8)\n    at AuthProvider (http://localhost:5177/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5177/src/App.tsx?t=1778802188492:348:42)\n    at Router (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3723:18)\n    at BrowserRouter (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:4402:8)\n    at ErrorBoundary (http://localhost:5177/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+19:43:27.002 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"6ms","bytes":"14"}
+19:43:27.134 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:43:27.171 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":175,"rows":1}
+19:43:28.892 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.536Z","userId":"dev-user-000"}
+19:43:28.893 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.537Z","userId":"dev-user-000"}
+19:43:28.893 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.539Z","userId":"dev-user-000"}
+19:43:28.893 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.539Z","userId":"dev-user-000"}
+19:43:28.893 [31merror[39m: React Error Boundary caught error
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4327:12)
+    at updateCallback (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4921:15)
+    at Object.useCallback (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:13243:12)
+    at exports.useCallback (http://localhost:5173/node_modules/.vite/deps/react.js?v=ac061a41:701:31)
+    at useBoardSettings (http://localhost:5173/src/hooks/useBoardSettings.ts?t=1778802188492:175:27)
+    at BoardSettingsProvider (http://localhost:5173/src/context/BoardSettingsContext.tsx?t=1778802188492:17:16)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:12868:12)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4213:19)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:5569:16)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:6140:20) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.541Z","errorMessage":"Rendered more hooks than during the previous render.","componentStack":"\n    at BoardSettingsProvider (http://localhost:5173/src/context/BoardSettingsContext.tsx?t=1778802188492:15:41)\n    at TypeRegistryProvider (http://localhost:5173/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5173/src/context/LensContext.tsx:67:32)\n    at WorkspaceShell (http://localhost:5173/src/App.tsx?t=1778802188492:49:27)\n    at BatchProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:6809:26)\n    at ReactFlowProvider (http://localhost:5173/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:9752:44)\n    at ProtectedRoute (http://localhost:5173/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3332:8)\n    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3775:8)\n    at AuthProvider (http://localhost:5173/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5173/src/App.tsx?t=1778802188492:348:42)\n    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3723:18)\n    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:4402:8)\n    at ErrorBoundary (http://localhost:5173/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+19:43:28.895 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"3ms","bytes":"14"}
+19:43:28.929 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":37,"rows":1}
+19:43:31.716 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.538Z","userId":"dev-user-000"}
+19:43:31.717 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.538Z","userId":"dev-user-000"}
+19:43:31.717 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.541Z","userId":"dev-user-000"}
+19:43:31.717 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.542Z","userId":"dev-user-000"}
+19:43:31.717 [31merror[39m: React Error Boundary caught error
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4327:12)
+    at updateCallback (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4921:15)
+    at Object.useCallback (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:13243:12)
+    at exports.useCallback (http://localhost:5177/node_modules/.vite/deps/react.js?v=ac061a41:701:31)
+    at useBoardSettings (http://localhost:5177/src/hooks/useBoardSettings.ts?t=1778802188492:175:27)
+    at BoardSettingsProvider (http://localhost:5177/src/context/BoardSettingsContext.tsx?t=1778802188492:17:16)
+    at Object.react_stack_bottom_frame (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:12868:12)
+    at renderWithHooks (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4213:19)
+    at updateFunctionComponent (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:5569:16)
+    at beginWork (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:6140:20) {"service":"nords-client","clientTimestamp":"2026-05-14T23:43:08.543Z","errorMessage":"Rendered more hooks than during the previous render.","componentStack":"\n    at BoardSettingsProvider (http://localhost:5177/src/context/BoardSettingsContext.tsx?t=1778802188492:15:41)\n    at TypeRegistryProvider (http://localhost:5177/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5177/src/context/LensContext.tsx:67:32)\n    at WorkspaceShell (http://localhost:5177/src/App.tsx?t=1778802188492:49:27)\n    at BatchProvider (http://localhost:5177/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:6809:26)\n    at ReactFlowProvider (http://localhost:5177/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:9752:44)\n    at ProtectedRoute (http://localhost:5177/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3332:8)\n    at Routes (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3775:8)\n    at AuthProvider (http://localhost:5177/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5177/src/App.tsx?t=1778802188492:348:42)\n    at Router (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3723:18)\n    at BrowserRouter (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:4402:8)\n    at ErrorBoundary (http://localhost:5177/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+19:43:31.719 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"3ms","bytes":"14"}
+19:43:31.754 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":38,"rows":1}
+19:46:26.225 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.241 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.241 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.245 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.246 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.247 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.251 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.251 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.251 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.255 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.260 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.260 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":162,"rows":1}
+19:46:26.260 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:26.275 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":177,"rows":1}
+19:46:26.279 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":181,"rows":4}
+19:46:26.284 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":169,"rows":1}
+19:46:26.284 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"169ms"}
+19:46:26.284 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":185,"rows":1}
+19:46:26.284 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"185ms"}
+19:46:26.290 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":191,"rows":1}
+19:46:26.290 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":175,"rows":1}
+19:46:26.292 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":176,"rows":1}
+19:46:26.295 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":180,"rows":1}
+19:46:26.296 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":181,"rows":4}
+19:46:26.313 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":34,"rows":0}
+19:46:26.314 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":28,"rows":1}
+19:46:26.314 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"28ms"}
+19:46:26.318 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":32,"rows":1}
+19:46:26.327 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":31,"rows":0}
+19:46:26.338 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":240,"rows":1}
+19:46:26.338 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":304,"duration":"240ms"}
+19:46:26.338 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":222,"rows":1}
+19:46:26.338 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 200 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":200,"duration":"222ms","bytes":"18020"}
+19:46:26.347 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":33,"rows":8}
+19:46:26.347 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"249ms"}
+19:46:26.357 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":30,"rows":8}
+19:46:26.357 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"242ms"}
+19:46:26.373 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:46:26.375 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":35,"rows":1}
+19:46:26.375 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":304,"duration":"36ms"}
+19:46:26.380 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":33,"rows":4}
+19:46:26.381 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:46:26.388 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":30,"rows":4}
+19:46:26.389 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":31,"rows":1}
+19:46:26.411 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":31,"rows":0}
+19:46:26.418 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":30,"rows":0}
+19:46:26.443 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":31,"rows":8}
+19:46:26.444 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"97ms"}
+19:46:26.450 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":32,"rows":8}
+19:46:26.451 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"93ms"}
+19:46:26.485 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":33,"rows":4}
+19:46:26.485 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:46:26.515 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":30,"rows":0}
+19:46:26.545 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":30,"rows":8}
+19:46:26.546 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"95ms"}
+19:46:26.578 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":32,"rows":4}
+19:46:26.578 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":32,"rows":1}
+19:46:26.608 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":30,"rows":0}
+19:46:26.637 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":29,"rows":8}
+19:46:26.637 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"91ms"}
+19:46:26.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.082Z","userId":"dev-user-000"}
+19:46:26.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.083Z","userId":"dev-user-000"}
+19:46:26.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.097Z","userId":"dev-user-000"}
+19:46:26.992 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.097Z","userId":"dev-user-000"}
+19:46:26.992 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}
+19:46:27.028 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":37,"rows":1}
+19:46:28.890 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.086Z","userId":"dev-user-000"}
+19:46:28.890 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.087Z","userId":"dev-user-000"}
+19:46:28.890 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.115Z","userId":"dev-user-000"}
+19:46:28.890 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.115Z","userId":"dev-user-000"}
+19:46:28.890 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"1ms","bytes":"14"}
+19:46:28.928 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":39,"rows":1}
+19:46:31.717 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.085Z","userId":"dev-user-000"}
+19:46:31.718 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.085Z","userId":"dev-user-000"}
+19:46:31.718 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.116Z","userId":"dev-user-000"}
+19:46:31.718 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:26.117Z","userId":"dev-user-000"}
+19:46:31.720 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"2ms","bytes":"14"}
+19:46:31.752 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":35,"rows":1}
+19:46:56.994 [31merror[39m: React Error Boundary caught error
+ReferenceError: isNordTypeVisible is not defined
+    at MatrixView (http://localhost:5177/src/components/Matrix/MatrixView.tsx?t=1778802405498:217:3)
+    at Object.react_stack_bottom_frame (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:12868:12)
+    at renderWithHooks (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4213:19)
+    at updateFunctionComponent (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:5569:16)
+    at beginWork (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:6140:20)
+    at runWithFiberInDEV (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:851:66)
+    at performUnitOfWork (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:8429:92)
+    at workLoopSync (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:8325:37)
+    at renderRootSync (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:8309:6)
+    at performWorkOnRoot (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:7994:27) {"service":"nords-client","clientTimestamp":"2026-05-14T23:46:45.527Z","errorMessage":"isNordTypeVisible is not defined","componentStack":"\n    at MatrixView (http://localhost:5177/src/components/Matrix/MatrixView.tsx?t=1778802405498:33:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5177/src/components/Canvas/CanvasEngine.tsx?t=1778802188492:959:40)\n    at div (<anonymous>)\n    at WorkspaceContent (http://localhost:5177/src/App.tsx?t=1778802188492:101:29)\n    at BoardSettingsProvider (http://localhost:5177/src/context/BoardSettingsContext.tsx?t=1778802188492:15:41)\n    at TypeRegistryProvider (http://localhost:5177/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5177/src/context/LensContext.tsx:67:32)\n    at WorkspaceShell (http://localhost:5177/src/App.tsx?t=1778802188492:49:27)\n    at BatchProvider (http://localhost:5177/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:6809:26)\n    at ReactFlowProvider (http://localhost:5177/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:9752:44)\n    at ProtectedRoute (http://localhost:5177/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3332:8)\n    at Routes (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3775:8)\n    at AuthProvider (http://localhost:5177/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5177/src/App.tsx?t=1778802188492:348:42)\n    at Router (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3723:18)\n    at BrowserRouter (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:4402:8)\n    at ErrorBoundary (http://localhost:5177/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+19:46:56.996 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"3ms","bytes":"14"}
+19:46:57.119 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:46:57.152 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":159,"rows":1}
+19:47:02.903 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:47:02.996 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:03.001 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:03.006 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:03.006 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:03.007 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:03.031 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":162,"rows":1}
+19:47:03.039 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":169,"rows":4}
+19:47:03.046 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":177,"rows":1}
+19:47:03.046 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"177ms"}
+19:47:03.046 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":177,"rows":1}
+19:47:03.068 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":28,"rows":0}
+19:47:03.074 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":205,"rows":1}
+19:47:03.075 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":304,"duration":"206ms"}
+19:47:03.096 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":28,"rows":8}
+19:47:03.097 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"228ms"}
+19:47:03.130 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":32,"rows":4}
+19:47:03.131 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:47:03.159 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":29,"rows":0}
+19:47:03.190 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":31,"rows":8}
+19:47:03.190 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"93ms"}
+19:47:20.718 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:20.718 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:20.735 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:20.735 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:20.737 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:20.740 [34mdebug[39m: New client connected to pool {"service":"nords-server"}
+19:47:20.749 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL","duration":159,"rows":1}
+19:47:20.749 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967","status":304,"duration":"159ms"}
+19:47:20.751 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":161,"rows":1}
+19:47:20.766 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":176,"rows":4}
+19:47:20.768 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":178,"rows":1}
+19:47:20.771 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":181,"rows":1}
+19:47:20.796 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":30,"rows":0}
+19:47:20.810 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT fn_load_project_graph($1) AS fn_load_project_graph","duration":220,"rows":1}
+19:47:20.811 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/graph","status":304,"duration":"221ms"}
+19:47:20.827 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":31,"rows":8}
+19:47:20.827 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"238ms"}
+19:47:20.862 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM personas WHERE project_id = $1 AND deleted_at IS NULL ORDER BY sor","duration":34,"rows":4}
+19:47:20.862 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":34,"rows":1}
+19:47:20.894 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_mental_models WHERE persona_id = ANY($1) ORDER BY sort_ord","duration":32,"rows":0}
+19:47:20.926 [34mdebug[39m: Query executed {"service":"nords-server","text":"SELECT * FROM persona_category_weights WHERE persona_id = ANY($1)","duration":32,"rows":8}
+19:47:20.927 [32minfo[39m: GET /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas 304 {"service":"nords-server","method":"GET","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/personas","status":304,"duration":"99ms"}
+19:47:26.996 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:47:02.857Z","userId":"dev-user-000"}
+19:47:26.996 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:47:02.857Z","userId":"dev-user-000"}
+19:47:26.996 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:47:02.871Z","userId":"dev-user-000"}
+19:47:26.996 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:47:02.871Z","userId":"dev-user-000"}
+19:47:26.996 [31merror[39m: React Error Boundary caught error
+ReferenceError: getBoard is not defined
+    at http://localhost:5177/src/components/Matrix/MatrixView.tsx?t=1778802422830:456:32
+    at Array.map (<anonymous>)
+    at MatrixView (http://localhost:5177/src/components/Matrix/MatrixView.tsx?t=1778802422830:390:24)
+    at Object.react_stack_bottom_frame (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:12868:12)
+    at renderWithHooks (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:4213:19)
+    at updateFunctionComponent (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:5569:16)
+    at beginWork (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:6140:20)
+    at runWithFiberInDEV (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:851:66)
+    at performUnitOfWork (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:8429:92)
+    at workLoopSync (http://localhost:5177/node_modules/.vite/deps/react-dom_client.js?v=ac061a41:8325:37) {"service":"nords-client","clientTimestamp":"2026-05-14T23:47:03.093Z","errorMessage":"getBoard is not defined","componentStack":"\n    at MatrixView (http://localhost:5177/src/components/Matrix/MatrixView.tsx?t=1778802422830:33:30)\n    at div (<anonymous>)\n    at CanvasEngine (http://localhost:5177/src/components/Canvas/CanvasEngine.tsx?t=1778802188492:959:40)\n    at div (<anonymous>)\n    at WorkspaceContent (http://localhost:5177/src/App.tsx?t=1778802188492:101:29)\n    at BoardSettingsProvider (http://localhost:5177/src/context/BoardSettingsContext.tsx?t=1778802188492:15:41)\n    at TypeRegistryProvider (http://localhost:5177/src/context/TypeRegistryContext.tsx:19:40)\n    at LensProvider (http://localhost:5177/src/context/LensContext.tsx:67:32)\n    at WorkspaceShell (http://localhost:5177/src/App.tsx?t=1778802188492:49:27)\n    at BatchProvider (http://localhost:5177/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:6809:26)\n    at ReactFlowProvider (http://localhost:5177/node_modules/.vite/deps/@xyflow_react.js?v=ac061a41:9752:44)\n    at ProtectedRoute (http://localhost:5177/src/components/Auth/ProtectedRoute.tsx:10:34)\n    at RenderedRoute (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3332:8)\n    at Routes (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3775:8)\n    at AuthProvider (http://localhost:5177/src/context/AuthContext.tsx:11:32)\n    at App (http://localhost:5177/src/App.tsx?t=1778802188492:348:42)\n    at Router (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:3723:18)\n    at BrowserRouter (http://localhost:5177/node_modules/.vite/deps/react-router-dom.js?v=ac061a41:4402:8)\n    at ErrorBoundary (http://localhost:5177/src/components/ErrorBoundary.tsx:11:3)","userId":"dev-user-000"}
+19:47:26.997 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:47:20.577Z","userId":"dev-user-000"}
+19:47:26.997 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:47:20.578Z","userId":"dev-user-000"}
+19:47:26.997 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:47:20.591Z","userId":"dev-user-000"}
+19:47:26.997 [33mwarn[39m: Auth bypassed: dev mode (VITE_SKIP_AUTH or demo-api-key) {"service":"nords-client","clientTimestamp":"2026-05-14T23:47:20.591Z","userId":"dev-user-000"}
+19:47:27.000 [32minfo[39m: POST /api/logs 200 {"service":"nords-server","method":"POST","path":"/api/logs","status":200,"duration":"5ms","bytes":"14"}
+19:47:27.039 [34mdebug[39m: Query executed {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata","duration":44,"rows":1}

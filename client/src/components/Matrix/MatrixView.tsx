@@ -77,7 +77,7 @@ interface Swimlane {
 
 export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetchGraph }: MatrixViewProps) {
   const { connectionTypes, nordTypes } = useTypeRegistryContext();
-  const { isNordTypeVisible, isLaneCollapsed, toggleLaneCollapse, getBoard } = useBoardSettingsContext();
+  const { getNordTypeVisibility, isLaneCollapsed, toggleLaneCollapse, getDirectionFilter } = useBoardSettingsContext();
   const { createConnection, deleteConnection } = useConnectionMutations(projectId);
   const { upsertPosition } = useBoardPositionMutations(projectId);
 
@@ -184,7 +184,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
         if (!nord) continue;
 
         const nordType = typeMap.get(nord.type_id);
-        const isDimmed = !isNordTypeVisible(ct.id, nord.type_id);
+        const vis = getNordTypeVisibility('__global__', nord.type_id);
+        if (vis === 'hide') continue; // hidden types are excluded entirely
+        const isDimmed = vis === 'dim';
 
         // Position: board_position wins, then average connection distance_x as seed
         const bp = boardPosMap.get(posKey(nordId, ct.id));
@@ -235,7 +237,9 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       for (const nord of graph.nords) {
         if (connectedNordIds.has(nord.id)) continue;
         const nordType = typeMap.get(nord.type_id);
-        const isDimmed = !isNordTypeVisible(ct.id, nord.type_id);
+        const vis = getNordTypeVisibility('__global__', nord.type_id);
+        if (vis === 'hide') continue;
+        const isDimmed = vis === 'dim';
         orphanCards.push({
           id: nord.id,
           title: nord.title || 'Untitled',
@@ -259,7 +263,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     }
 
     return lanes;
-  }, [graph, connectionTypes, isNordTypeVisible]);
+  }, [graph, connectionTypes, getNordTypeVisibility]);
 
   const handleDragStart = useCallback((e: React.DragEvent, card: SwimCard) => {
     setDragData(e, {
@@ -462,8 +466,8 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
                         </div>
                     ))}
 
-                    {/* Orphan column — hidden by default, toggled by showOrphans */}
-                    {getBoard(ct.id).showOrphans && lane.orphans.length > 0 && (
+                    {/* Orphan column — toggled by direction filter 'unconnected' */}
+                    {getDirectionFilter('__global__', 'unconnected') && lane.orphans.length > 0 && (
                       <div className="nords-matrix__column nords-matrix__column--orphans">
                         <div className="nords-matrix__column-header">
                           <span className="nords-matrix__column-label nords-matrix__column-label--muted">
