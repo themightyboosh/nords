@@ -165,7 +165,18 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
       // and their average connection distance_x (used as seed if no board_position exists)
       const nordInfo = new Map<string, { connIds: string[]; avgDistX: number; count: number }>();
 
-      for (const conn of conns) {
+      // Filter connections by direction settings
+      const filteredConns = conns.filter(conn => {
+        const dir = conn.direction;
+        // Map connection direction to filter key
+        if (dir === 'forward')  return getDirectionFilter('__global__', 'forward');
+        if (dir === 'reverse')  return getDirectionFilter('__global__', 'reverse');
+        if (dir === 'both')     return getDirectionFilter('__global__', 'both');
+        // 'none' and 'neither' both map to the undirected filter
+        return getDirectionFilter('__global__', 'none');
+      });
+
+      for (const conn of filteredConns) {
         for (const nordId of [conn.source_nord_id, conn.target_nord_id]) {
           const info = nordInfo.get(nordId) || { connIds: [], avgDistX: 0, count: 0 };
           if (!info.connIds.includes(conn.id)) info.connIds.push(conn.id);
@@ -263,7 +274,7 @@ export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetc
     }
 
     return lanes;
-  }, [graph, connectionTypes, getNordTypeVisibility]);
+  }, [graph, connectionTypes, getNordTypeVisibility, getDirectionFilter]);
 
   const handleDragStart = useCallback((e: React.DragEvent, card: SwimCard) => {
     setDragData(e, {
