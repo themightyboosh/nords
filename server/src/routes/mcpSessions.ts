@@ -206,7 +206,10 @@ mcpSessionsRouter.put('/mcp-sessions/:id/nords', async (req: Request, res: Respo
       required_count ?? 0,
       filled_count ?? 0
     );
-    res.json(sessionNord);
+
+    // Auto-return updated horizon after property changes
+    const horizon = await mcpRepo.getSessionHorizon(req.params.id as string);
+    res.json({ sessionNord, horizon });
   } catch (err: any) {
     logger.error('Failed to upsert session nord', { error: err.message, sessionId: req.params.id });
     res.status(500).json({ error: 'Failed to upsert session nord' });

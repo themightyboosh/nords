@@ -1,0 +1,214 @@
+/**
+ * geminiTools.ts — Gemini function declarations for all 18 MCP tools.
+ *
+ * These are the JSON schemas that tell Gemini what tools are available
+ * and what parameters each accepts. Gemini uses these to decide which
+ * tools to call and with what arguments.
+ */
+
+import type { FunctionDeclaration, Type } from '@google/genai';
+
+/**
+ * Build the complete function declarations array.
+ * We build it dynamically so we can optionally exclude mutable tools.
+ */
+export function buildToolDeclarations(includeMutable: boolean): FunctionDeclaration[] {
+  const readOnly: FunctionDeclaration[] = [
+    {
+      name: 'nords_get_dictionary',
+      description: 'Get the project dictionary — the full ontology of nord types (with descriptions and property schemas), connection types (with verbs, measurement modes, stage labels), and personas (with backgrounds, motivations, mental models, and category weights). Call this FIRST at the start of every session to understand the vocabulary before making decisions.',
+      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
+    },
+    {
+      name: 'nords_get_horizon',
+      description: 'Get the Session Horizon — your full situational awareness. Returns current position (with session completion), persona-weighted neighbors (with session progress and stage labels), overall completion %, traversal breadcrumbs, suggested next nord, and predicted 2-hop path. Call this after nords_get_dictionary to orient yourself.',
+      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
+    },
+    {
+      name: 'nords_get_graph',
+      description: 'Get the full project graph including all nords, connections, and their types. Use this for broad exploration when the horizon is insufficient.',
+      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
+    },
+    {
+      name: 'nords_get_nord',
+      description: 'Get a single nord by ID with all its properties.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: { nord_id: { type: 'STRING' as Type, description: 'The UUID of the nord to retrieve' } },
+        required: ['nord_id'],
+      },
+    },
+    {
+      name: 'nords_query_nords',
+      description: 'Search nords by type and/or title substring.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          type_id: { type: 'STRING' as Type, description: 'Filter by nord type UUID' },
+          title: { type: 'STRING' as Type, description: 'Search by title substring (case-insensitive)' },
+        },
+        required: [],
+      },
+    },
+    {
+      name: 'nords_get_connections',
+      description: 'Get all connections to/from a specific nord.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: { nord_id: { type: 'STRING' as Type, description: 'The UUID of the nord' } },
+        required: ['nord_id'],
+      },
+    },
+    {
+      name: 'nords_get_session_state',
+      description: 'Get full session state: current position, all session nords with completion, and traversal history.',
+      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
+    },
+    {
+      name: 'nords_get_incomplete_nords',
+      description: 'Get all nords in the session that still have unfilled required properties.',
+      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
+    },
+  ];
+
+  const session: FunctionDeclaration[] = [
+    {
+      name: 'nords_traverse_connection',
+      description: 'Move to a connected nord by traversing a connection. This updates your current position and automatically returns the updated horizon. Use traversal_type to describe why you are moving (read, advance, rework, create, assign, evaluate).',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          connection_id: { type: 'STRING' as Type, description: 'UUID of the connection to traverse' },
+          source_nord_id: { type: 'STRING' as Type, description: 'UUID of the nord you are leaving' },
+          target_nord_id: { type: 'STRING' as Type, description: 'UUID of the nord you are moving to' },
+          direction: { type: 'STRING' as Type, description: 'Direction of traversal: forward or backward' },
+          traversal_type: { type: 'STRING' as Type, description: 'Why: read, advance, rework, create, assign, evaluate' },
+          context: { type: 'OBJECT' as Type, description: 'Optional JSON context for why you traversed', properties: {} },
+        },
+        required: ['connection_id', 'source_nord_id', 'target_nord_id', 'direction', 'traversal_type'],
+      },
+    },
+    {
+      name: 'nords_update_session_nord',
+      description: 'Save collected property values to a session nord. This validates properties against the nord type schema and returns the updated horizon. Use this when you have gathered information from the user.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          nord_id: { type: 'STRING' as Type, description: 'UUID of the nord to update' },
+          properties: { type: 'OBJECT' as Type, description: 'Key-value pairs of collected properties', properties: {} },
+          required_count: { type: 'NUMBER' as Type, description: 'Total required fields for this nord' },
+          filled_count: { type: 'NUMBER' as Type, description: 'Number of required fields now filled' },
+        },
+        required: ['nord_id', 'properties'],
+      },
+    },
+    {
+      name: 'nords_visit_nord',
+      description: 'Log a visit to a nord with optional before/after property snapshots.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          nord_id: { type: 'STRING' as Type, description: 'UUID of the nord visited' },
+          visit_type: { type: 'STRING' as Type, description: 'Type: inspect, update, complete, create, gate_check' },
+          properties_before: { type: 'OBJECT' as Type, description: 'Property snapshot before changes', properties: {} },
+          properties_after: { type: 'OBJECT' as Type, description: 'Property snapshot after changes', properties: {} },
+          context: { type: 'OBJECT' as Type, description: 'Optional visit context', properties: {} },
+        },
+        required: ['nord_id', 'visit_type'],
+      },
+    },
+    {
+      name: 'nords_switch_persona',
+      description: 'Switch the active persona lens. This changes how neighbors are weighted by persona bias and returns the updated horizon with reweighted view. Use this when the conversation shifts to a different domain.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          persona_id: { type: 'STRING' as Type, description: 'UUID of the persona to switch to, or null to clear' },
+        },
+        required: ['persona_id'],
+      },
+    },
+  ];
+
+  const mutable: FunctionDeclaration[] = [
+    {
+      name: 'nords_create_nord',
+      description: 'Create a new nord in the project.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          type_id: { type: 'STRING' as Type, description: 'UUID of the nord type' },
+          title: { type: 'STRING' as Type, description: 'Title for the new nord' },
+          properties: { type: 'OBJECT' as Type, description: 'Initial properties', properties: {} },
+          position_x: { type: 'NUMBER' as Type, description: 'X position on canvas' },
+          position_y: { type: 'NUMBER' as Type, description: 'Y position on canvas' },
+        },
+        required: ['type_id', 'title'],
+      },
+    },
+    {
+      name: 'nords_update_nord',
+      description: 'Update an existing nord (title, properties).',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          nord_id: { type: 'STRING' as Type, description: 'UUID of the nord to update' },
+          title: { type: 'STRING' as Type, description: 'New title' },
+          properties: { type: 'OBJECT' as Type, description: 'Updated properties', properties: {} },
+        },
+        required: ['nord_id'],
+      },
+    },
+    {
+      name: 'nords_delete_nord',
+      description: 'Soft-delete a nord.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: { nord_id: { type: 'STRING' as Type, description: 'UUID of the nord to delete' } },
+        required: ['nord_id'],
+      },
+    },
+    {
+      name: 'nords_create_connection',
+      description: 'Create a typed connection between two nords.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          type_id: { type: 'STRING' as Type, description: 'UUID of the connection type' },
+          source_nord_id: { type: 'STRING' as Type, description: 'Source nord UUID' },
+          target_nord_id: { type: 'STRING' as Type, description: 'Target nord UUID' },
+          direction: { type: 'STRING' as Type, description: 'Direction: forward, reverse, both, none' },
+          distance_x: { type: 'NUMBER' as Type, description: 'Position on X spectrum (0.0-1.0)' },
+          distance_y: { type: 'NUMBER' as Type, description: 'Position on Y spectrum (0.0-1.0)' },
+        },
+        required: ['type_id', 'source_nord_id', 'target_nord_id'],
+      },
+    },
+    {
+      name: 'nords_update_connection',
+      description: 'Update connection distance, direction, or properties.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          connection_id: { type: 'STRING' as Type, description: 'UUID of the connection' },
+          distance_x: { type: 'NUMBER' as Type, description: 'New X spectrum position' },
+          distance_y: { type: 'NUMBER' as Type, description: 'New Y spectrum position' },
+          direction: { type: 'STRING' as Type, description: 'New direction' },
+          properties: { type: 'OBJECT' as Type, description: 'Updated connection properties', properties: {} },
+        },
+        required: ['connection_id'],
+      },
+    },
+    {
+      name: 'nords_delete_connection',
+      description: 'Soft-delete a connection.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: { connection_id: { type: 'STRING' as Type, description: 'UUID of the connection to delete' } },
+        required: ['connection_id'],
+      },
+    },
+  ];
+
+  return [...readOnly, ...session, ...(includeMutable ? mutable : [])];
+}

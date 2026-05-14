@@ -1,35 +1,126 @@
 /**
- * chat.ts — Gemini proxy route for the Preview Chat.
+ * chat.ts — Gemini proxy with full tool-calling loop.
  *
  * POST /api/projects/:id/chat  — Send a message, get AI response
  * GET  /api/sessions/:id/messages — Get conversation history
  *
- * The proxy assembles the system prompt from:
- *   1. Project's mcp_system_prompt (business logic)
- *   2. NordType schemas (auto-injected)
- *   3. Active persona context (if set)
- *   4. Current session state (traversals, completion)
- *   5. Capabilities section (tools context)
+ * Flow per turn:
+ *   1. Resolve/create session
+ *   2. Build system prompt (project + persona + protocol)
+ *   3. Build conversation history (Gemini format)
+ *   4. Call Gemini with tool declarations
+ *   5. Loop: if Gemini wants tool calls, dispatch them and re-send
+ *   6. Return final text response
  */
 
 import { Router, Request, Response } from 'express';
+import { GoogleGenAI } from '@google/genai';
 import logger from '../lib/logger.js';
 import { mcpMessagesRepo } from '../repositories/mcpMessages.js';
-import * as mcpSessionsRepo from '../repositories/mcpSessions.js';
+import * as mcpRepo from '../repositories/mcpSessions.js';
 import * as projectsRepo from '../repositories/projects.js';
+import { dispatchTool, type ToolContext } from '../lib/toolDispatch.js';
+import { buildToolDeclarations } from '../lib/geminiTools.js';
+import { queryOne } from '../db.js';
 
 export const chatRouter = Router();
 
-/**
- * POST /api/projects/:id/chat
- *
- * Body: { message: string, sessionId?: string, model?: string }
- * Returns: { reply: string, sessionId: string, message: McpMessage }
- *
- * For now, this is a passthrough that logs messages and returns
- * a placeholder response. The Gemini integration will be wired
- * when API keys are configured.
- */
+const MAX_TOOL_LOOPS = 10; // safety limit on tool-calling rounds
+
+// ── System Prompt Assembly (#2 + #3) ──
+
+async function buildSystemPrompt(
+  projectId: string,
+  sessionId: string,
+  personaId: string | null
+): Promise<{ prompt: string; temperature: number }> {
+  const project = await projectsRepo.findById(projectId);
+  let temperature = 0.7; // default
+
+  // Base protocol
+  let prompt = `You are an AI assistant navigating a knowledge graph called "Nords."
+Your job is to help the user accomplish tasks by traversing nodes (nords) and collecting required information.
+
+## Protocol
+1. ALWAYS call \`nords_get_dictionary\` first if you haven't already this session — it gives you the project vocabulary.
+2. Call \`nords_get_horizon\` to understand your current position, neighbors, completion %, and suggested next actions.
+3. Use \`nords_traverse_connection\` to move between nords — it auto-returns the updated horizon.
+4. Use \`nords_update_session_nord\` to save collected properties — it validates against the schema.
+5. Use \`nords_switch_persona\` when the conversation domain shifts to get a reweighted view.
+
+## Important
+- You navigate a real, structured graph. Don't make up nords or connections — use your tools to discover them.
+- Properties have types and constraints defined in the dictionary. Validate user input before saving.
+- The horizon's \`suggested_next\` and \`predicted_path\` guide you toward completion — follow them unless the user directs otherwise.
+- Connection verbs and stage labels give you semantic context — use them in your responses.
+`;
+
+  // Project-specific prompt
+  if (project?.mcp_system_prompt) {
+    prompt += `\n## Project Instructions\n${project.mcp_system_prompt}\n`;
+  }
+
+  if (project?.name) {
+    prompt += `\n## Project: ${project.name}\n`;
+    if (project.purpose) prompt += `Purpose: ${project.purpose}\n`;
+  }
+
+  // Persona injection (#3: apply voice, guardrails, temperature)
+  if (personaId) {
+    const persona = await queryOne<{
+      name: string; background: string; primary_motivation: string;
+      voice_and_tone: string; temperature: number; guardrails: string;
+    }>(
+      'SELECT name, background, primary_motivation, voice_and_tone, temperature, guardrails::text FROM personas WHERE id = $1 AND deleted_at IS NULL',
+      [personaId]
+    );
+
+    if (persona) {
+      temperature = persona.temperature ?? 0.7;
+
+      prompt += `\n## Active Persona: ${persona.name}
+Background: ${persona.background}
+Motivation: ${persona.primary_motivation}
+
+### Voice & Tone
+${persona.voice_and_tone}
+`;
+
+      // Parse and apply guardrails
+      try {
+        const guardrails = JSON.parse(persona.guardrails || '[]') as Array<{ mode: string; text: string }>;
+        if (guardrails.length > 0) {
+          prompt += `\n### Guardrails\n`;
+          for (const g of guardrails) {
+            prompt += `- [${g.mode.toUpperCase()}] ${g.text}\n`;
+          }
+        }
+      } catch { /* ignore parse errors */ }
+    }
+  }
+
+  return { prompt, temperature };
+}
+
+// ── Conversation History → Gemini Format ──
+
+function buildGeminiHistory(messages: Array<{ role: string; content: string; tool_calls?: unknown }>) {
+  const history: Array<{ role: string; parts: Array<{ text?: string; functionCall?: unknown; functionResponse?: unknown }> }> = [];
+
+  for (const msg of messages) {
+    if (msg.role === 'user') {
+      history.push({ role: 'user', parts: [{ text: msg.content }] });
+    } else if (msg.role === 'assistant') {
+      history.push({ role: 'model', parts: [{ text: msg.content }] });
+    }
+    // tool messages are handled internally in the loop
+  }
+
+  return history;
+}
+
+// ── Main Chat Endpoint ──
+
 chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
   try {
     const projectId = req.params.id as string;
@@ -39,20 +130,25 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
+    const apiKey = process.env.GEMINI_API_KEY;
+
     // 1. Resolve or create session
     let sessionId = existingSessionId;
+    let session;
     if (!sessionId) {
       const project = await projectsRepo.findById(projectId);
-      const session = await mcpSessionsRepo.createSession(
+      session = await mcpRepo.createSession(
         projectId,
         project?.default_persona_id || null,
         project?.default_start_nord_id || null
       );
       sessionId = session.id;
+    } else {
+      session = await queryOne('SELECT * FROM mcp_sessions WHERE id = $1', [sessionId]);
     }
 
     // 2. Log user message
-    const userMsg = await mcpMessagesRepo.create({
+    await mcpMessagesRepo.create({
       session_id: sessionId,
       role: 'user',
       content: message.trim(),
@@ -64,62 +160,156 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
       latency_ms: null,
     });
 
-    // 3. Assemble context (for dev mode visibility)
+    // 3. Build system prompt with persona injection
+    const personaId = (session as any)?.persona_id || null;
+    const { prompt: systemPrompt, temperature } = await buildSystemPrompt(projectId, sessionId, personaId);
+
+    // 4. Get project mutability for tool gating
     const project = await projectsRepo.findById(projectId);
-    const sessionNords = await mcpSessionsRepo.findSessionNords(sessionId);
-    const traversals = await mcpSessionsRepo.findTraversalsBySession(sessionId);
+    const mcpMutable = project?.mcp_mutable ?? false;
+
+    // 5. Build tool context
+    const toolCtx: ToolContext = { sessionId, projectId, mcpMutable };
+
+    // If no API key, fall back to placeholder mode
+    if (!apiKey) {
+      const horizon = await mcpRepo.getSessionHorizon(sessionId);
+      const replyContent = `[Preview Mode — No GEMINI_API_KEY set]
+
+Session ${sessionId.slice(0, 8)}… is active.
+Current nord: ${horizon.current_nord?.title || 'none'}
+Completion: ${horizon.completion.percentage}%
+Neighbors: ${horizon.neighbors.length}
+Suggested next: ${horizon.suggested_next?.title || 'none'}
+
+Set GEMINI_API_KEY in .env to enable AI responses.`;
+
+      const assistantMsg = await mcpMessagesRepo.create({
+        session_id: sessionId,
+        role: 'assistant',
+        content: replyContent,
+        tool_calls: null,
+        context: { systemPrompt: systemPrompt.slice(0, 500), horizon },
+        tokens_in: null,
+        tokens_out: null,
+        model,
+        latency_ms: 0,
+      });
+
+      return res.json({ reply: replyContent, sessionId, message: assistantMsg, toolCalls: [] });
+    }
+
+    // 6. Initialize Gemini
+    const genai = new GoogleGenAI({ apiKey });
+    const toolDeclarations = buildToolDeclarations(mcpMutable);
+
+    // 7. Build conversation history
     const messageHistory = await mcpMessagesRepo.findBySession(sessionId);
+    // Exclude the user message we just logged (it goes in the current turn)
+    const priorMessages = messageHistory.slice(0, -1);
+    const history = buildGeminiHistory(priorMessages);
 
-    const assembledContext = {
-      project: {
-        name: project?.name,
-        purpose: project?.purpose,
-        mcp_system_prompt: project?.mcp_system_prompt,
-        default_start_nord_id: project?.default_start_nord_id,
-        default_end_nord_id: project?.default_end_nord_id,
-      },
-      session: {
-        id: sessionId,
-        nordCount: sessionNords.length,
-        completedNords: sessionNords.filter(n => n.complete).length,
-        traversalCount: traversals.length,
-      },
-      messageCount: messageHistory.length,
-      model,
-    };
-
-    // 4. TODO: Call Gemini API with assembled context
-    // For now, return a structured placeholder that shows the system is working
+    // 8. Tool-calling loop
     const startTime = Date.now();
-    const replyContent = `[Preview Mode] Received your message. Session ${sessionId.slice(0, 8)}… is active with ${assembledContext.session.nordCount} nords tracked and ${assembledContext.session.traversalCount} traversals logged. Gemini integration pending API key configuration.`;
+    const allToolCalls: Array<{ name: string; arguments: Record<string, unknown>; result?: unknown }> = [];
+    let finalReply = '';
+    let tokensIn = 0;
+    let tokensOut = 0;
+
+    // Initial request
+    let currentContents: any[] = [
+      ...history,
+      { role: 'user', parts: [{ text: message.trim() }] },
+    ];
+
+    for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
+      const response = await genai.models.generateContent({
+        model,
+        contents: currentContents,
+        config: {
+          systemInstruction: systemPrompt,
+          temperature,
+          tools: [{ functionDeclarations: toolDeclarations }],
+        },
+      });
+
+      // Track usage
+      if (response.usageMetadata) {
+        tokensIn += response.usageMetadata.promptTokenCount || 0;
+        tokensOut += response.usageMetadata.candidatesTokenCount || 0;
+      }
+
+      const candidate = response.candidates?.[0];
+      if (!candidate?.content?.parts) break;
+
+      // Check for function calls
+      const functionCalls = candidate.content.parts.filter((p: any) => p.functionCall);
+
+      if (functionCalls.length === 0) {
+        // No tool calls — extract text response
+        finalReply = candidate.content.parts
+          .filter((p: any) => p.text)
+          .map((p: any) => p.text)
+          .join('');
+        break;
+      }
+
+      // Dispatch all tool calls
+      const toolResponses: any[] = [];
+      for (const part of functionCalls) {
+        const fc = part.functionCall!;
+        const toolName = (fc as any).name as string;
+        const toolArgs = ((fc as any).args || {}) as Record<string, unknown>;
+
+        logger.info('Tool call', { tool: toolName, args: toolArgs, session: sessionId });
+
+        const result = await dispatchTool(toolName, toolCtx, toolArgs);
+        allToolCalls.push({ name: toolName, arguments: toolArgs, result: result.data ?? result.error });
+        toolResponses.push({
+          functionResponse: {
+            name: toolName,
+            response: result,
+          },
+        });
+      }
+
+      // Build next turn with model's function calls + our responses
+      currentContents = [
+        ...currentContents,
+        { role: 'model', parts: functionCalls.map((p: any) => ({ functionCall: p.functionCall })) },
+        { role: 'user', parts: toolResponses },
+      ];
+    }
+
     const latency = Date.now() - startTime;
 
-    // 5. Log assistant response
+    // 9. Log assistant response with tool calls
     const assistantMsg = await mcpMessagesRepo.create({
       session_id: sessionId,
       role: 'assistant',
-      content: replyContent,
-      tool_calls: null,
-      context: assembledContext,
-      tokens_in: null,
-      tokens_out: null,
+      content: finalReply,
+      tool_calls: allToolCalls.length > 0 ? allToolCalls : null,
+      context: { toolCallCount: allToolCalls.length, temperature, model },
+      tokens_in: tokensIn,
+      tokens_out: tokensOut,
       model,
       latency_ms: latency,
     });
 
-    // 6. Check session completion after interaction
-    const completionCheck = await mcpSessionsRepo.checkSessionCompletion(sessionId);
+    // 10. Check session completion
+    const completionCheck = await mcpRepo.checkSessionCompletion(sessionId);
 
     res.json({
-      reply: replyContent,
+      reply: finalReply,
       sessionId,
       message: assistantMsg,
+      toolCalls: allToolCalls,
       completion: completionCheck,
     });
 
   } catch (err: any) {
-    logger.error('Chat proxy error', { error: err.message, projectId: req.params.id });
-    res.status(500).json({ error: 'Chat failed' });
+    logger.error('Chat proxy error', { error: err.message, stack: err.stack, projectId: req.params.id });
+    res.status(500).json({ error: 'Chat failed', details: err.message });
   }
 });
 
