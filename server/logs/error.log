@@ -6067,3 +6067,330 @@ error: new row for relation "connection_types" violates check constraint "connec
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:223:18) {"service":"nords-server","text":"INSERT INTO connection_types (project_id, name, description, accent_color, stroke_style, default_direction, verb, direct","duration":161,"error":"new row for relation \"connection_types\" violates check constraint \"connection_types_default_direction_check\""}
 20:08:23.647 [31merror[39m: Failed to create connection type {"service":"nords-server","error":"new row for relation \"connection_types\" violates check constraint \"connection_types_default_direction_check\"","projectId":"bf84e9fc-8c1e-4ffe-ac1c-415d13de0967"}
 20:08:23.647 [31merror[39m: POST /api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/connection-types 500 {"service":"nords-server","method":"POST","path":"/api/projects/bf84e9fc-8c1e-4ffe-ac1c-415d13de0967/connection-types","status":500,"duration":"161ms","bytes":"44"}
+20:48:26.969 [31merror[39m: Query failed
+error: column "user_id" of relation "mcp_sessions" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:271:17) {"service":"nords-server","text":"\n    INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id, user_id, token_id)\n    VALUES ($1, $2, $3, $4, $","duration":31,"error":"column \"user_id\" of relation \"mcp_sessions\" does not exist"}
+20:48:26.969 [31merror[39m: Chat proxy error
+error: column "user_id" of relation "mcp_sessions" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:271:17) {"service":"nords-server","error":"column \"user_id\" of relation \"mcp_sessions\" does not exist","projectId":"5413fc94-3245-4153-9641-b9d025367e1d"}
+20:48:26.969 [31merror[39m: POST /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat","status":500,"duration":"205ms","bytes":"98"}
+20:58:55.414 [31merror[39m: Query failed
+error: column "user_id" of relation "mcp_sessions" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:271:17) {"service":"nords-server","text":"\n    INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id, user_id, token_id)\n    VALUES ($1, $2, $3, $4, $","duration":30,"error":"column \"user_id\" of relation \"mcp_sessions\" does not exist"}
+20:58:55.414 [31merror[39m: Chat proxy error
+error: column "user_id" of relation "mcp_sessions" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:271:17) {"service":"nords-server","error":"column \"user_id\" of relation \"mcp_sessions\" does not exist","projectId":"5413fc94-3245-4153-9641-b9d025367e1d"}
+20:58:55.416 [31merror[39m: POST /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat","status":500,"duration":"199ms","bytes":"98"}
+20:59:50.097 [31merror[39m: Query failed
+error: column "user_id" of relation "mcp_sessions" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:271:17) {"service":"nords-server","text":"\n    INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id, user_id, token_id)\n    VALUES ($1, $2, $3, $4, $","duration":30,"error":"column \"user_id\" of relation \"mcp_sessions\" does not exist"}
+20:59:50.098 [31merror[39m: Chat proxy error
+error: column "user_id" of relation "mcp_sessions" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:271:17) {"service":"nords-server","error":"column \"user_id\" of relation \"mcp_sessions\" does not exist","projectId":"5413fc94-3245-4153-9641-b9d025367e1d"}
+20:59:50.098 [31merror[39m: POST /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat","status":500,"duration":"197ms","bytes":"98"}
+21:03:43.811 [31merror[39m: Chat proxy error
+ApiError: {"error":{"code":403,"message":"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"serviceTitle":"Gemini API","containerInfo":"972422321653","activationUrl":"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653","service":"generativelanguage.googleapis.com","consumer":"projects/972422321653"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653"}]}]}}
+    at throwErrorIfNotOK (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:983:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:588:9)
+    at async Models.Models.generateContent (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/models.ts:128:14)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:364:24) {"service":"nords-server","error":"{\"error\":{\"code\":403,\"message\":\"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\"status\":\"PERMISSION_DENIED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"SERVICE_DISABLED\",\"domain\":\"googleapis.com\",\"metadata\":{\"serviceTitle\":\"Gemini API\",\"containerInfo\":\"972422321653\",\"activationUrl\":\"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653\",\"service\":\"generativelanguage.googleapis.com\",\"consumer\":\"projects/972422321653\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\"},{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Google developers console API activation\",\"url\":\"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653\"}]}]}}","projectId":"5413fc94-3245-4153-9641-b9d025367e1d"}
+21:03:43.811 [31merror[39m: POST /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat","status":500,"duration":"672ms","bytes":"1561"}
+21:04:38.004 [31merror[39m: Chat proxy error
+ApiError: {"error":{"code":403,"message":"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com","consumer":"projects/972422321653","containerInfo":"972422321653","activationUrl":"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653","serviceTitle":"Gemini API"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653"}]}]}}
+    at throwErrorIfNotOK (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:983:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:588:9)
+    at async Models.Models.generateContent (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/models.ts:128:14)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:364:24) {"service":"nords-server","error":"{\"error\":{\"code\":403,\"message\":\"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\"status\":\"PERMISSION_DENIED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"SERVICE_DISABLED\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\",\"consumer\":\"projects/972422321653\",\"containerInfo\":\"972422321653\",\"activationUrl\":\"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653\",\"serviceTitle\":\"Gemini API\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\"},{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Google developers console API activation\",\"url\":\"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653\"}]}]}}","projectId":"5413fc94-3245-4153-9641-b9d025367e1d"}
+21:04:38.005 [31merror[39m: POST /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat","status":500,"duration":"594ms","bytes":"1561"}
+21:05:20.805 [31merror[39m: Chat proxy error
+ApiError: {"error":{"code":403,"message":"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"serviceTitle":"Gemini API","activationUrl":"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653","consumer":"projects/972422321653","containerInfo":"972422321653","service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653"}]}]}}
+    at throwErrorIfNotOK (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:983:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:588:9)
+    at async Models.Models.generateContent (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/models.ts:128:14)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:364:24) {"service":"nords-server","error":"{\"error\":{\"code\":403,\"message\":\"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\"status\":\"PERMISSION_DENIED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"SERVICE_DISABLED\",\"domain\":\"googleapis.com\",\"metadata\":{\"serviceTitle\":\"Gemini API\",\"activationUrl\":\"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653\",\"consumer\":\"projects/972422321653\",\"containerInfo\":\"972422321653\",\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"Gemini API has not been used in project 972422321653 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\"},{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Google developers console API activation\",\"url\":\"https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=972422321653\"}]}]}}","projectId":"5413fc94-3245-4153-9641-b9d025367e1d"}
+21:05:20.805 [31merror[39m: POST /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat","status":500,"duration":"689ms","bytes":"1561"}
+21:08:13.115 [31merror[39m: Chat proxy error
+ApiError: {"error":{"code":403,"message":"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"BILLING_DISABLED","domain":"googleapis.com","metadata":{"containerInfo":"linen-sunbeam-477920-c9","consumer":"projects/linen-sunbeam-477920-c9","service":"aiplatform.googleapis.com","consoleUrl":"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console billing","url":"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9"}]}]}}
+    at throwErrorIfNotOK (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:983:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:588:9)
+    at async Models.Models.generateContent (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/models.ts:128:14)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:371:24) {"service":"nords-server","error":"{\"error\":{\"code\":403,\"message\":\"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.\",\"status\":\"PERMISSION_DENIED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"BILLING_DISABLED\",\"domain\":\"googleapis.com\",\"metadata\":{\"containerInfo\":\"linen-sunbeam-477920-c9\",\"consumer\":\"projects/linen-sunbeam-477920-c9\",\"service\":\"aiplatform.googleapis.com\",\"consoleUrl\":\"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.\"},{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Google developers console billing\",\"url\":\"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9\"}]}]}}","projectId":"5413fc94-3245-4153-9641-b9d025367e1d"}
+21:08:13.117 [31merror[39m: POST /api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/5413fc94-3245-4153-9641-b9d025367e1d/chat","status":500,"duration":"853ms","bytes":"1495"}
+09:31:53.725 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":5004,"error":"Connection terminated due to connection timeout"}
+09:31:53.726 [31merror[39m: Failed to load projects {"service":"nords-server","error":"Connection terminated due to connection timeout"}
+09:31:53.733 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"5017ms","bytes":"35"}
+09:31:53.734 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":5018,"error":"Connection terminated due to connection timeout"}
+09:31:58.808 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":5003,"error":"Connection terminated due to connection timeout"}
+09:31:58.809 [31merror[39m: Failed to load projects {"service":"nords-server","error":"Connection terminated due to connection timeout"}
+09:31:58.809 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"5004ms","bytes":"35"}
+09:31:58.810 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":5005,"error":"Connection terminated due to connection timeout"}
+09:32:03.886 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":5003,"error":"Connection terminated due to connection timeout"}
+09:32:03.887 [31merror[39m: Failed to load projects {"service":"nords-server","error":"Connection terminated due to connection timeout"}
+09:32:03.888 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"5005ms","bytes":"35"}
+09:32:03.889 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":5006,"error":"Connection terminated due to connection timeout"}
+09:32:08.969 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":5002,"error":"Connection terminated due to connection timeout"}
+09:32:08.969 [31merror[39m: Failed to load projects {"service":"nords-server","error":"Connection terminated due to connection timeout"}
+09:32:08.970 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"5004ms","bytes":"35"}
+09:32:08.971 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":5005,"error":"Connection terminated due to connection timeout"}
+09:32:14.050 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":5002,"error":"Connection terminated due to connection timeout"}
+09:32:14.050 [31merror[39m: Failed to load projects {"service":"nords-server","error":"Connection terminated due to connection timeout"}
+09:32:14.052 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"5004ms","bytes":"35"}
+09:32:14.052 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":5004,"error":"Connection terminated due to connection timeout"}
+09:32:24.044 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":5002,"error":"Connection terminated due to connection timeout"}
+09:32:24.045 [31merror[39m: Failed to load projects {"service":"nords-server","error":"Connection terminated due to connection timeout"}
+09:32:24.046 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"5005ms","bytes":"35"}
+09:32:24.047 [31merror[39m: Query failed
+Error: Connection terminated due to connection timeout
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":5006,"error":"Connection terminated due to connection timeout"}
+09:35:58.819 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":106,"error":"read ECONNRESET"}
+09:35:58.819 [31merror[39m: Failed to load projects {"service":"nords-server","error":"read ECONNRESET"}
+09:35:58.821 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"111ms","bytes":"35"}
+09:35:58.821 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":111,"error":"read ECONNRESET"}
+09:35:58.925 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":44,"error":"read ECONNRESET"}
+09:35:58.926 [31merror[39m: Failed to load projects {"service":"nords-server","error":"read ECONNRESET"}
+09:35:58.926 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"45ms","bytes":"35"}
+09:35:58.926 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":45,"error":"read ECONNRESET"}
+09:35:59.084 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":102,"error":"read ECONNRESET"}
+09:35:59.084 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":103,"error":"read ECONNRESET"}
+09:35:59.084 [31merror[39m: Failed to load projects {"service":"nords-server","error":"read ECONNRESET"}
+09:35:59.084 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"103ms","bytes":"35"}
+09:35:59.188 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":50,"error":"read ECONNRESET"}
+09:35:59.188 [31merror[39m: Failed to load projects {"service":"nords-server","error":"read ECONNRESET"}
+09:35:59.188 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"50ms","bytes":"35"}
+09:35:59.188 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":50,"error":"read ECONNRESET"}
+09:35:59.300 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":57,"error":"read ECONNRESET"}
+09:35:59.300 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":56,"error":"read ECONNRESET"}
+09:35:59.300 [31merror[39m: Failed to load projects {"service":"nords-server","error":"read ECONNRESET"}
+09:35:59.301 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"58ms","bytes":"35"}
+09:43:41.695 [31merror[39m: Query failed
+error: insert or update on table "projects" violates foreign key constraint "projects_org_id_fkey"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:67:21) {"service":"nords-server","text":"\n    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_muta","duration":349,"error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\""}
+09:43:41.696 [31merror[39m: Failed to create project {"service":"nords-server","error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\"","name":"Paws & Claws Adoption Center"}
+09:43:41.696 [31merror[39m: POST /api/projects 500 {"service":"nords-server","method":"POST","path":"/api/projects","status":500,"duration":"351ms","bytes":"36"}
+09:43:41.908 [31merror[39m: Query failed
+error: insert or update on table "projects" violates foreign key constraint "projects_org_id_fkey"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:67:21) {"service":"nords-server","text":"\n    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_muta","duration":59,"error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\""}
+09:43:41.908 [31merror[39m: Failed to create project {"service":"nords-server","error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\"","name":"Acme Design Talent Pipeline"}
+09:43:41.908 [31merror[39m: POST /api/projects 500 {"service":"nords-server","method":"POST","path":"/api/projects","status":500,"duration":"60ms","bytes":"36"}
+09:43:42.383 [31merror[39m: Query failed
+error: insert or update on table "projects" violates foreign key constraint "projects_org_id_fkey"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:67:21) {"service":"nords-server","text":"\n    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_muta","duration":51,"error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\""}
+09:43:42.383 [31merror[39m: Failed to create project {"service":"nords-server","error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\"","name":"Operation Swift Relief"}
+09:43:42.383 [31merror[39m: POST /api/projects 500 {"service":"nords-server","method":"POST","path":"/api/projects","status":500,"duration":"52ms","bytes":"36"}
+09:43:42.886 [31merror[39m: Query failed
+error: insert or update on table "projects" violates foreign key constraint "projects_org_id_fkey"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:67:21) {"service":"nords-server","text":"\n    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_muta","duration":52,"error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\""}
+09:43:42.886 [31merror[39m: Failed to create project {"service":"nords-server","error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\"","name":"Pet Care Ethnographic Study"}
+09:43:42.887 [31merror[39m: POST /api/projects 500 {"service":"nords-server","method":"POST","path":"/api/projects","status":500,"duration":"53ms","bytes":"36"}
+09:43:43.371 [31merror[39m: Query failed
+error: insert or update on table "projects" violates foreign key constraint "projects_org_id_fkey"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:67:21) {"service":"nords-server","text":"\n    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_muta","duration":57,"error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\""}
+09:43:43.371 [31merror[39m: Failed to create project {"service":"nords-server","error":"insert or update on table \"projects\" violates foreign key constraint \"projects_org_id_fkey\"","name":"Chronicles of the Shattered Coast"}
+09:43:43.371 [31merror[39m: POST /api/projects 500 {"service":"nords-server","method":"POST","path":"/api/projects","status":500,"duration":"57ms","bytes":"36"}
+09:46:32.576 [31merror[39m: Query failed
+error: invalid input syntax for type uuid: "test-session-123"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:278:17) {"service":"nords-server","text":"SELECT * FROM mcp_sessions WHERE id = $1","duration":338,"error":"invalid input syntax for type uuid: \"test-session-123\""}
+09:46:32.576 [31merror[39m: Chat proxy error
+error: invalid input syntax for type uuid: "test-session-123"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:278:17) {"service":"nords-server","error":"invalid input syntax for type uuid: \"test-session-123\"","projectId":"c0b033d0-38e9-4677-94c1-021befdc447c"}
+09:46:32.576 [31merror[39m: POST /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat","status":500,"duration":"340ms","bytes":"92"}
+09:46:38.792 [31merror[39m: Query failed
+error: insert or update on table "mcp_messages" violates foreign key constraint "mcp_messages_session_id_fkey"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:282:5) {"service":"nords-server","text":"\n      INSERT INTO mcp_messages (session_id, role, content, tool_calls, context, tokens_in, tokens_out, model, latency_m","duration":55,"error":"insert or update on table \"mcp_messages\" violates foreign key constraint \"mcp_messages_session_id_fkey\""}
+09:46:38.793 [31merror[39m: Chat proxy error
+error: insert or update on table "mcp_messages" violates foreign key constraint "mcp_messages_session_id_fkey"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:282:5) {"service":"nords-server","error":"insert or update on table \"mcp_messages\" violates foreign key constraint \"mcp_messages_session_id_fkey\"","projectId":"c0b033d0-38e9-4677-94c1-021befdc447c"}
+09:46:38.793 [31merror[39m: POST /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat","status":500,"duration":"405ms","bytes":"143"}
+09:46:53.467 [31merror[39m: Chat proxy error
+ApiError: {"error":{"code":403,"message":"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"BILLING_DISABLED","domain":"googleapis.com","metadata":{"containerInfo":"linen-sunbeam-477920-c9","service":"aiplatform.googleapis.com","consoleUrl":"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9","consumer":"projects/linen-sunbeam-477920-c9"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console billing","url":"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9"}]}]}}
+    at throwErrorIfNotOK (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:983:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:588:9)
+    at async Models.Models.generateContent (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/models.ts:128:14)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:371:24) {"service":"nords-server","error":"{\"error\":{\"code\":403,\"message\":\"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.\",\"status\":\"PERMISSION_DENIED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"BILLING_DISABLED\",\"domain\":\"googleapis.com\",\"metadata\":{\"containerInfo\":\"linen-sunbeam-477920-c9\",\"service\":\"aiplatform.googleapis.com\",\"consoleUrl\":\"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9\",\"consumer\":\"projects/linen-sunbeam-477920-c9\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.\"},{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Google developers console billing\",\"url\":\"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9\"}]}]}}","projectId":"c0b033d0-38e9-4677-94c1-021befdc447c"}
+09:46:53.467 [31merror[39m: POST /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat","status":500,"duration":"1758ms","bytes":"1495"}
+09:47:20.651 [31merror[39m: Chat proxy error
+ApiError: {"error":{"code":403,"message":"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"BILLING_DISABLED","domain":"googleapis.com","metadata":{"consumer":"projects/linen-sunbeam-477920-c9","consoleUrl":"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9","service":"aiplatform.googleapis.com","containerInfo":"linen-sunbeam-477920-c9"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console billing","url":"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9"}]}]}}
+    at throwErrorIfNotOK (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:983:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:588:9)
+    at async Models.Models.generateContent (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/models.ts:128:14)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:371:24) {"service":"nords-server","error":"{\"error\":{\"code\":403,\"message\":\"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.\",\"status\":\"PERMISSION_DENIED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"BILLING_DISABLED\",\"domain\":\"googleapis.com\",\"metadata\":{\"consumer\":\"projects/linen-sunbeam-477920-c9\",\"consoleUrl\":\"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9\",\"service\":\"aiplatform.googleapis.com\",\"containerInfo\":\"linen-sunbeam-477920-c9\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.\"},{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Google developers console billing\",\"url\":\"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9\"}]}]}}","projectId":"c0b033d0-38e9-4677-94c1-021befdc447c"}
+09:47:20.653 [31merror[39m: POST /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat","status":500,"duration":"1992ms","bytes":"1495"}
+09:53:09.615 [31merror[39m: Chat proxy error
+ApiError: {"error":{"code":404,"message":"Publisher Model `projects/nords-spatial-1776012153/locations/us-central1/publishers/google/models/gemini-2.0-flash` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions","status":"NOT_FOUND"}}
+    at throwErrorIfNotOK (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:983:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:588:9)
+    at async Models.Models.generateContent (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/models.ts:128:14)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:371:24) {"service":"nords-server","error":"{\"error\":{\"code\":404,\"message\":\"Publisher Model `projects/nords-spatial-1776012153/locations/us-central1/publishers/google/models/gemini-2.0-flash` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions\",\"status\":\"NOT_FOUND\"}}","projectId":"c0b033d0-38e9-4677-94c1-021befdc447c"}
+09:53:09.615 [31merror[39m: POST /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat","status":500,"duration":"3735ms","bytes":"430"}
+09:54:48.895 [31merror[39m: Chat proxy error
+ApiError: {"error":{"code":404,"message":"Publisher Model `projects/nords-spatial-1776012153/locations/us-central1/publishers/google/models/gemini-2.0-flash` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions","status":"NOT_FOUND"}}
+    at throwErrorIfNotOK (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:983:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/_api_client.ts:588:9)
+    at async Models.Models.generateContent (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/models.ts:128:14)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:371:24) {"service":"nords-server","error":"{\"error\":{\"code\":404,\"message\":\"Publisher Model `projects/nords-spatial-1776012153/locations/us-central1/publishers/google/models/gemini-2.0-flash` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions\",\"status\":\"NOT_FOUND\"}}","projectId":"c0b033d0-38e9-4677-94c1-021befdc447c"}
+09:54:48.895 [31merror[39m: POST /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat","status":500,"duration":"1939ms","bytes":"430"}

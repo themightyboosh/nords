@@ -104,28 +104,6 @@ export default function ViewportHeader({
                 <span>Personas</span>
               </button>
             )}
-            {onOpenSettings && (
-              <button
-                className="nords-viewport-header__nav-item"
-                title="Project Settings"
-                onClick={onOpenSettings}
-                data-testid="header-settings"
-              >
-                <Settings size={14} strokeWidth={1.6} />
-                <span>Settings</span>
-              </button>
-            )}
-            {onOpenPreview && (
-              <button
-                className="nords-viewport-header__nav-item"
-                title="Preview Chat"
-                onClick={onOpenPreview}
-                data-testid="header-preview"
-              >
-                <Eye size={14} strokeWidth={1.6} />
-                <span>Preview</span>
-              </button>
-            )}
           </div>
         )}
       </div>
@@ -146,8 +124,30 @@ export default function ViewportHeader({
         )}
       </div>
 
-      {/* ═══ Right: Theme + User ═══ */}
+      {/* ═══ Right: Settings + Preview + Theme + User ═══ */}
       <div className="nords-viewport-header__right">
+        {!isDashboard && onOpenSettings && (
+          <button
+            className="nords-viewport-header__nav-item"
+            title="Project Settings"
+            onClick={onOpenSettings}
+            data-testid="header-settings"
+          >
+            <Settings size={14} strokeWidth={1.6} />
+            <span>Project Settings</span>
+          </button>
+        )}
+        {!isDashboard && onOpenPreview && (
+          <button
+            className="nords-viewport-header__nav-item"
+            title="Agent Preview"
+            onClick={onOpenPreview}
+            data-testid="header-preview"
+          >
+            <Eye size={14} strokeWidth={1.6} />
+            <span>Agent Preview</span>
+          </button>
+        )}
         <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />
 
         <div style={{ position: 'relative' }}>

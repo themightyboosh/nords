@@ -17,6 +17,7 @@ import {
   Wrench, Eye, Map, FileText, AlertTriangle,
 } from 'lucide-react';
 import { api } from '../../api/client';
+import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import './PreviewChat.css';
 
 interface ToolCall {
@@ -49,12 +50,13 @@ interface SessionSummary {
 
 interface PreviewChatProps {
   projectId: string;
+  isOpen: boolean;
   onClose: () => void;
 }
 
 type DevTab = 'tools' | 'prompt' | 'horizon';
 
-export function PreviewChat({ projectId, onClose }: PreviewChatProps) {
+export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -64,8 +66,9 @@ export function PreviewChat({ projectId, onClose }: PreviewChatProps) {
   const [expandedToolCalls, setExpandedToolCalls] = useState<Set<string>>(new Set());
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [showSessions, setShowSessions] = useState(false);
-  const [model, setModel] = useState(() => localStorage.getItem('nords-preview-model') || 'gemini-2.0-flash');
+  const [model, setModel] = useState(() => localStorage.getItem('nords-preview-model') || 'gemini-2.5-flash');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
 
   // Dev panel state — persists across messages
   const [lastSystemPrompt, setLastSystemPrompt] = useState<string | null>(null);
@@ -74,9 +77,9 @@ export function PreviewChat({ projectId, onClose }: PreviewChatProps) {
   const [lastTokens, setLastTokens] = useState<{ in: number; out: number; latency: number } | null>(null);
 
   const MODELS = [
-    { id: 'gemini-2.0-flash', label: '2.0 Flash', desc: 'Fast & efficient' },
-    { id: 'gemini-2.5-flash', label: '2.5 Flash', desc: 'Balanced' },
-    { id: 'gemini-2.5-pro',   label: '2.5 Pro',   desc: 'Most capable' },
+    { id: 'gemini-2.5-flash',      label: '2.5 Flash',      desc: 'Fast & balanced' },
+    { id: 'gemini-2.5-flash-lite', label: '2.5 Flash Lite', desc: 'Ultra-fast' },
+    { id: 'gemini-2.5-pro',        label: '2.5 Pro',        desc: 'Most capable' },
   ];
 
   // Auto-scroll to bottom
@@ -84,11 +87,15 @@ export function PreviewChat({ projectId, onClose }: PreviewChatProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Load previous sessions list
+  // Load previous sessions list + project welcome message
   useEffect(() => {
     api.get<SessionSummary[]>(`/api/projects/${projectId}/mcp-sessions`)
       .then(setSessions)
       .catch(() => setSessions([]));
+    // Fetch project for welcome message
+    api.get<{ mcp_welcome_message?: string | null }>(`/api/projects/${projectId}`)
+      .then(p => setWelcomeMessage(p.mcp_welcome_message || null))
+      .catch(() => {});
   }, [projectId]);
 
   // Load messages for current session
@@ -149,6 +156,7 @@ export function PreviewChat({ projectId, onClose }: PreviewChatProps) {
         completion: { shouldTransition: boolean; endNordId: string | null; incompleteCount: number };
         systemPrompt?: string;
         horizon?: Record<string, unknown>;
+        welcomeMessage?: string | null;
       }>(`/api/projects/${projectId}/chat`, {
         message: userMessage,
         sessionId,
@@ -169,11 +177,25 @@ export function PreviewChat({ projectId, onClose }: PreviewChatProps) {
         });
       }
 
-      // Replace temp message + add assistant reply
-      setMessages(prev => [
-        ...prev.filter(m => m.id !== tempId),
+      // Build new messages: welcome (if new session) + user + assistant
+      const newMessages: Message[] = [];
+      if (data.welcomeMessage) {
+        newMessages.push({
+          id: `welcome-${Date.now()}`,
+          role: 'assistant',
+          content: data.welcomeMessage,
+          created_at: new Date().toISOString(),
+        });
+      }
+      newMessages.push(
         { id: `user-${Date.now()}`, role: 'user', content: userMessage, created_at: new Date().toISOString() },
         data.message,
+      );
+
+      // Replace temp message + add welcome (if any) + user + assistant
+      setMessages(prev => [
+        ...prev.filter(m => m.id !== tempId),
+        ...newMessages,
       ]);
 
       // If session completed, show transition notification
@@ -491,12 +513,13 @@ export function PreviewChat({ projectId, onClose }: PreviewChatProps) {
   }
 
   return (
+    <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose} width="440px">
     <div className="preview-chat" data-testid="preview-chat">
       {/* Header */}
       <div className="preview-chat__header">
         <div className="preview-chat__header-left">
           <Bot size={16} />
-          <span className="preview-chat__title">Preview Chat</span>
+          <span className="preview-chat__title">Agent Preview</span>
           {sessionId && (
             <code className="preview-chat__session-id">{sessionId.slice(0, 8)}…</code>
           )}
@@ -565,9 +588,18 @@ export function PreviewChat({ projectId, onClose }: PreviewChatProps) {
         <div className="preview-chat__messages">
           {messages.length === 0 && (
             <div className="preview-chat__empty">
-              <MessageSquare size={32} strokeWidth={1} />
-              <p>Start a conversation with your project's MCP agent.</p>
-              <p className="preview-chat__hint">Messages are logged and visible in Dev Mode.</p>
+              <Bot size={32} strokeWidth={1} />
+              {welcomeMessage ? (
+                <>
+                  <p className="preview-chat__welcome">{welcomeMessage}</p>
+                  <p className="preview-chat__hint">Type a message to begin your session.</p>
+                </>
+              ) : (
+                <>
+                  <p>Start a conversation with your project's MCP agent.</p>
+                  <p className="preview-chat__hint">Messages are logged and visible in Dev Mode.</p>
+                </>
+              )}
             </div>
           )}
           {messages.map(msg => (
@@ -640,5 +672,6 @@ export function PreviewChat({ projectId, onClose }: PreviewChatProps) {
         </button>
       </div>
     </div>
+    </FloatingPanel>
   );
 }

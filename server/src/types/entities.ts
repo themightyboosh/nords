@@ -40,6 +40,7 @@ export interface Project {
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
   mcp_system_prompt: string | null;
+  mcp_welcome_message: string | null;
   default_persona_id: string | null;
   default_start_nord_id: string | null;
   default_end_nord_id: string | null;

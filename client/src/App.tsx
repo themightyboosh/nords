@@ -228,13 +228,13 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onOpenCategoryTypes={() => setManageTypesTab('connection')}
         onOpenPersonas={() => setPersonasOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
-        onOpenPreview={() => setPreviewOpen(true)}
+        onOpenPreview={() => setPreviewOpen(p => !p)}
         projectName={projectName}
       />
       {projectId && (
         <ProjectSettings
           isOpen={settingsOpen}
-          onClose={() => setSettingsOpen(false)}
+          onClose={() => { setSettingsOpen(false); setPreviewOpen(false); }}
           projectId={projectId}
           onProjectNameChange={setProjectName}
         />
@@ -293,9 +293,10 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onClose={() => setPersonasOpen(false)}
         connectionTypes={graph?.connection_types || []}
       />
-      {previewOpen && projectId && (
+      {projectId && (
         <PreviewChat
           projectId={projectId}
+          isOpen={previewOpen}
           onClose={() => setPreviewOpen(false)}
         />
       )}

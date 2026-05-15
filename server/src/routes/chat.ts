@@ -255,7 +255,7 @@ function buildGeminiHistory(messages: Array<{ role: string; content: string; too
 chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
   try {
     const projectId = req.params.id as string;
-    const { message, sessionId: existingSessionId, model = 'gemini-2.0-flash' } = req.body;
+    const { message, sessionId: existingSessionId, model = 'gemini-2.5-flash' } = req.body;
 
     if (!message?.trim()) {
       return res.status(400).json({ error: 'Message is required' });
@@ -266,6 +266,7 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
     // 1. Resolve or create session
     let sessionId = existingSessionId;
     let session;
+    let isNewSession = false;
     if (!sessionId) {
       const project = await projectsRepo.findById(projectId);
       session = await mcpRepo.createSession(
@@ -274,6 +275,7 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
         project?.default_start_nord_id || null
       );
       sessionId = session.id;
+      isNewSession = true;
     } else {
       session = await queryOne('SELECT * FROM mcp_sessions WHERE id = $1', [sessionId]);
     }
@@ -299,13 +301,22 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
     const project = await projectsRepo.findById(projectId);
     const mcpMutable = project?.mcp_mutable ?? false;
 
-    // 5. Build tool context
+     // 5. Build tool context
     const toolCtx: ToolContext = { sessionId, projectId, mcpMutable };
 
-    // If no API key, fall back to placeholder mode
-    if (!apiKey) {
+    // 6. Initialize Gemini — API key or Vertex AI (Application Default Credentials)
+    const gcpProject = process.env.VITE_GOOGLE_CLOUD_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT;
+    const gcpLocation = process.env.VERTEX_AI_LOCATION || 'us-central1';
+
+    let genai: GoogleGenAI;
+    if (apiKey) {
+      genai = new GoogleGenAI({ apiKey });
+    } else if (gcpProject) {
+      genai = new GoogleGenAI({ vertexai: true, project: gcpProject, location: gcpLocation });
+    } else {
+      // No API key and no GCP project — preview mode
       const horizon = await mcpRepo.getSessionHorizon(sessionId);
-      const replyContent = `[Preview Mode — No GEMINI_API_KEY set]
+      const replyContent = `[Preview Mode — No GEMINI_API_KEY or GCP project configured]
 
 Session ${sessionId.slice(0, 8)}… is active.
 Current nord: ${horizon.current_nord?.title || 'none'}
@@ -313,7 +324,7 @@ Completion: ${horizon.completion.percentage}%
 Neighbors: ${horizon.neighbors.length}
 Suggested next: ${horizon.suggested_next?.title || 'none'}
 
-Set GEMINI_API_KEY in .env to enable AI responses.`;
+Set GEMINI_API_KEY in server/.env or configure GOOGLE_CLOUD_PROJECT for Vertex AI.`;
 
       const assistantMsg = await mcpMessagesRepo.create({
         session_id: sessionId,
@@ -330,8 +341,6 @@ Set GEMINI_API_KEY in .env to enable AI responses.`;
       return res.json({ reply: replyContent, sessionId, message: assistantMsg, toolCalls: [] });
     }
 
-    // 6. Initialize Gemini
-    const genai = new GoogleGenAI({ apiKey });
     const toolDeclarations = buildToolDeclarations(mcpMutable);
 
     // 7. Build conversation history
@@ -440,6 +449,11 @@ Set GEMINI_API_KEY in .env to enable AI responses.`;
     // Fetch current horizon for dev panel
     const finalHorizon = await mcpRepo.getSessionHorizon(sessionId);
 
+    // Fetch project for welcome message (only needed for new sessions)
+    const welcomeMessage = isNewSession
+      ? (await projectsRepo.findById(projectId))?.mcp_welcome_message || null
+      : null;
+
     res.json({
       reply: finalReply,
       sessionId,
@@ -448,6 +462,7 @@ Set GEMINI_API_KEY in .env to enable AI responses.`;
       completion: completionCheck,
       systemPrompt,
       horizon: finalHorizon,
+      welcomeMessage,
     });
 
   } catch (err: any) {

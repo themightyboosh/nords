@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Users, Shield, Database, Layout, BookOpen } from 'lucide-react';
+import { Settings, Users, Shield, Database, Layout } from 'lucide-react';
 import NordsLogo from '../NordsLogo';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,16 +39,6 @@ export default function AdminScreen() {
 
         <div style={{ flex: 1 }} />
 
-        <nav className="nords-dashboard__sidebar-nav">
-          <button 
-            className="nords-dashboard__nav-item"
-            style={{ color: 'var(--nords-color-accent)' }}
-            onClick={() => window.open('#', '_blank')}
-          >
-            <BookOpen size={14} strokeWidth={1.5} />
-            Guides & Tutorials
-          </button>
-        </nav>
 
         <button 
           className="nords-dashboard__create-btn"

@@ -7,14 +7,40 @@ export async function createSession(
   projectId: string,
   personaId?: string | null,
   startNordId?: string | null,
-  userId?: string | null,
-  tokenId?: string | null
+  _userId?: string | null,
+  _tokenId?: string | null
 ): Promise<McpSession> {
-  return queryOne<McpSession>(`
-    INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id, user_id, token_id)
-    VALUES ($1, $2, $3, $4, $5)
+  const session = await queryOne<McpSession>(`
+    INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id)
+    VALUES ($1, $2, $3)
     RETURNING *
-  `, [projectId, personaId || null, startNordId || null, userId || null, tokenId || null]) as Promise<McpSession>;
+  `, [projectId, personaId || null, startNordId || null]) as McpSession;
+
+  // Pre-populate mcp_session_nords for every nord with required properties.
+  // This ensures checkSessionCompletion correctly sees incomplete nords
+  // instead of finding zero rows and immediately marking the session complete.
+  await query(`
+    INSERT INTO mcp_session_nords (session_id, nord_id, properties, required_count, filled_count, complete)
+    SELECT
+      $1,
+      n.id,
+      '{}'::jsonb,
+      (SELECT COUNT(*) FROM jsonb_array_elements(nt.properties_schema) AS prop
+       WHERE (prop->>'required')::boolean = true)::int,
+      0,
+      false
+    FROM nords n
+    JOIN nord_types nt ON nt.id = n.type_id
+    WHERE n.project_id = $2
+      AND n.deleted_at IS NULL
+      AND nt.deleted_at IS NULL
+      AND EXISTS (
+        SELECT 1 FROM jsonb_array_elements(nt.properties_schema) AS prop
+        WHERE (prop->>'required')::boolean = true
+      )
+  `, [session.id, projectId]);
+
+  return session;
 }
 
 /** Update the session's current nord position */

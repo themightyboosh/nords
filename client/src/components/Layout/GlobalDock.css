@@ -212,6 +212,14 @@
   flex-shrink: 0;
 }
 
+.nords-dock__color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px currentColor;
+}
+
 .nords-dock__item--drag {
   cursor: grab;
 }

@@ -14,7 +14,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   FolderKanban, Plus, MoreHorizontal,
-  Layers, Star, BookOpen,
+  Layers, Star,
   Trash2, Download, X, AlertTriangle,
   ShieldCheck, BarChart3, CreditCard, Settings2,
 } from 'lucide-react';
@@ -173,17 +173,6 @@ export default function ProjectDashboard() {
         </nav>
 
         <div style={{ flex: 1 }} />
-
-        <nav className="nords-dashboard__sidebar-nav">
-          <button 
-            className="nords-dashboard__nav-item"
-            style={{ color: 'var(--nords-color-accent)' }}
-            onClick={() => window.open('#', '_blank')}
-          >
-            <BookOpen size={14} strokeWidth={1.5} />
-            Guides & Tutorials
-          </button>
-        </nav>
 
         {/* ── Admin Section ── */}
         <div className="nords-dashboard__sidebar-header" style={{ marginTop: 8 }}>

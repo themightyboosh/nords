@@ -177,7 +177,10 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
       setProject(updated);
       onProjectNameChange?.(updated.name);
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      setTimeout(() => {
+        setSaved(false);
+        onClose();
+      }, 600);
     } catch (err: any) {
       setErrors([err.message || 'Failed to save']);
     } finally {

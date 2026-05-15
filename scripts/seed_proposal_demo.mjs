@@ -169,13 +169,13 @@ When advancing to a new stage, tell the user:
 
     console.log('\n3. Creating ConnectionTypes...');
     const connTypes = [
-      { name: 'Proposal Stage', direction: 'forward', line_style: 'solid', color: '#6366f1', x_stage_labels: [{label: 'Triage', position: 0.0}, {label: 'Strategy', position: 0.17}, {label: 'Design', position: 0.33}, {label: 'Pink Review', position: 0.5}, {label: 'Red Review', position: 0.67}, {label: 'Gold/Submit', position: 0.83}, {label: 'Kickoff', position: 1.0}] },
-      { name: 'Assigned To', direction: 'forward', line_style: 'solid', color: '#3b82f6', x_stage_labels: [] },
-      { name: 'Scopes Into', direction: 'forward', line_style: 'solid', color: '#8b5cf6', x_stage_labels: [] },
-      { name: 'Allocates', direction: 'forward', line_style: 'dashed', color: '#10b981', x_stage_labels: [] },
-      { name: 'Blocks', direction: 'forward', line_style: 'dashed', color: '#ef4444', x_stage_labels: [] },
-      { name: 'Reviews', direction: 'forward', line_style: 'dotted', color: '#f59e0b', x_stage_labels: [] },
-      { name: 'Skill Match', direction: 'forward', line_style: 'dotted', color: '#06b6d4', x_stage_labels: [{label: 'Weak', position: 0.0}, {label: 'Partial', position: 0.33}, {label: 'Exact', position: 0.67}, {label: 'Overqualified', position: 1.0}] }
+      { name: 'Proposal Stage', direction: 'forward', line_style: 'solid', accent_color: '#6366f1', x_stage_labels: [{label: 'Triage', position: 0.0}, {label: 'Strategy', position: 0.17}, {label: 'Design', position: 0.33}, {label: 'Pink Review', position: 0.5}, {label: 'Red Review', position: 0.67}, {label: 'Gold/Submit', position: 0.83}, {label: 'Kickoff', position: 1.0}] },
+      { name: 'Assigned To', direction: 'forward', line_style: 'solid', accent_color: '#3b82f6', x_stage_labels: [] },
+      { name: 'Scopes Into', direction: 'forward', line_style: 'solid', accent_color: '#8b5cf6', x_stage_labels: [] },
+      { name: 'Allocates', direction: 'forward', line_style: 'dashed', accent_color: '#10b981', x_stage_labels: [] },
+      { name: 'Blocks', direction: 'forward', line_style: 'dashed', accent_color: '#ef4444', x_stage_labels: [] },
+      { name: 'Reviews', direction: 'forward', line_style: 'dotted', accent_color: '#f59e0b', x_stage_labels: [] },
+      { name: 'Skill Match', direction: 'forward', line_style: 'dotted', accent_color: '#06b6d4', x_stage_labels: [{label: 'Weak', position: 0.0}, {label: 'Partial', position: 0.33}, {label: 'Exact', position: 0.67}, {label: 'Overqualified', position: 1.0}] }
     ];
 
     const createdConnTypes = {};
