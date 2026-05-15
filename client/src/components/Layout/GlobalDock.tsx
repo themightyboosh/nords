@@ -218,14 +218,14 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
                 </button>
               </div>
 
-              {/* Persona: Category (3-state show/dim/hide) */}
+              {/* Persona: Nord (3-state show/dim/hide) */}
               <div className="nords-dock__section">
                 <button
-                  className={`nords-dock__item ${openPanel === 'persona-filter' ? 'is-active' : ''}`}
-                  onClick={() => togglePanel('persona-filter')}
+                  className={`nords-dock__item ${openPanel === 'filter' ? 'is-active' : ''}`}
+                  onClick={() => togglePanel('filter')}
                 >
-                  <Layers size={14} strokeWidth={1.6} />
-                  <span className="nords-dock__label">Category</span>
+                  <CircleDot size={14} strokeWidth={1.6} />
+                  <span className="nords-dock__label">Nord</span>
                   <ChevronDown size={10} className="nords-dock__chevron" />
                 </button>
               </div>
@@ -409,66 +409,8 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
           </div>
         </div>
 
-        {/* Persona Category Filter Flyout — 3-state: show → dim → hide */}
-        <div className={`nords-flyout nords-glass ${openPanel === 'persona-filter' ? 'is-open' : ''}`}>
-          <PersonaCategoryFlyout
-            connectionTypes={nonSystemTypes}
-            personaTypeFilter={personaTypeFilter}
-            cyclePersonaTypeFilter={cyclePersonaTypeFilter}
-          />
-        </div>
-
       </div>
     </>
   );
 }
 
-
-// ═══════════════════════════════════════════════════════════
-// PersonaCategoryFlyout — 3-state category visibility for persona mode
-// ═══════════════════════════════════════════════════════════
-
-import type { PersonaTypeVisibility } from '../../context/LensContext';
-
-interface PersonaCategoryFlyoutProps {
-  connectionTypes: { id: string; name: string; color: string; count: number }[];
-  personaTypeFilter: Map<string, PersonaTypeVisibility>;
-  cyclePersonaTypeFilter: (typeName: string) => void;
-}
-
-function PersonaCategoryFlyout({ connectionTypes, personaTypeFilter, cyclePersonaTypeFilter }: PersonaCategoryFlyoutProps) {
-  return (
-    <>
-      <div className="nords-flyout__header">
-        <h3 className="nords-flyout__title">Category Visibility</h3>
-        <span className="nords-flyout__count">{connectionTypes.length} categories</span>
-      </div>
-      <div className="nords-flyout__list">
-        {connectionTypes.map(ct => {
-          const state = personaTypeFilter.get(ct.name) || 'show';
-          return (
-            <div key={ct.id} className={`nords-flyout__row nords-flyout__row--selectable ${state === 'show' ? 'is-active' : ''}`}
-              onClick={() => cyclePersonaTypeFilter(ct.name)}
-              style={{ opacity: state === 'hide' ? 0.3 : state === 'dim' ? 0.55 : 1 }}
-            >
-              <div className="nords-flyout__row-left">
-                <span className="nords-flyout__line-swatch" style={{ background: ct.color }} />
-                <span className="nords-flyout__row-name">{ct.name}</span>
-                <span className="nords-flyout__row-count">{ct.count}</span>
-              </div>
-              <div className="nords-flyout__row-right" style={{ gap: '4px', display: 'flex', alignItems: 'center' }}>
-                {state === 'show' && <EyeIcon size={13} style={{ color: ct.color }} />}
-                {state === 'dim' && <CircleDot size={13} style={{ opacity: 0.5 }} />}
-                {state === 'hide' && <EyeOff size={13} style={{ opacity: 0.3 }} />}
-                <span style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--nords-color-text-disabled)', minWidth: '24px' }}>{state}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="nords-flyout__footer">
-        <span className="nords-flyout__footer-hint">Click to cycle: show → dim → hide</span>
-      </div>
-    </>
-  );
-}
