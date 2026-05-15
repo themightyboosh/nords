@@ -571,7 +571,7 @@ const BoardCard = memo(function BoardCard({
         typeIcon={card.typeIcon}
         properties={card.properties}
         isSelected={isSelected}
-        style={{ width: '100%' }}
+        style={{ width: '270px' }}
       />
     </div>
   );
