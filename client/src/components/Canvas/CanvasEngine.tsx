@@ -299,6 +299,46 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     });
   }, [lensNodes, setNodes, isPersonaMode]);
 
+  // ── Auto-focus on connected nords when switching categories ──
+  // When the user selects a category, zoom to show only the participating nords
+  // so they're not left staring at all-dimmed off-screen nodes.
+  const prevCategoryRef = React.useRef<string | null | undefined>(undefined);
+  React.useEffect(() => {
+    if (isPersonaMode) return;
+    if (prevCategoryRef.current === undefined) {
+      prevCategoryRef.current = activeConnectionTypeId;
+      return;
+    }
+    if (prevCategoryRef.current === activeConnectionTypeId) return;
+    prevCategoryRef.current = activeConnectionTypeId;
+
+    // Delay to let useLensLayout animation finish (350ms) + React reconcile
+    const timer = setTimeout(() => {
+      const connectedNodeIds = new Set<string>();
+      if (activeConnectionTypeId) {
+        for (const e of rfEdges) {
+          if ((e.data as any)?._typeId === activeConnectionTypeId) {
+            connectedNodeIds.add(e.source);
+            connectedNodeIds.add(e.target);
+          }
+        }
+      }
+
+      if (connectedNodeIds.size > 0) {
+        fitView({
+          nodes: Array.from(connectedNodeIds).map(id => ({ id })),
+          padding: 0.25,
+          duration: 400,
+        });
+      } else {
+        // No connections for this type — show all nodes
+        fitView({ padding: 0.15, duration: 400 });
+      }
+    }, 420);
+
+    return () => clearTimeout(timer);
+  }, [activeConnectionTypeId, rfEdges, fitView, isPersonaMode]);
+
   // Fit viewport after persona layout positions are applied
   const prevPersonaModeRef = React.useRef(isPersonaMode);
   React.useEffect(() => {
