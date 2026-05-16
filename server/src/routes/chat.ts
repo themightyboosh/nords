@@ -59,17 +59,17 @@ Connection distance_x and distance_y are semantic coordinates (0.0–1.0) that m
 For example, distance_x = 0.2 with stages ["Backlog", "In Progress", "Review", "Done"] means "Backlog."
 Use stage labels in your responses instead of raw numbers.
 
-### Gaps & Absences
-The horizon includes a \`gaps\` field. Pay attention to:
-- **unvisited_required**: nords with required properties that haven't been touched yet — these need attention
-- **orphan_nords**: nords with zero connections — these may be misconfigured or need linking
+### Planning Queue
+The horizon includes a \`planning_queue\` field — nords with required MCP properties that are not yet complete.
+Use this for YOUR internal planning. Do NOT proactively raise queue items in conversation.
+Finish collecting data on the CURRENT nord before considering planning queue items.
 
 ### Inline Schemas
-Each nord in the horizon includes its \`properties_schema\` — the exact fields and types expected.
-Use this to know what to ask the user for. Don't call nords_get_dictionary for schema lookups.
+Each nord in the horizon includes \`remaining_schema\` — only the fields NOT yet collected — and \`session_properties\` — the values already gathered.
+Use remaining_schema to know what to still ask for. Already-collected values are in session_properties.
 
 ## Protocol (follow this order)
-1. Call \`nords_get_horizon\` to understand your position. The horizon includes inline schemas and gaps — you may not need the dictionary at all.
+1. Call \`nords_get_horizon\` to understand your position. The horizon includes remaining_schema (uncollected fields) and session_properties (collected values) — you may not need the dictionary at all.
 2. Only call \`nords_get_dictionary\` if you need the FULL ontology (all types, all personas, all connection types) for broad context.
 3. Use \`nords_traverse_connection\` to move — it auto-returns the updated horizon.
 4. Use \`nords_update_session_nord\` to save collected properties — it validates against the schema and returns the updated horizon.
@@ -79,7 +79,7 @@ Use this to know what to ask the user for. Don't call nords_get_dictionary for s
 - You navigate a real, structured graph. Don't make up nords or connections — use your tools to discover them.
 - Infer prerequisite gates from connection verbs. Don't skip a "depends on" target.
 - The horizon's \`suggested_next\` and \`predicted_path\` guide you — follow them unless the user directs otherwise.
-- When the horizon shows gaps, proactively mention them to the user.
+- The planning_queue is for your internal awareness. Complete the current nord before pivoting to queue items.
 `;
 
   // Project-specific prompt
@@ -190,6 +190,18 @@ function buildResumeContext(horizon: mcpRepo.SessionHorizon): string {
         : ` ${cn.session_progress.filled}/${cn.session_progress.required} required properties are filled.`;
     }
     parts.push(pos);
+
+    // Surface already-collected session properties
+    const collectedKeys = Object.keys(cn.session_properties || {});
+    if (collectedKeys.length > 0) {
+      parts.push(`Already collected for ${cn.title}: ${collectedKeys.join(', ')}`);
+    }
+    // Surface remaining fields to collect
+    const remaining = (cn.remaining_schema || []) as Array<{ name: string }>;
+    const remainingRequired = remaining.filter((f: Record<string, unknown>) => f.required);
+    if (remainingRequired.length > 0) {
+      parts.push(`Still needed for ${cn.title}: ${remainingRequired.map(f => f.name).join(', ')}`);
+    }
   } else {
     parts.push(`No current position — the session hasn't started traversing yet.`);
   }
@@ -205,10 +217,9 @@ function buildResumeContext(horizon: mcpRepo.SessionHorizon): string {
     parts.push(`Active persona: **${horizon.persona.name}**.`);
   }
 
-  // Traversal history (last 5)
+  // Traversal history (already capped server-side)
   if (horizon.traversal_history.length > 0) {
-    const recent = horizon.traversal_history.slice(-5);
-    parts.push(`Recent path: ${recent.join(' → ')}`);
+    parts.push(`Recent path: ${horizon.traversal_history.join(' → ')}`);
   }
 
   // Neighbors summary
