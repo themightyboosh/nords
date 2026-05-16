@@ -36,15 +36,9 @@
   transform: scale(1.08);
 }
 
-/* Entry point: subtle inner glow */
-.goal-node--entry .goal-node__circle {
+/* Root node: subtle inner glow */
+.goal-node--root .goal-node__circle {
   background: color-mix(in srgb, var(--goal-accent) 8%, var(--nords-color-bg-deep));
-}
-
-/* End node: red tint on ring */
-.goal-node--end .goal-node__circle {
-  border-color: #f87171;
-  color: #f87171;
 }
 
 /* ── Label ── */
@@ -72,17 +66,17 @@
   line-height: 1.4;
 }
 
-.goal-node__badge--end {
+.goal-node__badge--reset {
   background: rgba(239, 68, 68, 0.15);
   color: #f87171;
 }
 
-.goal-node__badge--excl {
+.goal-node__badge--continue {
   background: rgba(245, 158, 11, 0.12);
   color: #fbbf24;
 }
 
-/* ── Handles (invisible but functional) ── */
+/* ── Handles (visible on hover for edge drawing) ── */
 .goal-node__handle {
   width: 8px;
   height: 8px;
@@ -93,5 +87,10 @@
 }
 
 .goal-node:hover .goal-node__handle {
-  opacity: 0.6;
+  opacity: 0.8;
+}
+
+/* Show handles when connecting */
+.goal-node.connecting .goal-node__handle {
+  opacity: 1;
 }

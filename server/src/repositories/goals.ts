@@ -1,7 +1,9 @@
 import { query, queryOne } from '../db.js';
-import type { Goal, GoalProperty, PersonaGoalWeight } from '../types/entities.js';
+import type { Goal, GoalEdge, GoalProperty, PersonaGoalWeight } from '../types/entities.js';
 
-// ── Goals CRUD ──
+// ══════════════════════════════════════════════════════════
+// Goals CRUD
+// ══════════════════════════════════════════════════════════
 
 export async function findByProject(projectId: string): Promise<Goal[]> {
   return query<Goal>(
@@ -21,42 +23,34 @@ export async function create(goal: {
   icon?: string;
   accent_color?: string;
   sort_order?: number;
-  is_default?: boolean;
-  terminates?: boolean;
+  end_type?: 'reset' | 'continue' | null;
   achieved_prompt?: string | null;
-  exclusion_group?: string | null;
-  requires_goal_id?: string | null;
   is_implicit?: boolean;
 }): Promise<Goal> {
   return queryOne<Goal>(`
-    INSERT INTO goals (project_id, name, description, icon, accent_color, sort_order, is_default, terminates, achieved_prompt, exclusion_group, requires_goal_id, is_implicit)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    INSERT INTO goals (project_id, name, description, icon, accent_color, sort_order, end_type, achieved_prompt, is_implicit)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING *
   `, [
     goal.project_id,
     goal.name,
     goal.description ?? '',
-    goal.icon ?? '🎯',
+    goal.icon ?? 'Target',
     goal.accent_color ?? '#6366f1',
     goal.sort_order ?? 0,
-    goal.is_default ?? false,
-    goal.terminates ?? false,
+    goal.end_type ?? null,
     goal.achieved_prompt ?? null,
-    goal.exclusion_group ?? null,
-    goal.requires_goal_id ?? null,
     goal.is_implicit ?? false,
   ]) as Promise<Goal>;
 }
 
 export async function update(id: string, updates: Partial<Pick<Goal,
   'name' | 'description' | 'icon' | 'accent_color' | 'sort_order' |
-  'is_default' | 'terminates' | 'achieved_prompt' | 'exclusion_group' |
-  'requires_goal_id'
+  'end_type' | 'achieved_prompt'
 >>): Promise<Goal | null> {
   const allowedKeys = [
     'name', 'description', 'icon', 'accent_color', 'sort_order',
-    'is_default', 'terminates', 'achieved_prompt', 'exclusion_group',
-    'requires_goal_id',
+    'end_type', 'achieved_prompt',
   ];
 
   const setClauses: string[] = [];
@@ -89,7 +83,51 @@ export async function remove(id: string): Promise<boolean> {
   return result !== null;
 }
 
-// ── Implicit Goal ──
+// ══════════════════════════════════════════════════════════
+// Goal Edges — DAG connections
+// ══════════════════════════════════════════════════════════
+
+export async function findEdgesByProject(projectId: string): Promise<GoalEdge[]> {
+  return query<GoalEdge>(
+    'SELECT * FROM goal_edges WHERE project_id = $1 ORDER BY created_at',
+    [projectId]
+  );
+}
+
+export async function createEdge(
+  projectId: string,
+  sourceGoalId: string,
+  targetGoalId: string
+): Promise<GoalEdge> {
+  return queryOne<GoalEdge>(`
+    INSERT INTO goal_edges (project_id, source_goal_id, target_goal_id)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (source_goal_id, target_goal_id) DO NOTHING
+    RETURNING *
+  `, [projectId, sourceGoalId, targetGoalId]) as Promise<GoalEdge>;
+}
+
+export async function removeEdge(edgeId: string): Promise<boolean> {
+  const result = await queryOne<{ id: string }>(
+    'DELETE FROM goal_edges WHERE id = $1 RETURNING id', [edgeId]
+  );
+  return result !== null;
+}
+
+export async function removeEdgeByEndpoints(
+  sourceGoalId: string,
+  targetGoalId: string
+): Promise<boolean> {
+  const result = await queryOne<{ id: string }>(
+    'DELETE FROM goal_edges WHERE source_goal_id = $1 AND target_goal_id = $2 RETURNING id',
+    [sourceGoalId, targetGoalId]
+  );
+  return result !== null;
+}
+
+// ══════════════════════════════════════════════════════════
+// Implicit Goal
+// ══════════════════════════════════════════════════════════
 
 /** Get or create the implicit goal for a project (Collect mode) */
 export async function ensureImplicitGoal(projectId: string): Promise<Goal> {
@@ -103,13 +141,14 @@ export async function ensureImplicitGoal(projectId: string): Promise<Goal> {
     project_id: projectId,
     name: 'Complete All Required Fields',
     description: 'Automatically tracks all required MCP properties across all nords.',
-    icon: '📋',
+    icon: 'ClipboardCheck',
     is_implicit: true,
-    is_default: true,
   });
 }
 
-// ── Goal Properties ──
+// ══════════════════════════════════════════════════════════
+// Goal Properties
+// ══════════════════════════════════════════════════════════
 
 export async function findPropertiesByGoal(goalId: string): Promise<GoalProperty[]> {
   return query<GoalProperty>(
@@ -144,7 +183,9 @@ export async function findGoalsByNord(nordId: string): Promise<Array<{ goal_name
   `, [nordId]);
 }
 
-// ── Goal with properties (combined fetch) ──
+// ══════════════════════════════════════════════════════════
+// Combined Fetch — Goals + Edges + Properties
+// ══════════════════════════════════════════════════════════
 
 export interface GoalWithProperties extends Goal {
   properties: GoalProperty[];
@@ -173,7 +214,9 @@ export async function findByProjectWithProperties(projectId: string): Promise<Go
   }));
 }
 
-// ── Persona Goal Weights ──
+// ══════════════════════════════════════════════════════════
+// Persona Goal Weights
+// ══════════════════════════════════════════════════════════
 
 export async function findWeightsByPersona(personaId: string): Promise<PersonaGoalWeight[]> {
   return query<PersonaGoalWeight>(
@@ -191,15 +234,18 @@ export async function upsertWeight(personaId: string, goalId: string, weight: nu
   `, [personaId, goalId, weight]) as Promise<PersonaGoalWeight>;
 }
 
-// ── Session Goal Initialization ──
+// ══════════════════════════════════════════════════════════
+// Session Goal Initialization
+// ══════════════════════════════════════════════════════════
 
 /**
  * Initialize session goals when a session is created.
+ *
  * - Collect mode: ensure implicit goal, create 1 active session goal
- * - Guided mode: create session goals for all project goals
- *   - Goals with requires_goal_id start as 'pending'
- *   - Goals without prerequisites start as 'active'
- * - Guided with no goals: falls back to Collect behavior (implicit goal)
+ * - Guided mode: create session goals for all explicit goals
+ *   - Root goals (no incoming edges) start as 'active'
+ *   - Gated goals (have incoming edges) start as 'pending'
+ * - Guided with no goals: falls back to Collect behavior
  */
 export async function initializeSessionGoals(
   sessionId: string,
@@ -212,7 +258,6 @@ export async function initializeSessionGoals(
   const explicitGoals = projectGoals.filter(g => !g.is_implicit);
 
   if (projectMode === 'collect' || explicitGoals.length === 0) {
-    // Collect mode or Guided with no goals → use implicit goal
     const implicitGoal = await ensureImplicitGoal(projectId);
     await query(`
       INSERT INTO mcp_session_goals (session_id, goal_id, status)
@@ -222,9 +267,14 @@ export async function initializeSessionGoals(
     return;
   }
 
-  // Guided mode with explicit goals
+  // Guided mode — find roots (goals with no incoming edges)
+  const edges = await findEdgesByProject(projectId);
+  const targetsWithIncoming = new Set(edges.map(e => e.target_goal_id));
+
   for (const goal of explicitGoals) {
-    const status = goal.requires_goal_id ? 'pending' : 'active';
+    // Root goals = no incoming edges → active immediately
+    const isRoot = !targetsWithIncoming.has(goal.id);
+    const status = isRoot ? 'active' : 'pending';
     await query(`
       INSERT INTO mcp_session_goals (session_id, goal_id, status)
       VALUES ($1, $2, $3)
@@ -233,7 +283,9 @@ export async function initializeSessionGoals(
   }
 }
 
-// ── Goal Evaluation Engine ──
+// ══════════════════════════════════════════════════════════
+// Goal Evaluation Engine — DAG-based with structural exclusion
+// ══════════════════════════════════════════════════════════
 
 export interface GoalEvent {
   type: 'goal_completed' | 'goal_activated' | 'goal_cancelled' | 'session_terminating';
@@ -242,18 +294,17 @@ export interface GoalEvent {
   achieved_prompt?: string | null;
   reason?: string;
   excluded_by_goal?: string;
-  exclusion_group?: string;
-  prerequisite?: string;
+  end_type?: 'reset' | 'continue' | null;
 }
 
 /**
  * Evaluate all session goals after a property save.
  *
- * For explicit goals: checks if all bound properties have values in session_nords.
- * For implicit goals: checks all required MCP properties across all nords.
- *
- * On completion: snapshots data, cancels exclusion siblings, promotes dependents,
- * fires session_terminating if all goals are done.
+ * DAG evaluation with structural exclusion:
+ * 1. Check if any active goal's bound properties are all filled → complete it
+ * 2. On completion: activate children (targets of outgoing edges)
+ * 3. Structural exclusion: cancel sibling goals (other targets of same parent)
+ * 4. If completed goal has end_type → fire session_terminating
  */
 export async function evaluateGoals(
   sessionId: string,
@@ -261,7 +312,7 @@ export async function evaluateGoals(
 ): Promise<GoalEvent[]> {
   const events: GoalEvent[] = [];
 
-  // Get all session goals that are still in play
+  // Get all session goals still in play
   const sessionGoals = await query<{
     id: string; session_id: string; goal_id: string; status: string;
   }>(`
@@ -278,7 +329,10 @@ export async function evaluateGoals(
   );
   const goalMap = new Map(goals.map(g => [g.id, g]));
 
-  // Load all session nords for this session
+  // Load all edges for the project
+  const edges = await findEdgesByProject(projectId);
+
+  // Load session nords for property value lookup
   const sessionNords = await query<{ nord_id: string; properties: Record<string, unknown> }>(`
     SELECT nord_id, properties FROM mcp_session_nords WHERE session_id = $1
   `, [sessionId]);
@@ -295,10 +349,8 @@ export async function evaluateGoals(
     let completedData: Record<string, unknown> = {};
 
     if (goal.is_implicit) {
-      // Implicit goal: check ALL required MCP properties across all nords
       isComplete = await evaluateImplicitGoal(sessionId, projectId, completedData);
     } else {
-      // Explicit goal: check bound properties
       isComplete = await evaluateExplicitGoal(sg.goal_id, sessionNordProps, completedData);
     }
 
@@ -318,68 +370,105 @@ export async function evaluateGoals(
       achieved_prompt: goal.achieved_prompt,
     });
 
-    // ── Cancel exclusion siblings ──
-    if (goal.exclusion_group) {
-      const cancelledGoals = await query<{ id: string; goal_id: string }>(`
-        UPDATE mcp_session_goals SET status = 'cancelled', cancelled_at = NOW(), updated_at = NOW()
-        WHERE session_id = $1
-          AND goal_id IN (SELECT id FROM goals WHERE exclusion_group = $2 AND id != $3)
-          AND status IN ('active', 'pending')
-        RETURNING id, goal_id
-      `, [sessionId, goal.exclusion_group, goal.id]);
+    // ── Structural exclusion: cancel sibling branches ──
+    // Find all parents of the completed goal
+    const parentsOfCompleted = edges
+      .filter(e => e.target_goal_id === goal.id)
+      .map(e => e.source_goal_id);
 
-      for (const cancelled of cancelledGoals) {
-        const cancelledGoal = goalMap.get(cancelled.goal_id);
-        events.push({
-          type: 'goal_cancelled',
-          goal_id: cancelled.goal_id,
-          goal_name: cancelledGoal?.name || 'Unknown',
-          reason: 'excluded_by',
-          excluded_by_goal: goal.name,
-          exclusion_group: goal.exclusion_group,
-        });
+    // For each parent, find sibling targets and cancel them
+    for (const parentId of parentsOfCompleted) {
+      const siblingTargets = edges
+        .filter(e => e.source_goal_id === parentId && e.target_goal_id !== goal.id)
+        .map(e => e.target_goal_id);
+
+      if (siblingTargets.length === 0) continue;
+
+      // Cancel siblings and all their descendants
+      const toCancel = new Set<string>();
+      const queue = [...siblingTargets];
+      while (queue.length > 0) {
+        const id = queue.shift()!;
+        if (toCancel.has(id)) continue;
+        toCancel.add(id);
+        // Add children of this node to the queue (cascade down)
+        for (const e of edges) {
+          if (e.source_goal_id === id) queue.push(e.target_goal_id);
+        }
+      }
+
+      if (toCancel.size > 0) {
+        const cancelledGoals = await query<{ id: string; goal_id: string }>(`
+          UPDATE mcp_session_goals SET status = 'cancelled', cancelled_at = NOW(), updated_at = NOW()
+          WHERE session_id = $1
+            AND goal_id = ANY($2)
+            AND status IN ('active', 'pending')
+          RETURNING id, goal_id
+        `, [sessionId, Array.from(toCancel)]);
+
+        for (const cancelled of cancelledGoals) {
+          const cancelledGoal = goalMap.get(cancelled.goal_id);
+          events.push({
+            type: 'goal_cancelled',
+            goal_id: cancelled.goal_id,
+            goal_name: cancelledGoal?.name || 'Unknown',
+            reason: 'sibling_excluded',
+            excluded_by_goal: goal.name,
+          });
+        }
       }
     }
 
-    // ── Promote dependents ──
-    const promoted = await query<{ id: string; goal_id: string }>(`
-      UPDATE mcp_session_goals SET status = 'active', updated_at = NOW()
-      WHERE goal_id IN (SELECT id FROM goals WHERE requires_goal_id = $1)
-        AND session_id = $2
-        AND status = 'pending'
-      RETURNING id, goal_id
-    `, [goal.id, sessionId]);
+    // ── Activate children (targets of outgoing edges from completed goal) ──
+    const childTargets = edges
+      .filter(e => e.source_goal_id === goal.id)
+      .map(e => e.target_goal_id);
 
-    for (const p of promoted) {
-      const promotedGoal = goalMap.get(p.goal_id);
-      events.push({
-        type: 'goal_activated',
-        goal_id: p.goal_id,
-        goal_name: promotedGoal?.name || 'Unknown',
-        reason: 'prerequisite_met',
-        prerequisite: goal.name,
-      });
+    if (childTargets.length > 0) {
+      // For join nodes: only activate if ALL parents are complete
+      for (const childId of childTargets) {
+        const allParents = edges
+          .filter(e => e.target_goal_id === childId)
+          .map(e => e.source_goal_id);
+
+        // Check if all parents are complete
+        const parentStates = await query<{ goal_id: string; status: string }>(`
+          SELECT goal_id, status FROM mcp_session_goals
+          WHERE session_id = $1 AND goal_id = ANY($2)
+        `, [sessionId, allParents]);
+
+        const allParentsComplete = allParents.every(pid =>
+          parentStates.some(ps => ps.goal_id === pid && ps.status === 'complete')
+        );
+
+        if (allParentsComplete) {
+          const promoted = await query<{ id: string; goal_id: string }>(`
+            UPDATE mcp_session_goals SET status = 'active', updated_at = NOW()
+            WHERE goal_id = $1 AND session_id = $2 AND status = 'pending'
+            RETURNING id, goal_id
+          `, [childId, sessionId]);
+
+          for (const p of promoted) {
+            const promotedGoal = goalMap.get(p.goal_id);
+            events.push({
+              type: 'goal_activated',
+              goal_id: p.goal_id,
+              goal_name: promotedGoal?.name || 'Unknown',
+              reason: 'prerequisites_met',
+            });
+          }
+        }
+      }
     }
-  }
 
-  // ── Check if ALL goals are resolved (complete or cancelled) ──
-  if (events.some(e => e.type === 'goal_completed')) {
-    const remaining = await query<{ id: string }>(`
-      SELECT id FROM mcp_session_goals
-      WHERE session_id = $1 AND status IN ('active', 'pending')
-    `, [sessionId]);
-
-    if (remaining.length === 0) {
-      // Find the last completed goal that terminates
-      const terminatingGoal = events.find(e =>
-        e.type === 'goal_completed' && goalMap.get(e.goal_id)?.terminates
-      );
-
+    // ── Check end_type ──
+    if (goal.end_type) {
       events.push({
         type: 'session_terminating',
-        goal_id: terminatingGoal?.goal_id || events[0].goal_id,
-        goal_name: terminatingGoal?.goal_name || 'All Goals',
-        achieved_prompt: terminatingGoal?.achieved_prompt || null,
+        goal_id: goal.id,
+        goal_name: goal.name,
+        achieved_prompt: goal.achieved_prompt,
+        end_type: goal.end_type,
       });
     }
   }
@@ -390,10 +479,9 @@ export async function evaluateGoals(
 /** Evaluate an implicit goal: all required MCP properties across all nords */
 async function evaluateImplicitGoal(
   sessionId: string,
-  projectId: string,
+  _projectId: string,
   completedData: Record<string, unknown>
 ): Promise<boolean> {
-  // Check if any required MCP field is still unfilled
   const incomplete = await query<{ nord_id: string; title: string }>(`
     SELECT sn.nord_id, n.title
     FROM mcp_session_nords sn
@@ -405,7 +493,6 @@ async function evaluateImplicitGoal(
 
   if (incomplete.length > 0) return false;
 
-  // All complete — snapshot summary
   completedData.total_nords_completed = await query<{ count: string }>(
     'SELECT COUNT(*) FROM mcp_session_nords WHERE session_id = $1 AND complete = true',
     [sessionId]
@@ -424,7 +511,7 @@ async function evaluateExplicitGoal(
     'SELECT * FROM goal_properties WHERE goal_id = $1', [goalId]
   );
 
-  if (bindings.length === 0) return false; // No bindings = can't complete
+  if (bindings.length === 0) return false;
 
   for (const binding of bindings) {
     const nordProps = sessionNordProps.get(binding.nord_id);
@@ -433,14 +520,15 @@ async function evaluateExplicitGoal(
     const value = nordProps[binding.property_name];
     if (value === undefined || value === null || value === '') return false;
 
-    // Snapshot the collected value
     completedData[`${binding.nord_id}.${binding.property_name}`] = value;
   }
 
-  return true; // All bindings satisfied
+  return true;
 }
 
-// ── Session Goals Query (for AI tool) ──
+// ══════════════════════════════════════════════════════════
+// Session Goals Query (for AI tool)
+// ══════════════════════════════════════════════════════════
 
 export interface SessionGoalState {
   goal_id: string;
@@ -448,9 +536,7 @@ export interface SessionGoalState {
   goal_icon: string;
   status: string;
   is_implicit: boolean;
-  terminates: boolean;
-  exclusion_group: string | null;
-  requires_goal_id: string | null;
+  end_type: 'reset' | 'continue' | null;
   achieved_prompt: string | null;
   properties: Array<{
     nord_id: string;
@@ -464,25 +550,21 @@ export interface SessionGoalState {
 /** Get all session goals with property completion status for the AI */
 export async function findSessionGoals(
   sessionId: string,
-  projectId: string
+  _projectId: string
 ): Promise<SessionGoalState[]> {
-  // Session goals with goal details
   const rows = await query<{
     goal_id: string; goal_name: string; goal_icon: string;
-    status: string; is_implicit: boolean; terminates: boolean;
-    exclusion_group: string | null; requires_goal_id: string | null;
+    status: string; is_implicit: boolean; end_type: string | null;
     achieved_prompt: string | null;
   }>(`
     SELECT sg.goal_id, g.name AS goal_name, g.icon AS goal_icon,
-           sg.status, g.is_implicit, g.terminates,
-           g.exclusion_group, g.requires_goal_id, g.achieved_prompt
+           sg.status, g.is_implicit, g.end_type, g.achieved_prompt
     FROM mcp_session_goals sg
     JOIN goals g ON g.id = sg.goal_id
     WHERE sg.session_id = $1
     ORDER BY g.sort_order, g.created_at
   `, [sessionId]);
 
-  // Get all goal property bindings
   const goalIds = rows.filter(r => !r.is_implicit).map(r => r.goal_id);
   const bindings = goalIds.length > 0
     ? await query<GoalProperty & { nord_title: string }>(`
@@ -494,14 +576,12 @@ export async function findSessionGoals(
       `, [goalIds])
     : [];
 
-  // Get session nords for property value lookup
   const sessionNords = await query<{ nord_id: string; properties: Record<string, unknown> }>(
     'SELECT nord_id, properties FROM mcp_session_nords WHERE session_id = $1',
     [sessionId]
   );
   const sessionNordProps = new Map(sessionNords.map(sn => [sn.nord_id, sn.properties]));
 
-  // Group bindings by goal
   const bindingsByGoal = new Map<string, typeof bindings>();
   for (const b of bindings) {
     const arr = bindingsByGoal.get(b.goal_id) || [];
@@ -511,7 +591,6 @@ export async function findSessionGoals(
 
   return rows.map(row => {
     const goalBindings = bindingsByGoal.get(row.goal_id) || [];
-    // Cap properties at 5 for token budget
     const properties = goalBindings.slice(0, 5).map(b => {
       const nordProps = sessionNordProps.get(b.nord_id) || {};
       const value = nordProps[b.property_name];
@@ -530,12 +609,9 @@ export async function findSessionGoals(
       goal_icon: row.goal_icon,
       status: row.status,
       is_implicit: row.is_implicit,
-      terminates: row.terminates,
-      exclusion_group: row.exclusion_group,
-      requires_goal_id: row.requires_goal_id,
+      end_type: (row.end_type as 'reset' | 'continue') || null,
       achieved_prompt: row.achieved_prompt,
       properties,
     };
   });
 }
-

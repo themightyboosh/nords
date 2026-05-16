@@ -1,7 +1,7 @@
 /**
- * useGoals.ts — Fetches and manages goals for a project.
+ * useGoals.ts — Fetches and manages goals + edges for a project.
  *
- * Returns the goals list, loading state, and mutation functions.
+ * Returns the goals list, edges list, loading state, and mutation functions.
  * Follows the same pattern as usePersonas for consistency.
  */
 
@@ -26,27 +26,39 @@ export interface Goal {
   icon: string;
   accent_color: string;
   sort_order: number;
-  is_default: boolean;
-  terminates: boolean;
+  /** null = does not end session, 'reset' = end & full reset, 'continue' = end & carry over */
+  end_type: 'reset' | 'continue' | null;
   achieved_prompt: string | null;
-  exclusion_group: string | null;
-  requires_goal_id: string | null;
   is_implicit: boolean;
   created_at: string;
   updated_at: string;
   properties: GoalProperty[];
 }
 
+/** Directed edge in the goal DAG: source → target */
+export interface GoalEdge {
+  id: string;
+  project_id: string;
+  source_goal_id: string;
+  target_goal_id: string;
+  created_at: string;
+}
+
 export function useGoals(projectId: string | null) {
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [edges, setEdges] = useState<GoalEdge[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchGoals = useCallback(async () => {
     if (!projectId) return;
     setIsLoading(true);
     try {
-      const data = await api.get<Goal[]>(`/api/projects/${projectId}/goals`);
-      setGoals(data);
+      const [goalsData, edgesData] = await Promise.all([
+        api.get<Goal[]>(`/api/projects/${projectId}/goals`),
+        api.get<GoalEdge[]>(`/api/projects/${projectId}/goal-edges`),
+      ]);
+      setGoals(goalsData);
+      setEdges(edgesData);
     } catch (err) {
       console.error('Failed to fetch goals:', err);
     } finally {
@@ -60,7 +72,6 @@ export function useGoals(projectId: string | null) {
     if (!projectId) return null;
     try {
       const data = await api.post<Goal>(`/api/projects/${projectId}/goals`, fields || {});
-      // Re-fetch to get properties attached
       await fetchGoals();
       return data;
     } catch (err) { console.error('Failed to create goal:', err); return null; }
@@ -70,8 +81,7 @@ export function useGoals(projectId: string | null) {
     id: string,
     fields: Partial<Pick<Goal,
       'name' | 'description' | 'icon' | 'accent_color' | 'sort_order' |
-      'is_default' | 'terminates' | 'achieved_prompt' | 'exclusion_group' |
-      'requires_goal_id'
+      'end_type' | 'achieved_prompt'
     >>
   ) => {
     try {
@@ -85,8 +95,33 @@ export function useGoals(projectId: string | null) {
     try {
       await api.delete(`/api/goals/${id}`);
       setGoals(prev => prev.filter(g => g.id !== id));
+      // Also remove edges involving this goal
+      setEdges(prev => prev.filter(e => e.source_goal_id !== id && e.target_goal_id !== id));
     } catch (err) { console.error('Failed to delete goal:', err); }
   }, []);
+
+  // ── Edge mutations ──
+
+  const createEdge = useCallback(async (sourceGoalId: string, targetGoalId: string) => {
+    if (!projectId) return null;
+    try {
+      const edge = await api.post<GoalEdge>(`/api/projects/${projectId}/goal-edges`, {
+        source_goal_id: sourceGoalId,
+        target_goal_id: targetGoalId,
+      });
+      setEdges(prev => [...prev, edge]);
+      return edge;
+    } catch (err) { console.error('Failed to create edge:', err); return null; }
+  }, [projectId]);
+
+  const deleteEdge = useCallback(async (edgeId: string) => {
+    try {
+      await api.delete(`/api/goal-edges/${edgeId}`);
+      setEdges(prev => prev.filter(e => e.id !== edgeId));
+    } catch (err) { console.error('Failed to delete edge:', err); }
+  }, []);
+
+  // ── Property mutations ──
 
   const addProperty = useCallback(async (goalId: string, nordId: string, propertyName: string) => {
     try {
@@ -111,8 +146,9 @@ export function useGoals(projectId: string | null) {
   }, []);
 
   return {
-    goals, isLoading, refetch: fetchGoals,
+    goals, edges, isLoading, refetch: fetchGoals,
     createGoal, updateGoal, deleteGoal,
+    createEdge, deleteEdge,
     addProperty, removeProperty,
   };
 }

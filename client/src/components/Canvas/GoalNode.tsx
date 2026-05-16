@@ -5,24 +5,25 @@
  * between the Goal Canvas and the Nord Canvas.
  *
  * Shows: Lucide icon + name + accent color ring.
- * Badges: END (terminates), Entry (no prerequisite).
+ * Badges: 🔴 RESET (end_type=reset), 🟡 CONTINUE (end_type=continue), ⚡ ROOT (no incoming edges).
+ *
+ * Handles: source (right) and target (left) for edge drawing.
  */
 
 import React, { memo } from 'react';
 import type { NodeProps, Node } from '@xyflow/react';
 import { Handle, Position } from '@xyflow/react';
 import { resolveIcon } from '../../utils/iconRegistry';
-import { StopCircle } from 'lucide-react';
+import { StopCircle, RefreshCw } from 'lucide-react';
 
 export interface GoalNodeData {
   goalId: string;
   name: string;
   icon: string;
   accentColor: string;
-  terminates: boolean;
-  isEntry: boolean;
+  endType: 'reset' | 'continue' | null;
+  isRoot: boolean;
   isSelected: boolean;
-  exclusionGroup: string | null;
   [key: string]: unknown;
 }
 
@@ -31,9 +32,16 @@ export type GoalNodeType = Node<GoalNodeData, 'goalNode'>;
 export const GoalNode = memo(({ data }: NodeProps<GoalNodeData>) => {
   const GoalIcon = resolveIcon(data.icon);
 
+  const classList = [
+    'goal-node',
+    data.isSelected && 'goal-node--selected',
+    data.endType && 'goal-node--end',
+    data.isRoot && 'goal-node--root',
+  ].filter(Boolean).join(' ');
+
   return (
     <div
-      className={`goal-node ${data.isSelected ? 'goal-node--selected' : ''} ${data.terminates ? 'goal-node--end' : ''} ${data.isEntry ? 'goal-node--entry' : ''}`}
+      className={classList}
       style={{
         '--goal-accent': data.accentColor || '#6366f1',
       } as React.CSSProperties}
@@ -46,15 +54,15 @@ export const GoalNode = memo(({ data }: NodeProps<GoalNodeData>) => {
       </div>
       <span className="goal-node__label">{data.name || 'Untitled'}</span>
 
-      {/* Badges */}
-      {data.terminates && (
-        <span className="goal-node__badge goal-node__badge--end">
-          <StopCircle size={8} /> END
+      {/* End-type badges */}
+      {data.endType === 'reset' && (
+        <span className="goal-node__badge goal-node__badge--reset">
+          <StopCircle size={8} /> RESET
         </span>
       )}
-      {data.exclusionGroup && (
-        <span className="goal-node__badge goal-node__badge--excl">
-          {data.exclusionGroup}
+      {data.endType === 'continue' && (
+        <span className="goal-node__badge goal-node__badge--continue">
+          <RefreshCw size={8} /> CONTINUE
         </span>
       )}
     </div>

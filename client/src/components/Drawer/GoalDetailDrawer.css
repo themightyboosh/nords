@@ -140,51 +140,54 @@
   flex: 1;
 }
 
-.goal-detail-drawer__input {
-  flex: 1;
-  max-width: 160px;
-  font-size: 12px;
-  padding: 5px 8px;
-  border: 1px solid var(--nords-color-border);
-  border-radius: 6px;
-  background: var(--nords-color-bg-deep);
-  color: var(--nords-color-text-primary);
-  outline: none;
-}
-.goal-detail-drawer__input:focus {
-  border-color: var(--nords-color-accent, #6366f1);
-}
-.goal-detail-drawer__input::placeholder {
+/* ── Hint text ── */
+.goal-detail-drawer__hint {
+  margin: 0;
+  font-size: 11px;
   color: var(--nords-color-text-tertiary);
+  line-height: 1.5;
+  font-style: italic;
 }
 
-/* ── Toggle ── */
-.goal-detail-drawer__toggle {
-  width: 36px;
-  height: 20px;
-  border-radius: 10px;
-  border: none;
-  background: var(--nords-color-surface);
+/* ── End Type Radio Group ── */
+.goal-detail-drawer__end-type-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.goal-detail-drawer__end-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--nords-color-border);
+  border-radius: 8px;
+  background: var(--nords-color-bg-deep);
   cursor: pointer;
-  position: relative;
-  transition: background 0.2s;
-  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: left;
 }
-.goal-detail-drawer__toggle.is-on {
-  background: var(--nords-color-accent, #6366f1);
+
+.goal-detail-drawer__end-option:hover {
+  border-color: var(--nords-color-accent, #6366f1);
 }
-.goal-detail-drawer__toggle-knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: white;
-  transition: transform 0.2s;
+
+.goal-detail-drawer__end-option.is-active {
+  border-color: var(--nords-color-accent, #6366f1);
+  background: color-mix(in srgb, var(--nords-color-accent, #6366f1) 10%, var(--nords-color-bg-deep));
 }
-.goal-detail-drawer__toggle.is-on .goal-detail-drawer__toggle-knob {
-  transform: translateX(16px);
+
+.goal-detail-drawer__end-option-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--nords-color-text-primary);
+  min-width: 80px;
+}
+
+.goal-detail-drawer__end-option-sub {
+  font-size: 11px;
+  color: var(--nords-color-text-tertiary);
 }
 
 /* ── Property Binding Rows ── */

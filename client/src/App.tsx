@@ -264,8 +264,11 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           accent_color: activePersona.accent_color,
         } : null}
         goals={goalsData.goals}
+        goalEdges={goalsData.edges}
         selectedGoalId={selectedGoalId}
         onGoalClick={(id) => setSelectedGoalId(id)}
+        onGoalEdgeCreate={goalsData.createEdge}
+        onGoalEdgeDelete={goalsData.deleteEdge}
       />
       {/* Goal Canvas state */}
       {lens === 'goals' && (

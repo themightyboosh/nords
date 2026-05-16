@@ -261,14 +261,21 @@ export interface Goal {
   icon: string;
   accent_color: string;
   sort_order: number;
-  is_default: boolean;
-  terminates: boolean;
+  /** null = does not end session, 'reset' = end & full reset, 'continue' = end & carry over */
+  end_type: 'reset' | 'continue' | null;
   achieved_prompt: string | null;
-  exclusion_group: string | null;
-  requires_goal_id: string | null;
   is_implicit: boolean;
   created_at: Date;
   updated_at: Date;
+}
+
+/** Directed edge in the goal DAG: source → target */
+export interface GoalEdge {
+  id: string;
+  project_id: string;
+  source_goal_id: string;
+  target_goal_id: string;
+  created_at: Date;
 }
 
 export interface GoalProperty {

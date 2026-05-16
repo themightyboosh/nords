@@ -185,6 +185,7 @@
   },
   "active": "db2f717d1343674a",
   "lastOpenFiles": [
+    "server/migrations/020_goal_edges.sql",
     "client/src/components/Drawer/GoalDetailDrawer.css",
     "client/src/components/Drawer/GoalDetailDrawer.tsx",
     "client/src/components/Canvas/GoalCanvas.tsx",
@@ -208,7 +209,6 @@
     "demo/gates_and_personas.md",
     "demo/plan_critique.md",
     "demo/proposal_director_redesign.md",
-    "demo",
     "New 02/Proposal Management Lifecycle_ RFP to Delivery V3 (1).md",
     "New 01/Screenshot 2026-05-12 at 5.38.04 PM.png",
     "New 01/Screenshot 2026-05-12 at 4.07.19 PM.png",

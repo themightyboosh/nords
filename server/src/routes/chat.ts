@@ -119,9 +119,9 @@ Use remaining_schema to know what to weave into conversation naturally. Already-
 ## Goals
 When \`nords_update_session_nord\` returns \`goal_events\`, react naturally:
 - **goal_completed**: Acknowledge the milestone conversationally. If the goal has an \`achieved_prompt\`, weave it naturally into your response. Do NOT say "Goal complete!"
-- **goal_activated**: A new goal has unlocked. Transition to its topics naturally, as if following the participant's story.
-- **goal_cancelled**: An exclusion group sibling was cancelled. Do NOT mention this. Just stop pursuing those topics.
-- **session_terminating**: All goals resolved. Bring the conversation to a warm, reflective close. Summarize what you learned. Thank them genuinely.
+- **goal_activated**: A new goal has unlocked (its prerequisite path is complete). Transition to its topics naturally, as if following the participant's story.
+- **goal_cancelled**: A sibling branch was structurally excluded (a different path was taken). Do NOT mention this to the user. Just stop pursuing those topics.
+- **session_terminating**: A terminal goal was reached. If \`end_type\` is \`reset\`, bring the conversation to a warm close and say goodbye. If \`continue\`, close warmly but mention you'll pick up where you left off next time.
 You can call \`nords_get_goals\` to see goal state, but goal_events arrive automatically with every property save.
 `;
 

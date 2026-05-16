@@ -96,3 +96,49 @@ goalsRouter.get('/goals/check-nord/:nordId', async (req: Request, res: Response)
     res.status(500).json({ error: err.message });
   }
 });
+
+// ══════════════════════════════════════════════════════════
+// Goal Edges — DAG connections
+// ══════════════════════════════════════════════════════════
+
+// ── GET /api/projects/:id/goal-edges — List all edges for a project ──
+goalsRouter.get('/projects/:id/goal-edges', async (req: Request, res: Response) => {
+  try {
+    const edges = await goalsRepo.findEdgesByProject(req.params.id as string);
+    res.json(edges);
+  } catch (err: any) {
+    console.error('Error fetching goal edges:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/projects/:id/goal-edges — Create an edge ──
+goalsRouter.post('/projects/:id/goal-edges', async (req: Request, res: Response) => {
+  try {
+    const { source_goal_id, target_goal_id } = req.body;
+    if (!source_goal_id || !target_goal_id) {
+      return res.status(400).json({ error: 'source_goal_id and target_goal_id are required' });
+    }
+    if (source_goal_id === target_goal_id) {
+      return res.status(400).json({ error: 'Cannot create self-referencing edge' });
+    }
+    const edge = await goalsRepo.createEdge(req.params.id as string, source_goal_id, target_goal_id);
+    if (!edge) return res.status(409).json({ error: 'Edge already exists' });
+    res.status(201).json(edge);
+  } catch (err: any) {
+    console.error('Error creating goal edge:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DELETE /api/goal-edges/:id — Remove an edge ──
+goalsRouter.delete('/goal-edges/:id', async (req: Request, res: Response) => {
+  try {
+    const deleted = await goalsRepo.removeEdge(req.params.id as string);
+    if (!deleted) return res.status(404).json({ error: 'Edge not found' });
+    res.status(204).send();
+  } catch (err: any) {
+    console.error('Error removing goal edge:', err);
+    res.status(500).json({ error: err.message });
+  }
+});

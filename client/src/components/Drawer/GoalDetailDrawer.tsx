@@ -1,17 +1,17 @@
 /**
- * GoalDetailDrawer — Side panel for flow config when clicking a goal on the Goal Canvas.
+ * GoalDetailDrawer — Side panel for goal config when clicking a goal on the Goal Canvas.
  *
  * Follows the same pattern as clicking a Nord → DetailDrawer:
  * Opens in a FloatingPanel (right side) with:
  *   - Goal name + icon (read-only summary at top)
- *   - Flow config: Requires (prerequisite), Ends Session, Exclusion Group
+ *   - End Type: None / Reset / Continue selector
  *   - Property Bindings: Nord → property name binding CRUD
  *
- * This is where ALL the flow logic lives (moved out of ManageGoals modal).
+ * Flow connections (edges) are managed directly on the canvas via drag-to-connect.
  */
 
-import React, { useState, useCallback, useRef } from 'react';
-import { X, GitBranch, StopCircle, Unlink, Link, Plus, Trash2 } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { X, StopCircle, RefreshCw, Link, Plus, Trash2 } from 'lucide-react';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { resolveIcon } from '../../utils/iconRegistry';
 import type { Goal, GoalProperty } from '../../hooks/useGoals';
@@ -30,20 +30,11 @@ interface GoalDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   goal: Goal | null;
-  goals: Goal[];   // For prerequisite dropdown
-  nords: NordRef[];  // For property binding
+  goals: Goal[];
+  nords: NordRef[];
   onUpdate: (id: string, fields: Record<string, unknown>) => Promise<unknown>;
   onAddProperty: (goalId: string, nordId: string, propertyName: string) => Promise<unknown>;
   onRemoveProperty: (goalId: string, propId: string) => Promise<unknown>;
-}
-
-// ── Debounce helper ──
-function useDebouncedSave(saveFn: (id: string, f: Record<string, unknown>) => Promise<unknown>, delay = 400) {
-  const ref = useRef<ReturnType<typeof setTimeout>>();
-  return useCallback((id: string, f: Record<string, unknown>) => {
-    clearTimeout(ref.current);
-    ref.current = setTimeout(() => saveFn(id, f), delay);
-  }, [saveFn, delay]);
 }
 
 export function GoalDetailDrawer({
@@ -60,9 +51,6 @@ export function GoalDetailDrawer({
 
   const GoalIcon = resolveIcon(goal.icon);
 
-  // Other goals for the prerequisite dropdown
-  const otherGoals = goals.filter(g => g.id !== goal.id && !g.is_implicit);
-
   return (
     <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
       <div className="goal-detail-drawer">
@@ -73,12 +61,12 @@ export function GoalDetailDrawer({
           </div>
           <div className="goal-detail-drawer__identity">
             <h2 className="goal-detail-drawer__name">{goal.name}</h2>
-            <span className="goal-detail-drawer__eyebrow">Goal Flow Config</span>
+            <span className="goal-detail-drawer__eyebrow">Goal Config</span>
           </div>
         </div>
 
         <div className="goal-detail-drawer__content">
-          {/* ── Description (read-only here) ── */}
+          {/* ── Description (read-only) ── */}
           {goal.description && (
             <div className="goal-detail-drawer__field">
               <label className="goal-detail-drawer__label">Description</label>
@@ -86,53 +74,52 @@ export function GoalDetailDrawer({
             </div>
           )}
 
-          {/* ── Flow Section ── */}
+          {/* ── Session End Type ── */}
           <div className="goal-detail-drawer__section">
             <div className="goal-detail-drawer__section-header">
-              <GitBranch size={14} />
-              <span>Flow</span>
+              <StopCircle size={14} />
+              <span>Session Ending</span>
             </div>
 
-            {/* Prerequisite */}
-            <div className="goal-detail-drawer__flow-row">
-              <span className="goal-detail-drawer__flow-label">Requires</span>
-              <select
-                className="goal-detail-drawer__select"
-                value={goal.requires_goal_id || ''}
-                onChange={e => onUpdate(goal.id, { requires_goal_id: e.target.value || null })}
-              >
-                <option value="">None (entry point)</option>
-                {otherGoals.map(g => (
-                  <option key={g.id} value={g.id}>{g.name}</option>
-                ))}
-              </select>
-            </div>
+            <p className="goal-detail-drawer__hint">
+              When this goal completes, does the session end? If so, how does the next session start?
+            </p>
 
-            {/* Ends Session */}
-            <div className="goal-detail-drawer__flow-row">
-              <span className="goal-detail-drawer__flow-label">
-                <StopCircle size={12} /> Ends session
-              </span>
-              <button
-                className={`goal-detail-drawer__toggle ${goal.terminates ? 'is-on' : ''}`}
-                onClick={() => onUpdate(goal.id, { terminates: !goal.terminates })}
-              >
-                <span className="goal-detail-drawer__toggle-knob" />
-              </button>
-            </div>
-
-            {/* Exclusion Group */}
-            <div className="goal-detail-drawer__flow-row">
-              <span className="goal-detail-drawer__flow-label">
-                <Unlink size={12} /> Exclusion group
-              </span>
-              <input
-                className="goal-detail-drawer__input"
-                value={goal.exclusion_group || ''}
-                onChange={e => onUpdate(goal.id, { exclusion_group: e.target.value || null })}
-                placeholder="e.g., contact_method"
+            <div className="goal-detail-drawer__end-type-group">
+              <EndTypeOption
+                label="No end"
+                sublabel="Session continues"
+                value={null}
+                current={goal.end_type}
+                onChange={(v) => onUpdate(goal.id, { end_type: v })}
+              />
+              <EndTypeOption
+                label="🔴 Reset"
+                sublabel="End session, start fresh"
+                value="reset"
+                current={goal.end_type}
+                onChange={(v) => onUpdate(goal.id, { end_type: v })}
+              />
+              <EndTypeOption
+                label="🟡 Continue"
+                sublabel="End session, carry over"
+                value="continue"
+                current={goal.end_type}
+                onChange={(v) => onUpdate(goal.id, { end_type: v })}
               />
             </div>
+          </div>
+
+          {/* ── Connections hint ── */}
+          <div className="goal-detail-drawer__section">
+            <div className="goal-detail-drawer__section-header">
+              <Link size={14} />
+              <span>Connections</span>
+            </div>
+            <p className="goal-detail-drawer__hint">
+              Draw connections directly on the canvas — drag from one goal's handle to another.
+              Click an edge and press Delete to remove it.
+            </p>
           </div>
 
           {/* ── Property Bindings Section ── */}
@@ -169,6 +156,33 @@ export function GoalDetailDrawer({
         </div>
       </div>
     </FloatingPanel>
+  );
+}
+
+// ── End Type Radio Option ──
+
+function EndTypeOption({
+  label,
+  sublabel,
+  value,
+  current,
+  onChange,
+}: {
+  label: string;
+  sublabel: string;
+  value: 'reset' | 'continue' | null;
+  current: 'reset' | 'continue' | null;
+  onChange: (v: 'reset' | 'continue' | null) => void;
+}) {
+  const isActive = current === value;
+  return (
+    <button
+      className={`goal-detail-drawer__end-option ${isActive ? 'is-active' : ''}`}
+      onClick={() => onChange(value)}
+    >
+      <span className="goal-detail-drawer__end-option-label">{label}</span>
+      <span className="goal-detail-drawer__end-option-sub">{sublabel}</span>
+    </button>
   );
 }
 

@@ -1,9 +1,9 @@
 /**
- * GoalCanvas — Spatial canvas for goals (Goals lens).
+ * GoalCanvas — Interactive DAG canvas for goals (Goals lens).
  *
- * Renders goals as circles on a ReactFlow canvas.
- * Prerequisites = directed edges between goals.
- * Exclusion groups = shared visual grouping.
+ * Goals = circles. Edges = directed connections (parent → child).
+ * Users draw edges by dragging from one circle handle to another.
+ * When a goal completes, sibling branches are structurally excluded.
  *
  * Clicking a goal circle fires onGoalClick → opens the GoalDetailDrawer.
  */
@@ -17,12 +17,15 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
+  addEdge,
   type Node,
   type Edge,
+  type Connection,
+  type OnConnect,
 } from '@xyflow/react';
 import { GoalNode, type GoalNodeData } from './GoalNode';
 import ZoomControls from './ZoomControls';
-import type { Goal } from '../../hooks/useGoals';
+import type { Goal, GoalEdge } from '../../hooks/useGoals';
 import './GoalNode.css';
 
 const goalNodeTypes = {
@@ -31,66 +34,77 @@ const goalNodeTypes = {
 
 interface GoalCanvasProps {
   goals: Goal[];
+  goalEdges: GoalEdge[];
   selectedGoalId: string | null;
   onGoalClick: (goalId: string) => void;
+  onEdgeCreate: (sourceId: string, targetId: string) => void;
+  onEdgeDelete: (edgeId: string) => void;
 }
 
 /**
- * Lay out goals in a horizontal flow pattern:
- * - Entry goals on the left
- * - Gated goals to the right of their prerequisite
- * - Free-floating goals spread below
+ * Layout goals using the DAG edge structure.
+ * Roots (no incoming edges) on the left, children to the right.
+ * Branches fan out vertically.
  */
-function computeGoalLayout(goals: Goal[]): Map<string, { x: number; y: number }> {
+function computeGoalLayout(
+  goals: Goal[],
+  edges: GoalEdge[]
+): Map<string, { x: number; y: number }> {
   const positions = new Map<string, { x: number; y: number }>();
   const explicit = goals.filter(g => !g.is_implicit);
 
-  // Build children map
-  const childrenOf = new Map<string, Goal[]>();
-  for (const g of explicit) {
-    if (g.requires_goal_id) {
-      const list = childrenOf.get(g.requires_goal_id) || [];
-      list.push(g);
-      childrenOf.set(g.requires_goal_id, list);
-    }
+  if (explicit.length === 0) return positions;
+
+  // Build adjacency
+  const childrenOf = new Map<string, string[]>();
+  const hasParent = new Set<string>();
+  for (const e of edges) {
+    const list = childrenOf.get(e.source_goal_id) || [];
+    list.push(e.target_goal_id);
+    childrenOf.set(e.source_goal_id, list);
+    hasParent.add(e.target_goal_id);
   }
 
-  // Roots (entry points)
-  const roots = explicit.filter(g => !g.requires_goal_id);
+  // Roots = no incoming edges
+  const roots = explicit.filter(g => !hasParent.has(g.id));
   const placed = new Set<string>();
 
-  const COL_WIDTH = 180;
-  const ROW_HEIGHT = 140;
+  const COL_WIDTH = 200;
+  const ROW_HEIGHT = 150;
+  let globalRow = 0;
 
-  // Place chains starting from each root
-  let chainRow = 0;
+  // BFS from each root
   for (const root of roots) {
-    let col = 0;
-    let current: Goal | undefined = root;
-    while (current && !placed.has(current.id)) {
-      positions.set(current.id, { x: col * COL_WIDTH, y: chainRow * ROW_HEIGHT });
-      placed.add(current.id);
-      col++;
-      const children = childrenOf.get(current.id) || [];
-      // Follow the first child in the chain
-      current = children.find(c => !placed.has(c.id));
-      // Place any extra children on offset rows
-      for (let i = 1; i < children.length; i++) {
-        if (!placed.has(children[i].id)) {
-          chainRow++;
-          positions.set(children[i].id, { x: col * COL_WIDTH, y: chainRow * ROW_HEIGHT });
-          placed.add(children[i].id);
+    const queue: Array<{ id: string; col: number }> = [{ id: root.id, col: 0 }];
+    let localRowStart = globalRow;
+
+    while (queue.length > 0) {
+      const { id, col } = queue.shift()!;
+      if (placed.has(id)) continue;
+
+      positions.set(id, { x: col * COL_WIDTH, y: globalRow * ROW_HEIGHT });
+      placed.add(id);
+
+      const children = (childrenOf.get(id) || []).filter(c => !placed.has(c));
+      if (children.length > 0) {
+        // First child continues on same row
+        queue.push({ id: children[0], col: col + 1 });
+        // Additional children get new rows (branching)
+        for (let i = 1; i < children.length; i++) {
+          globalRow++;
+          queue.push({ id: children[i], col: col + 1 });
         }
       }
     }
-    chainRow++;
+
+    globalRow++;
   }
 
-  // Place any orphans that weren't in a chain
+  // Place orphans (no edges at all) — spread horizontally
   let orphanCol = 0;
   for (const g of explicit) {
     if (!placed.has(g.id)) {
-      positions.set(g.id, { x: orphanCol * COL_WIDTH, y: chainRow * ROW_HEIGHT });
+      positions.set(g.id, { x: orphanCol * COL_WIDTH, y: globalRow * ROW_HEIGHT });
       placed.add(g.id);
       orphanCol++;
     }
@@ -99,9 +113,22 @@ function computeGoalLayout(goals: Goal[]): Map<string, { x: number; y: number }>
   return positions;
 }
 
-function GoalCanvasInner({ goals, selectedGoalId, onGoalClick }: GoalCanvasProps) {
+function GoalCanvasInner({
+  goals,
+  goalEdges,
+  selectedGoalId,
+  onGoalClick,
+  onEdgeCreate,
+  onEdgeDelete,
+}: GoalCanvasProps) {
   const explicit = useMemo(() => goals.filter(g => !g.is_implicit), [goals]);
-  const layout = useMemo(() => computeGoalLayout(goals), [goals]);
+  const layout = useMemo(() => computeGoalLayout(goals, goalEdges), [goals, goalEdges]);
+
+  // Compute which goals are roots (no incoming edges)
+  const rootSet = useMemo(() => {
+    const hasParent = new Set(goalEdges.map(e => e.target_goal_id));
+    return new Set(explicit.filter(g => !hasParent.has(g.id)).map(g => g.id));
+  }, [explicit, goalEdges]);
 
   // Build nodes
   const initialNodes: Node<GoalNodeData>[] = useMemo(() => {
@@ -116,50 +143,79 @@ function GoalCanvasInner({ goals, selectedGoalId, onGoalClick }: GoalCanvasProps
           name: g.name,
           icon: g.icon,
           accentColor: g.accent_color || '#6366f1',
-          terminates: g.terminates,
-          isEntry: !g.requires_goal_id,
+          endType: g.end_type,
+          isRoot: rootSet.has(g.id),
           isSelected: g.id === selectedGoalId,
-          exclusionGroup: g.exclusion_group,
         },
       };
     });
-  }, [explicit, layout, selectedGoalId]);
+  }, [explicit, layout, selectedGoalId, rootSet]);
 
-  // Build edges (prerequisite links)
+  // Build ReactFlow edges from goal_edges
   const initialEdges: Edge[] = useMemo(() => {
-    return explicit
-      .filter(g => g.requires_goal_id)
-      .map(g => ({
-        id: `prereq-${g.requires_goal_id}-${g.id}`,
-        source: g.requires_goal_id!,
-        target: g.id,
+    return goalEdges.map(ge => {
+      const sourceGoal = goals.find(g => g.id === ge.source_goal_id);
+      return {
+        id: ge.id,  // Use the DB edge ID so we can delete it
+        source: ge.source_goal_id,
+        target: ge.target_goal_id,
         type: 'default',
         animated: true,
         style: {
-          stroke: g.accent_color || '#6366f1',
+          stroke: sourceGoal?.accent_color || '#6366f1',
           strokeWidth: 2,
           opacity: 0.6,
         },
         markerEnd: {
           type: 'arrowclosed' as const,
-          color: g.accent_color || '#6366f1',
+          color: sourceGoal?.accent_color || '#6366f1',
         },
-      }));
-  }, [explicit]);
+      };
+    });
+  }, [goalEdges, goals]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { fitView } = useReactFlow();
 
-  // Sync nodes when goals change
-  useEffect(() => {
-    setNodes(initialNodes);
-  }, [initialNodes, setNodes]);
+  // Sync when data changes
+  useEffect(() => { setNodes(initialNodes); }, [initialNodes, setNodes]);
+  useEffect(() => { setRfEdges(initialEdges); }, [initialEdges, setRfEdges]);
 
   // Fit view on mount
   useEffect(() => {
     setTimeout(() => fitView({ padding: 0.3, duration: 300 }), 100);
-  }, [fitView, goals.length]);
+  }, [fitView, goals.length, goalEdges.length]);
+
+  // ── Interactive edge drawing ──
+  const handleConnect: OnConnect = useCallback((connection: Connection) => {
+    if (connection.source && connection.target && connection.source !== connection.target) {
+      // Persist to DB
+      onEdgeCreate(connection.source, connection.target);
+      // Optimistically add to ReactFlow
+      setRfEdges(eds => addEdge({
+        ...connection,
+        animated: true,
+        style: { stroke: '#6366f1', strokeWidth: 2, opacity: 0.6 },
+        markerEnd: { type: 'arrowclosed' as const, color: '#6366f1' },
+      }, eds));
+    }
+  }, [onEdgeCreate, setRfEdges]);
+
+  // ── Edge deletion (click edge → backspace/delete) ──
+  const handleEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
+    // We'll use the edge ID which matches the DB edge ID
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        onEdgeDelete(edge.id);
+        setRfEdges(eds => eds.filter(e => e.id !== edge.id));
+        window.removeEventListener('keydown', handleKeyDown);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, { once: true });
+    // Auto-remove listener after 5 seconds
+    setTimeout(() => window.removeEventListener('keydown', handleKeyDown), 5000);
+  }, [onEdgeDelete, setRfEdges]);
 
   const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     onGoalClick(node.id);
@@ -168,17 +224,20 @@ function GoalCanvasInner({ goals, selectedGoalId, onGoalClick }: GoalCanvasProps
   return (
     <ReactFlow
       nodes={nodes}
-      edges={edges}
+      edges={rfEdges}
       nodeTypes={goalNodeTypes}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onNodeClick={handleNodeClick}
+      onConnect={handleConnect}
+      onEdgeClick={handleEdgeClick}
       fitView
       fitViewOptions={{ padding: 0.3 }}
       minZoom={0.3}
       maxZoom={2}
       proOptions={{ hideAttribution: true }}
       className="goal-canvas"
+      connectionLineStyle={{ stroke: '#6366f1', strokeWidth: 2, opacity: 0.5 }}
     >
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--nords-color-grid-dot, rgba(255,255,255,0.04))" />
       <ZoomControls />
