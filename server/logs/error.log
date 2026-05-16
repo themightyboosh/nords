@@ -6900,3 +6900,10 @@ error: relation "goal_edges" does not exist
     at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:107:19) {"service":"nords-server","text":"SELECT * FROM goal_edges WHERE project_id = $1 ORDER BY created_at","duration":29,"error":"relation \"goal_edges\" does not exist"}
 22:46:29.103 [31merror[39m: GET /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goal-edges 500 {"service":"nords-server","method":"GET","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goal-edges","status":500,"duration":"30ms","bytes":"50"}
+23:05:21.402 [31merror[39m: Query failed
+error: relation "goal_edges" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:107:19) {"service":"nords-server","text":"SELECT * FROM goal_edges WHERE project_id = $1 ORDER BY created_at","duration":198,"error":"relation \"goal_edges\" does not exist"}
+23:05:21.403 [31merror[39m: GET /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goal-edges 500 {"service":"nords-server","method":"GET","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goal-edges","status":500,"duration":"202ms","bytes":"50"}

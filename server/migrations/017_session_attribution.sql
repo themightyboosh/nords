@@ -5,9 +5,8 @@
 -- 2. Add partitioning-ready indexes on event tables
 -- 3. Add index on mcp_messages for analytics
 
-BEGIN;
 
-INSERT INTO schema_migrations (name) VALUES ('017_session_attribution');
+-- Migration runner handles tracking; no self-INSERT needed
 
 -- ── 1. Session Attribution ──
 -- Who created this session? Either:
@@ -49,4 +48,3 @@ CREATE INDEX IF NOT EXISTS idx_mcp_messages_tokens
   ON mcp_messages (session_id)
   WHERE tokens_in IS NOT NULL OR tokens_out IS NOT NULL;
 
-COMMIT;
