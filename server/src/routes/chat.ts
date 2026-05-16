@@ -352,7 +352,9 @@ Set GEMINI_API_KEY in server/.env or configure GOOGLE_CLOUD_PROJECT for Vertex A
       return res.json({ reply: replyContent, sessionId, message: assistantMsg, toolCalls: [] });
     }
 
-    const toolDeclarations = buildToolDeclarations(mcpMutable);
+    // Fetch project dictionary for dynamic tool descriptions (uses 5-min cache)
+    const dictionary = await mcpRepo.getProjectDictionary(projectId);
+    const toolDeclarations = buildToolDeclarations(mcpMutable, dictionary);
 
     // 7. Build conversation history
     const messageHistory = await mcpMessagesRepo.findBySession(sessionId);

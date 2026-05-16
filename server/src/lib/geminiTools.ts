@@ -4,24 +4,66 @@
  * These are the JSON schemas that tell Gemini what tools are available
  * and what parameters each accepts. Gemini uses these to decide which
  * tools to call and with what arguments.
+ *
+ * Phase 2: When a ProjectDictionary is provided, tool descriptions are
+ * enriched with project-specific vocabulary (type names, verbs, persona
+ * names, mode) so the AI has zero-shot orientation without calling
+ * nords_get_dictionary first.
  */
 
 import type { FunctionDeclaration, Type } from '@google/genai';
+import type { ProjectDictionary } from '../repositories/mcpSessions.js';
+
+/**
+ * Build a compact context suffix from the project dictionary.
+ * Injected into key tool descriptions at registration time.
+ */
+function buildProjectContext(dict: ProjectDictionary, mode?: string): string {
+  const parts: string[] = [];
+
+  if (mode) parts.push(`Mode: ${mode}`);
+
+  if (dict.nord_types.length > 0) {
+    parts.push(`Nord types: ${dict.nord_types.map(t => t.name).join(', ')}`);
+  }
+
+  if (dict.connection_types.length > 0) {
+    const ctStrs = dict.connection_types.map(ct => {
+      let s = ct.name;
+      if (ct.verb) s += ` (${ct.verb})`;
+      return s;
+    });
+    parts.push(`Connection types: ${ctStrs.join(', ')}`);
+  }
+
+  if (dict.personas.length > 0) {
+    parts.push(`Personas: ${dict.personas.map(p => p.name).join(', ')}`);
+  }
+
+  return parts.length > 0 ? ` [Project context — ${parts.join('. ')}]` : '';
+}
 
 /**
  * Build the complete function declarations array.
- * We build it dynamically so we can optionally exclude mutable tools.
+ * We build it dynamically so we can optionally exclude mutable tools
+ * and inject project-specific context into descriptions.
  */
-export function buildToolDeclarations(includeMutable: boolean): FunctionDeclaration[] {
+export function buildToolDeclarations(
+  includeMutable: boolean,
+  dictionary?: ProjectDictionary | null,
+  projectMode?: string | null
+): FunctionDeclaration[] {
+  const ctx = dictionary ? buildProjectContext(dictionary, projectMode || undefined) : '';
+
   const readOnly: FunctionDeclaration[] = [
     {
       name: 'nords_get_dictionary',
-      description: 'Get the project dictionary — the full ontology of nord types (with descriptions and property schemas), connection types (with verbs, measurement modes, stage labels), and personas (with backgrounds, motivations, mental models, and category weights). Call this FIRST at the start of every session to understand the vocabulary before making decisions.',
+      description: `Get the project dictionary — the full ontology of nord types (with descriptions and property schemas), connection types (with verbs, measurement modes, stage labels), and personas (with backgrounds, motivations, mental models, and category weights).${ctx ? ' The horizon already gives you inline schemas, so you may not need this unless you want the full ontology.' : ' Call this FIRST at the start of every session to understand the vocabulary before making decisions.'}`,
       parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
     },
     {
       name: 'nords_get_horizon',
-      description: 'Get the Session Horizon — your full situational awareness. Returns current position (with session completion), persona-weighted neighbors (with session progress and stage labels), overall completion %, traversal breadcrumbs, suggested next nord, and predicted 2-hop path. Call this after nords_get_dictionary to orient yourself.',
+      description: `Get the Session Horizon — your full situational awareness. Returns current position (with session_properties and remaining_schema), persona-weighted neighbors, overall completion %, traversal breadcrumbs, suggested next nord, predicted 2-hop path, and planning_queue.${ctx}`,
       parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
     },
     {
@@ -74,7 +116,7 @@ export function buildToolDeclarations(includeMutable: boolean): FunctionDeclarat
   const session: FunctionDeclaration[] = [
     {
       name: 'nords_traverse_connection',
-      description: 'Move to a connected nord by traversing a connection. This updates your current position and automatically returns the updated horizon. Use traversal_type to describe why you are moving (read, advance, rework, create, assign, evaluate).',
+      description: `Move to a connected nord by traversing a connection. This updates your current position and automatically returns the updated horizon. Use traversal_type to describe why you are moving (read, advance, rework, create, assign, evaluate).${ctx}`,
       parameters: {
         type: 'OBJECT' as Type,
         properties: {
@@ -119,7 +161,7 @@ export function buildToolDeclarations(includeMutable: boolean): FunctionDeclarat
     },
     {
       name: 'nords_switch_persona',
-      description: 'Switch the active persona lens. This changes how neighbors are weighted by persona bias and returns the updated horizon with reweighted view. Use this when the conversation shifts to a different domain.',
+      description: `Switch the active persona lens. This changes how neighbors are weighted by persona bias and returns the updated horizon with reweighted view. Use this when the conversation shifts to a different domain.${dictionary?.personas?.length ? ` Available personas: ${dictionary.personas.map(p => p.name).join(', ')}` : ''}`,
       parameters: {
         type: 'OBJECT' as Type,
         properties: {
