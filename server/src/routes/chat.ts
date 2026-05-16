@@ -317,7 +317,7 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
 
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // 1. Resolve or create session
+    // 1. Resolve or create session (with auto-restart for completed sessions)
     let sessionId = existingSessionId;
     let session;
     let isNewSession = false;
@@ -335,7 +335,48 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
       const projectMode = project?.project_mode || 'collect';
       await goalsRepo.initializeSessionGoals(sessionId, projectId, projectMode);
     } else {
-      session = await queryOne('SELECT * FROM mcp_sessions WHERE id = $1', [sessionId]);
+      session = await queryOne<any>('SELECT * FROM mcp_sessions WHERE id = $1', [sessionId]);
+
+      // ── Auto-restart: if the session is completed, create a new one ──
+      if (session && session.status === 'completed') {
+        const project = await projectsRepo.findById(projectId);
+        const oldSessionId = sessionId;
+
+        // Determine end_type from session summary
+        const endType = session.summary?.includes('(continue)') ? 'continue' : 'reset';
+
+        // Create fresh session
+        session = await mcpRepo.createSession(
+          projectId,
+          session.persona_id || project?.default_persona_id || null,
+          project?.default_start_nord_id || null
+        );
+        sessionId = session.id;
+        isNewSession = true;
+
+        const projectMode = project?.project_mode || 'collect';
+        await goalsRepo.initializeSessionGoals(sessionId, projectId, projectMode);
+
+        // If 'continue', carry over completed goals from old session
+        if (endType === 'continue') {
+          const completedGoals = await query<{ goal_id: string; completed_data: any; completed_at: Date }>(
+            `SELECT goal_id, completed_data, completed_at FROM mcp_session_goals
+             WHERE session_id = $1 AND status = 'complete'`,
+            [oldSessionId]
+          );
+          for (const cg of completedGoals) {
+            await query(
+              `UPDATE mcp_session_goals
+               SET status = 'complete', completed_data = $3, completed_at = $4, updated_at = NOW()
+               WHERE session_id = $1 AND goal_id = $2`,
+              [sessionId, cg.goal_id, JSON.stringify(cg.completed_data), cg.completed_at]
+            );
+          }
+          logger.info(`Session auto-restart (continue): carried over ${completedGoals.length} completed goals from ${oldSessionId}`);
+        } else {
+          logger.info(`Session auto-restart (reset): fresh session from ${oldSessionId}`);
+        }
+      }
     }
 
     // 2. Log user message

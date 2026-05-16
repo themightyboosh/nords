@@ -133,6 +133,14 @@ const tools: Record<string, ToolHandler> = {
     // Reactively evaluate goals after every property save
     const goalEvents = await goalsRepo.evaluateGoals(ctx.sessionId, ctx.projectId);
 
+    // Auto-terminate session if a terminal goal fired
+    const terminatingEvent = goalEvents.find(e => e.type === 'session_terminating');
+    if (terminatingEvent) {
+      await mcpRepo.endSession(ctx.sessionId, 'completed',
+        `Session ended: ${terminatingEvent.goal_name} (${terminatingEvent.end_type || 'reset'})`
+      );
+    }
+
     // Auto-return horizon (#5)
     const horizon = await mcpRepo.getSessionHorizon(ctx.sessionId);
     return { success: true, data: { sessionNord, horizon, goal_events: goalEvents.length > 0 ? goalEvents : undefined } };
