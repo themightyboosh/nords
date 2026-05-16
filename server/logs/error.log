@@ -6394,3 +6394,67 @@ ApiError: {"error":{"code":404,"message":"Publisher Model `projects/nords-spatia
     at async Models.Models.generateContent (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/models.ts:128:14)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:371:24) {"service":"nords-server","error":"{\"error\":{\"code\":404,\"message\":\"Publisher Model `projects/nords-spatial-1776012153/locations/us-central1/publishers/google/models/gemini-2.0-flash` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions\",\"status\":\"NOT_FOUND\"}}","projectId":"c0b033d0-38e9-4677-94c1-021befdc447c"}
 09:54:48.895 [31merror[39m: POST /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat","status":500,"duration":"1939ms","bytes":"430"}
+21:02:25.049 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":208,"error":"relation \"goals\" does not exist"}
+21:02:25.049 [31merror[39m: GET /api/projects/f7fcfca0-9db3-4cbe-910f-105a3e17d563/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/f7fcfca0-9db3-4cbe-910f-105a3e17d563/goals","status":500,"duration":"210ms","bytes":"45"}
+21:02:25.081 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":30,"error":"relation \"goals\" does not exist"}
+21:02:25.081 [31merror[39m: GET /api/projects/f7fcfca0-9db3-4cbe-910f-105a3e17d563/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/f7fcfca0-9db3-4cbe-910f-105a3e17d563/goals","status":500,"duration":"30ms","bytes":"45"}
+21:02:25.811 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":38,"error":"relation \"goals\" does not exist"}
+21:02:25.812 [31merror[39m: GET /api/projects/f7fcfca0-9db3-4cbe-910f-105a3e17d563/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/f7fcfca0-9db3-4cbe-910f-105a3e17d563/goals","status":500,"duration":"39ms","bytes":"45"}
+21:02:25.876 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":31,"error":"relation \"goals\" does not exist"}
+21:02:25.877 [31merror[39m: GET /api/projects/f7fcfca0-9db3-4cbe-910f-105a3e17d563/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/f7fcfca0-9db3-4cbe-910f-105a3e17d563/goals","status":500,"duration":"32ms","bytes":"45"}
+21:02:25.985 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":194,"error":"relation \"goals\" does not exist"}
+21:02:25.985 [31merror[39m: GET /api/projects/bea0dbd0-ba83-4e89-98dc-bbc841d95b71/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/bea0dbd0-ba83-4e89-98dc-bbc841d95b71/goals","status":500,"duration":"194ms","bytes":"45"}
+21:02:26.022 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":28,"error":"relation \"goals\" does not exist"}
+21:02:26.023 [31merror[39m: GET /api/projects/bea0dbd0-ba83-4e89-98dc-bbc841d95b71/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/bea0dbd0-ba83-4e89-98dc-bbc841d95b71/goals","status":500,"duration":"29ms","bytes":"45"}
+21:02:26.056 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":27,"error":"relation \"goals\" does not exist"}
+21:02:26.056 [31merror[39m: GET /api/projects/bea0dbd0-ba83-4e89-98dc-bbc841d95b71/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/bea0dbd0-ba83-4e89-98dc-bbc841d95b71/goals","status":500,"duration":"28ms","bytes":"45"}
+21:02:26.086 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":29,"error":"relation \"goals\" does not exist"}
+21:02:26.086 [31merror[39m: GET /api/projects/bea0dbd0-ba83-4e89-98dc-bbc841d95b71/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/bea0dbd0-ba83-4e89-98dc-bbc841d95b71/goals","status":500,"duration":"29ms","bytes":"45"}

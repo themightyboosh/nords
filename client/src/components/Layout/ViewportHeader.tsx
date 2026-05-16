@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ChevronDown, Menu, X,
   LogOut, User, Settings,
-  Box, Link2, Users, Eye,
+  Box, Link2, Users, Eye, Target,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NordsLogo from '../NordsLogo';
@@ -26,6 +26,7 @@ interface ViewportHeaderProps {
   onOpenNordTypes?: () => void;
   onOpenCategoryTypes?: () => void;
   onOpenPersonas?: () => void;
+  onOpenGoals?: () => void;
   onOpenSettings?: () => void;
   onOpenPreview?: () => void;
   /** Project name displayed in the center; clicking opens TBD settings */
@@ -36,7 +37,7 @@ interface ViewportHeaderProps {
 
 export default function ViewportHeader({
   currentTheme, onThemeChange,
-  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenSettings, onOpenPreview,
+  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenGoals, onOpenSettings, onOpenPreview,
   projectName = 'Product Launch Q3',
   mode = 'workspace',
 }: ViewportHeaderProps) {
@@ -102,6 +103,17 @@ export default function ViewportHeader({
               >
                 <Users size={14} strokeWidth={1.6} />
                 <span>Personas</span>
+              </button>
+            )}
+            {onOpenGoals && (
+              <button
+                className="nords-viewport-header__nav-item"
+                title="Goals"
+                onClick={onOpenGoals}
+                data-testid="header-goals"
+              >
+                <Target size={14} strokeWidth={1.6} />
+                <span>Goals</span>
               </button>
             )}
           </div>
@@ -228,6 +240,10 @@ export default function ViewportHeader({
         <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenPersonas?.(); setMobileMenuOpen(false); }}>
           <Users size={14} strokeWidth={1.6} />
           <span>Personas</span>
+        </button>
+        <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenGoals?.(); setMobileMenuOpen(false); }}>
+          <Target size={14} strokeWidth={1.6} />
+          <span>Goals</span>
         </button>
         <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenSettings?.(); setMobileMenuOpen(false); }}>
           <Settings size={14} strokeWidth={1.6} />

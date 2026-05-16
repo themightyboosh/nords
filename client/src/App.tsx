@@ -19,6 +19,7 @@ import VerifyEmailScreen from './components/Auth/VerifyEmailScreen';
 import ForgotPasswordScreen from './components/Auth/ForgotPasswordScreen';
 import { ManageTypes } from './components/ManageTypes/ManageTypes';
 import { ManagePersonas } from './components/ManagePersonas/ManagePersonas';
+import { ManageGoals } from './components/ManageGoals/ManageGoals';
 import { PersonaLensDrawer } from './components/Drawer/PersonaLensDrawer';
 import { BoardSettingsProvider } from './context/BoardSettingsContext';
 import { usePersonas } from './hooks/usePersonas';
@@ -95,6 +96,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [selectedEntity, setSelectedEntity] = useState<{ id: string; type: 'nord' | 'connection' } | null>(null);
   const [manageTypesTab, setManageTypesTab] = useState<'nord' | 'connection' | null>(null);
   const [personasOpen, setPersonasOpen] = useState(false);
+  const [goalsOpen, setGoalsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [projectName, setProjectName] = useState<string>('Loading…');
@@ -227,6 +229,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onOpenNordTypes={() => setManageTypesTab('nord')}
         onOpenCategoryTypes={() => setManageTypesTab('connection')}
         onOpenPersonas={() => setPersonasOpen(true)}
+        onOpenGoals={() => setGoalsOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenPreview={() => setPreviewOpen(p => !p)}
         projectName={projectName}
@@ -292,6 +295,17 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         open={personasOpen}
         onClose={() => setPersonasOpen(false)}
         connectionTypes={graph?.connection_types || []}
+      />
+      <ManageGoals
+        projectId={projectId || ''}
+        open={goalsOpen}
+        onClose={() => setGoalsOpen(false)}
+        nords={(graph?.nords || []).map(n => ({
+          id: n.id,
+          title: n.title,
+          type_name: graph?.nord_types.find((t: any) => t.id === n.type_id)?.name || '',
+          properties_schema: graph?.nord_types.find((t: any) => t.id === n.type_id)?.properties_schema || [],
+        }))}
       />
       {projectId && (
         <PreviewChat

@@ -1,0 +1,463 @@
+/* ManageGoals.css — Goal orchestration admin panel
+ * Follows ManagePersonas design language: sidebar/editor layout,
+ * bg-deep/bg-surface tokens, accent colors, glassmorphism.
+ */
+
+/* ── Shell ── */
+.manage-goals {
+  display: flex;
+  flex-direction: column;
+  height: min(620px, 80vh);
+  overflow: hidden;
+}
+
+.manage-goals__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 22px 12px;
+  border-bottom: 1px solid var(--nords-color-border);
+}
+
+.manage-goals__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--nords-color-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.manage-goals__subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--nords-color-text-tertiary);
+}
+
+.manage-goals__close {
+  background: none;
+  border: none;
+  color: var(--nords-color-text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.manage-goals__close:hover {
+  color: var(--nords-color-text-primary);
+  background: var(--nords-color-surface);
+}
+
+/* ── Body: Sidebar + Editor ── */
+.manage-goals__body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.manage-goals__sidebar {
+  width: 200px;
+  min-width: 200px;
+  border-right: 1px solid var(--nords-color-border);
+  display: flex;
+  flex-direction: column;
+  background: var(--nords-color-bg-deep);
+}
+
+.manage-goals__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.manage-goals__list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: var(--nords-color-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, color 0.12s;
+  border-left: 3px solid transparent;
+}
+.manage-goals__list-item:hover {
+  background: var(--nords-color-surface);
+  color: var(--nords-color-text-primary);
+}
+.manage-goals__list-item.is-active {
+  background: var(--nords-color-surface);
+  color: var(--nords-color-text-primary);
+  border-left-color: var(--nords-color-accent, #6366f1);
+}
+
+.manage-goals__list-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.manage-goals__list-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.manage-goals__list-badges {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.manage-goals__badge {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+.manage-goals__badge--end {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+.manage-goals__badge--gate {
+  background: rgba(234, 179, 8, 0.15);
+  color: #fbbf24;
+}
+
+.manage-goals__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 12px;
+  padding: 8px 12px;
+  border: 1px dashed var(--nords-color-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--nords-color-text-tertiary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.manage-goals__add-btn:hover {
+  border-color: var(--nords-color-accent, #6366f1);
+  color: var(--nords-color-accent, #6366f1);
+}
+
+/* ── Editor ── */
+.manage-goals__editor {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.manage-goals__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--nords-color-text-tertiary);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ── Editor Header ── */
+.manage-goals__editor-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.manage-goals__icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid var(--nords-color-border);
+  background: var(--nords-color-bg-deep);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  flex-shrink: 0;
+}
+.manage-goals__icon-btn:hover {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+
+.manage-goals__editor-name {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: var(--nords-color-text-primary);
+  padding: 4px 0;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.manage-goals__editor-name:focus {
+  border-bottom-color: var(--nords-color-accent, #6366f1);
+}
+
+.manage-goals__delete-btn {
+  padding: 6px;
+  border: none;
+  background: transparent;
+  color: var(--nords-color-text-tertiary);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.manage-goals__delete-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ── Sections ── */
+.manage-goals__section {
+  margin-bottom: 18px;
+}
+
+.manage-goals__section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nords-color-text-tertiary);
+  margin-bottom: 6px;
+}
+
+.manage-goals__textarea {
+  width: 100%;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--nords-color-border);
+  border-radius: 8px;
+  background: var(--nords-color-bg-deep);
+  color: var(--nords-color-text-primary);
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.manage-goals__textarea:focus {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+.manage-goals__textarea::placeholder {
+  color: var(--nords-color-text-tertiary);
+}
+
+.manage-goals__input {
+  width: 100%;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--nords-color-border);
+  border-radius: 8px;
+  background: var(--nords-color-bg-deep);
+  color: var(--nords-color-text-primary);
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.manage-goals__input:focus {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+
+/* ── Toggle Row ── */
+.manage-goals__toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--nords-color-border);
+}
+.manage-goals__toggle-row:last-child {
+  border-bottom: none;
+}
+
+.manage-goals__toggle-label {
+  font-size: 13px;
+  color: var(--nords-color-text-secondary);
+}
+
+.manage-goals__toggle-hint {
+  font-size: 11px;
+  color: var(--nords-color-text-tertiary);
+  margin-top: 2px;
+}
+
+/* ── Toggle Switch ── */
+.manage-goals__switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--nords-color-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: none;
+  padding: 0;
+  flex-shrink: 0;
+}
+.manage-goals__switch.is-on {
+  background: var(--nords-color-accent, #6366f1);
+}
+.manage-goals__switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.manage-goals__switch.is-on .manage-goals__switch-knob {
+  transform: translateX(16px);
+}
+
+/* ── Properties Section ── */
+.manage-goals__prop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manage-goals__prop-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--nords-color-bg-deep);
+  font-size: 12px;
+  color: var(--nords-color-text-secondary);
+}
+
+.manage-goals__prop-nord {
+  font-weight: 600;
+  color: var(--nords-color-text-primary);
+}
+
+.manage-goals__prop-dot {
+  color: var(--nords-color-text-tertiary);
+}
+
+.manage-goals__prop-name {
+  color: var(--nords-color-accent, #6366f1);
+}
+
+.manage-goals__prop-delete {
+  margin-left: auto;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  color: var(--nords-color-text-tertiary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.manage-goals__prop-delete:hover {
+  color: #ef4444;
+}
+
+/* ── Add Property Controls ── */
+.manage-goals__add-prop-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.manage-goals__select {
+  flex: 1;
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--nords-color-border);
+  border-radius: 6px;
+  background: var(--nords-color-bg-deep);
+  color: var(--nords-color-text-primary);
+  outline: none;
+  font-family: inherit;
+}
+.manage-goals__select:focus {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+
+.manage-goals__add-prop-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: var(--nords-color-accent, #6366f1);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.manage-goals__add-prop-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.manage-goals__add-prop-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+/* ── Emoji Picker ── */
+.manage-goals__emoji-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.manage-goals__emoji-option {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.manage-goals__emoji-option:hover {
+  background: var(--nords-color-surface);
+}
+.manage-goals__emoji-option.is-active {
+  border-color: var(--nords-color-accent, #6366f1);
+  background: var(--nords-color-surface);
+}
+
+/* ── Implicit Badge ── */
+.manage-goals__implicit-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--nords-color-accent, #6366f1);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
