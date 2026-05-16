@@ -6458,3 +6458,67 @@ error: relation "goals" does not exist
     at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":29,"error":"relation \"goals\" does not exist"}
 21:02:26.086 [31merror[39m: GET /api/projects/bea0dbd0-ba83-4e89-98dc-bbc841d95b71/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/bea0dbd0-ba83-4e89-98dc-bbc841d95b71/goals","status":500,"duration":"29ms","bytes":"45"}
+21:03:51.572 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":229,"error":"relation \"goals\" does not exist"}
+21:03:51.573 [31merror[39m: GET /api/projects/f9d09d24-11a3-48c7-b883-e094e00de5dc/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/f9d09d24-11a3-48c7-b883-e094e00de5dc/goals","status":500,"duration":"230ms","bytes":"45"}
+21:03:51.605 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":30,"error":"relation \"goals\" does not exist"}
+21:03:51.605 [31merror[39m: GET /api/projects/f9d09d24-11a3-48c7-b883-e094e00de5dc/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/f9d09d24-11a3-48c7-b883-e094e00de5dc/goals","status":500,"duration":"30ms","bytes":"45"}
+21:04:41.123 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":208,"error":"relation \"goals\" does not exist"}
+21:04:41.124 [31merror[39m: GET /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goals","status":500,"duration":"209ms","bytes":"45"}
+21:04:41.311 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":186,"error":"relation \"goals\" does not exist"}
+21:04:41.312 [31merror[39m: GET /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goals","status":500,"duration":"188ms","bytes":"45"}
+21:05:26.470 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":203,"error":"relation \"goals\" does not exist"}
+21:05:26.471 [31merror[39m: GET /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goals","status":500,"duration":"204ms","bytes":"45"}
+21:05:26.682 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":210,"error":"relation \"goals\" does not exist"}
+21:05:26.683 [31merror[39m: GET /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/goals","status":500,"duration":"211ms","bytes":"45"}
+21:05:33.311 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":31,"error":"relation \"goals\" does not exist"}
+21:05:33.311 [31merror[39m: GET /api/projects/41def57c-cbc1-4562-ae7e-7691f5cf05cb/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/41def57c-cbc1-4562-ae7e-7691f5cf05cb/goals","status":500,"duration":"31ms","bytes":"45"}
+21:05:33.507 [31merror[39m: Query failed
+error: relation "goals" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":195,"error":"relation \"goals\" does not exist"}
+21:05:33.507 [31merror[39m: GET /api/projects/41def57c-cbc1-4562-ae7e-7691f5cf05cb/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/41def57c-cbc1-4562-ae7e-7691f5cf05cb/goals","status":500,"duration":"195ms","bytes":"45"}
