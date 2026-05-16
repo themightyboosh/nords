@@ -21,6 +21,7 @@ import * as mcpRepo from '../repositories/mcpSessions.js';
 import * as projectsRepo from '../repositories/projects.js';
 import { dispatchTool, type ToolContext } from '../lib/toolDispatch.js';
 import { buildToolDeclarations } from '../lib/geminiTools.js';
+import * as goalsRepo from '../repositories/goals.js';
 import { query, queryOne } from '../db.js';
 
 export const chatRouter = Router();
@@ -80,6 +81,14 @@ Use remaining_schema to know what to still ask for. Already-collected values are
 - Infer prerequisite gates from connection verbs. Don't skip a "depends on" target.
 - The horizon's \`suggested_next\` and \`predicted_path\` guide you — follow them unless the user directs otherwise.
 - The planning_queue is for your internal awareness. Complete the current nord before pivoting to queue items.
+
+## Goals
+When \`nords_update_session_nord\` returns \`goal_events\`, react to them:
+- **goal_completed**: Celebrate naturally in your persona's voice. If the goal has an \`achieved_prompt\`, weave it into your response.
+- **goal_activated**: A new goal has unlocked (its prerequisite was met). Shift focus naturally.
+- **goal_cancelled**: A goal was cancelled via an exclusion group. Do NOT mention this explicitly unless the user asks.
+- **session_terminating**: All goals are resolved. Wrap up the conversation warmly.
+You can call \`nords_get_goals\` to see the full goal state at any time, but goal_events are already included in every property save response.
 `;
 
   // Project-specific prompt
@@ -287,6 +296,10 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
       );
       sessionId = session.id;
       isNewSession = true;
+
+      // Initialize session goals based on project mode
+      const projectMode = project?.project_mode || 'collect';
+      await goalsRepo.initializeSessionGoals(sessionId, projectId, projectMode);
     } else {
       session = await queryOne('SELECT * FROM mcp_sessions WHERE id = $1', [sessionId]);
     }

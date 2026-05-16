@@ -111,6 +111,11 @@ export function buildToolDeclarations(
       description: 'Get all nords in the session that still have unfilled required properties.',
       parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
     },
+    {
+      name: 'nords_get_goals',
+      description: 'Get session goals with progress. Returns each goal\'s status (pending/active/complete/cancelled), bound properties with collected values, exclusion groups, and prerequisite chains. Goal events are also returned automatically after every nords_update_session_nord call.',
+      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
+    },
   ];
 
   const session: FunctionDeclaration[] = [

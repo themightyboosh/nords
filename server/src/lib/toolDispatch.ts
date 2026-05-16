@@ -8,6 +8,7 @@
 
 import * as mcpRepo from '../repositories/mcpSessions.js';
 import * as projectsRepo from '../repositories/projects.js';
+import * as goalsRepo from '../repositories/goals.js';
 import { nordTypesRepo, connectionTypesRepo } from '../repositories/types.js';
 import { query, queryOne } from '../db.js';
 
@@ -93,6 +94,11 @@ const tools: Record<string, ToolHandler> = {
     return { success: true, data: horizon };
   },
 
+  nords_get_goals: async (ctx) => {
+    const goals = await goalsRepo.findSessionGoals(ctx.sessionId, ctx.projectId);
+    return { success: true, data: goals };
+  },
+
   // ── Tier 2: Session ──
 
   nords_traverse_connection: async (ctx, args) => {
@@ -123,9 +129,13 @@ const tools: Record<string, ToolHandler> = {
       (args.required_count as number) ?? 0,
       (args.filled_count as number) ?? 0,
     );
+
+    // Reactively evaluate goals after every property save
+    const goalEvents = await goalsRepo.evaluateGoals(ctx.sessionId, ctx.projectId);
+
     // Auto-return horizon (#5)
     const horizon = await mcpRepo.getSessionHorizon(ctx.sessionId);
-    return { success: true, data: { sessionNord, horizon } };
+    return { success: true, data: { sessionNord, horizon, goal_events: goalEvents.length > 0 ? goalEvents : undefined } };
   },
 
   nords_visit_nord: async (ctx, args) => {
