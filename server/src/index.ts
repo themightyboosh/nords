@@ -19,6 +19,7 @@ import { accountsRouter } from './routes/accounts.js';
 import { mcpSessionsRouter } from './routes/mcpSessions.js';
 import { accessTokensRouter } from './routes/accessTokens.js';
 import { chatRouter } from './routes/chat.js';
+import { goalsRouter } from './routes/goals.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -75,6 +76,7 @@ app.use('/api', accountsRouter);
 app.use('/api', mcpSessionsRouter);
 app.use('/api', accessTokensRouter);
 app.use('/api', chatRouter);
+app.use('/api', goalsRouter);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

@@ -41,6 +41,8 @@ export interface Project {
   mcp_mutable: boolean;
   mcp_system_prompt: string | null;
   mcp_welcome_message: string | null;
+  project_mode: 'explore' | 'collect' | 'guided';
+  end_prompt_suggestion: string | null;
   default_persona_id: string | null;
   default_start_nord_id: string | null;
   default_end_nord_id: string | null;
@@ -247,4 +249,51 @@ export interface McpMessage {
   model: string | null;
   latency_ms: number | null;
   created_at: Date;
+}
+
+// ── Goal Orchestration Entities ──
+
+export interface Goal {
+  id: string;
+  project_id: string;
+  name: string;
+  description: string;
+  icon: string;
+  accent_color: string;
+  sort_order: number;
+  is_default: boolean;
+  terminates: boolean;
+  achieved_prompt: string | null;
+  exclusion_group: string | null;
+  requires_goal_id: string | null;
+  is_implicit: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface GoalProperty {
+  id: string;
+  goal_id: string;
+  nord_id: string;
+  property_name: string;
+  created_at: Date;
+}
+
+export interface McpSessionGoal {
+  id: string;
+  session_id: string;
+  goal_id: string;
+  status: 'pending' | 'active' | 'complete' | 'cancelled';
+  completed_data: Record<string, unknown> | null;
+  completed_at: Date | null;
+  cancelled_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface PersonaGoalWeight {
+  id: string;
+  persona_id: string;
+  goal_id: string;
+  weight: number;
 }
