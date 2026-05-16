@@ -6522,3 +6522,21 @@ error: relation "goals" does not exist
     at async Module.findByProjectWithProperties (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:154:17)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:9:19) {"service":"nords-server","text":"SELECT * FROM goals WHERE project_id = $1 ORDER BY sort_order, created_at","duration":195,"error":"relation \"goals\" does not exist"}
 21:05:33.507 [31merror[39m: GET /api/projects/41def57c-cbc1-4562-ae7e-7691f5cf05cb/goals 500 {"service":"nords-server","method":"GET","path":"/api/projects/41def57c-cbc1-4562-ae7e-7691f5cf05cb/goals","status":500,"duration":"195ms","bytes":"45"}
+21:31:25.330 [31merror[39m: Query failed
+error: update or delete on table "goals" violates foreign key constraint "goals_requires_goal_id_fkey" on table "goals"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async Module.remove (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:86:18)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:46:21) {"service":"nords-server","text":"DELETE FROM goals WHERE id = $1 RETURNING id","duration":31,"error":"update or delete on table \"goals\" violates foreign key constraint \"goals_requires_goal_id_fkey\" on table \"goals\""}
+21:31:25.331 [31merror[39m: DELETE /api/goals/be575327-1a42-4331-bf37-2344f61e31ea 500 {"service":"nords-server","method":"DELETE","path":"/api/goals/be575327-1a42-4331-bf37-2344f61e31ea","status":500,"duration":"33ms","bytes":"130"}
+21:31:41.956 [31merror[39m: Query failed
+error: update or delete on table "goals" violates foreign key constraint "goals_requires_goal_id_fkey" on table "goals"
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async Module.remove (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/goals.ts:86:18)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/goals.ts:46:21) {"service":"nords-server","text":"DELETE FROM goals WHERE id = $1 RETURNING id","duration":33,"error":"update or delete on table \"goals\" violates foreign key constraint \"goals_requires_goal_id_fkey\" on table \"goals\""}
+21:31:41.956 [31merror[39m: DELETE /api/goals/61207356-d232-40c0-876f-76c746cd7ed4 500 {"service":"nords-server","method":"DELETE","path":"/api/goals/61207356-d232-40c0-876f-76c746cd7ed4","status":500,"duration":"34ms","bytes":"130"}

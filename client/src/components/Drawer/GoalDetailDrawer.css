@@ -1,0 +1,266 @@
+/* GoalDetailDrawer.css — Side panel for goal flow config */
+
+.goal-detail-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--nords-color-bg-surface, #1a1d24);
+  border-radius: 12px;
+}
+
+/* ── Header ── */
+.goal-detail-drawer__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--nords-color-border);
+}
+
+.goal-detail-drawer__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid #6366f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--nords-color-bg-deep);
+  flex-shrink: 0;
+}
+
+.goal-detail-drawer__identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.goal-detail-drawer__name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--nords-color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goal-detail-drawer__eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nords-color-text-tertiary);
+}
+
+/* ── Content ── */
+.goal-detail-drawer__content {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.goal-detail-drawer__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.goal-detail-drawer__label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nords-color-text-tertiary);
+}
+
+.goal-detail-drawer__text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--nords-color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Sections ── */
+.goal-detail-drawer__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.goal-detail-drawer__section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nords-color-text-tertiary);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--nords-color-border);
+}
+
+/* ── Flow Rows ── */
+.goal-detail-drawer__flow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.goal-detail-drawer__flow-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--nords-color-text-secondary);
+  white-space: nowrap;
+}
+
+.goal-detail-drawer__select {
+  flex: 1;
+  max-width: 200px;
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--nords-color-border);
+  border-radius: 6px;
+  background: var(--nords-color-bg-deep);
+  color: var(--nords-color-text-primary);
+  outline: none;
+}
+.goal-detail-drawer__select:focus {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+.goal-detail-drawer__select--small {
+  max-width: none;
+  flex: 1;
+}
+
+.goal-detail-drawer__input {
+  flex: 1;
+  max-width: 160px;
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--nords-color-border);
+  border-radius: 6px;
+  background: var(--nords-color-bg-deep);
+  color: var(--nords-color-text-primary);
+  outline: none;
+}
+.goal-detail-drawer__input:focus {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+.goal-detail-drawer__input::placeholder {
+  color: var(--nords-color-text-tertiary);
+}
+
+/* ── Toggle ── */
+.goal-detail-drawer__toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--nords-color-surface);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.goal-detail-drawer__toggle.is-on {
+  background: var(--nords-color-accent, #6366f1);
+}
+.goal-detail-drawer__toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+}
+.goal-detail-drawer__toggle.is-on .goal-detail-drawer__toggle-knob {
+  transform: translateX(16px);
+}
+
+/* ── Property Binding Rows ── */
+.goal-detail-drawer__binding-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--nords-color-surface);
+  font-size: 12px;
+}
+
+.goal-detail-drawer__binding-nord {
+  font-weight: 500;
+  color: var(--nords-color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-detail-drawer__binding-arrow {
+  color: var(--nords-color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.goal-detail-drawer__binding-prop {
+  color: var(--nords-color-accent, #6366f1);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-detail-drawer__binding-remove {
+  margin-left: auto;
+  padding: 3px;
+  border: none;
+  background: transparent;
+  color: var(--nords-color-text-tertiary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.goal-detail-drawer__binding-remove:hover {
+  color: #ef4444;
+}
+
+/* ── Add Binding ── */
+.goal-detail-drawer__add-binding {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.goal-detail-drawer__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: 1px dashed var(--nords-color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--nords-color-text-tertiary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.goal-detail-drawer__add-btn:hover:not(:disabled) {
+  border-color: var(--nords-color-accent, #6366f1);
+  color: var(--nords-color-accent, #6366f1);
+}
+.goal-detail-drawer__add-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

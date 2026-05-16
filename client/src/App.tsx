@@ -27,6 +27,8 @@ import { useLens } from './context/LensContext';
 import { api } from './api/client';
 import { ProjectSettings } from './components/ProjectSettings/ProjectSettings';
 import { PreviewChat } from './components/PreviewChat/PreviewChat';
+import { GoalDetailDrawer } from './components/Drawer/GoalDetailDrawer';
+import { useGoals } from './hooks/useGoals';
 
 /**
  * Safe ReactFlow access — returns null when ReactFlow isn't mounted (e.g. board view).
@@ -99,7 +101,11 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('Loading…');
+
+  // Goals data for the Goals lens canvas
+  const goalsData = useGoals(projectId || null);
 
   // Safe ReactFlow access — returns null in board view where ReactFlow isn't mounted
   const reactFlow = useOptionalReactFlow();
@@ -257,7 +263,28 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           avatar_seed: activePersona.avatar_seed,
           accent_color: activePersona.accent_color,
         } : null}
+        goals={goalsData.goals}
+        selectedGoalId={selectedGoalId}
+        onGoalClick={(id) => setSelectedGoalId(id)}
       />
+      {/* Goal Canvas state */}
+      {lens === 'goals' && (
+        <GoalDetailDrawer
+          isOpen={!!selectedGoalId}
+          onClose={() => setSelectedGoalId(null)}
+          goal={goalsData.goals.find(g => g.id === selectedGoalId) || null}
+          goals={goalsData.goals}
+          nords={(graph?.nords || []).map(n => ({
+            id: n.id,
+            title: n.title,
+            type_name: graph?.nord_types.find((t: any) => t.id === n.type_id)?.name || '',
+            properties_schema: graph?.nord_types.find((t: any) => t.id === n.type_id)?.properties_schema || [],
+          }))}
+          onUpdate={goalsData.updateGoal}
+          onAddProperty={goalsData.addProperty}
+          onRemoveProperty={goalsData.removeProperty}
+        />
+      )}
       {/* Persona Lens Drawer — shown when viewing through a persona */}
       {lens === 'persona' && (
         <PersonaLensDrawer
@@ -300,12 +327,6 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         projectId={projectId || ''}
         open={goalsOpen}
         onClose={() => setGoalsOpen(false)}
-        nords={(graph?.nords || []).map(n => ({
-          id: n.id,
-          title: n.title,
-          type_name: graph?.nord_types.find((t: any) => t.id === n.type_id)?.name || '',
-          properties_schema: graph?.nord_types.find((t: any) => t.id === n.type_id)?.properties_schema || [],
-        }))}
       />
       {projectId && (
         <PreviewChat

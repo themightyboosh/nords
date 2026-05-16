@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "New 01/Issues..md",
+                "file": "New 3/feedback.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Issues."
+              "title": "feedback"
             }
           }
         ]
@@ -183,8 +183,19 @@
       "bases:Create new base": false
     }
   },
-  "active": "09a60c5211c6dc2a",
+  "active": "db2f717d1343674a",
   "lastOpenFiles": [
+    "client/src/components/Drawer/GoalDetailDrawer.css",
+    "client/src/components/Drawer/GoalDetailDrawer.tsx",
+    "client/src/components/Canvas/GoalCanvas.tsx",
+    "client/src/components/Canvas/GoalNode.css",
+    "client/src/components/Canvas/GoalNode.tsx",
+    "Pasted image 20260515214047.png",
+    "Pasted image 20260515213653.png",
+    "Pasted image 20260515213516.png",
+    "New 3",
+    "New 01/Issues..md",
+    "New 3/feedback.md",
     "server/src/routes/mcpSessions.ts",
     "server/src/repositories/mcpSessions.ts",
     "server/migrations/014_mcp_sessions.sql",
@@ -198,23 +209,13 @@
     "demo/plan_critique.md",
     "demo/proposal_director_redesign.md",
     "demo",
-    "server/src/migrate-fix.ts",
-    "client/src/utils/formulaEvaluator.ts",
-    "server/migrations/013_mcp_system_prompt.sql",
     "New 02/Proposal Management Lifecycle_ RFP to Delivery V3 (1).md",
-    "New 02/nords_schema_reference.md.resolved",
-    "New 02",
-    "untitled folder",
     "New 01/Screenshot 2026-05-12 at 5.38.04 PM.png",
     "New 01/Screenshot 2026-05-12 at 4.07.19 PM.png",
     "New 01/7/issue7.png",
     "New 01/6/issue6.png",
     "New 01/3/issue3_dc2efd.png",
     "New 01/3/issue3_5a6d0d.png",
-    "New 01/1/issue1_76a6ae.png",
-    "New 01/1/issue1_2dbdf1.png",
-    "New 01/7/Screenshot 2026-05-12 at 12.29.22 PM.png",
-    "New 01/Screenshot 2026-05-12 at 12.29.22 PM.png",
-    "New 01/Issues..md"
+    "New 01/1/issue1_76a6ae.png"
   ]
 }

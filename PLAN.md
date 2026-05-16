@@ -36,6 +36,40 @@
 
 ---
 
+### 🟣 P5 — Goal Orchestration UX (New 3)
+
+> **Design principle:** Goals follow the same interaction pattern as Nords+Personas.
+> ManageGoals modal = simple CRUD (like ManagePersonas).
+> Goal Canvas = spatial layout (like Graph view for Nords).
+> Goal DetailDrawer = flow config (like DetailDrawer for Nords).
+
+- [x] **18. Lucide icons for Goals** — Replaced emoji icons with the shared `IconPicker` / `resolveIcon` system. DB `icon` column now stores Lucide icon names (e.g., `"Target"`, `"User"`).
+- [x] **19. Ethnographic system prompt** — Rewrote chat.ts prompt to enforce Grand Tour / Probing / Laddering interview techniques. Suppresses form-filling behavior.
+- [x] **20. Goals DB migration** — `019_goals_system.sql`: `goals`, `goal_properties`, `mcp_session_goals`, `persona_goal_weights` tables.
+- [x] **21. Goals CRUD API** — Full REST endpoints: project-scoped goal CRUD, property bindings, evaluation engine in `goals.ts`.
+- [x] **22. Demo seed script** — `seed_goals_demo.mjs` populates Paws & Claws with 6 goals (chained prerequisites, exclusion groups, free-floating).
+
+- [ ] **23. Goals as 4th Dock lens** — Add "Goals" to the GlobalDock lens toggle (Board | Graph | Persona | **Goals**). Uses a Target icon. When active, shows the Goal Canvas instead of the Nord canvas.
+
+- [ ] **24. Simplify ManageGoals modal** — Strip down to match ManagePersonas simplicity. The modal should ONLY contain:
+  - Goal name + Lucide icon picker
+  - Accent color (HueSlider)
+  - Description (textarea)
+  - Achieved Prompt (textarea)
+  - **NO flow config** (no prerequisites, no terminates toggle, no exclusion group, no property bindings). All of that moves to the Goal DetailDrawer (#26).
+
+- [ ] **25. Goal Canvas (spatial layout)** — When the Goals lens is active, render goals as **circles** on a spatial canvas (Nords are rectangles). Goals can be positioned spatially. Connections between goals represent prerequisites/flow. This is where the user *sees* the chain/branch structure visually — not in the modal.
+
+- [ ] **26. Goal DetailDrawer (side panel)** — When a user clicks a goal circle on the Goal Canvas, open a DetailDrawer (same pattern as clicking a Nord). This drawer contains:
+  - Flow config: Requires (prerequisite dropdown), Ends Session toggle, Exclusion Group
+  - Property Bindings: Nord → property binding CRUD
+  - Is Default toggle
+  - Same look/feel as the Nord DetailDrawer
+
+- [ ] **27. Goal connections on canvas** — Prerequisites rendered as directed edges between goal circles. Exclusion groups shown as a shared visual grouping (dashed boundary or shared color). The canvas IS the flow diagram.
+
+---
+
 ## Notes
 
 ### On #16 — Training from Usage (Mutable Mode)
@@ -51,3 +85,24 @@ The key insight: **every mutable MCP session is a training signal.** If we captu
 4. **Few-shot examples in context** — Extract the best tool call sequences from past sessions and inject them as few-shot examples in the system prompt. "Here's how you built the last demo — follow this pattern."
 
 The cheapest path: just enable mutable mode, build a demo with the AI in Preview + Dev Mode, then review the tool call log. The log itself is the training data. No ML pipeline needed — it's prompt engineering informed by real usage.
+
+### On #23-27 — Goal UX Architecture (New 3 Feedback)
+
+The core insight from feedback: **Goals should follow the exact same spatial+drawer pattern as Nords.**
+
+```
+ManagePersonas  ←→  ManageGoals (simple CRUD modal)
+   ↕                    ↕
+Persona Lens    ←→  Goals Lens (spatial canvas)
+   ↕                    ↕
+PersonaDrawer   ←→  GoalDetailDrawer (side panel with config)
+```
+
+**Visual distinction:** Goals = circles, Nords = rectangles. This makes it immediately clear which canvas you're on.
+
+**What goes where:**
+- **ManageGoals modal** (header button): Name, icon, color, description, achieved prompt. That's it. Like Personas.
+- **Goal Canvas** (dock lens): Spatial layout of goals as circles. Prerequisite chains = directed edges. Exclusion groups = visual grouping.
+- **Goal DetailDrawer** (click on canvas): Flow config, property bindings, default/terminates toggles. Like the Nord DetailDrawer.
+
+The sidebar list from the current ManageGoals (screenshot 3 — the one the user likes) becomes the sidebar of the Goals lens, not the modal.

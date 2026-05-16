@@ -29,7 +29,9 @@ async function api(method, path, body) {
     const text = await res.text();
     throw new Error(`${method} ${path} → ${res.status}: ${text}`);
   }
-  return res.json();
+  const text = await res.text();
+  if (!text) return {};
+  return JSON.parse(text);
 }
 
 // Nord IDs from the Paws project
@@ -53,8 +55,15 @@ async function main() {
     end_prompt_suggestion: 'Thank the adopter warmly for their time. Summarize the pet match and next steps for their visit.',
   });
 
-  // 2. Clean up any existing goals
+  // 2. Clean up any existing goals (nullify FK references first, then delete)
   const existingGoals = await api('GET', `/api/projects/${PROJECT_ID}/goals`);
+  // First pass: remove all prerequisite references to avoid FK violations
+  for (const g of existingGoals) {
+    if (g.requires_goal_id) {
+      await api('PUT', `/api/goals/${g.id}`, { requires_goal_id: null });
+    }
+  }
+  // Second pass: delete all goals
   for (const g of existingGoals) {
     console.log(`  → Removing existing goal: ${g.name}`);
     await api('DELETE', `/api/goals/${g.id}`);
@@ -65,7 +74,7 @@ async function main() {
   const goal1 = await api('POST', `/api/projects/${PROJECT_ID}/goals`, {
     name: 'Understand the Adopter',
     description: 'Learn about Jamie\'s lifestyle, home environment, and what they\'re looking for in a pet.',
-    icon: '👤',
+    icon: 'User',
     accent_color: '#6366f1',
     sort_order: 0,
     is_default: true,
@@ -84,7 +93,7 @@ async function main() {
   const goal2 = await api('POST', `/api/projects/${PROJECT_ID}/goals`, {
     name: 'Match a Pet',
     description: 'Based on the adopter\'s profile, explore available animals and identify the best fit.',
-    icon: '🐾',
+    icon: 'Heart',
     accent_color: '#f59e0b',
     sort_order: 1,
     is_default: false,
@@ -102,7 +111,7 @@ async function main() {
   const goal3 = await api('POST', `/api/projects/${PROJECT_ID}/goals`, {
     name: 'Schedule a Visit',
     description: 'Book an in-person visit so the adopter can meet their matched pet.',
-    icon: '📅',
+    icon: 'Calendar',
     accent_color: '#10b981',
     sort_order: 2,
     is_default: false,
@@ -120,7 +129,7 @@ async function main() {
   await api('POST', `/api/projects/${PROJECT_ID}/goals`, {
     name: 'Net Promoter Score',
     description: 'Gauge adopter satisfaction with the process. Free-floating — can be completed at any point.',
-    icon: '⭐',
+    icon: 'Star',
     accent_color: '#8b5cf6',
     sort_order: 10,
     is_default: true,
@@ -134,7 +143,7 @@ async function main() {
   const phoneGoal = await api('POST', `/api/projects/${PROJECT_ID}/goals`, {
     name: 'Phone Interview',
     description: 'Conduct the initial interview over the phone.',
-    icon: '📞',
+    icon: 'Phone',
     accent_color: '#3b82f6',
     sort_order: 5,
     is_default: true,
@@ -146,7 +155,7 @@ async function main() {
   const visitGoal = await api('POST', `/api/projects/${PROJECT_ID}/goals`, {
     name: 'In-Person Visit',
     description: 'Meet the adopter in person at the shelter.',
-    icon: '🤝',
+    icon: 'Users',
     accent_color: '#ec4899',
     sort_order: 6,
     is_default: true,

@@ -11,7 +11,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
-  Eye, Link2, LayoutGrid, Users,
+  Eye, Link2, LayoutGrid, Users, Target,
   EyeIcon, EyeOff, ChevronDown, ArrowLeftRight, Unlink,
   ArrowRight, ArrowLeft, Minus, Layers, CircleDot,
 } from 'lucide-react';
@@ -129,6 +129,19 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
             >
               <Users size={14} strokeWidth={1.6} />
               <span>Persona</span>
+            </button>
+            <button
+              className={`nords-lens-toggle__btn ${lens === 'goals' ? 'is-active' : ''}`}
+              onClick={() => {
+                setLens('goals');
+                setActiveConnectionTypeId(null);
+                setOpenPanel(null);
+              }}
+              title="Goals — interview goal flow canvas"
+              data-testid="lens-goals"
+            >
+              <Target size={14} strokeWidth={1.6} />
+              <span>Goals</span>
             </button>
           </div>
 

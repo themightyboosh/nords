@@ -17,7 +17,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import logger from '../lib/logger';
 
-export type LensMode = 'canvas' | 'board' | 'persona';
+export type LensMode = 'canvas' | 'board' | 'persona' | 'goals';
 
 /** 3-state visibility for persona view: show (default) → dim → hide → show */
 export type PersonaTypeVisibility = 'show' | 'dim' | 'hide';
@@ -89,7 +89,7 @@ function storePersonaId(projectId: string, personaId: string | null) {
 function getStoredLens(projectId: string): LensMode {
   try {
     const v = localStorage.getItem(`nords-lens-mode-${projectId}`);
-    if (v === 'canvas' || v === 'board' || v === 'persona') return v;
+    if (v === 'canvas' || v === 'board' || v === 'persona' || v === 'goals') return v;
   } catch { /* noop */ }
   return 'canvas';
 }

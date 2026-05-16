@@ -36,6 +36,7 @@ import { computePersonaScores, computeRadialPositions, computeNeutralScore } fro
 import type { RadialLayoutResult } from '../../utils/computePersonaScores';
 import { PersonaCenterNode } from './PersonaCenterNode';
 import { PersonaZoneNode } from './PersonaZoneNode';
+import { GoalCanvas } from './GoalCanvas';
 import './CanvasEngine.css';
 
 const nodeTypes = {
@@ -921,9 +922,13 @@ interface CanvasEngineProps {
   refetchGraph?: () => Promise<void>;
   personaWeights?: Map<string, number> | null;
   activePersona?: ActivePersonaInfo | null;
+  /** Goals lens */
+  goals?: import('../../hooks/useGoals').Goal[];
+  selectedGoalId?: string | null;
+  onGoalClick?: (id: string) => void;
 }
 
-export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights, activePersona }: CanvasEngineProps) {
+export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights, activePersona, goals, selectedGoalId, onGoalClick }: CanvasEngineProps) {
   const { lens } = useLens();
   const noop = async () => {};
 
@@ -936,6 +941,18 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
           selectedNord={selectedNord}
           projectId={projectId || ''}
           refetchGraph={refetchGraph ?? noop}
+        />
+      </div>
+    );
+  }
+
+  if (lens === 'goals') {
+    return (
+      <div className="nords-canvas nords-canvas--goals">
+        <GoalCanvas
+          goals={goals || []}
+          selectedGoalId={selectedGoalId || null}
+          onGoalClick={onGoalClick || (() => {})}
         />
       </div>
     );

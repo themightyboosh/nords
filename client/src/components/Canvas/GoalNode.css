@@ -1,0 +1,97 @@
+/* GoalNode.css — Circle goal nodes for the Goal Canvas */
+
+.goal-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ── Circle ── */
+.goal-node__circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--nords-color-bg-deep);
+  border: 2.5px solid var(--goal-accent, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--goal-accent, #6366f1);
+  transition: transform 0.15s, box-shadow 0.2s, border-color 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.goal-node:hover .goal-node__circle {
+  transform: scale(1.06);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--goal-accent) 30%, transparent);
+}
+
+.goal-node--selected .goal-node__circle {
+  border-width: 3px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--goal-accent) 20%, transparent),
+              0 4px 16px rgba(0, 0, 0, 0.2);
+  transform: scale(1.08);
+}
+
+/* Entry point: subtle inner glow */
+.goal-node--entry .goal-node__circle {
+  background: color-mix(in srgb, var(--goal-accent) 8%, var(--nords-color-bg-deep));
+}
+
+/* End node: red tint on ring */
+.goal-node--end .goal-node__circle {
+  border-color: #f87171;
+  color: #f87171;
+}
+
+/* ── Label ── */
+.goal-node__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--nords-color-text-primary);
+  text-align: center;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Badges ── */
+.goal-node__badge {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.4;
+}
+
+.goal-node__badge--end {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.goal-node__badge--excl {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+}
+
+/* ── Handles (invisible but functional) ── */
+.goal-node__handle {
+  width: 8px;
+  height: 8px;
+  background: var(--goal-accent, #6366f1);
+  border: 2px solid var(--nords-color-bg-deep);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.goal-node:hover .goal-node__handle {
+  opacity: 0.6;
+}
