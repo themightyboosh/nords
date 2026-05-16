@@ -49,24 +49,24 @@
 - [x] **21. Goals CRUD API** — Full REST endpoints: project-scoped goal CRUD, property bindings, evaluation engine in `goals.ts`.
 - [x] **22. Demo seed script** — `seed_goals_demo.mjs` populates Paws & Claws with 6 goals (chained prerequisites, exclusion groups, free-floating).
 
-- [ ] **23. Goals as 4th Dock lens** — Add "Goals" to the GlobalDock lens toggle (Board | Graph | Persona | **Goals**). Uses a Target icon. When active, shows the Goal Canvas instead of the Nord canvas.
+- [x] **23. Goals as 4th Dock lens** — Add "Goals" to the GlobalDock lens toggle (Board | Graph | Persona | **Goals**). Uses a Target icon. When active, shows the Goal Canvas instead of the Nord canvas.
 
-- [ ] **24. Simplify ManageGoals modal** — Strip down to match ManagePersonas simplicity. The modal should ONLY contain:
+- [x] **24. Simplify ManageGoals modal** — Strip down to match ManagePersonas simplicity. The modal should ONLY contain:
   - Goal name + Lucide icon picker
   - Accent color (HueSlider)
   - Description (textarea)
   - Achieved Prompt (textarea)
   - **NO flow config** (no prerequisites, no terminates toggle, no exclusion group, no property bindings). All of that moves to the Goal DetailDrawer (#26).
 
-- [ ] **25. Goal Canvas (spatial layout)** — When the Goals lens is active, render goals as **circles** on a spatial canvas (Nords are rectangles). Goals can be positioned spatially. Connections between goals represent prerequisites/flow. This is where the user *sees* the chain/branch structure visually — not in the modal.
+- [x] **25. Goal Canvas (spatial layout)** — When the Goals lens is active, render goals as **circles** on a spatial canvas (Nords are rectangles). Goals can be positioned spatially. Connections between goals represent prerequisites/flow. This is where the user *sees* the chain/branch structure visually — not in the modal.
 
-- [ ] **26. Goal DetailDrawer (side panel)** — When a user clicks a goal circle on the Goal Canvas, open a DetailDrawer (same pattern as clicking a Nord). This drawer contains:
+- [x] **26. Goal DetailDrawer (side panel)** — When a user clicks a goal circle on the Goal Canvas, open a DetailDrawer (same pattern as clicking a Nord). This drawer contains:
   - Flow config: Requires (prerequisite dropdown), Ends Session toggle, Exclusion Group
   - Property Bindings: Nord → property binding CRUD
   - Is Default toggle
   - Same look/feel as the Nord DetailDrawer
 
-- [ ] **27. Goal connections on canvas** — Prerequisites rendered as directed edges between goal circles. Exclusion groups shown as a shared visual grouping (dashed boundary or shared color). The canvas IS the flow diagram.
+- [x] **27. Goal connections on canvas** — Prerequisites rendered as directed edges between goal circles. Exclusion groups shown as a shared visual grouping (dashed boundary or shared color). The canvas IS the flow diagram.
 
 ---
 
