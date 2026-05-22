@@ -135,7 +135,12 @@ const DimmedEdge = React.memo(function DimmedEdge({
 
   let pathD: string;
   if (!hasSplay && !hasOffset) {
-    pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+    // Tiny gravity sag at rest
+    const mX = (sx + tx) / 2;
+    const mY = (sy + ty) / 2;
+    const sagLen = Math.sqrt((tx-sx)**2 + (ty-sy)**2) || 1;
+    const sag = Math.min(sagLen * 0.015, 10);
+    pathD = `M ${sx} ${sy} Q ${mX} ${mY + sag}, ${tx} ${ty}`;
   } else {
     const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
     const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
@@ -308,37 +313,40 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     );
   }
 
-  // ── GHOSTED EDGES: single thin path ──
+  // ── GHOSTED EDGES: thin path with tiny sag ──
   if (isGhosted) {
-    const pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+    const gMidX = (sx + tx) / 2;
+    const gMidY = (sy + ty) / 2 + Math.min(len * 0.015, 10);
+    const pathD = `M ${sx} ${sy} Q ${gMidX} ${gMidY}, ${tx} ${ty}`;
     return (
       <path d={pathD} className="nords-connection--ghost"
         stroke={edgeData?.color || '#000'} fill="none" />
     );
   }
 
+  // ── Compute cable physics path (shared by quiet + highlighted) ──
+  // lagMidRef lives here in EuclideanEdgeInner, so it persists across
+  // the quiet→highlighted transition when drag starts.
+  const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
+  const hasOff = Math.abs(offset) >= 1;
+  const restSag = Math.min(len * 0.015, 10); // tiny gravity droop at rest
+
+  let cablePathD: string;
+  if (!hasSplay && !hasOff) {
+    // Cable physics: Q bezier through the lagged midpoint
+    cablePathD = `M ${sx} ${sy} Q ${lagMidRef.current.x} ${lagMidRef.current.y + restSag}, ${tx} ${ty}`;
+  } else {
+    const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
+    const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
+    const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
+    const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
+    cablePathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
+  }
+
   const isHighlighted = edgeData?._highlighted === true;
 
   // ── NON-HIGHLIGHTED ACTIVE: simple colored path with arrowheads ──
   if (!isHighlighted) {
-    const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
-    const hasOff = Math.abs(offset) >= 1;
-    let qPathD: string;
-    if (!hasSplay && !hasOff) {
-      // Cable physics: use lagged midpoint as quadratic bezier control when displaced
-      if (isCableLagging) {
-        qPathD = `M ${sx} ${sy} Q ${lagMidRef.current.x} ${lagMidRef.current.y}, ${tx} ${ty}`;
-      } else {
-        qPathD = `M ${sx} ${sy} L ${tx} ${ty}`;
-      }
-    } else {
-      const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
-      const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
-      const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
-      const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
-      qPathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
-    }
-
     // Arrowheads for non-highlighted edges
     const direction = edgeData?.direction || 'none';
     const nhColor = edgeData?.color || '#888';
@@ -362,7 +370,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
 
     return (
       <>
-        <path d={qPathD} stroke={nhColor}
+        <path d={cablePathD} stroke={nhColor}
           strokeWidth="1.5" fill="none" opacity="0.55"
           style={{ pointerEvents: 'stroke', cursor: 'grab' }} />
         {endArrowPoints && <polygon points={endArrowPoints} fill={nhColor} opacity="0.55" />}
@@ -371,7 +379,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     );
   }
 
-  // ── HIGHLIGHTED EDGES: full render with spring + labels (~2-5 max) ──
+  // ── HIGHLIGHTED EDGES: full render with labels — pathD from parent ──
   return (
     <ActiveEdge
       id={id} source={source} target={target}
@@ -383,6 +391,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
       ribbonConfig={ribbonConfig}
       edgeData={edgeData}
       style={style}
+      cablePathD={cablePathD}
     />
   );
 });
@@ -400,6 +409,7 @@ const ActiveEdge = React.memo(function ActiveEdge({
   ribbonConfig,
   edgeData,
   style,
+  cablePathD,
 }: {
   id: string;
   source: string;
@@ -412,6 +422,7 @@ const ActiveEdge = React.memo(function ActiveEdge({
   ribbonConfig: { count: number; index: number };
   edgeData: NordEdgeData | undefined;
   style?: React.CSSProperties;
+  cablePathD: string;
 }) {
   const { connectionTypes } = useTypeRegistryContext();
 
@@ -439,12 +450,12 @@ const ActiveEdge = React.memo(function ActiveEdge({
 
     let verbPhrase: string | null = null;
     if (dir === 'none') {
-      verbPhrase = null; // context only — no verb phrase on label
+      verbPhrase = null;
     } else if (verb) {
       if (dir === 'to') verbPhrase = `${verb} ${preps?.forward ?? 'from'}`;
       else if (dir === 'from') verbPhrase = `${verb} ${preps?.reverse ?? 'to'}`;
       else if (dir === 'both') verbPhrase = `${verb} ${preps?.both ?? 'together'}`;
-      else verbPhrase = verb; // neither: verb only, no preposition
+      else verbPhrase = verb;
     }
 
     if (hasX && hasY) {
@@ -457,62 +468,16 @@ const ActiveEdge = React.memo(function ActiveEdge({
     return verbPhrase;
   }, [resolvedLabel, resolvedYLabel, edgeData?._verb, edgeData?._prepositions, edgeData?.direction]);
 
-  // ── Path geometry ──
+  // ── Path geometry (for label positioning) ──
   const perpX = (-dy / len) * offset;
   const perpY = (dx / len) * offset;
   const midX = (sx + tx) / 2;
   const midY = (sy + ty) / 2;
-
   const cpX = midX + perpX * 2;
   const cpY = midY + perpY * 2;
 
-  // ── Cable Physics: trailing midpoint (same as parent — ActiveEdge is separate React.memo) ──
-  const CABLE_LAG = 0.08;
-  const CABLE_SETTLE_THRESHOLD = 0.5;
-  const trueMidX = (sx + tx) / 2;
-  const trueMidY = (sy + ty) / 2;
-  const lagMidRef = useRef({ x: trueMidX, y: trueMidY });
-  const settleRafRef = useRef(0);
-  const [, forceSettle] = useReducer((x: number) => x + 1, 0);
-
-  lagMidRef.current.x += (trueMidX - lagMidRef.current.x) * CABLE_LAG;
-  lagMidRef.current.y += (trueMidY - lagMidRef.current.y) * CABLE_LAG;
-
-  const cableLagDist = Math.sqrt(
-    (lagMidRef.current.x - trueMidX) ** 2 +
-    (lagMidRef.current.y - trueMidY) ** 2
-  );
-  const isCableLagging = cableLagDist > CABLE_SETTLE_THRESHOLD;
-
-  useEffect(() => {
-    if (isCableLagging) {
-      settleRafRef.current = requestAnimationFrame(forceSettle);
-      return () => cancelAnimationFrame(settleRafRef.current);
-    }
-  }, [isCableLagging, cableLagDist]);
-
-  // Bézier needed?
-  const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
-  const hasOffset = Math.abs(offset) >= 1;
-
-  // ── DEBUG: Force a massive 100px curve to prove rendering works ──
-  // Also log to verify this code path is reached during drag
-  console.log('[ActiveEdge] render', { isCableLagging, cableLagDist, trueMidX, trueMidY, lagX: lagMidRef.current.x, lagY: lagMidRef.current.y });
-
-  // FORCE a visible curve: midpoint offset 100px downward regardless of lag
-  let pathD: string;
-  if (!hasSplay && !hasOffset) {
-    // Always show a curve — use lag midpoint if lagging, else force a 100px sag for debug
-    const ctrlX = isCableLagging ? lagMidRef.current.x : trueMidX;
-    const ctrlY = isCableLagging ? lagMidRef.current.y : trueMidY + 100;
-    pathD = `M ${sx} ${sy} Q ${ctrlX} ${ctrlY}, ${tx} ${ty}`;
-  } else {
-    const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
-    const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
-    const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
-    const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
-    pathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
-  }
+  // Use cablePathD from parent (cable physics computed there)
+  const pathD = cablePathD;
 
 
 
