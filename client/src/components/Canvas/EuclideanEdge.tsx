@@ -465,13 +465,36 @@ const ActiveEdge = React.memo(function ActiveEdge({
   const cpX = midX + perpX * 2;
   const cpY = midY + perpY * 2;
 
+  // ── Cable Physics: trailing midpoint (same as parent — ActiveEdge is separate React.memo) ──
+  const CABLE_LAG = 0.4;
+  const CABLE_SETTLE_THRESHOLD = 0.5;
+  const trueMidX = (sx + tx) / 2;
+  const trueMidY = (sy + ty) / 2;
+  const lagMidRef = useRef({ x: trueMidX, y: trueMidY });
+  const settleRafRef = useRef(0);
+  const [, forceSettle] = useReducer((x: number) => x + 1, 0);
+
+  lagMidRef.current.x += (trueMidX - lagMidRef.current.x) * CABLE_LAG;
+  lagMidRef.current.y += (trueMidY - lagMidRef.current.y) * CABLE_LAG;
+
+  const cableLagDist = Math.sqrt(
+    (lagMidRef.current.x - trueMidX) ** 2 +
+    (lagMidRef.current.y - trueMidY) ** 2
+  );
+  const isCableLagging = cableLagDist > CABLE_SETTLE_THRESHOLD;
+
+  useEffect(() => {
+    if (isCableLagging) {
+      settleRafRef.current = requestAnimationFrame(forceSettle);
+      return () => cancelAnimationFrame(settleRafRef.current);
+    }
+  }, [isCableLagging, cableLagDist]);
+
   // Bézier needed?
   const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
   const hasOffset = Math.abs(offset) >= 1;
 
   // ── Path — straight at rest, quadratic bezier through lagged midpoint during drag ──
-  // Cable physics: midpoint trails endpoints, creating visible cable pull.
-  // Not memoized during cable lag because lagMidRef is physics state (intentional).
   let pathD: string;
   if (!hasSplay && !hasOffset) {
     if (isCableLagging) {
