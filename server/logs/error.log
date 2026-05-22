@@ -6923,3 +6923,352 @@ ApiError: {"error":{"code":403,"message":"This API method requires billing to be
     at async Models.Models.generateContent (/Users/danielcrowder/Desktop/Projects/nords/server/node_modules/@google/genai/src/models.ts:128:14)
     at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/chat.ts:474:24) {"service":"nords-server","error":"{\"error\":{\"code\":403,\"message\":\"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.\",\"status\":\"PERMISSION_DENIED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"BILLING_DISABLED\",\"domain\":\"googleapis.com\",\"metadata\":{\"consumer\":\"projects/linen-sunbeam-477920-c9\",\"consoleUrl\":\"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9\",\"containerInfo\":\"linen-sunbeam-477920-c9\",\"service\":\"aiplatform.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"This API method requires billing to be enabled. Please enable billing on project #linen-sunbeam-477920-c9 by visiting https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.\"},{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Google developers console billing\",\"url\":\"https://console.developers.google.com/billing/enable?project=linen-sunbeam-477920-c9\"}]}]}}","projectId":"c0b033d0-38e9-4677-94c1-021befdc447c"}
 23:12:24.196 [31merror[39m: POST /api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat 500 {"service":"nords-server","method":"POST","path":"/api/projects/c0b033d0-38e9-4677-94c1-021befdc447c/chat","status":500,"duration":"1156ms","bytes":"1495"}
+23:57:59.542 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":2,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+23:57:59.543 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+23:57:59.543 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+23:57:59.544 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"5ms","bytes":"35"}
+23:57:59.548 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+23:57:59.548 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+23:57:59.548 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+23:57:59.549 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"2ms","bytes":"35"}
+23:58:29.497 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":2,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:35.761 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:35.761 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:35.761 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:35.762 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"2ms","bytes":"35"}
+00:05:35.765 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:35.766 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:35.766 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:35.766 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"2ms","bytes":"35"}
+00:05:57.125 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":4,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:57.179 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:57.180 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:57.180 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:57.180 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+00:05:57.180 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:57.181 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:57.181 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:05:57.181 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+00:06:07.312 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":3,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:07.368 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:07.369 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:07.369 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:07.369 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+00:06:07.369 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:07.370 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:07.370 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:07.370 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+00:06:18.576 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":3,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:18.630 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:18.630 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:18.630 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:18.630 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+00:06:18.631 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:18.631 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:18.631 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:18.631 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+00:06:36.153 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:36.154 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:36.154 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:36.154 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+00:06:36.154 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:36.155 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:36.155 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:06:36.155 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+00:06:48.608 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:07:06.110 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:07:39.378 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:07:39.378 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:07:39.378 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:07:39.378 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+00:07:39.379 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:07:39.379 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:07:39.379 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+00:07:39.379 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"0ms","bytes":"35"}
+00:08:09.357 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":4,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:30:41.375 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:30:41.375 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:30:41.375 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:30:41.375 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+08:33:27.778 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:27.778 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:27.778 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:27.778 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+08:33:27.781 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:27.781 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:27.781 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:27.781 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"0ms","bytes":"35"}
+08:33:31.351 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":2,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:31.412 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:31.412 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:31.412 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:31.413 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"0ms","bytes":"35"}
+08:33:31.413 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":0,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:31.414 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":1,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:31.414 [31merror[39m: Failed to load projects {"service":"nords-server","error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:33:31.414 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"1ms","bytes":"35"}
+08:34:01.407 [31merror[39m: Query failed
+Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":7,"error":"connect ECONNREFUSED 127.0.0.1:5433"}
+08:37:31.513 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":71,"error":"read ECONNRESET"}
+08:37:31.513 [31merror[39m: Failed to load projects {"service":"nords-server","error":"read ECONNRESET"}
+08:37:31.513 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"71ms","bytes":"35"}
+08:37:31.514 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":72,"error":"read ECONNRESET"}
+08:38:02.308 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":42,"error":"read ECONNRESET"}
+08:38:02.309 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/projects.ts:28:22) {"service":"nords-server","text":"SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC","duration":43,"error":"read ECONNRESET"}
+08:38:02.309 [31merror[39m: Failed to load projects {"service":"nords-server","error":"read ECONNRESET"}
+08:38:02.311 [31merror[39m: GET /api/projects 500 {"service":"nords-server","method":"GET","path":"/api/projects","status":500,"duration":"47ms","bytes":"35"}
+08:38:14.635 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":78,"error":"read ECONNRESET"}
+08:38:14.636 [31merror[39m: Query failed
+Error: read ECONNRESET
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17) {"service":"nords-server","text":"INSERT INTO usage_events (account_id, project_id, event_type, quantity, metadata)\n     VALUES ($1, $2, $3, $4, $5)","duration":81,"error":"read ECONNRESET"}
+08:47:47.372 [31merror[39m: Query failed
+error: relation "project_types" does not exist
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:153:22) {"service":"nords-server","text":"SELECT project_id FROM project_types WHERE type_id = $1","duration":34,"error":"relation \"project_types\" does not exist"}
+08:47:47.372 [31merror[39m: Failed to update nord type {"service":"nords-server","error":"relation \"project_types\" does not exist","typeId":"b29221fc-d37d-47e7-a24a-4f0efe9517eb"}
+08:47:47.373 [31merror[39m: Unhandled error
+Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+    at ServerResponse.setHeader (node:_http_outgoing:700:11)
+    at ServerResponse.header (/Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/response.js:686:10)
+    at ServerResponse.send (/Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/response.js:163:12)
+    at ServerResponse.json (/Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/response.js:252:15)
+    at <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/routes/types.ts:157:21)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {"service":"nords-server","error":"Cannot set headers after they are sent to the client"}
+10:37:16.846 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-22T14:36:47.298Z","filename":"http://localhost:5173/project/c0b033d0-38e9-4677-94c1-021befdc447c","lineno":0,"colno":0,"userId":"dev-user-000"}
+10:51:35.886 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-22T14:51:06.323Z","filename":"http://localhost:5173/project/c0b033d0-38e9-4677-94c1-021befdc447c","lineno":0,"colno":0,"userId":"dev-user-000"}
+10:54:29.695 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-22T14:54:00.176Z","filename":"http://localhost:5173/project/c0b033d0-38e9-4677-94c1-021befdc447c","lineno":0,"colno":0,"userId":"dev-user-000"}
+11:00:48.166 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-22T15:00:18.602Z","filename":"http://localhost:5173/project/c0b033d0-38e9-4677-94c1-021befdc447c","lineno":0,"colno":0,"userId":"dev-user-000"}
+11:07:01.802 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-22T15:06:32.265Z","filename":"http://localhost:5173/project/c0b033d0-38e9-4677-94c1-021befdc447c","lineno":0,"colno":0,"userId":"dev-user-000"}
+11:14:30.667 [31merror[39m: Uncaught error ResizeObserver loop completed with undelivered notifications. {"service":"nords-client","clientTimestamp":"2026-05-22T15:14:01.196Z","filename":"http://localhost:5173/project/c0b033d0-38e9-4677-94c1-021befdc447c","lineno":0,"colno":0,"userId":"dev-user-000"}

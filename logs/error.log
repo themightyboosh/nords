@@ -1,0 +1,24 @@
+20:43:56.578 [31merror[39m: Query failed
+Error: getaddrinfo ENOTFOUND base
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async Module.createSession (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/mcpSessions.ts:15:19)
+    at async ensureSession (/Users/danielcrowder/Desktop/Projects/nords/server/src/mcp-server.ts:50:19)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/mcp-server.ts:76:17)
+    at async McpServer.executeToolHandler (/Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/@modelcontextprotocol+sdk@1.29.0_zod@3.25.76/node_modules/@modelcontextprotocol/sdk/src/server/mcp.ts:352:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/@modelcontextprotocol+sdk@1.29.0_zod@3.25.76/node_modules/@modelcontextprotocol/sdk/src/server/mcp.ts:214:32)
+    at async wrappedHandler (/Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/@modelcontextprotocol+sdk@1.29.0_zod@3.25.76/node_modules/@modelcontextprotocol/sdk/src/server/index.ts:262:32) {"service":"nords-server","text":"SELECT mcp_enabled, mcp_capture_data FROM projects WHERE id = $1","duration":25,"error":"getaddrinfo ENOTFOUND base"}
+23:21:18.838 [31merror[39m: Query failed
+Error: getaddrinfo ENOTFOUND base
+    at /Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async query (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:32:17)
+    at async queryOne (/Users/danielcrowder/Desktop/Projects/nords/server/src/db.ts:52:16)
+    at async Module.createSession (/Users/danielcrowder/Desktop/Projects/nords/server/src/repositories/mcpSessions.ts:15:19)
+    at async ensureSession (/Users/danielcrowder/Desktop/Projects/nords/server/src/mcp-server.ts:50:19)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/server/src/mcp-server.ts:178:17)
+    at async McpServer.executeToolHandler (/Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/@modelcontextprotocol+sdk@1.29.0_zod@3.25.76/node_modules/@modelcontextprotocol/sdk/src/server/mcp.ts:352:20)
+    at async <anonymous> (/Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/@modelcontextprotocol+sdk@1.29.0_zod@3.25.76/node_modules/@modelcontextprotocol/sdk/src/server/mcp.ts:214:32)
+    at async wrappedHandler (/Users/danielcrowder/Desktop/Projects/nords/node_modules/.pnpm/@modelcontextprotocol+sdk@1.29.0_zod@3.25.76/node_modules/@modelcontextprotocol/sdk/src/server/index.ts:262:32) {"service":"nords-server","text":"SELECT mcp_enabled, mcp_capture_data FROM projects WHERE id = $1","duration":29,"error":"getaddrinfo ENOTFOUND base"}

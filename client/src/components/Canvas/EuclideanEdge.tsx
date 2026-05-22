@@ -267,14 +267,12 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     : 0;
 
   // ── Cable Physics: trailing midpoint (Reason-style) ──
-  // The cable midpoint lags behind the endpoints at CABLE_LAG speed.
-  // During drag, this creates a natural cable-pull effect. After drag,
-  // a self-settling rAF loop continues until the cable is straight.
-  // CABLE_LAG: 0.0 = frozen, 1.0 = instant. Lower = more visible trailing.
-  // 0.08 = nice rubbery feel (~500ms settle), 0.4 = too fast to see.
-  // To disable entirely: set CABLE_LAG = 1.0
-  const CABLE_LAG = 0.08;
-  const CABLE_SETTLE_THRESHOLD = 0.5; // px — below this, snap to straight
+  // The cable midpoint lags behind the endpoints during drag.
+  // CABLE_LAG: lower = more visible trailing. 0.04 = satisfying rubbery pull.
+  // CABLE_AMP: amplifies the visual displacement (Q bezier halves it visually).
+  const CABLE_LAG = 0.04;
+  const CABLE_AMP = 3.0;               // visual amplification of lag
+  const CABLE_SETTLE_THRESHOLD = 0.3;   // px of RAW lag — below this, snap
 
   const trueMidX = (sx + tx) / 2;
   const trueMidY = (sy + ty) / 2;
@@ -286,19 +284,18 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   lagMidRef.current.x += (trueMidX - lagMidRef.current.x) * CABLE_LAG;
   lagMidRef.current.y += (trueMidY - lagMidRef.current.y) * CABLE_LAG;
 
-  const cableLagX = lagMidRef.current.x - trueMidX;
-  const cableLagY = lagMidRef.current.y - trueMidY;
-  const cableLagDist = Math.sqrt(cableLagX * cableLagX + cableLagY * cableLagY);
-  const isCableLagging = cableLagDist > CABLE_SETTLE_THRESHOLD;
+  const rawLagX = lagMidRef.current.x - trueMidX;
+  const rawLagY = lagMidRef.current.y - trueMidY;
+  const rawLagDist = Math.sqrt(rawLagX * rawLagX + rawLagY * rawLagY);
+  const isCableLagging = rawLagDist > CABLE_SETTLE_THRESHOLD;
 
   // Self-settling: keep re-rendering until cable lag resolves to straight.
-  // This is a one-shot loop that only runs after drag stops, not permanent.
   useEffect(() => {
     if (isCableLagging) {
       settleRafRef.current = requestAnimationFrame(forceSettle);
       return () => cancelAnimationFrame(settleRafRef.current);
     }
-  }, [isCableLagging, cableLagDist]);
+  }, [isCableLagging, rawLagDist]);
 
   // ── DIMMED EDGES: lightweight render with arrows ──
   if (isDimmed) {
@@ -325,16 +322,18 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   }
 
   // ── Compute cable physics path (shared by quiet + highlighted) ──
-  // lagMidRef lives here in EuclideanEdgeInner, so it persists across
-  // the quiet→highlighted transition when drag starts.
+  // lagMidRef lives here in EuclideanEdgeInner, persists across highlight transitions.
+  // The control point is the true midpoint PLUS amplified lag offset.
   const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
   const hasOff = Math.abs(offset) >= 1;
   const restSag = Math.min(len * 0.015, 10); // tiny gravity droop at rest
 
   let cablePathD: string;
   if (!hasSplay && !hasOff) {
-    // Cable physics: Q bezier through the lagged midpoint
-    cablePathD = `M ${sx} ${sy} Q ${lagMidRef.current.x} ${lagMidRef.current.y + restSag}, ${tx} ${ty}`;
+    // Amplified control point: exaggerate the lag for visible cable pull
+    const ctrlX = trueMidX + rawLagX * CABLE_AMP;
+    const ctrlY = trueMidY + rawLagY * CABLE_AMP + restSag;
+    cablePathD = `M ${sx} ${sy} Q ${ctrlX} ${ctrlY}, ${tx} ${ty}`;
   } else {
     const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
     const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
