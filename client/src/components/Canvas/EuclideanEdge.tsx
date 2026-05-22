@@ -19,7 +19,7 @@
  *   - Ribbon splay and degree splay use cached edge selectors (O(1) during drag).
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useReducer, useEffect } from 'react';
 import { useStore } from '@xyflow/react';
 import type { EdgeProps, Edge } from '@xyflow/react';
 import { ConnectionLabel } from './ConnectionLabel';
@@ -261,6 +261,39 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     ? (targetSplay.index - (targetSplay.degree - 1) / 2) * SPLAY_PX
     : 0;
 
+  // ── Cable Physics: trailing midpoint (Reason-style) ──
+  // The cable midpoint lags behind the endpoints at CABLE_LAG speed.
+  // During drag, this creates a natural cable-pull effect. After drag,
+  // a self-settling rAF loop continues until the cable is straight.
+  // CABLE_LAG: 0.0 = frozen, 1.0 = instant. 0.4 = nice trailing feel.
+  // To disable entirely: set CABLE_LAG = 1.0
+  const CABLE_LAG = 0.4;
+  const CABLE_SETTLE_THRESHOLD = 0.5; // px — below this, snap to straight
+
+  const trueMidX = (sx + tx) / 2;
+  const trueMidY = (sy + ty) / 2;
+  const lagMidRef = useRef({ x: trueMidX, y: trueMidY });
+  const settleRafRef = useRef(0);
+  const [, forceSettle] = useReducer((x: number) => x + 1, 0);
+
+  // Lerp the lagged midpoint toward the true midpoint
+  lagMidRef.current.x += (trueMidX - lagMidRef.current.x) * CABLE_LAG;
+  lagMidRef.current.y += (trueMidY - lagMidRef.current.y) * CABLE_LAG;
+
+  const cableLagX = lagMidRef.current.x - trueMidX;
+  const cableLagY = lagMidRef.current.y - trueMidY;
+  const cableLagDist = Math.sqrt(cableLagX * cableLagX + cableLagY * cableLagY);
+  const isCableLagging = cableLagDist > CABLE_SETTLE_THRESHOLD;
+
+  // Self-settling: keep re-rendering until cable lag resolves to straight.
+  // This is a one-shot loop that only runs after drag stops, not permanent.
+  useEffect(() => {
+    if (isCableLagging) {
+      settleRafRef.current = requestAnimationFrame(forceSettle);
+      return () => cancelAnimationFrame(settleRafRef.current);
+    }
+  }, [isCableLagging, cableLagDist]);
+
   // ── DIMMED EDGES: lightweight render with arrows ──
   if (isDimmed) {
     return (
@@ -291,7 +324,12 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     const hasOff = Math.abs(offset) >= 1;
     let qPathD: string;
     if (!hasSplay && !hasOff) {
-      qPathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+      // Cable physics: use lagged midpoint as quadratic bezier control when displaced
+      if (isCableLagging) {
+        qPathD = `M ${sx} ${sy} Q ${lagMidRef.current.x} ${lagMidRef.current.y}, ${tx} ${ty}`;
+      } else {
+        qPathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+      }
     } else {
       const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
       const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
@@ -431,18 +469,23 @@ const ActiveEdge = React.memo(function ActiveEdge({
   const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
   const hasOffset = Math.abs(offset) >= 1;
 
-  // ── Static path — straight lines at rest, Bézier only for splayed edges ──
-  // Cable wiggle on drag is handled by CSS filter + settling animation.
-  const pathD = useMemo(() => {
-    if (!hasSplay && !hasOffset) {
-      return `M ${sx} ${sy} L ${tx} ${ty}`;
+  // ── Path — straight at rest, quadratic bezier through lagged midpoint during drag ──
+  // Cable physics: midpoint trails endpoints, creating visible cable pull.
+  // Not memoized during cable lag because lagMidRef is physics state (intentional).
+  let pathD: string;
+  if (!hasSplay && !hasOffset) {
+    if (isCableLagging) {
+      pathD = `M ${sx} ${sy} Q ${lagMidRef.current.x} ${lagMidRef.current.y}, ${tx} ${ty}`;
+    } else {
+      pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
     }
+  } else {
     const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
     const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
     const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
     const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
-    return `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
-  }, [sx, sy, tx, ty, dx, dy, hasSplay, hasOffset, perpUnitX, perpUnitY, srcSplayOffset, tgtSplayOffset]);
+    pathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
+  }
 
 
 

@@ -594,27 +594,15 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         );
       }
 
-      // Transition drag-connected → settling animation (cable spring-back)
-      const settlingIds = new Set(connectedEdges.map(e => e.id));
+      // Single batched state update: clear drag class + update distances
       setEdges(eds => eds.map(e => {
         const newDist = distanceUpdates.get(e.id);
-        const isSettling = settlingIds.has(e.id);
-        const updated = {
-          ...e,
-          className: isSettling ? 'nords-edge--settling' : (e.className === 'drag-connected' ? '' : e.className),
-        };
+        const cleared = e.className === 'drag-connected' ? { ...e, className: '' } : e;
         if (newDist !== undefined) {
-          return { ...updated, data: { ...updated.data, _distanceX: newDist } };
+          return { ...cleared, data: { ...cleared.data, _distanceX: newDist } };
         }
-        return updated;
+        return cleared;
       }));
-
-      // Clear settling class after animation completes
-      setTimeout(() => {
-        setEdges(eds => eds.map(e =>
-          e.className === 'nords-edge--settling' ? { ...e, className: '' } : e
-        ));
-      }, 500);
     },
     [setEdges, saveNodePosition, activeConnectionTypeId, edges, nodes, updateConnection]
   );
@@ -800,40 +788,6 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
 
   return (
     <>
-      {/* ── Cable Jiggle Filter (Reason-style) ──
-       * SVG turbulence + displacement creates organic cable sway.
-       * Defined at document level so filter ID is reliably resolvable.
-       * Applied to edge paths via CSS: .react-flow__edge g { filter: url(#nords-cable-jiggle) }
-       * To disable: comment out the CSS rule in CanvasEngine.css
-       */}
-      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
-        <defs>
-          <filter id="nords-cable-jiggle" x="-5%" y="-5%" width="110%" height="110%">
-            <feTurbulence
-              type="turbulence"
-              baseFrequency="0.03"
-              numOctaves="3"
-              seed="0"
-              result="noise"
-            >
-              <animate
-                attributeName="seed"
-                values="0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15"
-                dur="2s"
-                repeatCount="indefinite"
-              />
-            </feTurbulence>
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="noise"
-              scale="6"
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-          </filter>
-        </defs>
-      </svg>
-
       <div data-interacting={isInteracting ? '' : undefined} style={{ width: '100%', height: '100%' }}>
       <ReactFlow
         nodes={nodes}
