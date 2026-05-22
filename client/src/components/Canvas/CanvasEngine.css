@@ -237,16 +237,12 @@
  * Creates organic, living cable sway like Propellerhead Reason's patch cables.
  * The filter itself is defined in CanvasEngine.tsx as an inline SVG <defs>.
  *
+ * Runs continuously — even during drag/pan. That's the fun part.
  * To disable: comment out or remove the filter line below.
- * Performance: GPU-composited — no JS cost. Paused during interaction.
+ * Performance: GPU-composited — no JS cost.
  */
 .react-flow__edge g {
   filter: url(#nords-cable-jiggle);
-}
-
-/* Pause the cable jiggle during drag/pan/zoom for performance */
-[data-interacting] .react-flow__edge g {
-  filter: none !important;
 }
 
 /* Disable jiggle on dimmed/ghost edges — only active cables wiggle */

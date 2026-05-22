@@ -788,6 +788,40 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
 
   return (
     <>
+      {/* ── Cable Jiggle Filter (Reason-style) ──
+       * SVG turbulence + displacement creates organic cable sway.
+       * Defined at document level so filter ID is reliably resolvable.
+       * Applied to edge paths via CSS: .react-flow__edge g { filter: url(#nords-cable-jiggle) }
+       * To disable: comment out the CSS rule in CanvasEngine.css
+       */}
+      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
+        <defs>
+          <filter id="nords-cable-jiggle" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence
+              type="turbulence"
+              baseFrequency="0.03"
+              numOctaves="3"
+              seed="0"
+              result="noise"
+            >
+              <animate
+                attributeName="seed"
+                values="0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15"
+                dur="2s"
+                repeatCount="indefinite"
+              />
+            </feTurbulence>
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale="4.5"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+        </defs>
+      </svg>
+
       <div data-interacting={isInteracting ? '' : undefined} style={{ width: '100%', height: '100%' }}>
       <ReactFlow
         nodes={nodes}
@@ -850,41 +884,6 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         onReconnect={onReconnect}
         onReconnectEnd={onReconnectEnd}
       >
-        {/* ── Cable Jiggle Filter (Reason-style) ──
-         * SVG turbulence + displacement creates organic cable sway.
-         * The <animate> cycles the seed for continuous jiggle.
-         * Applied to edge paths via CSS class .nords-cable-jiggle.
-         * Paused during interaction via [data-interacting] in CSS.
-         * To disable: remove .nords-cable-jiggle class from CanvasEngine.css
-         */}
-        <svg width="0" height="0" style={{ position: 'absolute' }}>
-          <defs>
-            <filter id="nords-cable-jiggle" x="-5%" y="-5%" width="110%" height="110%">
-              <feTurbulence
-                type="turbulence"
-                baseFrequency="0.02"
-                numOctaves="2"
-                seed="0"
-                result="noise"
-              >
-                <animate
-                  attributeName="seed"
-                  values="0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15"
-                  dur="2s"
-                  repeatCount="indefinite"
-                />
-              </feTurbulence>
-              <feDisplacementMap
-                in="SourceGraphic"
-                in2="noise"
-                scale="3"
-                xChannelSelector="R"
-                yChannelSelector="G"
-              />
-            </filter>
-          </defs>
-        </svg>
-
         {/* Dual-layer background: dots + subtle cross grid for depth */}
         <Background id="dots" variant={BackgroundVariant.Dots} gap={32} size={2.5} color="var(--nords-color-grid-dot)" />
         <Background id="cross" variant={BackgroundVariant.Cross} gap={200} size={0.5} color="var(--nords-color-grid-dot)" style={{ opacity: 0.4 }} />
