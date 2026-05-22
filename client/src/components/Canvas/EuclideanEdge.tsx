@@ -289,23 +289,14 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   if (!isHighlighted) {
     const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
     const hasOff = Math.abs(offset) >= 1;
-    // Cable droop: gravity-inspired sag proportional to cable length.
-    // CABLE_DROOP_FACTOR: Controls how much cables sag. Set to 0 to revert to straight lines.
-    const CABLE_DROOP_FACTOR = 0.12;
-    const cableDroop = Math.min(Math.max(len * CABLE_DROOP_FACTOR, 8), 50);
     let qPathD: string;
     if (!hasSplay && !hasOff) {
-      // Catenary-style droop: control points sag downward (+Y is down in screen space)
-      const qCp1x = sx + dx * 0.3;
-      const qCp1y = sy + dy * 0.3 + cableDroop;
-      const qCp2x = sx + dx * 0.7;
-      const qCp2y = sy + dy * 0.7 + cableDroop;
-      qPathD = `M ${sx} ${sy} C ${qCp1x} ${qCp1y}, ${qCp2x} ${qCp2y}, ${tx} ${ty}`;
+      qPathD = `M ${sx} ${sy} L ${tx} ${ty}`;
     } else {
       const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
-      const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset + cableDroop * 0.5;
+      const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
       const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
-      const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset + cableDroop * 0.5;
+      const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
       qPathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
     }
 
@@ -440,27 +431,18 @@ const ActiveEdge = React.memo(function ActiveEdge({
   const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
   const hasOffset = Math.abs(offset) >= 1;
 
-  // ── Cable path — gravity-drooped catenary bezier (Reason-style) ──
-  // CABLE_DROOP_FACTOR: fraction of cable length used as sag. Set to 0 for straight lines.
-  // Combined with the SVG turbulence filter in CSS, this creates living cable physics.
-  const CABLE_DROOP_FACTOR = 0.12;
-  const cableDroop = Math.min(Math.max(len * CABLE_DROOP_FACTOR, 8), 50);
-
+  // ── Static path — straight lines at rest, Bézier only for splayed edges ──
+  // Cable wiggle on drag is handled by CSS filter + settling animation.
   const pathD = useMemo(() => {
     if (!hasSplay && !hasOffset) {
-      // Catenary-style droop: control points sag downward (+Y = down in screen coords)
-      const cp1x = sx + dx * 0.3;
-      const cp1y = sy + dy * 0.3 + cableDroop;
-      const cp2x = sx + dx * 0.7;
-      const cp2y = sy + dy * 0.7 + cableDroop;
-      return `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${tx} ${ty}`;
+      return `M ${sx} ${sy} L ${tx} ${ty}`;
     }
     const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
-    const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset + cableDroop * 0.5;
+    const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
     const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
-    const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset + cableDroop * 0.5;
+    const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
     return `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
-  }, [sx, sy, tx, ty, dx, dy, hasSplay, hasOffset, perpUnitX, perpUnitY, srcSplayOffset, tgtSplayOffset, cableDroop]);
+  }, [sx, sy, tx, ty, dx, dy, hasSplay, hasOffset, perpUnitX, perpUnitY, srcSplayOffset, tgtSplayOffset]);
 
 
 

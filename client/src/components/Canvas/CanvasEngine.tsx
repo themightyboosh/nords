@@ -594,15 +594,27 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         );
       }
 
-      // Single batched state update: clear drag class + update distances
+      // Transition drag-connected → settling animation (cable spring-back)
+      const settlingIds = new Set(connectedEdges.map(e => e.id));
       setEdges(eds => eds.map(e => {
         const newDist = distanceUpdates.get(e.id);
-        const cleared = e.className === 'drag-connected' ? { ...e, className: '' } : e;
+        const isSettling = settlingIds.has(e.id);
+        const updated = {
+          ...e,
+          className: isSettling ? 'nords-edge--settling' : (e.className === 'drag-connected' ? '' : e.className),
+        };
         if (newDist !== undefined) {
-          return { ...cleared, data: { ...cleared.data, _distanceX: newDist } };
+          return { ...updated, data: { ...updated.data, _distanceX: newDist } };
         }
-        return cleared;
+        return updated;
       }));
+
+      // Clear settling class after animation completes
+      setTimeout(() => {
+        setEdges(eds => eds.map(e =>
+          e.className === 'nords-edge--settling' ? { ...e, className: '' } : e
+        ));
+      }, 500);
     },
     [setEdges, saveNodePosition, activeConnectionTypeId, edges, nodes, updateConnection]
   );
