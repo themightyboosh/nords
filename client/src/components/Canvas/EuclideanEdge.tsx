@@ -495,14 +495,17 @@ const ActiveEdge = React.memo(function ActiveEdge({
   const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
   const hasOffset = Math.abs(offset) >= 1;
 
-  // ── Path — straight at rest, quadratic bezier through lagged midpoint during drag ──
+  // ── DEBUG: Force a massive 100px curve to prove rendering works ──
+  // Also log to verify this code path is reached during drag
+  console.log('[ActiveEdge] render', { isCableLagging, cableLagDist, trueMidX, trueMidY, lagX: lagMidRef.current.x, lagY: lagMidRef.current.y });
+
+  // FORCE a visible curve: midpoint offset 100px downward regardless of lag
   let pathD: string;
   if (!hasSplay && !hasOffset) {
-    if (isCableLagging) {
-      pathD = `M ${sx} ${sy} Q ${lagMidRef.current.x} ${lagMidRef.current.y}, ${tx} ${ty}`;
-    } else {
-      pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
-    }
+    // Always show a curve — use lag midpoint if lagging, else force a 100px sag for debug
+    const ctrlX = isCableLagging ? lagMidRef.current.x : trueMidX;
+    const ctrlY = isCableLagging ? lagMidRef.current.y : trueMidY + 100;
+    pathD = `M ${sx} ${sy} Q ${ctrlX} ${ctrlY}, ${tx} ${ty}`;
   } else {
     const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
     const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
