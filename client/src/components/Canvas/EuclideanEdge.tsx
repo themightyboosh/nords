@@ -265,9 +265,10 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   // The cable midpoint lags behind the endpoints at CABLE_LAG speed.
   // During drag, this creates a natural cable-pull effect. After drag,
   // a self-settling rAF loop continues until the cable is straight.
-  // CABLE_LAG: 0.0 = frozen, 1.0 = instant. 0.4 = nice trailing feel.
+  // CABLE_LAG: 0.0 = frozen, 1.0 = instant. Lower = more visible trailing.
+  // 0.08 = nice rubbery feel (~500ms settle), 0.4 = too fast to see.
   // To disable entirely: set CABLE_LAG = 1.0
-  const CABLE_LAG = 0.4;
+  const CABLE_LAG = 0.08;
   const CABLE_SETTLE_THRESHOLD = 0.5; // px — below this, snap to straight
 
   const trueMidX = (sx + tx) / 2;
@@ -466,7 +467,7 @@ const ActiveEdge = React.memo(function ActiveEdge({
   const cpY = midY + perpY * 2;
 
   // ── Cable Physics: trailing midpoint (same as parent — ActiveEdge is separate React.memo) ──
-  const CABLE_LAG = 0.4;
+  const CABLE_LAG = 0.08;
   const CABLE_SETTLE_THRESHOLD = 0.5;
   const trueMidX = (sx + tx) / 2;
   const trueMidY = (sy + ty) / 2;
