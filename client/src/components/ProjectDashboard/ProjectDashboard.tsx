@@ -15,15 +15,20 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   FolderKanban, Plus, MoreHorizontal,
   Layers, Star,
-  Trash2, Download, X, AlertTriangle,
+  Trash2, Download, Settings, X, AlertTriangle,
   ShieldCheck, BarChart3, CreditCard, Settings2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
 import ViewportHeader from '../Layout/ViewportHeader';
 import { IconPicker } from '../shared/IconPicker';
 import { resolveIcon } from '../../utils/iconRegistry';
+import { ProjectSettings } from '../ProjectSettings/ProjectSettings';
 import './ProjectDashboard.css';
+
+/** Feature flag: set to true to show the Admin sidebar section */
+const SHOW_ADMIN_SECTION = import.meta.env.VITE_SHOW_ADMIN === 'true';
 
 interface Project {
   id: string;
@@ -34,12 +39,14 @@ interface Project {
   mcp_enabled: boolean;
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
+  goals_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
 
 export default function ProjectDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +60,7 @@ export default function ProjectDashboard() {
     icon: '📁',
     mcp_enabled: false,
     mcp_capture_data: false,
-    mcp_mutable: false,
+    goals_enabled: false,
   });
   const [createErrors, setCreateErrors] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
@@ -65,6 +72,12 @@ export default function ProjectDashboard() {
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{ projectId: string; x: number; y: number } | null>(null);
+
+  // Settings modal state
+  const [settingsProjectId, setSettingsProjectId] = useState<string | null>(null);
+
+  // Personalized header
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Your';
 
   const loadProjects = useCallback(async () => {
     try {
@@ -104,11 +117,11 @@ export default function ProjectDashboard() {
         icon: createForm.icon || '📁',
         mcp_enabled: createForm.mcp_enabled,
         mcp_capture_data: createForm.mcp_capture_data,
-        mcp_mutable: createForm.mcp_mutable,
+        goals_enabled: createForm.goals_enabled,
       });
       setShowCreateModal(false);
       setShowCreateIconPicker(false);
-      setCreateForm({ name: '', description: '', purpose: '', icon: 'Folder', mcp_enabled: false, mcp_capture_data: false, mcp_mutable: false });
+      setCreateForm({ name: '', description: '', purpose: '', icon: 'Folder', mcp_enabled: false, mcp_capture_data: false, goals_enabled: false });
       await loadProjects();
     } catch (err: any) {
       setCreateErrors([err.message || 'Failed to create project']);
@@ -147,7 +160,7 @@ export default function ProjectDashboard() {
   }, []);
 
   return (
-    <div className="nords-dashboard" data-testid="project-dashboard" data-theme="obsidian">
+    <div className="nords-dashboard" data-testid="project-dashboard">
       <ViewportHeader
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
@@ -174,27 +187,31 @@ export default function ProjectDashboard() {
 
         <div style={{ flex: 1 }} />
 
-        {/* ── Admin Section ── */}
-        <div className="nords-dashboard__sidebar-header" style={{ marginTop: 8 }}>
-          <span className="nords-dashboard__sidebar-title">
-            <ShieldCheck size={12} style={{ marginRight: 4 }} />
-            Admin
-          </span>
-        </div>
-        <nav className="nords-dashboard__sidebar-nav">
-          <button className="nords-dashboard__nav-item">
-            <BarChart3 size={14} strokeWidth={1.5} />
-            Analytics
-          </button>
-          <button className="nords-dashboard__nav-item">
-            <CreditCard size={14} strokeWidth={1.5} />
-            Billing
-          </button>
-          <button className="nords-dashboard__nav-item">
-            <Settings2 size={14} strokeWidth={1.5} />
-            Platform Settings
-          </button>
-        </nav>
+        {/* ── Admin Section (feature-flagged) ── */}
+        {SHOW_ADMIN_SECTION && (
+          <>
+            <div className="nords-dashboard__sidebar-header" style={{ marginTop: 8 }}>
+              <span className="nords-dashboard__sidebar-title">
+                <ShieldCheck size={12} style={{ marginRight: 4 }} />
+                Admin
+              </span>
+            </div>
+            <nav className="nords-dashboard__sidebar-nav">
+              <button className="nords-dashboard__nav-item">
+                <BarChart3 size={14} strokeWidth={1.5} />
+                Analytics
+              </button>
+              <button className="nords-dashboard__nav-item">
+                <CreditCard size={14} strokeWidth={1.5} />
+                Billing
+              </button>
+              <button className="nords-dashboard__nav-item">
+                <Settings2 size={14} strokeWidth={1.5} />
+                Platform Settings
+              </button>
+            </nav>
+          </>
+        )}
 
         <button
           className="nords-dashboard__create-btn"
@@ -208,7 +225,7 @@ export default function ProjectDashboard() {
 
       <main className="nords-dashboard__main">
         <div className="nords-dashboard__main-header">
-          <h1 className="nords-dashboard__title">All Projects</h1>
+          <h1 className="nords-dashboard__title">{displayName}'s Projects</h1>
         </div>
 
         {loading && (
@@ -230,7 +247,7 @@ export default function ProjectDashboard() {
                 <span className="nords-dashboard__card-icon">
                 {(() => {
                   const CardIcon = resolveIcon(project.icon);
-                  return <CardIcon size={18} strokeWidth={1.6} />;
+                  return <CardIcon size={36} strokeWidth={1.4} />;
                 })()}
               </span>
                 <div className="nords-dashboard__card-header-right">
@@ -280,6 +297,9 @@ export default function ProjectDashboard() {
         <>
           <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }} onClick={() => setContextMenu(null)} />
           <div className="nords-dashboard__context-menu" style={{ position: 'fixed', left: contextMenu.x, top: contextMenu.y, zIndex: 10000 }}>
+            <button onClick={() => { setSettingsProjectId(contextMenu.projectId); setContextMenu(null); }}>
+              <Settings size={13} /> Settings
+            </button>
             <button onClick={() => { handleExport(projects.find(p => p.id === contextMenu.projectId)!); }}>
               <Download size={13} /> Export
             </button>
@@ -392,10 +412,10 @@ export default function ProjectDashboard() {
                   <label className="nords-modal__checkbox-label">
                     <input
                       type="checkbox"
-                      checked={createForm.mcp_mutable}
-                      onChange={e => setCreateForm({ ...createForm, mcp_mutable: e.target.checked })}
+                      checked={createForm.goals_enabled}
+                      onChange={e => setCreateForm({ ...createForm, goals_enabled: e.target.checked })}
                     />
-                    <span>Mutable <span className="nords-modal__experimental">(experimental)</span></span>
+                    <span>Enable Goals</span>
                   </label>
                 </div>
               )}
@@ -435,6 +455,15 @@ export default function ProjectDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Project Settings Modal ── */}
+      {settingsProjectId && (
+        <ProjectSettings
+          isOpen={true}
+          onClose={() => { setSettingsProjectId(null); loadProjects(); }}
+          projectId={settingsProjectId}
+        />
       )}
     </div>
   );

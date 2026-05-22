@@ -24,6 +24,8 @@ export const CreateProjectSchema = z.object({
     .describe('Whether MCP interactions capture data into the graph'),
   mcp_mutable: z.boolean().default(false)
     .describe('Whether MCP can mutate graph data (experimental)'),
+  goals_enabled: z.boolean().default(false)
+    .describe('Whether the Goal orchestration system is enabled for this project'),
   mcp_system_prompt: z.string().max(50000).optional().nullable()
     .describe('System prompt for MCP agent sessions. Combined with auto-generated schema context and persona at session start.'),
   default_persona_id: z.string().uuid().optional().nullable()
@@ -49,6 +51,8 @@ export const UpdateProjectSchema = z.object({
     .describe('Whether MCP captures data into the graph'),
   mcp_mutable: z.boolean().optional()
     .describe('Whether MCP can mutate graph data'),
+  goals_enabled: z.boolean().optional()
+    .describe('Whether Goal orchestration is enabled'),
   mcp_system_prompt: z.string().max(50000).optional().nullable()
     .describe('System prompt for MCP agent sessions'),
   default_persona_id: z.string().uuid().optional().nullable()

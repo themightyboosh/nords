@@ -15,8 +15,8 @@ export async function findByOrg(orgId: string): Promise<Project[]> {
 
 export async function create(project: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>): Promise<Project> {
   return queryOne<Project>(`
-    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_mutable, mcp_system_prompt, mcp_welcome_message, project_mode, end_prompt_suggestion, default_persona_id, default_start_nord_id, default_end_nord_id)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_mutable, goals_enabled, mcp_system_prompt, mcp_welcome_message, project_mode, end_prompt_suggestion, default_persona_id, default_start_nord_id, default_end_nord_id)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
     RETURNING *
   `, [
     project.org_id,
@@ -28,6 +28,7 @@ export async function create(project: Omit<Project, 'id' | 'created_at' | 'updat
     project.mcp_enabled ?? false,
     project.mcp_capture_data ?? false,
     project.mcp_mutable ?? false,
+    project.goals_enabled ?? false,
     project.mcp_system_prompt ?? null,
     project.mcp_welcome_message ?? null,
     project.project_mode ?? 'collect',
@@ -38,12 +39,12 @@ export async function create(project: Omit<Project, 'id' | 'created_at' | 'updat
   ]) as Promise<Project>;
 }
 
-type UpdatableProjectFields = Pick<Project, 'name' | 'description' | 'purpose' | 'icon' | 'mcp_enabled' | 'mcp_capture_data' | 'mcp_mutable' | 'mcp_system_prompt' | 'mcp_welcome_message' | 'project_mode' | 'end_prompt_suggestion' | 'default_persona_id' | 'default_start_nord_id' | 'default_end_nord_id'>;
+type UpdatableProjectFields = Pick<Project, 'name' | 'description' | 'purpose' | 'icon' | 'mcp_enabled' | 'mcp_capture_data' | 'mcp_mutable' | 'goals_enabled' | 'mcp_system_prompt' | 'mcp_welcome_message' | 'project_mode' | 'end_prompt_suggestion' | 'default_persona_id' | 'default_start_nord_id' | 'default_end_nord_id'>;
 
 export async function update(id: string, updates: Partial<UpdatableProjectFields>): Promise<Project | null> {
   const allowedKeys: (keyof UpdatableProjectFields)[] = [
     'name', 'description', 'purpose', 'icon',
-    'mcp_enabled', 'mcp_capture_data', 'mcp_mutable', 'mcp_system_prompt', 'mcp_welcome_message',
+    'mcp_enabled', 'mcp_capture_data', 'mcp_mutable', 'goals_enabled', 'mcp_system_prompt', 'mcp_welcome_message',
     'project_mode', 'end_prompt_suggestion',
     'default_persona_id', 'default_start_nord_id', 'default_end_nord_id',
   ];

@@ -61,7 +61,7 @@ projectsRouter.get('/projects', async (_req: Request, res: Response) => {
  */
 projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Request, res: Response) => {
   try {
-    const { org_id, name, description, purpose, icon, mcp_enabled, mcp_capture_data, mcp_mutable, mcp_system_prompt, default_persona_id, default_start_nord_id, default_end_nord_id } = req.body;
+    const { org_id, name, description, purpose, icon, mcp_enabled, mcp_capture_data, mcp_mutable, goals_enabled, mcp_system_prompt, default_persona_id, default_start_nord_id, default_end_nord_id } = req.body;
     // Single-user mode: org_id is optional, defaults to a static placeholder
     const resolvedOrgId = org_id || '00000000-0000-0000-0000-000000000000';
     const project = await projectsRepo.create({
@@ -74,6 +74,7 @@ projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Requ
       mcp_enabled: mcp_enabled ?? false,
       mcp_capture_data: mcp_capture_data ?? false,
       mcp_mutable: mcp_mutable ?? false,
+      goals_enabled: goals_enabled ?? false,
       mcp_system_prompt: mcp_system_prompt ?? null,
       default_persona_id: default_persona_id ?? null,
       default_start_nord_id: default_start_nord_id ?? null,

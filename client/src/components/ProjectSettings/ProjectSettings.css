@@ -181,3 +181,19 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* ── Disabled / Gray-out States ── */
+.nords-form__select--disabled,
+.nords-form__select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.nords-form__cascade-group--disabled {
+  opacity: 0.5;
+}
+
+.nords-form__cascade-group--disabled .nords-form__cascade-title {
+  color: var(--nords-color-text-disabled);
+}

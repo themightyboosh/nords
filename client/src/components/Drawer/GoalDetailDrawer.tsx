@@ -63,6 +63,9 @@ export function GoalDetailDrawer({
             <h2 className="goal-detail-drawer__name">{goal.name}</h2>
             <span className="goal-detail-drawer__eyebrow">Goal Config</span>
           </div>
+          <button className="nords-close-btn" onClick={onClose} aria-label="Close">
+            <X size={18} strokeWidth={2} />
+          </button>
         </div>
 
         <div className="goal-detail-drawer__content">

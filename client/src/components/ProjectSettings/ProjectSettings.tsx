@@ -36,6 +36,7 @@ interface ProjectData {
   mcp_enabled: boolean;
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
+  goals_enabled: boolean;
   mcp_system_prompt: string | null;
   default_persona_id: string | null;
   default_start_nord_id: string | null;
@@ -95,6 +96,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           mcp_enabled: data.mcp_enabled,
           mcp_capture_data: data.mcp_capture_data,
           mcp_mutable: data.mcp_mutable,
+          goals_enabled: (data as any).goals_enabled ?? false,
           mcp_system_prompt: data.mcp_system_prompt || '',
           default_persona_id: data.default_persona_id,
           default_start_nord_id: data.default_start_nord_id,
@@ -169,6 +171,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
         mcp_enabled: form.mcp_enabled,
         mcp_capture_data: form.mcp_capture_data,
         mcp_mutable: form.mcp_mutable,
+        goals_enabled: (form as any).goals_enabled ?? false,
         mcp_system_prompt: form.mcp_system_prompt?.trim() || null,
         default_persona_id: form.default_persona_id || null,
         default_start_nord_id: form.default_start_nord_id || null,
@@ -280,26 +283,27 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           <div className="nords-form__divider" />
 
           {/* ── Default Persona ── */}
-          {personas.length > 0 && (
-            <div className="nords-form__field">
-              <label className="nords-form__label">Default Persona</label>
-              <select
-                className="nords-form__select"
-                value={form.default_persona_id || ''}
-                onChange={e => setForm({ ...form, default_persona_id: e.target.value || null })}
-              >
-                <option value="">— None —</option>
-                {personas.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div className="nords-form__field">
+            <label className="nords-form__label">Default Persona</label>
+            <select
+              className={`nords-form__select${personas.length === 0 ? ' nords-form__select--disabled' : ''}`}
+              value={form.default_persona_id || ''}
+              onChange={e => setForm({ ...form, default_persona_id: e.target.value || null })}
+              disabled={personas.length === 0}
+            >
+              <option value="">{personas.length === 0 ? 'No personas defined' : '— None —'}</option>
+              {personas.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
 
           {/* ── Default Start Nord (Category → Nord cascade) ── */}
-          {nordTypes.length > 0 && (
-            <div className="nords-form__cascade-group">
-              <span className="nords-form__cascade-title">Default Start Nord</span>
+          <div className={`nords-form__cascade-group${nordTypes.length === 0 ? ' nords-form__cascade-group--disabled' : ''}`}>
+            <span className="nords-form__cascade-title">Default Start Nord</span>
+            {nordTypes.length === 0 ? (
+              <span className="nords-form__hint">No nords defined in this project yet.</span>
+            ) : (
               <div className="nords-form__cascade-row">
                 <div className="nords-form__field">
                   <label className="nords-form__label">Nord Type</label>
@@ -332,50 +336,54 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
                   </select>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* ── Default End Nord (same cascade pattern) ── */}
-          {nordTypes.length > 0 && (
-            <div className="nords-form__cascade-group">
-              <span className="nords-form__cascade-title">Default End Nord</span>
-              <span className="nords-form__hint" style={{ marginTop: '-6px', marginBottom: '8px' }}>
-                Session auto-transitions here when all required properties are met.
-              </span>
-              <div className="nords-form__cascade-row">
-                <div className="nords-form__field">
-                  <label className="nords-form__label">Nord Type</label>
-                  <select
-                    className="nords-form__select"
-                    value={selectedCategoryForEndNord}
-                    onChange={e => {
-                      setSelectedCategoryForEndNord(e.target.value);
-                      setForm({ ...form, default_end_nord_id: null });
-                    }}
-                  >
-                    <option value="">— None —</option>
-                    {nordTypes.map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
+          <div className={`nords-form__cascade-group${nordTypes.length === 0 ? ' nords-form__cascade-group--disabled' : ''}`}>
+            <span className="nords-form__cascade-title">Default End Nord</span>
+            {nordTypes.length === 0 ? (
+              <span className="nords-form__hint">No nords defined in this project yet.</span>
+            ) : (
+              <>
+                <span className="nords-form__hint" style={{ marginTop: '-6px', marginBottom: '8px' }}>
+                  Session auto-transitions here when all required properties are met.
+                </span>
+                <div className="nords-form__cascade-row">
+                  <div className="nords-form__field">
+                    <label className="nords-form__label">Nord Type</label>
+                    <select
+                      className="nords-form__select"
+                      value={selectedCategoryForEndNord}
+                      onChange={e => {
+                        setSelectedCategoryForEndNord(e.target.value);
+                        setForm({ ...form, default_end_nord_id: null });
+                      }}
+                    >
+                      <option value="">— None —</option>
+                      {nordTypes.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="nords-form__field">
+                    <label className="nords-form__label">Nord</label>
+                    <select
+                      className="nords-form__select"
+                      value={form.default_end_nord_id || ''}
+                      onChange={e => setForm({ ...form, default_end_nord_id: e.target.value || null })}
+                      disabled={!selectedCategoryForEndNord || filteredEndNords.length === 0}
+                    >
+                      <option value="">— None —</option>
+                      {filteredEndNords.map(n => (
+                        <option key={n.id} value={n.id}>{n.title}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div className="nords-form__field">
-                  <label className="nords-form__label">Nord</label>
-                  <select
-                    className="nords-form__select"
-                    value={form.default_end_nord_id || ''}
-                    onChange={e => setForm({ ...form, default_end_nord_id: e.target.value || null })}
-                    disabled={!selectedCategoryForEndNord || filteredEndNords.length === 0}
-                  >
-                    <option value="">— None —</option>
-                    {filteredEndNords.map(n => (
-                      <option key={n.id} value={n.id}>{n.title}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
 
           <div className="nords-form__divider" />
 
@@ -471,10 +479,10 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
               <label className="nords-form__checkbox">
                 <input
                   type="checkbox"
-                  checked={form.mcp_mutable || false}
-                  onChange={e => setForm({ ...form, mcp_mutable: e.target.checked })}
+                  checked={(form as any).goals_enabled || false}
+                  onChange={e => setForm({ ...form, goals_enabled: e.target.checked } as any)}
                 />
-                <span>Mutable <span className="nords-form__experimental">(experimental)</span></span>
+                <span>Enable Goals</span>
               </label>
 
               <div className="nords-form__field" style={{ marginTop: '12px' }}>

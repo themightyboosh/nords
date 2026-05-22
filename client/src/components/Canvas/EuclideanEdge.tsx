@@ -289,9 +289,18 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   if (!isHighlighted) {
     const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
     const hasOff = Math.abs(offset) >= 1;
+    const QUIET_WIGGLE_PX = 8; // Match EDGE_WIGGLE_PX in ActiveEdge. Set to 0 to revert.
     let qPathD: string;
     if (!hasSplay && !hasOff) {
-      qPathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+      if (QUIET_WIGGLE_PX === 0) {
+        qPathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+      } else {
+        const cp1x = sx + dx * 0.33 + perpUnitX * QUIET_WIGGLE_PX;
+        const cp1y = sy + dy * 0.33 + perpUnitY * QUIET_WIGGLE_PX;
+        const cp2x = sx + dx * 0.66 - perpUnitX * QUIET_WIGGLE_PX;
+        const cp2y = sy + dy * 0.66 - perpUnitY * QUIET_WIGGLE_PX;
+        qPathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${tx} ${ty}`;
+      }
     } else {
       const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
       const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
@@ -431,10 +440,22 @@ const ActiveEdge = React.memo(function ActiveEdge({
   const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
   const hasOffset = Math.abs(offset) >= 1;
 
-  // ── Static path — Bézier for splay/ribbon, straight line otherwise ──
+  // ── Static path — Bézier for splay/ribbon, subtle wiggle otherwise ──
+  // EDGE_WIGGLE_PX: Set to 0 to revert to straight lines. Positive values
+  // add a gentle perpendicular bezier curve for organic feel.
+  const EDGE_WIGGLE_PX = 8;
+
   const pathD = useMemo(() => {
     if (!hasSplay && !hasOffset) {
-      return `M ${sx} ${sy} L ${tx} ${ty}`;
+      if (EDGE_WIGGLE_PX === 0) {
+        return `M ${sx} ${sy} L ${tx} ${ty}`;
+      }
+      // Gentle cubic bézier wiggle: control points offset perpendicular at 1/3 and 2/3
+      const cp1x = sx + dx * 0.33 + perpUnitX * EDGE_WIGGLE_PX;
+      const cp1y = sy + dy * 0.33 + perpUnitY * EDGE_WIGGLE_PX;
+      const cp2x = sx + dx * 0.66 - perpUnitX * EDGE_WIGGLE_PX;
+      const cp2y = sy + dy * 0.66 - perpUnitY * EDGE_WIGGLE_PX;
+      return `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${tx} ${ty}`;
     }
     const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
     const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;

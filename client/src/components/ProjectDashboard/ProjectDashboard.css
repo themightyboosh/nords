@@ -260,7 +260,16 @@
 }
 
 .nords-dashboard__card-icon {
-  font-size: 1.5rem;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--nords-radius-md);
+  background: color-mix(in srgb, var(--nords-color-accent, #6366f1) 12%, transparent);
+  color: var(--nords-color-accent, #6366f1);
+  flex-shrink: 0;
 }
 
 .nords-dashboard__card-header-right {

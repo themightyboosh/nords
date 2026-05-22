@@ -70,6 +70,7 @@ export function PersonaLensDrawer({
             <h2 className="persona-lens-drawer__name">{persona.name}</h2>
             <span className="persona-lens-drawer__eyebrow">Persona Lens</span>
           </div>
+          <button className="nords-close-btn" onClick={onClose} aria-label="Close">×</button>
         </div>
 
         {/* ── Read-only fields ── */}

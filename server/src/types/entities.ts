@@ -39,6 +39,7 @@ export interface Project {
   mcp_enabled: boolean;
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
+  goals_enabled: boolean;
   mcp_system_prompt: string | null;
   mcp_welcome_message: string | null;
   project_mode: 'explore' | 'collect' | 'guided';
