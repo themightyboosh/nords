@@ -99,6 +99,16 @@
       "meaning": "Dynamic key-value store on nords and connections. Keys correspond to PropertySchema names defined on the entity's type.",
       "example": {"Status": "In Progress", "Priority": "High", "Story Points": 5}
     },
+    "source": {
+      "type": "enum",
+      "values": {
+        "user": "Admin-set context property. Filled when creating a nord instance. Defines the node's identity on the knowledge graph. Read-only to the AI.",
+        "mcp": "AI-collected knowledge property. Populated during MCP sessions via ethnographic conversation. Forms the structured knowledge graph data. Required MCP properties drive goal completion. Template values serve as examples for the AI."
+      },
+      "meaning": "Distinguishes between admin context and AI-collectible structured data on PropertySchema. MCP properties appear in the planning_queue, are bindable to goals, and are shared by property name across session nords.",
+      "default": "user",
+      "used_by": "Horizon planning_queue, goal property bindings, ManageTypes panel"
+    },
     "properties_schema": {
       "type": "array of PropertySchema",
       "meaning": "Column definitions for the properties JSONB bag. Each entry defines a name, data type, validation rules, and UI configuration.",

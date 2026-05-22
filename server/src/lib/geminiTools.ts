@@ -116,6 +116,16 @@ export function buildToolDeclarations(
       description: 'Get session goals with progress. Returns each goal\'s status (pending/active/complete/cancelled), bound properties with collected values, exclusion groups, and prerequisite chains. Goal events are also returned automatically after every nords_update_session_nord call.',
       parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
     },
+    {
+      name: 'nords_get_briefing',
+      description: `Cold-start composite tool — returns dictionary + horizon + goals in a single call. Use this at the very beginning of a session instead of calling nords_get_dictionary and nords_get_horizon separately. Saves 2 round-trips.${ctx}`,
+      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
+    },
+    {
+      name: 'nords_get_analytics',
+      description: 'Get aggregate analytics for the project: session counts by status, traversal stats, and top-visited nords.',
+      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
+    },
   ];
 
   const session: FunctionDeclaration[] = [

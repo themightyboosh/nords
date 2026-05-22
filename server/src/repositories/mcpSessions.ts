@@ -1,5 +1,6 @@
 import { query, queryOne } from '../db.js';
 import type { McpSession, McpTraversal, McpNordVisit, McpSessionNord, Project } from '../types/entities.js';
+import * as goalsRepo from './goals.js';
 
 // ── Sessions ──
 
@@ -10,6 +11,15 @@ export async function createSession(
   _userId?: string | null,
   _tokenId?: string | null
 ): Promise<McpSession> {
+  // Gate on mcp_enabled — admin must enable MCP for this project
+  const project = await queryOne<{ mcp_enabled: boolean; mcp_capture_data: boolean }>(
+    'SELECT mcp_enabled, mcp_capture_data FROM projects WHERE id = $1',
+    [projectId]
+  );
+  if (!project?.mcp_enabled) {
+    throw new Error('MCP is not enabled for this project. Enable it in Project Settings.');
+  }
+
   const session = await queryOne<McpSession>(`
     INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id)
     VALUES ($1, $2, $3)
@@ -257,14 +267,32 @@ export function invalidateDictionaryCache(projectId: string): void {
 const TRAVERSAL_HISTORY_LIMIT = 5;
 const NEIGHBOR_LIMIT = 10;
 
-/** Filter schema to only fields not yet collected in session_properties */
+/**
+ * Filter schema to only AI-collectible fields not yet collected.
+ *
+ * - source: 'user' → admin context, excluded from collection
+ * - source: 'mcp' or unset → AI-collectible (unset = backwards compat)
+ * - globallyKnownKeys: properties collected on ANY session nord
+ *   (MCP properties are shared by key name — once known, known everywhere)
+ */
 function computeRemainingSchema(
   schema: Record<string, unknown>[],
-  sessionProps: Record<string, unknown>
+  sessionProps: Record<string, unknown>,
+  globallyKnownKeys?: Set<string>
 ): Record<string, unknown>[] {
-  if (!schema?.length || !sessionProps) return schema || [];
-  const collectedKeys = new Set(Object.keys(sessionProps));
-  return schema.filter((field: Record<string, unknown>) => !collectedKeys.has(field.name as string));
+  if (!schema?.length) return [];
+  // Exclude admin-set context properties (source: 'user')
+  // Include MCP-collectible and untagged properties (backwards compat)
+  const collectibleFields = schema.filter((field: Record<string, unknown>) => {
+    const source = field.source as string | undefined;
+    return source !== 'user';
+  });
+  if (collectibleFields.length === 0) return [];
+  const localKeys = new Set(Object.keys(sessionProps || {}));
+  return collectibleFields.filter((field: Record<string, unknown>) => {
+    const name = field.name as string;
+    return !localKeys.has(name) && !globallyKnownKeys?.has(name);
+  });
 }
 
 export interface HorizonNeighbor {
@@ -285,9 +313,11 @@ export interface HorizonNeighbor {
     distance_x: number;
     distance_y: number;
     connection_properties: Record<string, unknown>;
+    connection_schema: unknown[]; // connection type's property schema
   };
   session_progress: { filled: number; required: number; complete: boolean } | null;
   persona_bias: number;
+  goal_proximity: number;
   spectrum_position: number;
 }
 
@@ -302,9 +332,27 @@ export interface SessionHorizon {
   completion: { filled: number; required: number; percentage: number };
   neighbors: HorizonNeighbor[];
   planning_queue: Array<{ nord_id: string; title: string; type_name: string }>;
-  traversal_history: string[];
+  traversal_history: Array<{
+    source_id: string; source_title: string;
+    target_id: string; target_title: string;
+    traversal_type: string; connection_id: string;
+  }>;
   suggested_next: { nord_id: string; title: string; reason: string } | null;
   predicted_path: Array<{ nord_id: string; title: string; type_name: string }>;
+  goals: Array<{
+    goal_id: string; goal_name: string; icon: string;
+    status: string;
+    progress: { filled: number; total: number };
+    end_type: 'reset' | 'continue' | null;
+    achieved_prompt: string | null;
+  }>;
+  session_meta: {
+    session_id: string;
+    project_mode: string;
+    project_purpose: string | null;
+    end_nord: { id: string; title: string } | null;
+    session_status: string;
+  };
 }
 
 /**
@@ -323,12 +371,48 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     [sessionId]
   );
   if (!session) {
-    return { current_nord: null, persona: null, completion: { filled: 0, required: 0, percentage: 0 }, neighbors: [], planning_queue: [], traversal_history: [], suggested_next: null, predicted_path: [] };
+    return {
+      current_nord: null, persona: null,
+      completion: { filled: 0, required: 0, percentage: 0 },
+      neighbors: [], planning_queue: [], traversal_history: [],
+      suggested_next: null, predicted_path: [],
+      goals: [],
+      session_meta: { session_id: sessionId, project_mode: 'collect', project_purpose: null, end_nord: null, session_status: 'unknown' },
+    };
+  }
+
+  // Fetch project metadata for session_meta
+  const projectRow = await queryOne<{
+    project_mode: string; purpose: string | null;
+    default_end_nord_id: string | null;
+  }>(
+    'SELECT project_mode, purpose, default_end_nord_id FROM projects WHERE id = $1',
+    [session.project_id]
+  );
+  let endNord: { id: string; title: string } | null = null;
+  if (projectRow?.default_end_nord_id) {
+    const en = await queryOne<{ id: string; title: string }>(
+      'SELECT id, title FROM nords WHERE id = $1 AND deleted_at IS NULL',
+      [projectRow.default_end_nord_id]
+    );
+    if (en) endNord = { id: en.id, title: en.title };
   }
 
   // Pre-fetch all session nords (used for completion + neighbor progress)
   const sessionNords = await findSessionNords(sessionId);
   const sessionNordMap = new Map(sessionNords.map(sn => [sn.nord_id, sn]));
+
+  // Build global set of all property keys collected across ANY session nord.
+  // MCP properties are shared globally — once known at one nord, known everywhere.
+  const globallyKnownKeys = new Set<string>();
+  for (const sn of sessionNords) {
+    const props = sn.properties as Record<string, unknown> || {};
+    for (const [key, value] of Object.entries(props)) {
+      if (value !== undefined && value !== null && value !== '') {
+        globallyKnownKeys.add(key);
+      }
+    }
+  }
 
   // 2. Current nord WITH session completion (#7)
   let currentNord: SessionHorizon['current_nord'] = null;
@@ -345,7 +429,7 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       currentNord = {
         id: nord.id, title: nord.title, type_name: nordType?.name || 'Unknown', properties: nord.properties,
         session_properties: sessionProps,
-        remaining_schema: computeRemainingSchema(fullSchema, sessionProps),
+        remaining_schema: computeRemainingSchema(fullSchema, sessionProps, globallyKnownKeys),
         session_progress: sn ? { filled: sn.filled_count, required: sn.required_count, complete: sn.complete } : null,
       };
     }
@@ -378,6 +462,7 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       neighbor_id: string; neighbor_title: string; neighbor_type_id: string;
       neighbor_type_name: string; neighbor_properties: Record<string, unknown>;
       neighbor_properties_schema: string;
+      conn_properties_schema: string;
     }>(`
       SELECT
         c.id AS conn_id, c.type_id AS conn_type_id, ct.name AS conn_type_name,
@@ -385,6 +470,7 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
         ct.x_stage_labels::text AS conn_x_stage_labels,
         ct.direction_prepositions::text AS conn_direction_prepositions,
         c.properties::text AS conn_properties,
+        ct.properties_schema::text AS conn_properties_schema,
         c.distance_x, c.distance_y, c.direction,
         n.id AS neighbor_id, n.title AS neighbor_title, n.type_id AS neighbor_type_id,
         nt.name AS neighbor_type_name, n.properties AS neighbor_properties,
@@ -419,7 +505,7 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
           id: row.neighbor_id, title: row.neighbor_title, type_id: row.neighbor_type_id, type_name: row.neighbor_type_name,
           properties: row.neighbor_properties,
           session_properties: neighborSessionProps,
-          remaining_schema: computeRemainingSchema(neighborSchema, neighborSessionProps),
+          remaining_schema: computeRemainingSchema(neighborSchema, neighborSessionProps, globallyKnownKeys),
         },
         relationship: {
           connection_id: row.conn_id, type_name: row.conn_type_name, verb: row.conn_verb,
@@ -427,15 +513,48 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
           measurement_mode: row.conn_measurement_mode, stage,
           distance_x: row.distance_x, distance_y: row.distance_y,
           connection_properties: safeParseJSON(row.conn_properties, {}), // #3
+          connection_schema: safeParseJSON(row.conn_properties_schema, []),
         },
         session_progress,
         persona_bias,
+        goal_proximity: 0, // updated below for guided mode
         spectrum_position: row.distance_x,
       });
     }
 
-    // Sort by persona bias, cap at NEIGHBOR_LIMIT
-    neighbors.sort((a, b) => b.persona_bias - a.persona_bias);
+    // ── Guided Mode: Goal path proximity boost ──
+    // In guided mode, neighbors bound to active goals get a priority boost.
+    // This is additive with persona_bias — it nudges, never restricts.
+    const projectMode = projectRow?.project_mode || 'collect';
+    let goalBoundNordIds = new Set<string>();
+    if (projectMode === 'guided') {
+      const activeGoalBindings = await query<{ nord_id: string }>(`
+        SELECT DISTINCT gp.nord_id
+        FROM goal_properties gp
+        JOIN mcp_session_goals sg ON sg.goal_id = gp.goal_id
+        WHERE sg.session_id = $1 AND sg.status = 'active'
+      `, [sessionId]);
+      goalBoundNordIds = new Set(activeGoalBindings.map(b => b.nord_id));
+    }
+
+    // Apply goal_proximity to each neighbor
+    for (const n of neighbors) {
+      n.goal_proximity = goalBoundNordIds.has(n.nord.id) ? 0.3 : 0;
+    }
+
+    // Sort: (persona_bias + goal_proximity) → incomplete first → alphabetical
+    neighbors.sort((a, b) => {
+      const aScore = a.persona_bias + a.goal_proximity;
+      const bScore = b.persona_bias + b.goal_proximity;
+      const scoreDiff = bScore - aScore;
+      if (Math.abs(scoreDiff) > 0.001) return scoreDiff;
+      // Prefer incomplete nords
+      const aComplete = a.session_progress?.complete ?? false;
+      const bComplete = b.session_progress?.complete ?? false;
+      if (aComplete !== bComplete) return aComplete ? 1 : -1;
+      // Alphabetical tiebreak
+      return a.nord.title.localeCompare(b.nord.title);
+    });
     neighbors.splice(NEIGHBOR_LIMIT);
   }
 
@@ -450,10 +569,14 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
 
   // 6. Traversal history — single JOIN query, capped at last N entries
   const traversalRows = await query<{
-    source_title: string; target_title: string; traversal_type: string;
+    source_id: string; source_title: string;
+    target_id: string; target_title: string;
+    traversal_type: string; connection_id: string;
   }>(`
     SELECT
-      sn.title AS source_title, tn.title AS target_title, t.traversal_type
+      t.source_nord_id AS source_id, sn.title AS source_title,
+      t.target_nord_id AS target_id, tn.title AS target_title,
+      t.traversal_type, t.connection_id
     FROM mcp_traversals t
     LEFT JOIN nords sn ON sn.id = t.source_nord_id
     LEFT JOIN nords tn ON tn.id = t.target_nord_id
@@ -463,9 +586,14 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
   `, [sessionId, TRAVERSAL_HISTORY_LIMIT]);
   // Reverse back to chronological after DESC LIMIT
   traversalRows.reverse();
-  const traversal_history = traversalRows.map(r =>
-    `${r.source_title || '?'} →(${r.traversal_type}) ${r.target_title || '?'}`
-  );
+  const traversal_history = traversalRows.map(r => ({
+    source_id: r.source_id || '',
+    source_title: r.source_title || '?',
+    target_id: r.target_id || '',
+    target_title: r.target_title || '?',
+    traversal_type: r.traversal_type,
+    connection_id: r.connection_id || '',
+  }));
 
   // 7. Suggested next — highest persona_bias incomplete neighbor
   const incompleteNordIds = new Set(
@@ -509,23 +637,60 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     );
   }
 
-  // 9. Planning queue — nords with required properties not yet visited (for AI planning, not conversation)
-  const planningQueue = await query<{ nord_id: string; title: string; type_name: string }>(`
-    SELECT n.id AS nord_id, n.title, nt.name AS type_name
+  // 9. Planning queue — all incomplete nords, prioritized by MCP properties (collectible) first
+  const planningQueue = await query<{ nord_id: string; title: string; type_name: string; has_mcp_properties: boolean }>(`
+    SELECT n.id AS nord_id, n.title, nt.name AS type_name,
+           EXISTS (
+             SELECT 1 FROM jsonb_array_elements(nt.properties_schema) AS prop
+             WHERE (prop->>'source') = 'mcp'
+           ) AS has_mcp_properties
     FROM nords n
     JOIN nord_types nt ON nt.id = n.type_id
     WHERE n.project_id = $1 AND n.deleted_at IS NULL
       AND n.id NOT IN (SELECT nord_id FROM mcp_session_nords WHERE session_id = $2 AND complete = true)
-      AND EXISTS (
+    ORDER BY
+      has_mcp_properties DESC,
+      EXISTS (
         SELECT 1 FROM jsonb_array_elements(nt.properties_schema) AS prop
         WHERE (prop->>'required')::boolean = true
-          AND (prop->>'source') = 'mcp'
-      )
-    ORDER BY n.title
-    LIMIT 10
+      ) DESC,
+      n.title
+    LIMIT 15
   `, [session.project_id, sessionId]);
 
-  return { current_nord: currentNord, persona, completion, neighbors, planning_queue: planningQueue, traversal_history, suggested_next, predicted_path };
+  // 10. Goals — fetch session goal state with progress
+  const sessionGoals = await goalsRepo.findSessionGoals(sessionId, session.project_id);
+  const goals = sessionGoals
+    .filter(g => !g.is_implicit)
+    .map(g => {
+      const filled = g.properties?.filter(p => p.collected).length || 0;
+      const total = g.properties?.length || 0;
+      return {
+        goal_id: g.goal_id,
+        goal_name: g.goal_name,
+        icon: g.goal_icon || '🎯',
+        status: g.status,
+        progress: { filled, total },
+        end_type: g.end_type,
+        achieved_prompt: g.achieved_prompt,
+      };
+    });
+
+  // Build session_meta
+  const session_meta = {
+    session_id: sessionId,
+    project_mode: projectRow?.project_mode || 'collect',
+    project_purpose: projectRow?.purpose || null,
+    end_nord: endNord,
+    session_status: session.status || 'active',
+  };
+
+  return {
+    current_nord: currentNord, persona, completion, neighbors,
+    planning_queue: planningQueue, traversal_history,
+    suggested_next, predicted_path,
+    goals, session_meta,
+  };
 }
 
 export async function checkSessionCompletion(

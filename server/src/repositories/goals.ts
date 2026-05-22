@@ -501,7 +501,14 @@ async function evaluateImplicitGoal(
   return true;
 }
 
-/** Evaluate an explicit goal: all bound properties have values */
+/**
+ * Evaluate an explicit goal: all bound properties have values.
+ *
+ * MCP properties are shared globally by key name — if "Name" is collected
+ * on ANY session nord, it counts as known for goal bindings on every nord.
+ * The bound nord is checked first (direct match), then falls back to global lookup.
+ * Filled values always win over empty ones.
+ */
 async function evaluateExplicitGoal(
   goalId: string,
   sessionNordProps: Map<string, Record<string, unknown>>,
@@ -513,14 +520,37 @@ async function evaluateExplicitGoal(
 
   if (bindings.length === 0) return false;
 
+  // Build global property lookup — shared by key name across all session nords
+  const globalProps = new Map<string, { value: unknown; source_nord_id: string }>();
+  for (const [nordId, props] of sessionNordProps) {
+    for (const [key, value] of Object.entries(props)) {
+      if (value !== undefined && value !== null && value !== '') {
+        if (!globalProps.has(key)) {
+          globalProps.set(key, { value, source_nord_id: nordId });
+        }
+      }
+    }
+  }
+
   for (const binding of bindings) {
+    // Check the bound nord first (direct match preferred)
     const nordProps = sessionNordProps.get(binding.nord_id);
-    if (!nordProps) return false;
+    const localValue = nordProps?.[binding.property_name];
+    if (localValue !== undefined && localValue !== null && localValue !== '') {
+      completedData[`${binding.nord_id}.${binding.property_name}`] = localValue;
+      continue;
+    }
 
-    const value = nordProps[binding.property_name];
-    if (value === undefined || value === null || value === '') return false;
+    // Global fallback — any session nord with this property name
+    const globalMatch = globalProps.get(binding.property_name);
+    if (globalMatch) {
+      completedData[`${binding.nord_id}.${binding.property_name}`] = globalMatch.value;
+      completedData[`${binding.nord_id}.${binding.property_name}._global_source`] = globalMatch.source_nord_id;
+      continue;
+    }
 
-    completedData[`${binding.nord_id}.${binding.property_name}`] = value;
+    // Not collected anywhere — goal is incomplete
+    return false;
   }
 
   return true;
@@ -589,17 +619,31 @@ export async function findSessionGoals(
     bindingsByGoal.set(b.goal_id, arr);
   }
 
+  // Build global property lookup (same logic as evaluateExplicitGoal)
+  const globalProps = new Map<string, unknown>();
+  for (const [, props] of sessionNordProps) {
+    for (const [key, value] of Object.entries(props)) {
+      if (value !== undefined && value !== null && value !== '') {
+        if (!globalProps.has(key)) globalProps.set(key, value);
+      }
+    }
+  }
+
   return rows.map(row => {
     const goalBindings = bindingsByGoal.get(row.goal_id) || [];
     const properties = goalBindings.slice(0, 5).map(b => {
+      // Check bound nord first, then global fallback
       const nordProps = sessionNordProps.get(b.nord_id) || {};
-      const value = nordProps[b.property_name];
+      const localValue = nordProps[b.property_name];
+      const value = (localValue !== undefined && localValue !== null && localValue !== '')
+        ? localValue
+        : globalProps.get(b.property_name) ?? null;
       return {
         nord_id: b.nord_id,
         nord_title: b.nord_title,
         property_name: b.property_name,
         collected: value !== undefined && value !== null && value !== '',
-        value: value ?? null,
+        value,
       };
     });
 

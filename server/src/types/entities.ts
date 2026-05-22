@@ -58,6 +58,8 @@ export interface PropertySchema {
   defaultValue?: string | number | boolean | null;
   options?: string[];
   card_row?: number;
+  /** 'user' = admin-set context (node identity), 'mcp' = AI-collected knowledge (session data). Default: 'user'. */
+  source?: 'user' | 'mcp';
   config?: Record<string, unknown>;
 }
 

@@ -102,3 +102,8 @@
   --nords-glass-bg: rgba(255, 255, 255, 0.85);
   --nords-glass-blur: 16px;
 }
+
+/* ── Logo: invert brand blue → dark for light backgrounds ── */
+[data-theme="obsidian-light"] .nords-logo {
+  filter: brightness(0) saturate(100%) invert(8%) sepia(20%) saturate(500%) hue-rotate(180deg);
+}

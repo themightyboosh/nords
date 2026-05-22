@@ -23,7 +23,7 @@ interface NordRef {
   id: string;
   title: string;
   type_name: string;
-  properties_schema: Array<{ name: string; type: string }>;
+  properties_schema: Array<{ name: string; type: string; source?: 'user' | 'mcp' }>;
 }
 
 interface GoalDetailDrawerProps {
@@ -203,7 +203,11 @@ function AddPropertyRow({
   const selectedNord = nords.find(n => n.id === selectedNordId);
   const availableProps = selectedNord
     ? selectedNord.properties_schema.filter(
-        p => !existingProps.some(ep => ep.nord_id === selectedNordId && ep.property_name === p.name)
+        p =>
+          // Only MCP-collectible properties can be bound to goals
+          // (source: 'user' is admin context, source: 'mcp' or unset is collectible)
+          p.source !== 'user' &&
+          !existingProps.some(ep => ep.nord_id === selectedNordId && ep.property_name === p.name)
       )
     : [];
 

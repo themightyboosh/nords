@@ -10,6 +10,7 @@
 
 import { Router, Request, Response } from 'express';
 import { nordTypesRepo, connectionTypesRepo } from '../repositories/types.js';
+import { invalidateDictionaryCache } from '../repositories/mcpSessions.js';
 import { query, queryOne } from '../db.js';
 import logger from '../lib/logger.js';
 import { validate } from '../middleware/validate.js';
@@ -106,6 +107,8 @@ typesRouter.post('/projects/:id/nord-types', validate(CreateNordTypeSchema), asy
       properties_schema: req.body.properties_schema,
       scale_property: req.body.scale_property,
     });
+    // Invalidate dictionary cache so AI sees the new type
+    invalidateDictionaryCache(req.params.id as string);
     res.status(201).json(type);
   } catch (err: any) {
     logger.error('Failed to create nord type', { error: err.message, projectId: req.params.id });
@@ -146,6 +149,9 @@ typesRouter.put('/nord-types/:typeId', validate(UpdateNordTypeSchema), async (re
       return;
     }
     res.json(updated);
+    // Invalidate dictionary cache for all projects using this type
+    const projects = await query<{ project_id: string }>('SELECT project_id FROM project_types WHERE type_id = $1', [req.params.typeId]);
+    for (const p of projects) invalidateDictionaryCache(p.project_id);
   } catch (err: any) {
     logger.error('Failed to update nord type', { error: err.message, typeId: req.params.typeId });
     res.status(500).json({ error: 'Failed to update nord type' });
@@ -174,7 +180,10 @@ typesRouter.put('/nord-types/:typeId', validate(UpdateNordTypeSchema), async (re
  */
 typesRouter.delete('/nord-types/:typeId', async (req: Request, res: Response) => {
   try {
+    // Get project IDs before deleting
+    const projects = await query<{ project_id: string }>('SELECT project_id FROM project_types WHERE type_id = $1', [req.params.typeId]);
     await nordTypesRepo.delete(req.params.typeId as string);
+    for (const p of projects) invalidateDictionaryCache(p.project_id);
     res.status(204).end();
   } catch (err: any) {
     if (err.message?.includes('Cannot delete')) {
@@ -234,6 +243,8 @@ typesRouter.post('/projects/:id/connection-types', validate(CreateConnectionType
       y_stage_labels: req.body.y_stage_labels,
       properties_schema: req.body.properties_schema,
     });
+    // Invalidate dictionary cache so AI sees the new connection type
+    invalidateDictionaryCache(req.params.id as string);
     res.status(201).json(type);
   } catch (err: any) {
     logger.error('Failed to create connection type', { error: err.message, projectId: req.params.id });
@@ -268,6 +279,9 @@ typesRouter.put('/connection-types/:typeId', validate(UpdateConnectionTypeSchema
       return;
     }
     res.json(updated);
+    // Invalidate dictionary cache for all projects using this connection type
+    const projects = await query<{ project_id: string }>('SELECT project_id FROM project_types WHERE type_id = $1', [req.params.typeId]);
+    for (const p of projects) invalidateDictionaryCache(p.project_id);
   } catch (err: any) {
     logger.error('Failed to update connection type', { error: err.message, typeId: req.params.typeId });
     res.status(500).json({ error: 'Failed to update connection type' });
@@ -296,7 +310,10 @@ typesRouter.put('/connection-types/:typeId', validate(UpdateConnectionTypeSchema
  */
 typesRouter.delete('/connection-types/:typeId', async (req: Request, res: Response) => {
   try {
+    // Get project IDs before deleting
+    const projects = await query<{ project_id: string }>('SELECT project_id FROM project_types WHERE type_id = $1', [req.params.typeId]);
     await connectionTypesRepo.delete(req.params.typeId as string);
+    for (const p of projects) invalidateDictionaryCache(p.project_id);
     res.status(204).end();
   } catch (err: any) {
     if (err.message?.includes('Cannot delete')) {

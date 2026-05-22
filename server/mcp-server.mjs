@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 /**
- * mcp-server.mjs — Nords MCP Server (stdio transport)
+ * @deprecated — Use server/src/mcp-server.ts instead.
+ *
+ * This HTTP-proxy MCP server is superseded by the direct-DB TypeScript
+ * implementation which has full tool parity, property validation, and
+ * goal evaluation. Kept as reference for the HTTP-proxy pattern only.
+ *
+ * Canonical server: npx tsx server/src/mcp-server.ts
+ *
+ * mcp-server.mjs — Nords MCP Server (stdio transport, HTTP proxy)
  *
  * Exposes the Nords tool suite via the Model Context Protocol so that
  * Claude (or any MCP-compatible client) can interact with a project.
@@ -207,7 +215,8 @@ server.tool(
   },
   async ({ nord_id, properties, required_count, filled_count }) => {
     const sid = await ensureSession();
-    const result = await api('PUT', `/api/mcp-sessions/${sid}/nords/${nord_id}`, {
+    const result = await api('PUT', `/api/mcp-sessions/${sid}/nords`, {
+      nord_id,
       properties,
       required_count: required_count ?? 0,
       filled_count: filled_count ?? 0,

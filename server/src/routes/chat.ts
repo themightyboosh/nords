@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 /**
  * chat.ts — Gemini proxy with full tool-calling loop.
  *
@@ -262,7 +264,23 @@ function buildResumeContext(horizon: mcpRepo.SessionHorizon): string {
 
   // Traversal history (already capped server-side)
   if (horizon.traversal_history.length > 0) {
-    parts.push(`Recent path: ${horizon.traversal_history.join(' → ')}`);
+    const pathStr = horizon.traversal_history.map(t =>
+      `${t.source_title} →(${t.traversal_type}) ${t.target_title}`
+    ).join(' → ');
+    parts.push(`Recent path: ${pathStr}`);
+  }
+
+  // Goal progress
+  if (horizon.goals && horizon.goals.length > 0) {
+    const goalSummary = horizon.goals.map(g =>
+      `${g.icon} ${g.goal_name}: ${g.status} (${g.progress.filled}/${g.progress.total})`
+    ).join('; ');
+    parts.push(`Goals: ${goalSummary}`);
+  }
+
+  // Session context
+  if (horizon.session_meta) {
+    parts.push(`Mode: ${horizon.session_meta.project_mode}${horizon.session_meta.project_purpose ? ` — ${horizon.session_meta.project_purpose}` : ''}`);
   }
 
   // Neighbors summary
@@ -399,9 +417,10 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
     // 4. Get project mutability for tool gating
     const project = await projectsRepo.findById(projectId);
     const mcpMutable = project?.mcp_mutable ?? false;
+    const mcpCaptureData = project?.mcp_capture_data ?? true;
 
      // 5. Build tool context
-    const toolCtx: ToolContext = { sessionId, projectId, mcpMutable };
+    const toolCtx: ToolContext = { sessionId, projectId, mcpMutable, mcpCaptureData };
 
     // 6. Initialize Gemini — API key or Vertex AI (Application Default Credentials)
     const gcpProject = process.env.VITE_GOOGLE_CLOUD_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT;
@@ -532,20 +551,37 @@ Set GEMINI_API_KEY in server/.env or configure GOOGLE_CLOUD_PROJECT for Vertex A
     const latency = Date.now() - startTime;
 
     // 9. Log assistant response with tool calls
+    // Store prompt hash instead of full text (~8KB savings per message).
+    // First message of the session gets the full prompt for debugging.
+    const promptHash = createHash('sha256').update(systemPrompt).digest('hex').slice(0, 16);
+    const isFirstMessage = priorMessages.length === 0;
     const assistantMsg = await mcpMessagesRepo.create({
       session_id: sessionId,
       role: 'assistant',
       content: finalReply,
       tool_calls: allToolCalls.length > 0 ? allToolCalls : null,
-      context: { toolCallCount: allToolCalls.length, temperature, model, systemPrompt },
+      context: {
+        toolCallCount: allToolCalls.length, temperature, model,
+        systemPromptHash: promptHash,
+        systemPromptLength: systemPrompt.length,
+        ...(isFirstMessage ? { systemPrompt } : {}),
+      },
       tokens_in: tokensIn,
       tokens_out: tokensOut,
       model,
       latency_ms: latency,
     });
 
-    // 10. Check session completion
-    const completionCheck = await mcpRepo.checkSessionCompletion(sessionId);
+    // 10. Check session completion — only for projects WITHOUT goals.
+    // For projects with goals, the Goal DAG engine (evaluateGoals in toolDispatch)
+    // is the canonical termination path. Running both causes double-fire.
+    const hasGoals = await queryOne<{ exists: boolean }>(
+      'SELECT EXISTS (SELECT 1 FROM goals WHERE project_id = $1) AS exists',
+      [projectId]
+    );
+    const completionCheck = !hasGoals?.exists
+      ? await mcpRepo.checkSessionCompletion(sessionId)
+      : { shouldTransition: false, endNordId: null, incompleteCount: 0 };
 
     // Fetch current horizon for dev panel
     const finalHorizon = await mcpRepo.getSessionHorizon(sessionId);

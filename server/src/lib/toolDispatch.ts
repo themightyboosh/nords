@@ -16,6 +16,7 @@ export interface ToolContext {
   sessionId: string;
   projectId: string;
   mcpMutable: boolean;
+  mcpCaptureData: boolean;
 }
 
 export interface ToolResult {
@@ -99,18 +100,75 @@ const tools: Record<string, ToolHandler> = {
     return { success: true, data: goals };
   },
 
+  nords_get_briefing: async (ctx) => {
+    const [dictionary, horizon, goals] = await Promise.all([
+      mcpRepo.getProjectDictionary(ctx.projectId),
+      mcpRepo.getSessionHorizon(ctx.sessionId),
+      goalsRepo.findSessionGoals(ctx.sessionId, ctx.projectId),
+    ]);
+    return {
+      success: true,
+      data: {
+        dictionary,
+        horizon,
+        goals,
+        _hint: 'This is a composite cold-start response. You now have full ontology, spatial context, and goal state. Begin the conversation.',
+      },
+    };
+  },
+
+  nords_get_analytics: async (ctx) => {
+    const [sessionStats, traversalStats, nordVisitStats] = await Promise.all([
+      queryOne<{ total: string; active: string; completed: string; abandoned: string }>(`
+        SELECT
+          COUNT(*) AS total,
+          COUNT(*) FILTER (WHERE status = 'active') AS active,
+          COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+          COUNT(*) FILTER (WHERE status = 'abandoned') AS abandoned
+        FROM mcp_sessions WHERE project_id = $1
+      `, [ctx.projectId]),
+      queryOne<{ total: string; avg_per_session: string }>(`
+        SELECT COUNT(*) AS total,
+          ROUND(COUNT(*)::numeric / GREATEST(COUNT(DISTINCT session_id), 1), 1) AS avg_per_session
+        FROM mcp_traversals t
+        JOIN mcp_sessions s ON s.id = t.session_id
+        WHERE s.project_id = $1
+      `, [ctx.projectId]),
+      query<{ nord_title: string; visit_count: string }>(`
+        SELECT n.title AS nord_title, COUNT(*) AS visit_count
+        FROM mcp_nord_visits v
+        JOIN nords n ON n.id = v.nord_id
+        JOIN mcp_sessions s ON s.id = v.session_id
+        WHERE s.project_id = $1
+        GROUP BY n.title ORDER BY visit_count DESC LIMIT 10
+      `, [ctx.projectId]),
+    ]);
+    return {
+      success: true,
+      data: {
+        sessions: sessionStats,
+        traversals: traversalStats,
+        top_visited_nords: nordVisitStats,
+      },
+    };
+  },
+
   // ── Tier 2: Session ──
 
   nords_traverse_connection: async (ctx, args) => {
-    const traversal = await mcpRepo.logTraversal({
-      session_id: ctx.sessionId,
-      connection_id: args.connection_id as string,
-      source_nord_id: args.source_nord_id as string,
-      target_nord_id: args.target_nord_id as string,
-      direction: args.direction as 'forward' | 'backward',
-      traversal_type: args.traversal_type as 'read' | 'advance' | 'rework' | 'create' | 'assign' | 'evaluate',
-      context: (args.context as Record<string, unknown>) || {},
-    });
+    // Gate audit trail on mcp_capture_data — traversals are analytics, not functional
+    let traversal = null;
+    if (ctx.mcpCaptureData) {
+      traversal = await mcpRepo.logTraversal({
+        session_id: ctx.sessionId,
+        connection_id: args.connection_id as string,
+        source_nord_id: args.source_nord_id as string,
+        target_nord_id: args.target_nord_id as string,
+        direction: args.direction as 'forward' | 'backward',
+        traversal_type: args.traversal_type as 'read' | 'advance' | 'rework' | 'create' | 'assign' | 'evaluate',
+        context: (args.context as Record<string, unknown>) || {},
+      });
+    }
     await mcpRepo.updateCurrentNord(ctx.sessionId, args.target_nord_id as string);
     const horizon = await mcpRepo.getSessionHorizon(ctx.sessionId);
     return { success: true, data: { traversal, horizon } };
@@ -147,6 +205,10 @@ const tools: Record<string, ToolHandler> = {
   },
 
   nords_visit_nord: async (ctx, args) => {
+    // Gate audit trail on mcp_capture_data — visits are analytics, not functional
+    if (!ctx.mcpCaptureData) {
+      return { success: true, data: { skipped: true, reason: 'mcp_capture_data is disabled' } };
+    }
     const visit = await mcpRepo.logNordVisit({
       session_id: ctx.sessionId,
       nord_id: args.nord_id as string,

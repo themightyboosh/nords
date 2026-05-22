@@ -34,6 +34,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { dispatchTool, type ToolContext } from './lib/toolDispatch.js';
 import * as mcpRepo from './repositories/mcpSessions.js';
+import { query } from './db.js';
+import { nordTypesRepo, connectionTypesRepo } from './repositories/types.js';
 
 // ── Session Management ──
 
@@ -55,6 +57,7 @@ function getToolContext(sessionId: string): ToolContext {
     sessionId,
     projectId: process.env.PROJECT_ID || '',
     mcpMutable: process.env.MCP_MUTABLE === 'true',
+    mcpCaptureData: process.env.MCP_CAPTURE_DATA !== 'false', // default true
   };
 }
 
@@ -108,14 +111,22 @@ server.tool('nords_get_nord',
 );
 
 server.tool('nords_query_nords',
-  'Search nords by type and/or title substring.',
+  'Search nords by type name and/or title substring.',
   {
+    type_name: z.string().optional().describe('Filter by nord type name (case-insensitive)'),
     type_id: z.string().optional().describe('Filter by nord type UUID'),
-    title: z.string().optional().describe('Search by title (case-insensitive)'),
+    title: z.string().optional().describe('Filter by title substring (case-insensitive)'),
   },
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
-    const result = await dispatchTool('nords_query_nords', getToolContext(sid), args);
+    // Resolve type_name → type_id if provided
+    const resolvedArgs = { ...args };
+    if (args.type_name && !args.type_id) {
+      const types = await nordTypesRepo.findByProject(process.env.PROJECT_ID!);
+      const match = types.find(t => t.name.toLowerCase() === (args.type_name as string).toLowerCase());
+      if (match) resolvedArgs.type_id = match.id;
+    }
+    const result = await dispatchTool('nords_query_nords', getToolContext(sid), resolvedArgs);
     return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
   }
 );
@@ -146,6 +157,36 @@ server.tool('nords_get_incomplete_nords',
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_get_incomplete_nords', getToolContext(sid), {});
+    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+  }
+);
+
+server.tool('nords_get_goals',
+  'Get all project goals with their property bindings, end_type, and DAG edges.',
+  {},
+  async () => {
+    const sid = await ensureSession(process.env.PROJECT_ID!);
+    const result = await dispatchTool('nords_get_goals', getToolContext(sid), {});
+    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+  }
+);
+
+server.tool('nords_get_briefing',
+  'Cold-start composite — returns dictionary + horizon + goals in one call. Use at session start.',
+  {},
+  async () => {
+    const sid = await ensureSession(process.env.PROJECT_ID!);
+    const result = await dispatchTool('nords_get_briefing', getToolContext(sid), {});
+    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+  }
+);
+
+server.tool('nords_get_analytics',
+  'Get aggregate analytics: session counts, traversal stats, top-visited nords.',
+  {},
+  async () => {
+    const sid = await ensureSession(process.env.PROJECT_ID!);
+    const result = await dispatchTool('nords_get_analytics', getToolContext(sid), {});
     return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
   }
 );
@@ -288,6 +329,82 @@ server.tool('nords_delete_connection',
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_delete_connection', getToolContext(sid), args);
     return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+  }
+);
+
+server.tool('nords_reset_session',
+  'Reset the current session (abandon it) and start a fresh one.',
+  {},
+  async () => {
+    if (currentSessionId) {
+      try {
+        await mcpRepo.endSession(currentSessionId, 'abandoned', 'Session reset by user');
+      } catch { /* ok */ }
+    }
+    currentSessionId = null;
+    const sid = await ensureSession(process.env.PROJECT_ID!);
+    const horizon = await mcpRepo.getSessionHorizon(sid);
+    return { content: [{ type: 'text' as const, text: JSON.stringify({ session_id: sid, horizon }, null, 2) }] };
+  }
+);
+
+// ── Resource: Project Overview ──
+
+server.resource(
+  'project-overview',
+  `nords://projects/${process.env.PROJECT_ID}/overview`,
+  async (uri) => {
+    const projectId = process.env.PROJECT_ID!;
+    const project = await query('SELECT name, purpose, project_mode FROM projects WHERE id = $1', [projectId]);
+    const p = project[0] as any;
+    const nords = await query(
+      `SELECT n.title, nt.name as type_name, n.properties
+       FROM nords n JOIN nord_types nt ON nt.id = n.type_id
+       WHERE n.project_id = $1 AND n.deleted_at IS NULL ORDER BY n.title`,
+      [projectId]
+    );
+    const connections = await query(
+      `SELECT sn.title as source, tn.title as target, ct.name as type_name
+       FROM connections c
+       JOIN nords sn ON sn.id = c.source_nord_id
+       JOIN nords tn ON tn.id = c.target_nord_id
+       JOIN connection_types ct ON ct.id = c.type_id
+       WHERE c.project_id = $1 AND c.deleted_at IS NULL`,
+      [projectId]
+    );
+    const goals = await query(
+      `SELECT g.name, g.end_type,
+              (SELECT COUNT(*) FROM goal_properties gp WHERE gp.goal_id = g.id) as bound_properties
+       FROM goals g WHERE g.project_id = $1 ORDER BY g.sort_order`,
+      [projectId]
+    );
+    const edges = await query(
+      `SELECT sg.name as source_goal, tg.name as target_goal
+       FROM goal_edges ge
+       JOIN goals sg ON sg.id = ge.source_goal_id
+       JOIN goals tg ON tg.id = ge.target_goal_id
+       WHERE ge.project_id = $1`,
+      [projectId]
+    );
+
+    const overview = [
+      `# ${p?.name || 'Unknown Project'}`,
+      p?.purpose ? `\nPurpose: ${p.purpose}` : '',
+      `\nMode: ${p?.project_mode || 'collect'}`,
+      `\n## Nords (${nords.length})`,
+      ...nords.map((n: any) => `- **${n.title}** (${n.type_name}) — ${Object.keys(n.properties || {}).length} properties`),
+      `\n## Connections (${connections.length})`,
+      ...connections.map((c: any) => `- ${c.source} —[${c.type_name}]→ ${c.target}`),
+      `\n## Goals (${goals.length})`,
+      ...goals.map((g: any) => {
+        const end = g.end_type ? ` [${g.end_type.toUpperCase()}]` : '';
+        return `- **${g.name}**${end} — ${g.bound_properties} bound properties`;
+      }),
+      `\n## Goal Edges (${edges.length})`,
+      ...edges.map((e: any) => `- ${e.source_goal} → ${e.target_goal}`),
+    ].join('\n');
+
+    return { contents: [{ uri: uri.href, mimeType: 'text/markdown', text: overview }] };
   }
 );
 
