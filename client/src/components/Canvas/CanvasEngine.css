@@ -232,6 +232,28 @@
   animation-play-state: paused !important;
 }
 
+/* ── Cable Jiggle (Reason-style) ──
+ * Applies the SVG feTurbulence + feDisplacementMap filter to edge paths.
+ * Creates organic, living cable sway like Propellerhead Reason's patch cables.
+ * The filter itself is defined in CanvasEngine.tsx as an inline SVG <defs>.
+ *
+ * To disable: comment out or remove the filter line below.
+ * Performance: GPU-composited — no JS cost. Paused during interaction.
+ */
+.react-flow__edge g {
+  filter: url(#nords-cable-jiggle);
+}
+
+/* Pause the cable jiggle during drag/pan/zoom for performance */
+[data-interacting] .react-flow__edge g {
+  filter: none !important;
+}
+
+/* Disable jiggle on dimmed/ghost edges — only active cables wiggle */
+.react-flow__edge.nords-edge--dimmed g {
+  filter: none;
+}
+
 @keyframes march-reverse {
   to { stroke-dashoffset: 48; }
 }
