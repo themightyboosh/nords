@@ -814,7 +814,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
             <feDisplacementMap
               in="SourceGraphic"
               in2="noise"
-              scale="4.5"
+              scale="6"
               xChannelSelector="R"
               yChannelSelector="G"
             />
