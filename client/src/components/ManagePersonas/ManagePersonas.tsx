@@ -17,11 +17,10 @@
 
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { X, Plus, Trash2, GripVertical } from 'lucide-react';
-import { createAvatar } from '@dicebear/core';
-import { notionists } from '@dicebear/collection';
 import { usePersonas, type Persona } from '../../hooks/usePersonas';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
+import { PersonaAvatar } from '../shared/PersonaAvatar';
 import './ManagePersonas.css';
 
 // ── Types ──
@@ -39,24 +38,7 @@ interface ManagePersonasProps {
   connectionTypes: ConnectionType[];
 }
 
-// ── Avatar helper ──
-function useAvatar(seed: string, size = 64) {
-  return useMemo(() => {
-    return createAvatar(notionists, { seed, size }).toDataUri();
-  }, [seed, size]);
-}
 
-function AvatarImg({ seed, size = 64, className, bgColor }: { seed: string; size?: number; className?: string; bgColor?: string }) {
-  const dataUri = useAvatar(seed, size);
-  return (
-    <img
-      src={dataUri}
-      alt="Avatar"
-      className={className}
-      style={{ width: size, height: size, backgroundColor: bgColor || '#3d4f7c' }}
-    />
-  );
-}
 
 // ── Debounce helper — auto-save on blur ──
 function useDebouncedSave(saveFn: (id: string, fields: Record<string, unknown>) => Promise<unknown>, delay = 400) {
@@ -105,7 +87,7 @@ export function ManagePersonas({ projectId, open, onClose, connectionTypes }: Ma
   if (!open) return null;
 
   return (
-    <FloatingPanel variant="modal" isOpen={open} onClose={onClose} width="min(940px, 92vw)">
+    <FloatingPanel variant="modal" isOpen={open} onClose={onClose} width="min(1080px, 96vw)">
       <div className="manage-personas">
         {/* Header */}
         <div className="manage-personas__header">
@@ -128,7 +110,7 @@ export function ManagePersonas({ projectId, open, onClose, connectionTypes }: Ma
                   className={`manage-personas__list-item ${p.id === selectedId ? 'is-active' : ''}`}
                   onClick={() => { setSelectedId(p.id); setShowAvatarPicker(false); }}
                 >
-                  <AvatarImg seed={p.avatar_seed || p.id} size={32} className="manage-personas__list-avatar" bgColor={p.accent_color} />
+                  <PersonaAvatar seed={p.avatar_seed || p.id} size={32} className="manage-personas__list-avatar" bgColor={p.accent_color} />
                   <span className="manage-personas__list-name">{p.name || 'New Persona'}</span>
                 </button>
               ))}
@@ -225,11 +207,12 @@ function PersonaEditor({
       {/* ── Header: Avatar + Name + Delete ── */}
       <div className="manage-personas__editor-header">
         <div onClick={() => setShowAvatarPicker(!showAvatarPicker)} style={{ cursor: 'pointer' }}>
-          <AvatarImg
+          <PersonaAvatar
             seed={persona.avatar_seed || persona.id}
             size={128}
             className="manage-personas__editor-avatar"
             bgColor={persona.accent_color}
+            onClick={() => setShowAvatarPicker(!showAvatarPicker)}
           />
         </div>
         <div className="manage-personas__editor-header-right">
@@ -262,7 +245,7 @@ function PersonaEditor({
               className={`manage-personas__avatar-option ${persona.avatar_seed === seed ? 'is-active' : ''}`}
               onClick={() => { onUpdate(persona.id, { avatar_seed: seed }); setShowAvatarPicker(false); }}
             >
-              <AvatarImg seed={seed} size={44} bgColor={persona.accent_color} />
+              <PersonaAvatar seed={seed} size={44} bgColor={persona.accent_color} />
             </button>
           ))}
         </div>

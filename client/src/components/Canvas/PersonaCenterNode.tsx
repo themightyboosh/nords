@@ -7,8 +7,7 @@
  */
 
 import React, { memo, useMemo } from 'react';
-import { createAvatar } from '@dicebear/core';
-import { notionists } from '@dicebear/collection';
+import { generateAvatarUri } from '../shared/PersonaAvatar';
 import type { NodeProps, Node } from '@xyflow/react';
 
 interface PersonaCenterData {
@@ -21,8 +20,8 @@ export type PersonaCenterNodeType = Node<PersonaCenterData, 'personaCenter'>;
 
 export const PersonaCenterNode = memo(({ data }: NodeProps<PersonaCenterNodeType>) => {
   const avatarUri = useMemo(() => {
-    return createAvatar(notionists, { seed: data.avatarSeed || 'default', size: 240 }).toDataUri();
-  }, [data.avatarSeed]);
+    return generateAvatarUri(data.avatarSeed || 'default', 240, data.accentColor);
+  }, [data.avatarSeed, data.accentColor]);
 
   return (
     <div className="persona-center-node">

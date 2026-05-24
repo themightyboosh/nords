@@ -10,9 +10,8 @@
  */
 
 import React, { useMemo, useCallback, useRef } from 'react';
-import { createAvatar } from '@dicebear/core';
-import { notionists } from '@dicebear/collection';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
+import { PersonaAvatar } from '../shared/PersonaAvatar';
 import type { Persona } from '../../hooks/usePersonas';
 import './PersonaLensDrawer.css';
 
@@ -35,12 +34,7 @@ interface PersonaLensDrawerProps {
   onWeightCommit: (connectionTypeId: string, weight: number) => void;
 }
 
-// ── Avatar helper ──
-function useAvatar(seed: string, size = 80) {
-  return useMemo(() => {
-    return createAvatar(notionists, { seed, size }).toDataUri();
-  }, [seed, size]);
-}
+
 
 export function PersonaLensDrawer({
   isOpen,
@@ -51,7 +45,6 @@ export function PersonaLensDrawer({
   onWeightChange,
   onWeightCommit,
 }: PersonaLensDrawerProps) {
-  const avatarUri = useAvatar(persona?.avatar_seed || 'default', 80);
 
   if (!persona) return null;
 
@@ -60,11 +53,11 @@ export function PersonaLensDrawer({
       <div className="persona-lens-drawer">
         {/* ── Header: Avatar + Name ── */}
         <div className="persona-lens-drawer__header">
-          <img
-            src={avatarUri}
-            alt={persona.name}
+          <PersonaAvatar
+            seed={persona.avatar_seed || 'default'}
+            size={80}
             className="persona-lens-drawer__avatar"
-            style={{ backgroundColor: persona.accent_color || '#3d4f7c' }}
+            bgColor={persona.accent_color}
           />
           <div className="persona-lens-drawer__identity">
             <h2 className="persona-lens-drawer__name">{persona.name}</h2>
