@@ -70,6 +70,30 @@
   padding: 1px 6px; border-radius: 3px; background: rgba(255,255,255,0.05);
 }
 
+/* ── Status Strip (always visible) ── */
+.preview-chat__status-strip {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px 16px; flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(99,102,241,0.04);
+  font-size: 11px; color: #9ca3af;
+}
+.preview-chat__status-item {
+  display: flex; align-items: center; gap: 4px;
+}
+.preview-chat__status-item strong {
+  font-weight: 600; color: #d1d5db; font-size: 11px;
+}
+.preview-chat__status-type {
+  font-size: 9px; color: #6b7280;
+  padding: 1px 5px; border-radius: 3px;
+  background: rgba(255,255,255,0.05);
+}
+.preview-chat__status-progress {
+  font-size: 9px; font-family: var(--nords-font-mono, monospace);
+  color: #818cf8; font-weight: 600;
+}
+
 /* ── Body ── */
 .preview-chat__body { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 

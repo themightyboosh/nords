@@ -443,6 +443,44 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
           </div>
         )}
 
+        {/* Persona */}
+        {h.persona && (
+          <div className="horizon-section">
+            <div className="horizon-section__title">
+              <User size={11} />
+              <span>Persona: {h.persona.name}</span>
+            </div>
+            <div className="horizon-card">
+              {h.persona.primary_motivation && (
+                <span className="horizon-card__reason">🎯 {h.persona.primary_motivation}</span>
+              )}
+              {h.persona.voice_and_tone && (
+                <span className="horizon-card__reason" style={{ marginTop: 4 }}>🗣 {h.persona.voice_and_tone}</span>
+              )}
+              {h.persona.mental_models?.length > 0 && (
+                <div style={{ marginTop: 6 }}>
+                  <span className="horizon-card__type" style={{ fontWeight: 600 }}>Mental Models</span>
+                  {h.persona.mental_models.map((mm: any, j: number) => (
+                    <div key={j} style={{ fontSize: 10, color: '#9ca3af', marginTop: 3, paddingLeft: 8, borderLeft: '2px solid rgba(99,102,241,0.3)' }}>
+                      <strong style={{ color: '#d1d5db' }}>{mm.name}</strong>: {mm.body}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {h.persona.guardrails?.length > 0 && (
+                <div style={{ marginTop: 6 }}>
+                  <span className="horizon-card__type" style={{ fontWeight: 600 }}>Guardrails</span>
+                  {h.persona.guardrails.map((g: any, j: number) => (
+                    <div key={j} style={{ fontSize: 10, color: g.mode === 'deny' ? '#f87171' : '#fbbf24', marginTop: 2 }}>
+                      [{g.mode.toUpperCase()}] {g.text}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Completion */}
         <div className="horizon-section">
           <div className="horizon-section__title">
@@ -579,6 +617,30 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
               <span className="preview-chat__session-badge">{s.status}</span>
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Status Strip — always visible when a session is active */}
+      {sessionId && lastHorizon && (
+        <div className="preview-chat__status-strip">
+          {(lastHorizon as any).current_nord && (
+            <span className="preview-chat__status-item">
+              <Eye size={10} />
+              <strong>{(lastHorizon as any).current_nord.title}</strong>
+              <span className="preview-chat__status-type">{(lastHorizon as any).current_nord.type_name}</span>
+              {(lastHorizon as any).current_nord.session_progress && (
+                <span className="preview-chat__status-progress">
+                  {(lastHorizon as any).current_nord.session_progress.filled}/{(lastHorizon as any).current_nord.session_progress.required}
+                </span>
+              )}
+            </span>
+          )}
+          {(lastHorizon as any).persona && (
+            <span className="preview-chat__status-item">
+              <User size={10} />
+              <strong>{(lastHorizon as any).persona.name}</strong>
+            </span>
+          )}
         </div>
       )}
 

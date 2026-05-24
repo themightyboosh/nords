@@ -353,7 +353,12 @@ export interface SessionHorizon {
     remaining_schema: unknown[]; // only uncollected fields
     session_progress: { filled: number; required: number; complete: boolean } | null;
   } | null;
-  persona: { id: string; name: string; weights: Record<string, number> } | null;
+  persona: {
+    id: string; name: string; weights: Record<string, number>;
+    primary_motivation: string | null; voice_and_tone: string | null;
+    mental_models: Array<{ name: string; body: string }>;
+    guardrails: Array<{ mode: string; text: string }>;
+  } | null;
   completion: { filled: number; required: number; percentage: number };
   neighbors: HorizonNeighbor[];
   planning_queue: Array<{ nord_id: string; title: string; type_name: string }>;
@@ -464,14 +469,32 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
   let persona: SessionHorizon['persona'] = null;
   const personaWeights: Record<string, number> = {};
   if (session.persona_id) {
-    const p = await queryOne<{ id: string; name: string }>('SELECT id, name FROM personas WHERE id = $1 AND deleted_at IS NULL', [session.persona_id]);
+    const p = await queryOne<{ id: string; name: string; primary_motivation: string | null; voice_and_tone: string | null; guardrails: string | null }>(
+      'SELECT id, name, primary_motivation, voice_and_tone, guardrails::text FROM personas WHERE id = $1 AND deleted_at IS NULL',
+      [session.persona_id]
+    );
     if (p) {
       const weights = await query<{ connection_type_id: string; weight: number }>(
         'SELECT connection_type_id, weight FROM persona_category_weights WHERE persona_id = $1',
         [p.id]
       );
       for (const w of weights) personaWeights[w.connection_type_id] = w.weight;
-      persona = { id: p.id, name: p.name, weights: personaWeights };
+
+      const mentalModels = await query<{ name: string; body: string }>(
+        'SELECT name, body FROM persona_mental_models WHERE persona_id = $1 ORDER BY sort_order',
+        [p.id]
+      );
+
+      let guardrails: Array<{ mode: string; text: string }> = [];
+      try { guardrails = JSON.parse(p.guardrails || '[]'); } catch { /* ignore */ }
+
+      persona = {
+        id: p.id, name: p.name, weights: personaWeights,
+        primary_motivation: p.primary_motivation,
+        voice_and_tone: p.voice_and_tone,
+        mental_models: mentalModels,
+        guardrails,
+      };
     }
   }
 
