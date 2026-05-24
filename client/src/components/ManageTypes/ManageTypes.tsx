@@ -28,6 +28,7 @@ import { IconPicker } from './IconPicker';
 import { SpectrumEditor } from '../Spectrum/SpectrumEditor';
 import { normalizeStageLabels } from '../../utils/stageLabels';
 import { hexToHSL } from '../../utils/color';
+import { UI_STRINGS } from '../../constants/uiStrings';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
 import { api } from '../../api/client';
@@ -359,14 +360,14 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
         <div className="manage-types__header">
           <div>
             <h2 className="manage-types__title">
-              {lockedTab === 'nord' ? 'Manage Nord Types' : lockedTab === 'connection' ? 'Manage Categories' : 'Manage Types'}
+              {lockedTab === 'nord' ? UI_STRINGS.types.titleNordOnly : lockedTab === 'connection' ? UI_STRINGS.types.titleCategoryOnly : UI_STRINGS.types.title}
             </h2>
             <p className="manage-types__subtitle">
               {lockedTab === 'nord'
-                ? 'Define properties and appearance for nords.'
+                ? UI_STRINGS.types.subtitleNordOnly
                 : lockedTab === 'connection'
-                ? 'Define categories and relationship types.'
-                : 'Define properties and appearance. Changes apply to all nords of each type.'}
+                ? UI_STRINGS.types.subtitleCategoryOnly
+                : UI_STRINGS.types.subtitle}
             </p>
           </div>
           <button className="manage-types__close" onClick={onClose}>
@@ -385,7 +386,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                   className={`manage-types__tab ${activeTab === 'nord' ? 'manage-types__tab--active' : ''}`}
                   onClick={() => { setActiveTab('nord'); setSelectedId(nordTypes[0]?.id || null); }}
                 >
-                  Nord Types
+                  {UI_STRINGS.types.tabNordTypes}
                 </button>
                 <button
                   className={`manage-types__tab ${activeTab === 'connection' ? 'manage-types__tab--active' : ''}`}
@@ -424,7 +425,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
               disabled={saving}
             >
               <Plus size={14} />
-              <span>New {activeTab === 'nord' ? 'Nord Type' : 'Category'}</span>
+              <span>New {activeTab === 'nord' ? 'Type' : 'Category'}</span>
             </button>
           </div>
 
@@ -1130,7 +1131,9 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
               </>
             ) : (
               <div className="manage-types__empty">
-                <p>Select a type from the sidebar, or create a new one.</p>
+                <p>{items.length === 0
+                  ? (activeTab === 'nord' ? UI_STRINGS.types.emptyNordTypes : UI_STRINGS.types.emptyCategories)
+                  : UI_STRINGS.types.emptyEditor}</p>
               </div>
             )}
           </div>

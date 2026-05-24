@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import '@xyflow/react/dist/style.css';
 import { ReactFlowProvider, useReactFlow } from '@xyflow/react';
@@ -104,6 +104,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [previewOpen, setPreviewOpen] = useState(false);
   const [testRunnerOpen, setTestRunnerOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [personaDrawerOpen, setPersonaDrawerOpen] = useState(true);
   const [projectName, setProjectName] = useState<string>('Loading…');
   const [projectMode, setProjectMode] = useState<'explore' | 'collect' | 'guided'>('explore');
 
@@ -129,6 +130,15 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const activePersona = useMemo(() => {
     return personas.find(p => p.id === activePersonaId) || null;
   }, [personas, activePersonaId]);
+
+  // Auto-open persona drawer when persona changes
+  const prevPersonaIdRef = useRef(activePersonaId);
+  useEffect(() => {
+    if (activePersonaId && activePersonaId !== prevPersonaIdRef.current) {
+      setPersonaDrawerOpen(true);
+    }
+    prevPersonaIdRef.current = activePersonaId;
+  }, [activePersonaId]);
 
   // Persona weights map for the layout engine
   const personaWeights = useMemo(() => {
@@ -288,6 +298,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onGoalClick={(id) => setSelectedGoalId(id)}
         onGoalEdgeCreate={goalsData.createEdge}
         onGoalEdgeDelete={goalsData.deleteEdge}
+        onPersonaCenterClick={() => setPersonaDrawerOpen(prev => !prev)}
       />
       {/* Goal Canvas state */}
       {lens === 'goals' && (
@@ -309,8 +320,8 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
       {/* Persona Lens Drawer — shown when viewing through a persona */}
       {lens === 'persona' && (
         <PersonaLensDrawer
-          isOpen={lens === 'persona' && !!activePersona}
-          onClose={() => {}}
+          isOpen={lens === 'persona' && !!activePersona && personaDrawerOpen}
+          onClose={() => setPersonaDrawerOpen(false)}
           persona={activePersona}
           connectionTypes={(graph?.connection_types || []).filter(ct => !ct.is_system)}
           liveWeights={liveWeights}

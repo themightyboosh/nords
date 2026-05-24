@@ -21,6 +21,7 @@ import { usePersonas, type Persona } from '../../hooks/usePersonas';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
 import { PersonaAvatar } from '../shared/PersonaAvatar';
+import { UI_STRINGS } from '../../constants/uiStrings';
 import './ManagePersonas.css';
 
 // ── Types ──
@@ -93,7 +94,7 @@ export function ManagePersonas({ projectId, open, onClose, connectionTypes }: Ma
         <div className="manage-personas__header">
           <div>
             <h2 className="manage-personas__title">Personas</h2>
-            <p className="manage-personas__subtitle">Define AI personas and category relevance.</p>
+            <p className="manage-personas__subtitle">{UI_STRINGS.personas.subtitle}</p>
           </div>
           <button className="manage-personas__close" onClick={onClose} title="Close">
             <X size={18} />
@@ -124,7 +125,7 @@ export function ManagePersonas({ projectId, open, onClose, connectionTypes }: Ma
           <div className="manage-personas__editor">
             {!selected ? (
               <div className="manage-personas__empty">
-                {personas.length === 0 ? 'Create your first persona to get started.' : 'Select a persona.'}
+                {personas.length === 0 ? UI_STRINGS.personas.emptyList : UI_STRINGS.personas.emptyEditor}
               </div>
             ) : (
               <PersonaEditor
@@ -289,9 +290,12 @@ function PersonaEditor({
           value={voiceTone}
           onChange={e => setVoiceTone(e.target.value)}
           onBlur={() => handleBlur('voice_and_tone', voiceTone)}
-          placeholder="Describe their communication style..."
+          placeholder="Describe their communication style (e.g., 'Professional but warm. Uses analogies to explain technical concepts. Asks clarifying questions before giving advice.')"
           rows={2}
         />
+        <p className="manage-personas__temp-hint">
+          Injected into the AI briefing — shapes how the persona communicates throughout every session.
+        </p>
       </div>
 
       {/* ── AI Temperature ── */}

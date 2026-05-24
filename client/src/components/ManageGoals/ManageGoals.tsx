@@ -27,6 +27,7 @@ import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
 import { IconPicker } from '../shared/IconPicker';
 import { resolveIcon } from '../../utils/iconRegistry';
+import { UI_STRINGS } from '../../constants/uiStrings';
 import './ManageGoals.css';
 
 // ── Types ──
@@ -72,7 +73,7 @@ export function ManageGoals({ projectId, open, onClose }: ManageGoalsProps) {
         <div className="manage-goals__header">
           <div>
             <h2 className="manage-goals__title">Goals</h2>
-            <p className="manage-goals__subtitle">Define interview objectives.</p>
+            <p className="manage-goals__subtitle">{UI_STRINGS.goals.subtitle}</p>
           </div>
           <button className="manage-goals__close" onClick={onClose} title="Close">
             <X size={18} />
@@ -110,8 +111,8 @@ export function ManageGoals({ projectId, open, onClose }: ManageGoalsProps) {
             {!selected ? (
               <div className="manage-goals__empty">
                 {explicitGoals.length === 0
-                  ? 'Create your first goal to get started.'
-                  : 'Select a goal to edit.'}
+                  ? UI_STRINGS.goals.emptyList
+                  : UI_STRINGS.goals.emptyEditor}
               </div>
             ) : (
               <GoalEditor

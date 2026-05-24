@@ -65,9 +65,10 @@ interface InteractiveCanvasProps {
   refetchGraph: () => Promise<void>;
   personaWeights?: Map<string, number> | null;
   activePersona?: ActivePersonaInfo | null;
+  onPersonaCenterClick?: () => void;
 }
 
-function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord, graph, refetchGraph, personaWeights, activePersona }: InteractiveCanvasProps) {
+function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord, graph, refetchGraph, personaWeights, activePersona, onPersonaCenterClick }: InteractiveCanvasProps) {
   const { createNord, batchUpdatePositions, deleteNord } = useNordMutations(projectId);
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
   const { connectionTypes } = useTypeRegistry();
@@ -362,7 +363,16 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   useVisibilityCascade();
   useSpatialAnimations();
   const { saveNodePosition } = useLensLayout(activeConnectionTypeId, rfNodes, personaWeights);
-  const { onNodeClick } = useNodeSelection(onNordClick);
+  const { onNodeClick: baseOnNodeClick } = useNodeSelection(onNordClick);
+
+  // In persona mode, intercept clicks on the center node to toggle the drawer
+  const onNodeClick = useCallback((event: React.MouseEvent, node: any) => {
+    if (node.type === 'personaCenterNode' && onPersonaCenterClick) {
+      onPersonaCenterClick();
+      return;
+    }
+    baseOnNodeClick(event, node);
+  }, [baseOnNodeClick, onPersonaCenterClick]);
 
   // ── Focused node: the node whose connected edges get full rendering ──
   // Priority: dragged node > selected node
@@ -929,9 +939,10 @@ interface CanvasEngineProps {
   onGoalClick?: (id: string) => void;
   onGoalEdgeCreate?: (sourceId: string, targetId: string) => void;
   onGoalEdgeDelete?: (edgeId: string) => void;
+  onPersonaCenterClick?: () => void;
 }
 
-export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights, activePersona, goals, goalEdges, selectedGoalId, onGoalClick, onGoalEdgeCreate, onGoalEdgeDelete }: CanvasEngineProps) {
+export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights, activePersona, goals, goalEdges, selectedGoalId, onGoalClick, onGoalEdgeCreate, onGoalEdgeDelete, onPersonaCenterClick }: CanvasEngineProps) {
   const { lens } = useLens();
   const noop = async () => {};
 
@@ -966,7 +977,7 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
 
   return (
     <div className={`nords-canvas ${lens === 'persona' ? 'nords-canvas--persona' : ''}`}>
-      <InteractiveCanvas projectId={projectId || ''} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} personaWeights={personaWeights} activePersona={activePersona} />
+      <InteractiveCanvas projectId={projectId || ''} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} personaWeights={personaWeights} activePersona={activePersona} onPersonaCenterClick={onPersonaCenterClick} />
     </div>
   );
 }
