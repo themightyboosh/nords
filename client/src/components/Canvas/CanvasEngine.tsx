@@ -17,6 +17,7 @@ import { useLens } from '../../context/LensContext';
 import { useTypeRegistry } from '../../hooks/useTypeRegistry';
 import { useCanvasShortcuts } from '../../hooks/useCanvasShortcuts';
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
+import type { NordEdgeData } from '../../types/canvas';
 import { useNordMutations } from '../../hooks/useNordMutations';
 import { useConnectionMutations } from '../../hooks/useNordMutations';
 import { graphToNodes, graphToEdges, nordToNode, pixelToNormalized, computeNormalizedDistance } from '../../utils/graphToReactFlow';
@@ -834,7 +835,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
             setPlacingTypeId(null);
             return;
           }
-          onPaneContextMenuRadial(event);
+          onPaneContextMenuRadial(event as React.MouseEvent);
         }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}

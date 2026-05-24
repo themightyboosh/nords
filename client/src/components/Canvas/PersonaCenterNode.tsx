@@ -14,6 +14,7 @@ interface PersonaCenterData {
   avatarSeed: string;
   accentColor: string;
   name: string;
+  [key: string]: unknown;
 }
 
 export type PersonaCenterNodeType = Node<PersonaCenterData, 'personaCenter'>;

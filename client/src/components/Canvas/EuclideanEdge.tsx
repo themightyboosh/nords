@@ -381,7 +381,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   // ── HIGHLIGHTED EDGES: full render with labels — pathD from parent ──
   return (
     <ActiveEdge
-      id={id} source={source} target={target}
+      id={id}
       sx={sx} sy={sy} tx={tx} ty={ty}
       dx={dx} dy={dy} len={len}
       perpUnitX={perpUnitX} perpUnitY={perpUnitY}
@@ -399,7 +399,7 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
 
 // ── Active Edge: full-featured, spring-animated, only for highlighted (~2-5) ──
 const ActiveEdge = React.memo(function ActiveEdge({
-  id, source, target,
+  id,
   sx, sy, tx, ty,
   dx, dy, len,
   perpUnitX, perpUnitY,
@@ -411,8 +411,6 @@ const ActiveEdge = React.memo(function ActiveEdge({
   cablePathD,
 }: {
   id: string;
-  source: string;
-  target: string;
   sx: number; sy: number; tx: number; ty: number;
   dx: number; dy: number; len: number;
   perpUnitX: number; perpUnitY: number;
@@ -494,7 +492,7 @@ const ActiveEdge = React.memo(function ActiveEdge({
   if (angleDeg < -90) { angleDeg += 180; flipped = true; }
 
   let visualDirection = edgeData?.direction || 'none';
-  if (flipped && visualDirection !== 'none' && visualDirection !== 'neither') {
+  if (flipped && visualDirection !== 'none' && visualDirection !== 'both') {
     visualDirection = visualDirection === 'to' ? 'from' : 'to';
   }
 

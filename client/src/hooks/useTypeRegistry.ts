@@ -23,6 +23,7 @@ export interface ConnectionTypeMock {
   id: string;
   name: string;
   color: string;
+  accent_color?: string;
   measurementMode: 'spectrum' | 'quadrant' | 'none';
   xStageLabels: Array<{ label: string; position: number }>;
   isSystem: boolean;

@@ -19,6 +19,7 @@ interface PersonaZoneData {
   color: string;
   /** If true, add a 2px white border (weight=0 boundary) */
   showBorder?: boolean;
+  [key: string]: unknown;
 }
 
 export type PersonaZoneNodeType = Node<PersonaZoneData, 'personaZone'>;

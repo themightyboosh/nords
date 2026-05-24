@@ -28,6 +28,7 @@ interface NordNodeData {
   commentCount?: number;
   isGhosted?: boolean;
   properties: Array<{ key: string; value: string; color?: string }>;
+  [key: string]: unknown;
 }
 
 export type NordNodeType = Node<NordNodeData, 'nordNode'>;
