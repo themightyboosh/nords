@@ -41,6 +41,6 @@ CREATE INDEX IF NOT EXISTS idx_pgw_goal
 --    indefinitely. Cloud Run max request is 300s, so 30s
 --    per DB query is generous.
 -- ─────────────────────────────────────────────────────────
-ALTER DATABASE nords_main SET statement_timeout = '30s';
+DO $$ BEGIN EXECUTE format('ALTER DATABASE %I SET statement_timeout = %L', current_database(), '30s'); END $$;
 
 COMMIT;

@@ -48,7 +48,7 @@ async function migrate() {
       const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf-8');
       console.log(`  ▸ Applying ${version}...`);
       await client.query(sql);
-      await client.query('INSERT INTO schema_migrations (version) VALUES ($1)', [version]);
+      await client.query('INSERT INTO schema_migrations (version) VALUES ($1) ON CONFLICT DO NOTHING', [version]);
       console.log(`  ✓ ${version} applied`);
       count++;
     }
