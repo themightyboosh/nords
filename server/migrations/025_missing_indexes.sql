@@ -7,7 +7,7 @@
 
 BEGIN;
 
-INSERT INTO schema_migrations (version) VALUES ('025_missing_indexes');
+
 
 -- ─────────────────────────────────────────────────────────
 -- 1. Test Runs: sort by start time for history display
@@ -41,6 +41,6 @@ CREATE INDEX IF NOT EXISTS idx_pgw_goal
 --    indefinitely. Cloud Run max request is 300s, so 30s
 --    per DB query is generous.
 -- ─────────────────────────────────────────────────────────
-ALTER DATABASE CURRENT SET statement_timeout = '30s';
+ALTER DATABASE nords_main SET statement_timeout = '30s';
 
 COMMIT;
