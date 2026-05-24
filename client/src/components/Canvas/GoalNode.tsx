@@ -29,7 +29,7 @@ export interface GoalNodeData {
 
 export type GoalNodeType = Node<GoalNodeData, 'goalNode'>;
 
-export const GoalNode = memo(({ data }: NodeProps<GoalNodeData>) => {
+export const GoalNode = memo(({ data }: NodeProps<GoalNodeType>) => {
   const GoalIcon = resolveIcon(data.icon);
 
   const classList = [

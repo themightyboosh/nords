@@ -10,8 +10,8 @@
  * Flow connections (edges) are managed directly on the canvas via drag-to-connect.
  */
 
-import React, { useState, useCallback } from 'react';
-import { X, StopCircle, RefreshCw, Link, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { X, StopCircle, Link, Plus, Trash2 } from 'lucide-react';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { resolveIcon } from '../../utils/iconRegistry';
 import type { Goal, GoalProperty } from '../../hooks/useGoals';
@@ -30,7 +30,6 @@ interface GoalDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   goal: Goal | null;
-  goals: Goal[];
   nords: NordRef[];
   onUpdate: (id: string, fields: Record<string, unknown>) => Promise<unknown>;
   onAddProperty: (goalId: string, nordId: string, propertyName: string) => Promise<unknown>;
@@ -41,7 +40,6 @@ export function GoalDetailDrawer({
   isOpen,
   onClose,
   goal,
-  goals,
   nords,
   onUpdate,
   onAddProperty,

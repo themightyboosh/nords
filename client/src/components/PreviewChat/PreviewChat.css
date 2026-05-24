@@ -317,3 +317,127 @@
 }
 .preview-chat__send-btn:hover:not(:disabled) { opacity: 0.85; transform: scale(1.04); }
 .preview-chat__send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── Test Runner Integration ── */
+
+.preview-chat__test-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--nords-glass-bg, hsl(220 15% 13%));
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 220px;
+  z-index: 200;
+  box-shadow: var(--nords-shadow-lg);
+}
+
+.preview-chat__test-menu-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--nords-color-text-tertiary);
+  padding: 6px 10px 4px;
+}
+
+.preview-chat__test-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--nords-color-text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.preview-chat__test-menu-item:hover {
+  background: hsl(220 15% 18%);
+}
+
+.preview-chat__test-profile {
+  font-size: 10px;
+  background: hsl(220 70% 60% / 0.15);
+  color: hsl(220 70% 70%);
+  padding: 1px 6px;
+  border-radius: 8px;
+  text-transform: capitalize;
+}
+
+/* Progress Bar */
+
+.preview-chat__test-progress {
+  padding: 8px 16px;
+  background: hsl(220 15% 12%);
+  border-top: 1px solid hsl(220 15% 18%);
+}
+
+.preview-chat__test-progress-label {
+  font-size: 11px;
+  color: hsl(220 70% 70%);
+  margin-bottom: 4px;
+}
+
+.preview-chat__test-progress-bar {
+  height: 4px;
+  background: hsl(220 15% 20%);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.preview-chat__test-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, hsl(220 70% 60%), hsl(280 70% 60%));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Result Card */
+
+.preview-chat__test-result {
+  margin: 12px 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid hsl(220 15% 22%);
+}
+
+.preview-chat__test-result--pass {
+  border-left: 3px solid hsl(145 60% 42%);
+  background: hsl(145 60% 42% / 0.06);
+}
+
+.preview-chat__test-result--fail {
+  border-left: 3px solid hsl(0 60% 55%);
+  background: hsl(0 60% 55% / 0.06);
+}
+
+.preview-chat__test-result-header {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.preview-chat__test-result-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: hsl(220 15% 60%);
+  margin-bottom: 6px;
+}
+
+.preview-chat__test-result-sentiment {
+  font-size: 13px;
+  font-style: italic;
+  color: hsl(220 15% 70%);
+  margin: 4px 0 0;
+  line-height: 1.4;
+}

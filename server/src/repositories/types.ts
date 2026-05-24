@@ -119,6 +119,7 @@ export interface ConnectionType {
   id: string;
   user_id: string;
   name: string;
+  icon: string;
   verb: string | null;
   accent_color: string;
   stroke_style: string;
@@ -167,6 +168,7 @@ export const connectionTypesRepo = {
     project_id?: string;
     name: string;
     description?: string;
+    icon?: string;
     accent_color?: string;
     stroke_style?: string;
     default_direction?: string;
@@ -178,13 +180,14 @@ export const connectionTypesRepo = {
     properties_schema?: Record<string, unknown>[];
   }): Promise<ConnectionType> {
     const result = await queryOne<ConnectionType>(
-      `INSERT INTO connection_types (project_id, name, description, accent_color, stroke_style, default_direction, verb, direction_filter, measurement_mode, x_stage_labels, y_stage_labels, properties_schema, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 0)
+      `INSERT INTO connection_types (project_id, name, description, icon, accent_color, stroke_style, default_direction, verb, direction_filter, measurement_mode, x_stage_labels, y_stage_labels, properties_schema, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 0)
        RETURNING *`,
       [
         data.project_id || null,
         data.name,
         data.description || '',
+        data.icon || 'Link',
         data.accent_color || '#888888',
         data.stroke_style || 'solid',
         data.default_direction || 'none',
@@ -199,13 +202,14 @@ export const connectionTypesRepo = {
     return result!;
   },
 
-  async update(id: string, updates: Partial<Pick<ConnectionType, 'name' | 'description' | 'verb' | 'accent_color' | 'stroke_style' | 'default_direction' | 'direction_filter' | 'direction_prepositions' | 'measurement_mode' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>): Promise<ConnectionType | null> {
+  async update(id: string, updates: Partial<Pick<ConnectionType, 'name' | 'description' | 'icon' | 'verb' | 'accent_color' | 'stroke_style' | 'default_direction' | 'direction_filter' | 'direction_prepositions' | 'measurement_mode' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>): Promise<ConnectionType | null> {
     const setClauses: string[] = [];
     const values: unknown[] = [];
     let idx = 1;
 
     if (updates.name !== undefined) { setClauses.push(`name = $${idx++}`); values.push(updates.name); }
     if (updates.description !== undefined) { setClauses.push(`description = $${idx++}`); values.push(updates.description); }
+    if (updates.icon !== undefined) { setClauses.push(`icon = $${idx++}`); values.push(updates.icon); }
     if (updates.verb !== undefined) { setClauses.push(`verb = $${idx++}`); values.push(updates.verb); }
     if (updates.accent_color !== undefined) { setClauses.push(`accent_color = $${idx++}`); values.push(updates.accent_color); }
     if (updates.stroke_style !== undefined) { setClauses.push(`stroke_style = $${idx++}`); values.push(updates.stroke_style); }

@@ -13,7 +13,7 @@
 
 import React, { memo } from 'react';
 import { Handle, Position, useStore } from '@xyflow/react';
-import type { NodeProps } from '@xyflow/react';
+import type { NodeProps, Node } from '@xyflow/react';
 import { MessageSquare } from 'lucide-react';
 import { NordCard } from '../shared/NordCard';
 import './CanvasEngine.css';
@@ -30,7 +30,9 @@ interface NordNodeData {
   properties: Array<{ key: string; value: string; color?: string }>;
 }
 
-export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<NordNodeData>) => {
+export type NordNodeType = Node<NordNodeData, 'nordNode'>;
+
+export const NordNode = memo(({ id, data, selected, isConnectable }: NodeProps<NordNodeType>) => {
   const isGhosted = data.isGhosted === true;
   const hasComments = (data.commentCount || 0) > 0 && !isGhosted;
 

@@ -7,7 +7,7 @@
 
 import { MarkerType } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
-import type { ProjectGraph, Nord, Connection, NordType, ConnectionType } from '../hooks/useProjectGraph';
+import type { Nord, Connection, NordType, ConnectionType } from '../hooks/useProjectGraph';
 import { resolveIcon } from './iconRegistry';
 
 // ── Transformers ──

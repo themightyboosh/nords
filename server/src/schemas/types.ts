@@ -77,6 +77,8 @@ export const CreateConnectionTypeSchema = z.object({
     .describe('Name of the relationship type (e.g., "Blocks", "Depends On", "Reports To")'),
   description: z.string().max(500).optional().nullable()
     .describe('What this relationship represents in the domain'),
+  icon: z.string().max(50).optional().nullable()
+    .describe('Lucide icon name (e.g., "Link", "ArrowRight", "GitBranch")'),
   accent_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable()
     .describe('Hex color for the edge line'),
   stroke_style: z.enum(['solid', 'dashed', 'dotted']).optional().default('solid')
@@ -100,6 +102,8 @@ export const UpdateConnectionTypeSchema = z.object({
     .describe('Display name of the connection type'),
   description: z.string().max(500).optional().nullable()
     .describe('What this relationship represents'),
+  icon: z.string().max(50).optional().nullable()
+    .describe('Lucide icon name'),
   accent_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable()
     .describe('Hex color for the edge'),
   stroke_style: z.enum(['solid', 'dashed', 'dotted']).optional()

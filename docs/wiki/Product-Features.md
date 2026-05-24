@@ -10,6 +10,7 @@
 | [[Board View]] | Dynamic kanban boards generated from any relationship type — drag to advance, switch dimensions instantly |
 | [[Persona Lens]] | Role-filtered heatmap view that reshapes the graph around what matters most to a given stakeholder |
 | [[Goals]] | First-class objectives with property-bound completion, prerequisite chains, and a dedicated dependency map |
+| [[Projects]] | Top-level container with three modes (Explore, Collect, Guided) that control how deterministic the AI session behaves |
 | [[AI Integration]] | Session-based MCP server that gives AI agents a sense of place, progress, and purpose inside your graph |
 | [[Preview Chat]] | Built-in conversational AI wired to your project's graph — with a full Dev Mode inspector for debugging |
 | [[Access Tokens]] | Per-project authentication tokens for connecting external MCP clients securely |

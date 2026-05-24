@@ -29,6 +29,7 @@ import { ProjectSettings } from './components/ProjectSettings/ProjectSettings';
 import { PreviewChat } from './components/PreviewChat/PreviewChat';
 import { GoalDetailDrawer } from './components/Drawer/GoalDetailDrawer';
 import { useGoals } from './hooks/useGoals';
+import { TestRunner } from './components/TestRunner/TestRunner';
 
 /**
  * Safe ReactFlow access — returns null when ReactFlow isn't mounted (e.g. board view).
@@ -101,6 +102,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [testRunnerOpen, setTestRunnerOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('Loading…');
   const [projectMode, setProjectMode] = useState<'explore' | 'collect' | 'guided'>('explore');
@@ -242,6 +244,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onOpenGoals={projectMode === 'guided' ? () => setGoalsOpen(true) : undefined}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenPreview={() => setPreviewOpen(p => !p)}
+        onOpenTestRunner={() => setTestRunnerOpen(true)}
         projectName={projectName}
       />
       {projectId && (
@@ -351,6 +354,15 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           projectId={projectId}
           isOpen={previewOpen}
           onClose={() => setPreviewOpen(false)}
+        />
+      )}
+      {projectId && (
+        <TestRunner
+          projectId={projectId}
+          projectMode={projectMode}
+          goalsEnabled={projectMode === 'guided'}
+          open={testRunnerOpen}
+          onClose={() => setTestRunnerOpen(false)}
         />
       )}
     </div>

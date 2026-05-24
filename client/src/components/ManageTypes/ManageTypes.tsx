@@ -23,6 +23,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { X, Plus, Trash2, ChevronUp, ChevronDown, Pencil, ChevronRight, Bot } from 'lucide-react';
 import { useTypeMutations, type NordTypeData, type ConnectionTypeData, type PropertySchema } from '../../hooks/useTypeMutations';
 import { resolveIcon } from '../../utils/iconRegistry';
+import { ColorIcon } from '../shared/ColorIcon';
 import { IconPicker } from './IconPicker';
 import { SpectrumEditor } from '../Spectrum/SpectrumEditor';
 import { normalizeStageLabels } from '../../utils/stageLabels';
@@ -398,18 +399,17 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
             {/* Type List */}
             <div className="manage-types__list">
               {sidebarList.map(t => {
-                const TypeIcon = isNordType ? resolveIcon((t as NordTypeData).icon) : null;
                 return (
                   <button
                     key={t.id}
                     className={`manage-types__list-item ${t.id === selectedId ? 'manage-types__list-item--selected' : ''}`}
                     onClick={() => setSelectedId(t.id)}
                   >
-                    <span
-                      className="manage-types__swatch"
-                      style={{ backgroundColor: (t as any).accent_color }}
+                    <ColorIcon
+                      icon={isNordType ? (t as NordTypeData).icon : null}
+                      color={(t as any).accent_color || '#888'}
+                      size={14}
                     />
-                    {TypeIcon && <TypeIcon size={14} strokeWidth={1.6} />}
                     <span className="manage-types__list-name">{t.name}</span>
                     <ChevronRight size={12} className="manage-types__list-chevron" />
                   </button>
@@ -434,24 +434,18 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
               <>
                 {/* Type header — icon + inline editable name */}
                 <div className="manage-types__editor-header">
-                  {Icon ? (
-                    <button
-                      className="manage-types__icon-btn"
-                      style={{ color: currentColor }}
-                      onClick={() => setShowIconPicker(!showIconPicker)}
-                      title="Change icon & color"
-                    >
-                      <Icon size={24} strokeWidth={1.8} />
-                    </button>
-                  ) : (
-                    <button
-                      className="manage-types__icon-btn"
-                      onClick={() => setShowIconPicker(!showIconPicker)}
-                      title="Change color"
-                    >
-                      <span className="manage-types__color-swatch-lg" style={{ backgroundColor: currentColor }} />
-                    </button>
-                  )}
+                  <button
+                    className="manage-types__icon-btn"
+                    onClick={() => setShowIconPicker(!showIconPicker)}
+                    title="Change icon & color"
+                  >
+                    <ColorIcon
+                      icon={Icon ? (selected as NordTypeData).icon : null}
+                      color={currentColor}
+                      size={24}
+                      strokeWidth={1.8}
+                    />
+                  </button>
                   <input
                     type="text"
                     className="manage-types__name-input"
@@ -481,16 +475,14 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                 {/* Icon & color picker popover */}
                 {showIconPicker && (
                   <div className="manage-types__icon-picker-popover">
-                    {isNordType && (
-                      <IconPicker
-                        currentIcon={(selected as NordTypeData).icon}
-                        accentColor={currentColor}
-                        onSelect={(iconName) => {
-                          handleUpdateField('icon', iconName);
-                          setShowIconPicker(false);
-                        }}
-                      />
-                    )}
+                    <IconPicker
+                      currentIcon={isNordType ? (selected as NordTypeData).icon : ((selected as any).icon || 'Link')}
+                      accentColor={currentColor}
+                      onSelect={(iconName) => {
+                        handleUpdateField('icon', iconName);
+                        setShowIconPicker(false);
+                      }}
+                    />
                     <div className="manage-types__popover-color">
                       <label className="manage-types__popover-color-label">Color</label>
                       <HueSlider

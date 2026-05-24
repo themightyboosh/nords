@@ -56,7 +56,7 @@ describe('getAvailableIconNames', () => {
 describe('ICON_MAP', () => {
   it('maps every key to a function (React component)', () => {
     for (const [name, component] of Object.entries(ICON_MAP)) {
-      expect(typeof component).toBe('object', `${name} should be a Lucide component`);
+      expect(typeof component).toBe('object');
     }
   });
 });

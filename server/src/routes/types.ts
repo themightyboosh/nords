@@ -234,6 +234,7 @@ typesRouter.post('/projects/:id/connection-types', validate(CreateConnectionType
       project_id: req.params.id as string,
       name: req.body.name,
       description: req.body.description,
+      icon: req.body.icon,
       accent_color: req.body.accent_color,
       stroke_style: req.body.stroke_style,
       default_direction: req.body.default_direction,

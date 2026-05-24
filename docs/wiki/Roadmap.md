@@ -66,7 +66,7 @@ AI-powered analysis, external integrations, and deeper spatial semantics.
 | 🔵 | **Snapshot Diffing** | Split-screen and overlay comparison between two snapshots |
 | 🔵 | **Perspective Mode** | View the canvas locked to a single Persona's category weights |
 | 🔵 | **Template Marketplace** | Admin-published project templates with sample data |
-| 🔵 | **Webhook & Event Bus** | Emit events on Nord creation, Connection changes, Snapshot saves — enabling Slack notifications, Jira sync, and custom integrations alongside MCP |
+| 🔵 | **Event Trigger System** | Generalized event bus with configurable delivery channels (webhook, email, Slack, in-app). Foundation for Goal Completion Actions, Ingest Pipeline triggers, and future automation. See [Event Trigger System](#event-trigger-system) below |
 | 🔵 | **Migration Importers** | Dedicated Trello and Notion importers mapping columns to semantic stage values and boards to projects |
 
 ---
@@ -99,6 +99,7 @@ Cross-project intelligence, advanced AI authorship, and enterprise features.
 | **Few-Shot Context Injection** | Extract best tool call sequences from past sessions into system prompts for improved AI performance |
 | **Training from Usage** | Refine AI prompts from session logs; session artifacts become reusable templates |
 | **Project Templates from Sessions** | Export AI-built sessions as reusable starting points for new projects |
+| **Formula Properties** | Computed, read-only property type that aggregates across related Nords and Connections. Examples: RICE score from linked properties, risk index from average `distance_x` of "Depends On" connections, completion % from child Nords. Inspired by Fibery's formula fields but operating on spatial graph data. |
 
 ---
 
@@ -181,7 +182,92 @@ When a Goal is achieved (all bound properties filled, all prerequisites met), tr
 - **Target** (which Nords, ConnectionTypes, or external endpoints are affected)
 - **Condition** (optional — only fire if additional criteria are met)
 
-**Depends on:** Goal Orchestration (✅ shipped), Webhook & Event Bus (Phase 2 for notification actions)
+**Depends on:** Goal Orchestration (✅ shipped), Event Trigger System (Phase 2 for notification actions)
+
+---
+
+### Event Trigger System
+
+> **Phase 2** · 🔵 Planned
+
+A generalized event bus that emits structured events on graph state changes and delivers them to configurable channels — the infrastructure layer that Goal Completion Actions, Ingest Pipeline, and future automation all plug into.
+
+**Core Concept:** Every meaningful state change in the graph produces an event. Events flow through a pipeline: **Emitter → Bus → Filters → Delivery Channels.** Users configure which events they care about and where those events should go.
+
+**Event Types:**
+
+| Event | Trigger | Payload |
+|-------|---------|---------|
+| `nord.created` | New Nord added | Nord ID, type, title, creator, properties |
+| `nord.updated` | Property changed | Nord ID, changed fields, old → new values |
+| `nord.deleted` | Nord soft-deleted | Nord ID, type, title, deleted_by |
+| `connection.created` | New Connection drawn | Connection ID, source/target Nord IDs, type, initial `distance_x` |
+| `connection.updated` | `distance_x` or properties changed | Connection ID, old → new `distance_x`, stage label change |
+| `connection.deleted` | Connection removed | Connection ID, source/target, type |
+| `goal.achieved` | Goal evaluation passes | Goal ID, title, linked Nord IDs, action results |
+| `goal.blocked` | Goal prerequisite fails | Goal ID, blocking prerequisite IDs |
+| `snapshot.created` | Manual or auto snapshot | Snapshot ID, name, creator, Nord/Connection counts |
+| `session.started` | AI session begins | Session ID, persona, model, project ID |
+| `session.ended` | AI session terminates | Session ID, tool call count, goals achieved |
+| `stage.crossed` | `distance_x` crosses a stage boundary | Connection ID, stage from → stage to, threshold |
+
+**Delivery Channels:**
+
+| Channel | Configuration | Use Case |
+|---------|---------------|-----------|
+| **Webhook** | HTTPS endpoint URL, optional headers, retry policy (3 attempts with exponential backoff) | External integrations — Zapier, n8n, custom servers, Jira sync |
+| **Email** | Recipient list (per-channel or dynamic from Nord `user` properties), subject template, body template | Stakeholder notifications — milestone reached, review needed, blocker detected |
+| **Slack** | Workspace + channel via OAuth, message template with Nord card unfurling | Team notifications — sprint status, goal completions, AI session summaries |
+| **In-App** | Notification bell + toast, stored in activity feed | Real-time awareness — "AI completed 3 goals in your project" |
+| **Goal Completion Actions** | Internal routing — events of type `goal.achieved` trigger the action executor | Automated side-effects (see [[Goal Completion Actions]]) |
+| **Ingest Pipeline** | Internal routing — inbound webhook events trigger adapter → transformer → writer | External data flowing into the graph (see [[Ingest Pipeline]]) |
+
+**Architecture:**
+
+```
+┌──────────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
+│  Graph Operation │────▶│  Event       │────▶│  Filter      │────▶│  Delivery Channel │
+│  (DB trigger or  │     │  Bus         │     │  Engine      │     │  (Webhook, Email, │
+│   API handler)   │     │  (Redis pub/ │     │  (event type │     │   Slack, In-App,  │
+│                  │     │   sub queue) │     │   + rules)   │     │   Internal)       │
+└──────────────────┘     └──────────────┘     └──────────────┘     └──────────────────┘
+```
+
+**Filter Engine:**
+Each subscription defines which events it receives:
+- **Event type filter:** `nord.created`, `connection.updated`, `goal.achieved`, etc.
+- **Entity type filter:** Only events on specific NordTypes or ConnectionTypes
+- **Threshold filter:** Only when `distance_x` crosses a specific stage boundary (e.g., fire when a connection enters "Done")
+- **Property filter:** Only when a specific property changes (e.g., fire when `priority` changes to "Critical")
+- **Actor filter:** Only events triggered by humans, or only by AI agents, or both
+
+**Configuration:**
+Subscriptions are managed per-project in **Project Settings → Event Subscriptions**:
+
+1. Click **"Add Subscription"**
+2. Select **event types** to listen for (multi-select)
+3. Add optional **filters** (NordType, ConnectionType, property, threshold)
+4. Select **delivery channel** and configure the endpoint
+5. Set **active/paused** toggle
+6. Test with **"Send Test Event"** button
+
+**How Goal Completion Actions Attach:**
+Goal Completion Actions (see [[Goal Completion Actions]]) are the first consumer of this system. When a goal achieves:
+1. The goal evaluation pipeline emits a `goal.achieved` event to the bus
+2. The Goal Completion Action executor is an internal subscriber that receives `goal.achieved` events
+3. The executor runs the configured actions (Nord transitions, snapshots, notifications) in sequence
+4. Each action that involves external delivery (Webhook/Notification) routes through the same delivery channel infrastructure
+
+This means Goal Completion Actions aren't a separate system — they're a **pre-configured event subscription** with a visual builder in the Goal DetailDrawer.
+
+**Security:**
+- Webhook endpoints are validated with a handshake on creation (HEAD request must return 2xx)
+- All outbound payloads are signed with HMAC-SHA256 using a per-subscription secret
+- Email delivery uses project-verified sender addresses
+- Slack integration uses OAuth with minimal scopes (`chat:write`, `incoming-webhook`)
+- Event payloads respect access token scopes — Read-Only tokens cannot subscribe to mutation events
+
+**Depends on:** Redis/Memorystore (✅ available), MCP Server (✅ shipped)
 
 ---
 

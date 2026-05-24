@@ -18,7 +18,7 @@ import {
   Box, Briefcase, Calendar, Camera, Clipboard,
   Compass, CreditCard, Download, Edit2, ExternalLink,
   Feather, Film, Gift, Home, Image, Inbox, Info,
-  Key, Layers as LayersIcon, Layout, LifeBuoy,
+  Key, Layout, LifeBuoy,
   Link, List, Mail, Map, MapPin, Monitor, Moon,
   MoreHorizontal, Music, Navigation, Paperclip,
   Pause, PenTool, Phone, Play, Plus, Power, Printer,

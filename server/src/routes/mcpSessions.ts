@@ -35,7 +35,7 @@ export const mcpSessionsRouter = Router();
  */
 mcpSessionsRouter.post('/projects/:id/mcp-sessions', async (req: Request, res: Response) => {
   try {
-    const session = await mcpRepo.createSession(req.params.id, req.body.persona_id);
+    const session = await mcpRepo.createSession(req.params.id as string, req.body.persona_id);
     res.status(201).json(session);
   } catch (err: any) {
     logger.error('Failed to create MCP session', { error: err.message, projectId: req.params.id });
@@ -52,7 +52,7 @@ mcpSessionsRouter.post('/projects/:id/mcp-sessions', async (req: Request, res: R
  */
 mcpSessionsRouter.get('/projects/:id/mcp-sessions', async (req: Request, res: Response) => {
   try {
-    const sessions = await mcpRepo.findSessionsByProject(req.params.id);
+    const sessions = await mcpRepo.findSessionsByProject(req.params.id as string);
     res.json(sessions);
   } catch (err: any) {
     logger.error('Failed to list MCP sessions', { error: err.message, projectId: req.params.id });
@@ -74,7 +74,7 @@ mcpSessionsRouter.put('/mcp-sessions/:id', async (req: Request, res: Response) =
       res.status(400).json({ error: 'status must be "completed" or "abandoned"' });
       return;
     }
-    const session = await mcpRepo.endSession(req.params.id, status, summary);
+    const session = await mcpRepo.endSession(req.params.id as string, status, summary);
     if (!session) {
       res.status(404).json({ error: 'Session not found' });
       return;
@@ -101,7 +101,7 @@ mcpSessionsRouter.post('/mcp-sessions/:id/traversals', async (req: Request, res:
       return;
     }
     const traversal = await mcpRepo.logTraversal({
-      session_id: req.params.id,
+      session_id: req.params.id as string,
       connection_id,
       source_nord_id,
       target_nord_id,
@@ -130,7 +130,7 @@ mcpSessionsRouter.post('/mcp-sessions/:id/traversals', async (req: Request, res:
  */
 mcpSessionsRouter.get('/mcp-sessions/:id/traversals', async (req: Request, res: Response) => {
   try {
-    const traversals = await mcpRepo.findTraversalsBySession(req.params.id);
+    const traversals = await mcpRepo.findTraversalsBySession(req.params.id as string);
     res.json(traversals);
   } catch (err: any) {
     logger.error('Failed to get traversals', { error: err.message, sessionId: req.params.id });
@@ -153,7 +153,7 @@ mcpSessionsRouter.post('/mcp-sessions/:id/visits', async (req: Request, res: Res
       return;
     }
     const visit = await mcpRepo.logNordVisit({
-      session_id: req.params.id,
+      session_id: req.params.id as string,
       nord_id,
       visit_type,
       properties_before: properties_before || null,
@@ -176,7 +176,7 @@ mcpSessionsRouter.post('/mcp-sessions/:id/visits', async (req: Request, res: Res
  */
 mcpSessionsRouter.get('/mcp-sessions/:id/visits', async (req: Request, res: Response) => {
   try {
-    const visits = await mcpRepo.findVisitsBySession(req.params.id);
+    const visits = await mcpRepo.findVisitsBySession(req.params.id as string);
     res.json(visits);
   } catch (err: any) {
     logger.error('Failed to get visits', { error: err.message, sessionId: req.params.id });

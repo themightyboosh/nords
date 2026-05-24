@@ -396,14 +396,6 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
 
   // Handle direction change from CategoryList
   const handleCategoryDirectionChange = useCallback((connectionId: string, direction: DirectionValue) => {
-    // Temporarily switch to the connection entity context for direction update
-    const visualDirection =
-      direction === 'forward' ? 'to' :
-      direction === 'reverse' ? 'from' :
-      direction === 'both' ? 'both' :
-      direction === 'neither' ? 'neither' :
-      'none';
-
     // Direct API call + refetch (since we're in Nord mode, not connection mode)
     api.put(`/api/connections/${connectionId}`, { direction })
       .then(() => refetchGraph?.())

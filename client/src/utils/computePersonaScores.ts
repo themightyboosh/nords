@@ -125,7 +125,6 @@ export function computeRadialPositions(
 
   // Span scales with node count but stays compact
   const span = Math.max(400, total * 18);
-  const outerRadius = innerRadius + span;
 
   // Score → radius: +1 → innerRadius, -1 → outerRadius (linear)
   const scoreToRadius = (s: number) => innerRadius + ((1 - s) / 2) * span;

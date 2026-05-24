@@ -10,7 +10,7 @@
  */
 
 import React, { memo } from 'react';
-import type { NodeProps } from '@xyflow/react';
+import type { NodeProps, Node } from '@xyflow/react';
 
 interface PersonaZoneData {
   /** Radius of the circle in px */
@@ -21,7 +21,9 @@ interface PersonaZoneData {
   showBorder?: boolean;
 }
 
-export const PersonaZoneNode = memo(({ data }: NodeProps<PersonaZoneData>) => {
+export type PersonaZoneNodeType = Node<PersonaZoneData, 'personaZone'>;
+
+export const PersonaZoneNode = memo(({ data }: NodeProps<PersonaZoneNodeType>) => {
   const diameter = data.radius * 2;
 
   return (

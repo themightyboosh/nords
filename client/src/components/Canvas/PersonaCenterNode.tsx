@@ -9,7 +9,7 @@
 import React, { memo, useMemo } from 'react';
 import { createAvatar } from '@dicebear/core';
 import { notionists } from '@dicebear/collection';
-import type { NodeProps } from '@xyflow/react';
+import type { NodeProps, Node } from '@xyflow/react';
 
 interface PersonaCenterData {
   avatarSeed: string;
@@ -17,7 +17,9 @@ interface PersonaCenterData {
   name: string;
 }
 
-export const PersonaCenterNode = memo(({ data }: NodeProps<PersonaCenterData>) => {
+export type PersonaCenterNodeType = Node<PersonaCenterData, 'personaCenter'>;
+
+export const PersonaCenterNode = memo(({ data }: NodeProps<PersonaCenterNodeType>) => {
   const avatarUri = useMemo(() => {
     return createAvatar(notionists, { seed: data.avatarSeed || 'default', size: 240 }).toDataUri();
   }, [data.avatarSeed]);

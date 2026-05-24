@@ -175,7 +175,7 @@ graphRouter.post('/projects/:id/nords', async (req: Request, res: Response) => {
       return;
     }
     const nord = await nordsRepo.create({
-      project_id: req.params.id,
+      project_id: req.params.id as string,
       type_id: req.body.type_id,
       title: req.body.title || 'Untitled',
       properties: req.body.properties || {},
@@ -228,7 +228,7 @@ graphRouter.put('/nords/:id', async (req: Request, res: Response) => {
   try {
     // Validate required properties if properties are being updated
     if (req.body.properties) {
-      const existing = await nordsRepo.findById(req.params.id);
+      const existing = await nordsRepo.findById(req.params.id as string);
       if (existing) {
         const nordType = await nordTypesRepo.findById(existing.type_id);
         if (nordType?.properties_schema) {
@@ -248,7 +248,7 @@ graphRouter.put('/nords/:id', async (req: Request, res: Response) => {
         }
       }
     }
-    const nord = await nordsRepo.update(req.params.id, req.body);
+    const nord = await nordsRepo.update(req.params.id as string, req.body);
     if (!nord) {
       res.status(404).json({ error: 'Nord not found' });
       return;
@@ -282,7 +282,7 @@ graphRouter.put('/nords/:id', async (req: Request, res: Response) => {
  */
 graphRouter.delete('/nords/:id', async (req: Request, res: Response) => {
   try {
-    const deleted = await nordsRepo.softDelete(req.params.id);
+    const deleted = await nordsRepo.softDelete(req.params.id as string);
     if (!deleted) {
       res.status(404).json({ error: 'Nord not found' });
       return;
@@ -331,7 +331,7 @@ graphRouter.post('/projects/:id/connections', async (req: Request, res: Response
       return;
     }
     const connection = await connectionsRepo.create({
-      project_id: req.params.id,
+      project_id: req.params.id as string,
       type_id,
       source_nord_id,
       target_nord_id,
@@ -411,7 +411,7 @@ graphRouter.put('/connections/:id', async (req: Request, res: Response) => {
   try {
     // Validate required properties if properties are being updated
     if (req.body.properties) {
-      const existing = await connectionsRepo.findById(req.params.id);
+      const existing = await connectionsRepo.findById(req.params.id as string);
       if (existing) {
         const connType = await connectionTypesRepo.findById(existing.type_id);
         if (connType?.properties_schema) {
@@ -431,7 +431,7 @@ graphRouter.put('/connections/:id', async (req: Request, res: Response) => {
         }
       }
     }
-    const connection = await connectionsRepo.update(req.params.id, req.body);
+    const connection = await connectionsRepo.update(req.params.id as string, req.body);
     if (!connection) {
       res.status(404).json({ error: 'Connection not found' });
       return;
@@ -472,7 +472,7 @@ graphRouter.put('/connections/:id', async (req: Request, res: Response) => {
  */
 graphRouter.delete('/connections/:id', async (req: Request, res: Response) => {
   try {
-    const deleted = await connectionsRepo.softDelete(req.params.id);
+    const deleted = await connectionsRepo.softDelete(req.params.id as string);
     if (!deleted) {
       res.status(404).json({ error: 'Connection not found' });
       return;
@@ -578,7 +578,7 @@ graphRouter.put('/projects/:id/board-position/batch', async (req: Request, res: 
 /** DELETE /api/board-position/:nordId/:typeId — remove a nord from a board */
 graphRouter.delete('/board-position/:nordId/:typeId', async (req: Request, res: Response) => {
   try {
-    await boardPositionsRepo.remove(req.params.nordId, req.params.typeId);
+    await boardPositionsRepo.remove(req.params.nordId as string, req.params.typeId as string);
     res.status(204).send();
   } catch (err: any) {
     logger.error('Failed to remove board position', { error: err.message, nordId: req.params.nordId });

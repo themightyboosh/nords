@@ -60,7 +60,7 @@ function AvatarImg({ seed, size = 64, className, bgColor }: { seed: string; size
 
 // ── Debounce helper — auto-save on blur ──
 function useDebouncedSave(saveFn: (id: string, fields: Record<string, unknown>) => Promise<unknown>, delay = 400) {
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   return useCallback((id: string, fields: Record<string, unknown>) => {
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => saveFn(id, fields), delay);

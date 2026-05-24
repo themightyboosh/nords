@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ChevronDown, Menu, X,
   LogOut, User, Settings,
-  Box, Link2, Users, Eye, Target,
+  Box, Link2, Users, Eye, Target, FlaskConical,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NordsLogo from '../NordsLogo';
@@ -29,6 +29,7 @@ interface ViewportHeaderProps {
   onOpenGoals?: () => void;
   onOpenSettings?: () => void;
   onOpenPreview?: () => void;
+  onOpenTestRunner?: () => void;
   /** Project name displayed in the center; clicking opens TBD settings */
   projectName?: string;
   /** 'workspace' (default) = full nav; 'dashboard' = logo + center title only */
@@ -37,7 +38,7 @@ interface ViewportHeaderProps {
 
 export default function ViewportHeader({
   currentTheme, onThemeChange,
-  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenGoals, onOpenSettings, onOpenPreview,
+  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenGoals, onOpenSettings, onOpenPreview, onOpenTestRunner,
   projectName = 'Product Launch Q3',
   mode = 'workspace',
 }: ViewportHeaderProps) {
@@ -158,6 +159,17 @@ export default function ViewportHeader({
           >
             <Eye size={14} strokeWidth={1.6} />
             <span>Agent Preview</span>
+          </button>
+        )}
+        {!isDashboard && onOpenTestRunner && (
+          <button
+            className="nords-viewport-header__nav-item"
+            title="Test Runner"
+            onClick={onOpenTestRunner}
+            data-testid="header-test-runner"
+          >
+            <FlaskConical size={14} strokeWidth={1.6} />
+            <span>Test Runner</span>
           </button>
         )}
         <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />

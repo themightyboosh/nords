@@ -18,7 +18,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => void>(
   callback: T,
   delayMs: number
 ): T {
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const callbackRef = useRef(callback);
 
   // Always use the latest callback without resetting the timer

@@ -20,7 +20,7 @@
  * └────────────┴─────────────────────────────────────────────┘
  */
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { useGoals, type Goal } from '../../hooks/useGoals';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
@@ -37,15 +37,6 @@ interface ManageGoalsProps {
   onClose: () => void;
 }
 
-// ── Debounce helper ──
-function useDebouncedSave(saveFn: (id: string, fields: Record<string, unknown>) => Promise<unknown>, delay = 400) {
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
-  return useCallback((id: string, fields: Record<string, unknown>) => {
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => saveFn(id, fields), delay);
-  }, [saveFn, delay]);
-}
-
 // ── Main Component ──
 
 export function ManageGoals({ projectId, open, onClose }: ManageGoalsProps) {
@@ -56,7 +47,6 @@ export function ManageGoals({ projectId, open, onClose }: ManageGoalsProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const explicitGoals = goals.filter(g => !g.is_implicit);
   const selected = explicitGoals.find(g => g.id === selectedId) || null;
-  const debouncedSave = useDebouncedSave(updateGoal);
 
   // Auto-select first
   React.useEffect(() => {
@@ -128,7 +118,6 @@ export function ManageGoals({ projectId, open, onClose }: ManageGoalsProps) {
                 key={selected.id}
                 goal={selected}
                 onUpdate={updateGoal}
-                onDebouncedUpdate={debouncedSave}
                 onDelete={() => handleDelete(selected.id)}
               />
             )}
@@ -144,11 +133,10 @@ export function ManageGoals({ projectId, open, onClose }: ManageGoalsProps) {
 interface GoalEditorProps {
   goal: Goal;
   onUpdate: (id: string, fields: Record<string, unknown>) => Promise<unknown>;
-  onDebouncedUpdate: (id: string, fields: Record<string, unknown>) => void;
   onDelete: () => void;
 }
 
-function GoalEditor({ goal, onUpdate, onDebouncedUpdate, onDelete }: GoalEditorProps) {
+function GoalEditor({ goal, onUpdate, onDelete }: GoalEditorProps) {
   const [name, setName] = useState(goal.name);
   const [description, setDescription] = useState(goal.description || '');
   const [achievedPrompt, setAchievedPrompt] = useState(goal.achieved_prompt || '');

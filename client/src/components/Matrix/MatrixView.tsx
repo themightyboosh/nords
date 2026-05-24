@@ -19,10 +19,10 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef, memo } from 'react';
 import { useTypeRegistryContext, type ResolvedConnectionType } from '../../context/TypeRegistryContext';
 import { resolveStageLabel, getColumnBounds } from '../../utils/stageLabels';
-import type { ProjectGraph, Connection } from '../../hooks/useProjectGraph';
+import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { useBoardSettingsContext } from '../../context/BoardSettingsContext';
-import { setDragData, getDragData, type BoardDragData } from '../../hooks/useBoardDragDrop';
+import { setDragData, getDragData } from '../../hooks/useBoardDragDrop';
 import { useConnectionMutations, useBoardPositionMutations } from '../../hooks/useNordMutations';
 import { NordCard } from '../shared/NordCard';
 import { ChevronDown, ChevronRight, Unlink } from 'lucide-react';
@@ -75,8 +75,8 @@ interface Swimlane {
 
 // ── Component ──
 
-export function MatrixView({ graph, onNordClick, selectedNord, projectId, refetchGraph }: MatrixViewProps) {
-  const { connectionTypes, nordTypes } = useTypeRegistryContext();
+export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: MatrixViewProps) {
+  const { connectionTypes } = useTypeRegistryContext();
   const { getNordTypeVisibility, isLaneCollapsed, toggleLaneCollapse, getDirectionFilter } = useBoardSettingsContext();
   const { createConnection, deleteConnection } = useConnectionMutations(projectId);
   const { upsertPosition } = useBoardPositionMutations(projectId);

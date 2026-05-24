@@ -14,7 +14,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Send, RotateCcw, Code2, X, ChevronDown, ChevronRight,
   Activity, Zap, MessageSquare, Bot, User, Cpu,
-  Wrench, Eye, Map, FileText, AlertTriangle,
+  Wrench, Eye, Map, FileText, AlertTriangle, FlaskConical, Loader2,
 } from 'lucide-react';
 import { api } from '../../api/client';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
@@ -76,6 +76,14 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
   const [lastToolCalls, setLastToolCalls] = useState<ToolCall[]>([]);
   const [lastTokens, setLastTokens] = useState<{ in: number; out: number; latency: number } | null>(null);
 
+  // ── Test Runner state ──
+  const [testScenarios, setTestScenarios] = useState<Array<{ id: string; name: string; user_profile: string }>>([]);
+  const [showTestMenu, setShowTestMenu] = useState(false);
+  const [testRunning, setTestRunning] = useState(false);
+  const [testProgress, setTestProgress] = useState<{ round: number; maxRounds: number } | null>(null);
+  const [testResult, setTestResult] = useState<any>(null);
+  const testEventSourceRef = useRef<EventSource | null>(null);
+
   const MODELS = [
     { id: 'gemini-2.5-flash',      label: '2.5 Flash',      desc: 'Fast & balanced' },
     { id: 'gemini-2.5-flash-lite', label: '2.5 Flash Lite', desc: 'Ultra-fast' },
@@ -96,6 +104,10 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
     api.get<{ mcp_welcome_message?: string | null }>(`/api/projects/${projectId}`)
       .then(p => setWelcomeMessage(p.mcp_welcome_message || null))
       .catch(() => {});
+    // Load test scenarios
+    api.get<Array<{ id: string; name: string; user_profile: string }>>(`/api/projects/${projectId}/test-scenarios`)
+      .then(setTestScenarios)
+      .catch(() => setTestScenarios([]));
   }, [projectId]);
 
   // Load messages for current session
@@ -237,6 +249,86 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
       .then(setSessions)
       .catch(() => {});
   }, [sessionId, projectId]);
+
+  // ── Live Test Run ──
+  const startLiveTest = useCallback(async (scenarioId: string) => {
+    // Reset chat state
+    setMessages([]);
+    setTestRunning(true);
+    setTestResult(null);
+    setTestProgress(null);
+    setDevMode(true); // Auto-open dev mode for tests
+
+    try {
+      const result = await api.post<{ runId: string; streamUrl: string }>(`/api/test-scenarios/${scenarioId}/run`, {});
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const es = new EventSource(`${apiBase}${result.streamUrl}`);
+      testEventSourceRef.current = es;
+
+      es.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.type === 'user_message') {
+            setTestProgress({ round: data.round, maxRounds: data.maxRounds });
+            setMessages(prev => [...prev, {
+              id: `test-user-${data.round}`,
+              role: 'user' as const,
+              content: `🧪 ${data.content}`,
+              created_at: new Date().toISOString(),
+            }]);
+          }
+
+          if (data.type === 'agent_response') {
+            setMessages(prev => [...prev, {
+              id: `test-agent-${data.round}`,
+              role: 'assistant' as const,
+              content: data.content,
+              tool_calls: data.toolCalls,
+              tokens_in: data.tokensIn,
+              tokens_out: data.tokensOut,
+              latency_ms: data.latencyMs,
+              created_at: new Date().toISOString(),
+            }]);
+            // Update dev panel
+            if (data.toolCalls) setLastToolCalls(data.toolCalls);
+            if (data.horizon) setLastHorizon(data.horizon);
+            if (data.tokensIn != null) setLastTokens({ in: data.tokensIn, out: data.tokensOut, latency: data.latencyMs });
+          }
+
+          if (data.type === 'run_complete') {
+            setTestRunning(false);
+            setTestResult(data);
+            es.close();
+          }
+
+          if (data.type === 'error') {
+            setTestRunning(false);
+            setMessages(prev => [...prev, {
+              id: `test-error-${Date.now()}`,
+              role: 'system' as const,
+              content: `⚠ Test failed: ${data.error}`,
+              created_at: new Date().toISOString(),
+            }]);
+            es.close();
+          }
+        } catch { /* ignore parse errors */ }
+      };
+
+      es.onerror = () => {
+        setTestRunning(false);
+        es.close();
+      };
+    } catch (err) {
+      setTestRunning(false);
+      setMessages(prev => [...prev, {
+        id: `test-error-${Date.now()}`,
+        role: 'system' as const,
+        content: '⚠ Failed to start test run.',
+        created_at: new Date().toISOString(),
+      }]);
+    }
+  }, []);
 
   // Keyboard shortcut
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -594,6 +686,40 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
           <button className="preview-chat__action-btn" onClick={handleReset} title="Reset Session">
             <RotateCcw size={14} />
           </button>
+          {testScenarios.length > 0 && (
+            <div style={{ position: 'relative' }}>
+              <button
+                className="preview-chat__action-btn"
+                onClick={() => setShowTestMenu(!showTestMenu)}
+                title="Run Test"
+                disabled={testRunning}
+                style={testRunning ? { opacity: 0.5 } : {}}
+              >
+                {testRunning ? <Loader2 size={14} className="test-runner__running" /> : <FlaskConical size={14} />}
+              </button>
+              {showTestMenu && (
+                <>
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setShowTestMenu(false)} />
+                  <div className="preview-chat__test-menu">
+                    <div className="preview-chat__test-menu-title">Run Test Scenario</div>
+                    {testScenarios.map(s => (
+                      <button
+                        key={s.id}
+                        className="preview-chat__test-menu-item"
+                        onClick={() => {
+                          setShowTestMenu(false);
+                          startLiveTest(s.id);
+                        }}
+                      >
+                        <span>{s.name}</span>
+                        <span className="preview-chat__test-profile">{s.user_profile}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
           <button className="preview-chat__action-btn" onClick={onClose} title="Close">
             <X size={14} />
           </button>
@@ -707,6 +833,37 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
               </div>
             </div>
           )}
+          {/* Test Progress Bar */}
+          {testRunning && testProgress && (
+            <div className="preview-chat__test-progress">
+              <div className="preview-chat__test-progress-label">
+                🧪 Round {testProgress.round}/{testProgress.maxRounds}
+              </div>
+              <div className="preview-chat__test-progress-bar">
+                <div
+                  className="preview-chat__test-progress-fill"
+                  style={{ width: `${(testProgress.round / testProgress.maxRounds) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Test Result Card */}
+          {testResult && (
+            <div className={`preview-chat__test-result ${testResult.passed ? 'preview-chat__test-result--pass' : 'preview-chat__test-result--fail'}`}>
+              <div className="preview-chat__test-result-header">
+                {testResult.passed ? '✅ PASS' : '❌ FAIL'}
+              </div>
+              <div className="preview-chat__test-result-stats">
+                {testResult.nps != null && <span>NPS: {testResult.nps}/10</span>}
+                {testResult.stopReason && <span>Stop: {testResult.stopReason}</span>}
+              </div>
+              {testResult.sentiment && (
+                <p className="preview-chat__test-result-sentiment">"{testResult.sentiment}"</p>
+              )}
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
 

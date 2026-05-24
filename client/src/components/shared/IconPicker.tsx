@@ -59,7 +59,7 @@ export function IconPicker({ currentIcon, onSelect, accentColor }: IconPickerPro
               } : undefined}
               data-testid={`icon-${name}`}
             >
-              <Icon size={18} strokeWidth={1.6} />
+              <Icon size={18} strokeWidth={1.6} style={{ color: accentColor || 'currentColor' }} />
             </button>
           );
         })}
