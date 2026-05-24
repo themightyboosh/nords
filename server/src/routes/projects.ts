@@ -61,7 +61,13 @@ projectsRouter.get('/projects', async (_req: Request, res: Response) => {
  */
 projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Request, res: Response) => {
   try {
-    const { org_id, name, description, purpose, icon, mcp_enabled, mcp_capture_data, mcp_mutable, goals_enabled, mcp_system_prompt, default_persona_id, default_start_nord_id, default_end_nord_id } = req.body;
+    const { org_id, name, description, purpose, icon, mcp_enabled, mcp_mutable, mcp_system_prompt, default_persona_id, default_start_nord_id, default_end_nord_id } = req.body;
+    const project_mode = req.body.project_mode || 'explore';
+
+    // Derive MCP flags from project mode
+    const mcp_capture_data = project_mode === 'collect' || project_mode === 'guided';
+    const goals_enabled = project_mode === 'guided';
+
     // Single-user mode: org_id is optional, defaults to a static placeholder
     const resolvedOrgId = org_id || '00000000-0000-0000-0000-000000000000';
     const project = await projectsRepo.create({
@@ -72,10 +78,13 @@ projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Requ
       icon,
       created_by: null,
       mcp_enabled: mcp_enabled ?? false,
-      mcp_capture_data: mcp_capture_data ?? false,
+      mcp_capture_data,
       mcp_mutable: mcp_mutable ?? false,
-      goals_enabled: goals_enabled ?? false,
+      goals_enabled,
       mcp_system_prompt: mcp_system_prompt ?? null,
+      mcp_welcome_message: null,
+      project_mode,
+      end_prompt_suggestion: null,
       default_persona_id: default_persona_id ?? null,
       default_start_nord_id: default_start_nord_id ?? null,
       default_end_nord_id: default_end_nord_id ?? null,
@@ -116,7 +125,7 @@ projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Requ
  */
 projectsRouter.get('/projects/:id', async (req: Request, res: Response) => {
   try {
-    const project = await projectsRepo.findById(req.params.id);
+    const project = await projectsRepo.findById(req.params.id as string);
     if (!project) {
       res.status(404).json({ error: 'Project not found' });
       return;
@@ -165,7 +174,15 @@ projectsRouter.get('/projects/:id', async (req: Request, res: Response) => {
  */
 projectsRouter.put('/projects/:id', async (req: Request, res: Response) => {
   try {
-    const project = await projectsRepo.update(req.params.id, req.body);
+    const body = { ...req.body };
+
+    // If project_mode is being updated, auto-derive MCP flags
+    if (body.project_mode) {
+      body.mcp_capture_data = body.project_mode === 'collect' || body.project_mode === 'guided';
+      body.goals_enabled = body.project_mode === 'guided';
+    }
+
+    const project = await projectsRepo.update(req.params.id as string, body);
     if (!project) {
       res.status(404).json({ error: 'Project not found' });
       return;
@@ -198,7 +215,7 @@ projectsRouter.put('/projects/:id', async (req: Request, res: Response) => {
  */
 projectsRouter.delete('/projects/:id', async (req: Request, res: Response) => {
   try {
-    const deleted = await projectsRepo.softDelete(req.params.id);
+    const deleted = await projectsRepo.softDelete(req.params.id as string);
     if (!deleted) {
       res.status(404).json({ error: 'Project not found' });
       return;

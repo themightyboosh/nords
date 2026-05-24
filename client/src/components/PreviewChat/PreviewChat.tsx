@@ -596,7 +596,7 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
                 </>
               ) : (
                 <>
-                  <p>Start a conversation with your project's MCP agent.</p>
+                  <p>Start a conversation with your project's agent.</p>
                   <p className="preview-chat__hint">Messages are logged and visible in Dev Mode.</p>
                 </>
               )}

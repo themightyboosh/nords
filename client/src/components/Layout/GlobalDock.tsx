@@ -9,9 +9,9 @@
  * Each mode gets mode-specific filter pills that open consistent flyouts.
  */
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
-  Eye, Link2, LayoutGrid, Users, Target,
+  Eye, LayoutGrid, Users, Target,
   EyeIcon, EyeOff, ChevronDown, ArrowLeftRight, Unlink,
   ArrowRight, ArrowLeft, Minus, Layers, CircleDot,
 } from 'lucide-react';
@@ -20,10 +20,8 @@ import { useTypeVisibility } from '../../hooks/useTypeVisibility';
 import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
 import { useBoardSettingsContext } from '../../context/BoardSettingsContext';
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
-import { resolveIcon } from '../../utils/iconRegistry';
-import type { ResolvedNordType } from '../../context/TypeRegistryContext';
 import type { Persona } from '../../hooks/usePersonas';
-import type { NordVisibility, DirectionKey } from '../../hooks/useBoardSettings';
+import type { DirectionKey } from '../../hooks/useBoardSettings';
 import './GlobalDock.css';
 
 interface GlobalDockProps {
@@ -32,6 +30,7 @@ interface GlobalDockProps {
   refetchGraph?: () => Promise<void>;
   graph?: ProjectGraph | null;
   personas?: Persona[];
+  projectMode?: 'explore' | 'collect' | 'guided';
 }
 
 // Direction filter rows — consistent across board and graph
@@ -43,8 +42,8 @@ const DIRECTION_ROWS: { key: DirectionKey; label: string; icon: React.ReactNode 
   { key: 'unconnected', label: 'No Connection',  icon: <Unlink size={13} /> },
 ];
 
-export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph, graph, personas = [] }: GlobalDockProps) {
-  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activePersonaId, setActivePersonaId, activeLine, setActiveLine, showContext, setShowContext, personaTypeFilter, cyclePersonaTypeFilter } = useLens();
+export default function GlobalDock({ graph, personas = [], projectMode }: GlobalDockProps) {
+  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activePersonaId, setActivePersonaId, activeLine, setActiveLine, showContext, setShowContext } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
 
   const { visibleConnectionTypes } = useTypeVisibility();
@@ -130,6 +129,7 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
               <Users size={14} strokeWidth={1.6} />
               <span>Persona</span>
             </button>
+            {projectMode === 'guided' && (
             <button
               className={`nords-lens-toggle__btn ${lens === 'goals' ? 'is-active' : ''}`}
               onClick={() => {
@@ -143,6 +143,7 @@ export default function GlobalDock({ projectId, onOpenManageTypes, refetchGraph,
               <Target size={14} strokeWidth={1.6} />
               <span>Goals</span>
             </button>
+            )}
           </div>
 
           <div className="nords-dock__separator" />

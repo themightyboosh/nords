@@ -26,7 +26,7 @@ import { resolveIcon } from '../../utils/iconRegistry';
 import { IconPicker } from './IconPicker';
 import { SpectrumEditor } from '../Spectrum/SpectrumEditor';
 import { normalizeStageLabels } from '../../utils/stageLabels';
-import { hslToHex, hexToHSL } from '../../utils/color';
+import { hexToHSL } from '../../utils/color';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
 import { api } from '../../api/client';
@@ -294,10 +294,6 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
   // ── MCP Property mutations ──
   // MCP properties live in the same properties_schema array but have source:'mcp'.
   // We split them out for the UI but save them back together.
-  const userProps = useMemo(() => {
-    return ((selected as any)?.properties_schema || []).filter((p: PropertySchema) => (p.source || 'user') === 'user');
-  }, [selected]);
-
   const mcpProps = useMemo(() => {
     return ((selected as any)?.properties_schema || []).filter((p: PropertySchema) => p.source === 'mcp');
   }, [selected]);
@@ -349,7 +345,6 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
 
   if (!open) return null;
 
-  const currentHue = selected ? hexToHSL((selected as any).accent_color || '#888').h : 200;
   const currentColor = (selected as any)?.accent_color || '#888888';
   const Icon = selected && isNordType ? resolveIcon((selected as NordTypeData).icon) : null;
 
@@ -395,7 +390,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                   className={`manage-types__tab ${activeTab === 'connection' ? 'manage-types__tab--active' : ''}`}
                   onClick={() => { setActiveTab('connection'); setSelectedId(connectionTypes[0]?.id || null); }}
                 >
-                  Conn Types
+                  Categories
                 </button>
               </div>
             )}

@@ -103,6 +103,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('Loading…');
+  const [projectMode, setProjectMode] = useState<'explore' | 'collect' | 'guided'>('explore');
 
   // Goals data for the Goals lens canvas
   const goalsData = useGoals(projectId || null);
@@ -111,11 +112,14 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const reactFlow = useOptionalReactFlow();
   const { lens, activePersonaId } = useLens();
 
-  // Fetch project name
+  // Fetch project name + mode
   useEffect(() => {
     if (!projectId) return;
-    api.get<{ name: string }>(`/api/projects/${projectId}`)
-      .then(p => setProjectName(p.name))
+    api.get<{ name: string; project_mode?: 'explore' | 'collect' | 'guided' }>(`/api/projects/${projectId}`)
+      .then(p => {
+        setProjectName(p.name);
+        setProjectMode(p.project_mode || 'explore');
+      })
       .catch(() => setProjectName('Project'));
   }, [projectId]);
 
@@ -235,7 +239,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onOpenNordTypes={() => setManageTypesTab('nord')}
         onOpenCategoryTypes={() => setManageTypesTab('connection')}
         onOpenPersonas={() => setPersonasOpen(true)}
-        onOpenGoals={() => setGoalsOpen(true)}
+        onOpenGoals={projectMode === 'guided' ? () => setGoalsOpen(true) : undefined}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenPreview={() => setPreviewOpen(p => !p)}
         projectName={projectName}
@@ -243,12 +247,24 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
       {projectId && (
         <ProjectSettings
           isOpen={settingsOpen}
-          onClose={() => { setSettingsOpen(false); setPreviewOpen(false); }}
+          onClose={() => {
+            setSettingsOpen(false);
+            setPreviewOpen(false);
+            // Re-fetch project to pick up mode changes
+            if (projectId) {
+              api.get<{ name: string; project_mode?: 'explore' | 'collect' | 'guided' }>(`/api/projects/${projectId}`)
+                .then(p => {
+                  setProjectName(p.name);
+                  setProjectMode(p.project_mode || 'explore');
+                })
+                .catch(() => {});
+            }
+          }}
           projectId={projectId}
           onProjectNameChange={setProjectName}
         />
       )}
-      <GlobalDock projectId={projectId} refetchGraph={refetch} graph={graph} personas={personas} />
+      <GlobalDock projectId={projectId} refetchGraph={refetch} graph={graph} personas={personas} projectMode={projectMode} />
       <CanvasEngine
         onNordClick={lens === 'persona' ? () => {} : handleNordClick}
         onEdgeDoubleClick={lens === 'persona' ? () => {} : handleEdgeDoubleClick}
@@ -276,7 +292,6 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           isOpen={!!selectedGoalId}
           onClose={() => setSelectedGoalId(null)}
           goal={goalsData.goals.find(g => g.id === selectedGoalId) || null}
-          goals={goalsData.goals}
           nords={(graph?.nords || []).map(n => ({
             id: n.id,
             title: n.title,

@@ -22,7 +22,7 @@ export default function EmptyState({ onAddNord, onManageTypes }: EmptyStateProps
         <Sparkles className="nords-empty-state__icon" size={48} strokeWidth={1} />
         <h1 className="nords-empty-state__title">Your Spatial Canvas is Empty</h1>
         <p className="nords-empty-state__subtitle">
-          Start building your knowledge graph by creating your first Nord.
+          Start building your project by creating your first Nord.
           Every idea, task, and relationship begins here.
         </p>
 
@@ -42,7 +42,7 @@ export default function EmptyState({ onAddNord, onManageTypes }: EmptyStateProps
         <div className="nords-empty-state__action-card" onClick={onAddNord}>
           <Plus size={24} strokeWidth={1.5} />
           <h3>Add Nords</h3>
-          <p>Drop nodes onto the canvas. Connect them with typed relationships.</p>
+          <p>Drop nords onto the canvas. Connect them with typed relationships.</p>
         </div>
 
         <div className="nords-empty-state__action-card">

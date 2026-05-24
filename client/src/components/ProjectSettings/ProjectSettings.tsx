@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, AlertTriangle, Save, Copy, Trash2, Plus, Key } from 'lucide-react';
+import { X, AlertTriangle, Save, Copy, Trash2, Plus, Key, Compass, ClipboardList, Target } from 'lucide-react';
 import { api } from '../../api/client';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { IconPicker } from '../shared/IconPicker';
@@ -37,6 +37,7 @@ interface ProjectData {
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
   goals_enabled: boolean;
+  project_mode: 'explore' | 'collect' | 'guided';
   mcp_system_prompt: string | null;
   default_persona_id: string | null;
   default_start_nord_id: string | null;
@@ -97,6 +98,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           mcp_capture_data: data.mcp_capture_data,
           mcp_mutable: data.mcp_mutable,
           goals_enabled: (data as any).goals_enabled ?? false,
+          project_mode: data.project_mode || 'explore',
           mcp_system_prompt: data.mcp_system_prompt || '',
           default_persona_id: data.default_persona_id,
           default_start_nord_id: data.default_start_nord_id,
@@ -169,9 +171,8 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
         purpose: form.purpose!.trim(),
         icon: form.icon,
         mcp_enabled: form.mcp_enabled,
-        mcp_capture_data: form.mcp_capture_data,
         mcp_mutable: form.mcp_mutable,
-        goals_enabled: (form as any).goals_enabled ?? false,
+        project_mode: form.mcp_enabled ? form.project_mode : 'explore',
         mcp_system_prompt: form.mcp_system_prompt?.trim() || null,
         default_persona_id: form.default_persona_id || null,
         default_start_nord_id: form.default_start_nord_id || null,
@@ -461,29 +462,35 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
             <input
               type="checkbox"
               checked={form.mcp_enabled || false}
-              onChange={e => setForm({ ...form, mcp_enabled: e.target.checked, ...(!e.target.checked ? { mcp_capture_data: false, mcp_mutable: false } : {}) })}
+              onChange={e => setForm({ ...form, mcp_enabled: e.target.checked })}
             />
-            <span>Enable MCP (Model Context Protocol)</span>
+            <span>Enable Agent (MCP)</span>
           </label>
 
           {form.mcp_enabled && (
             <div className="nords-form__indent">
-              <label className="nords-form__checkbox">
-                <input
-                  type="checkbox"
-                  checked={form.mcp_capture_data || false}
-                  onChange={e => setForm({ ...form, mcp_capture_data: e.target.checked })}
-                />
-                <span>Capture Data</span>
-              </label>
-              <label className="nords-form__checkbox">
-                <input
-                  type="checkbox"
-                  checked={(form as any).goals_enabled || false}
-                  onChange={e => setForm({ ...form, goals_enabled: e.target.checked } as any)}
-                />
-                <span>Enable Goals</span>
-              </label>
+              {/* Mode Selector */}
+              <div className="nords-modal__mode-selector">
+                <span className="nords-modal__mode-label">Project Mode</span>
+                <div className="nords-modal__mode-cards">
+                  {[
+                    { key: 'explore' as const, icon: <Compass size={20} strokeWidth={1.4} />, name: 'Explore', desc: 'Open-ended discovery. No data collection or session goals.' },
+                    { key: 'collect' as const, icon: <ClipboardList size={20} strokeWidth={1.4} />, name: 'Collect', desc: 'Opportunistic data capture. The agent collects properties as they surface.' },
+                    { key: 'guided' as const, icon: <Target size={20} strokeWidth={1.4} />, name: 'Guided', desc: 'Goal-directed sessions. The agent steers toward completing defined objectives.' },
+                  ].map(mode => (
+                    <button
+                      key={mode.key}
+                      type="button"
+                      className={`nords-modal__mode-card ${form.project_mode === mode.key ? 'is-active' : ''}`}
+                      onClick={() => setForm({ ...form, project_mode: mode.key })}
+                    >
+                      <span className="nords-modal__mode-card-icon">{mode.icon}</span>
+                      <span className="nords-modal__mode-card-name">{mode.name}</span>
+                      <span className="nords-modal__mode-card-desc">{mode.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="nords-form__field" style={{ marginTop: '12px' }}>
                 <label className="nords-form__label">

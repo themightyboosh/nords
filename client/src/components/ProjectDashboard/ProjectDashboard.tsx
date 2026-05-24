@@ -17,6 +17,7 @@ import {
   Layers, Star,
   Trash2, Download, Settings, X, AlertTriangle,
   ShieldCheck, BarChart3, CreditCard, Settings2,
+  Compass, ClipboardList, Target,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
@@ -59,8 +60,7 @@ export default function ProjectDashboard() {
     purpose: '',
     icon: '📁',
     mcp_enabled: false,
-    mcp_capture_data: false,
-    goals_enabled: false,
+    project_mode: 'explore' as 'explore' | 'collect' | 'guided',
   });
   const [createErrors, setCreateErrors] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
@@ -116,12 +116,11 @@ export default function ProjectDashboard() {
         purpose: createForm.purpose.trim(),
         icon: createForm.icon || '📁',
         mcp_enabled: createForm.mcp_enabled,
-        mcp_capture_data: createForm.mcp_capture_data,
-        goals_enabled: createForm.goals_enabled,
+        project_mode: createForm.mcp_enabled ? createForm.project_mode : 'explore',
       });
       setShowCreateModal(false);
       setShowCreateIconPicker(false);
-      setCreateForm({ name: '', description: '', purpose: '', icon: 'Folder', mcp_enabled: false, mcp_capture_data: false, goals_enabled: false });
+      setCreateForm({ name: '', description: '', purpose: '', icon: 'Folder', mcp_enabled: false, project_mode: 'explore' });
       await loadProjects();
     } catch (err: any) {
       setCreateErrors([err.message || 'Failed to create project']);
@@ -394,29 +393,32 @@ export default function ProjectDashboard() {
                 <input
                   type="checkbox"
                   checked={createForm.mcp_enabled}
-                  onChange={e => setCreateForm({ ...createForm, mcp_enabled: e.target.checked, ...(!e.target.checked ? { mcp_capture_data: false, mcp_mutable: false } : {}) })}
+                  onChange={e => setCreateForm({ ...createForm, mcp_enabled: e.target.checked })}
                 />
-                <span>Enable MCP (Model Context Protocol)</span>
+                <span>Enable Agent (MCP)</span>
               </label>
 
               {createForm.mcp_enabled && (
-                <div className="nords-modal__indent">
-                  <label className="nords-modal__checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={createForm.mcp_capture_data}
-                      onChange={e => setCreateForm({ ...createForm, mcp_capture_data: e.target.checked })}
-                    />
-                    <span>Capture Data</span>
-                  </label>
-                  <label className="nords-modal__checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={createForm.goals_enabled}
-                      onChange={e => setCreateForm({ ...createForm, goals_enabled: e.target.checked })}
-                    />
-                    <span>Enable Goals</span>
-                  </label>
+                <div className="nords-modal__mode-selector">
+                  <span className="nords-modal__mode-label">Project Mode</span>
+                  <div className="nords-modal__mode-cards">
+                    {[
+                      { key: 'explore' as const, icon: <Compass size={20} strokeWidth={1.4} />, name: 'Explore', desc: 'Open-ended discovery. No data collection or session goals.' },
+                      { key: 'collect' as const, icon: <ClipboardList size={20} strokeWidth={1.4} />, name: 'Collect', desc: 'Opportunistic data capture. The agent collects properties as they surface.' },
+                      { key: 'guided' as const, icon: <Target size={20} strokeWidth={1.4} />, name: 'Guided', desc: 'Goal-directed sessions. The agent steers toward completing defined objectives.' },
+                    ].map(mode => (
+                      <button
+                        key={mode.key}
+                        type="button"
+                        className={`nords-modal__mode-card ${createForm.project_mode === mode.key ? 'is-active' : ''}`}
+                        onClick={() => setCreateForm({ ...createForm, project_mode: mode.key })}
+                      >
+                        <span className="nords-modal__mode-card-icon">{mode.icon}</span>
+                        <span className="nords-modal__mode-card-name">{mode.name}</span>
+                        <span className="nords-modal__mode-card-desc">{mode.desc}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

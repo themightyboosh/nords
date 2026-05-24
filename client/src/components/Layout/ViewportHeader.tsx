@@ -80,13 +80,13 @@ export default function ViewportHeader({
                 data-testid="header-nords"
               >
                 <Box size={14} strokeWidth={1.6} />
-                <span>Nords</span>
+                <span>Types</span>
               </button>
             )}
             {onOpenCategoryTypes && (
               <button
                 className="nords-viewport-header__nav-item"
-                title="Manage Categories (Connection Types)"
+                title="Manage Categories"
                 onClick={onOpenCategoryTypes}
                 data-testid="header-categories"
               >
@@ -231,7 +231,7 @@ export default function ViewportHeader({
       <div className={`nords-viewport-header__mobile-menu ${mobileMenuOpen ? 'is-open' : ''}`}>
         <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenNordTypes?.(); setMobileMenuOpen(false); }}>
           <Box size={14} strokeWidth={1.6} />
-          <span>Nords</span>
+          <span>Types</span>
         </button>
         <button className="nords-viewport-header__mobile-menu-item" onClick={() => { onOpenCategoryTypes?.(); setMobileMenuOpen(false); }}>
           <Link2 size={14} strokeWidth={1.6} />
