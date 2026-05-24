@@ -6,7 +6,11 @@ import { fileURLToPath } from 'url';
 const { Pool } = pg;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const connectionString = process.env.DATABASE_URL || 'postgres://danielcrowder@127.0.0.1:5432/nords_dev';
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error('ERROR: DATABASE_URL environment variable is required.');
+  process.exit(1);
+}
 
 const pool = new Pool({ connectionString, max: 2, idleTimeoutMillis: 5000 });
 

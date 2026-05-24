@@ -1,5 +1,10 @@
 node_modules
 dist
+logs
 .env
 .env.*
 *.log
+*.md
+.git
+.github
+.vscode

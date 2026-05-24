@@ -29,19 +29,20 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 initFirebaseAdmin();
 
 // ── Middleware ──
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || [
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://localhost:5175',
-    'http://localhost:5176',
-    'http://localhost:5177',
-    'http://localhost:5178',
-    'http://localhost:5179',
-    'http://localhost:5180',
-  ],
-  credentials: true,
-}));
+const corsOrigin = process.env.CORS_ORIGIN || [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'http://localhost:5176',
+  'http://localhost:5177',
+  'http://localhost:5178',
+  'http://localhost:5179',
+  'http://localhost:5180',
+];
+if (!process.env.CORS_ORIGIN && process.env.NODE_ENV !== 'development') {
+  logger.warn('CORS_ORIGIN not set — falling back to localhost origins. Set CORS_ORIGIN in production.', { NODE_ENV: process.env.NODE_ENV });
+}
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: '5mb' }));
 app.use(requestLogger);
 

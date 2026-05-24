@@ -1,0 +1,21 @@
+# Root-level .dockerignore for server builds
+.git
+.github
+.vscode
+.gemini
+docs
+*.md
+
+# Client build artifacts (not needed for server)
+client/node_modules
+client/dist
+
+# Server artifacts (rebuilt in Docker)
+server/node_modules
+server/dist
+server/logs
+server/.env
+server/.env.*
+
+# Misc
+*.log

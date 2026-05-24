@@ -18,18 +18,31 @@ env:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./client
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: 20
-    - run: npm ci
-    - run: npm run lint
-    - run: npx tsc --noEmit
-    - run: npm run test
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 10
+    - run: pnpm install --frozen-lockfile
+    - run: pnpm --filter client run lint
+    - run: pnpm --filter client exec tsc --noEmit
+    - run: pnpm --filter client run test
+
+  validate-server:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 10
+    - run: pnpm install --frozen-lockfile
+    - run: pnpm --filter server exec tsc --noEmit
 
   e2e:
     runs-on: ubuntu-latest
