@@ -236,3 +236,84 @@ How data reaches the AI, ordered by frequency of delivery:
 | **Dictionary** (`nords_get_dictionary`) | On-demand (cached 5 min) | Full ontology: all nord types + schemas, all connection types + verbs + stages, all personas + mental models + weights |
 | **Tool Context** | Internal, every tool dispatch | `sessionId`, `projectId`, `mcpMutable`, `mcpCaptureData` — gates which tool operations are allowed |
 | **Goal Events** | Returned from `nords_update_session_nord` | `goal_completed`, `goal_activated`, `goal_cancelled`, `session_terminating` — real-time reactions to data changes |
+
+---
+
+## MCP Tools Reference
+
+22 tools organized into 4 tiers. Gating is controlled by project settings (`mcp_enabled`, `mcp_capture_data`, `mcp_mutable`).
+
+### Tier 1 — Read-Only (always available)
+
+No side effects. Available in all modes when MCP is enabled.
+
+| Tool | Description | Parameters | Returns | Mode |
+|------|-------------|------------|---------|------|
+| `nords_get_dictionary` | Get the full project ontology: all nord types with property schemas, all connection types with verbs and stage labels, all personas with mental models and category weights. | *(none)* | `ProjectDictionary` — types, categories, personas | ★ All |
+| `nords_get_horizon` | Get the Session Horizon — the AI's full situational awareness. Current position with collected/remaining properties, persona-weighted neighbors, completion %, traversal breadcrumbs, suggested next, 2-hop predicted path, planning queue, and goal state. | *(none)* | `SessionHorizon` — current nord, neighbors, completion, goals, planning queue | ★ All |
+| `nords_get_graph` | Get the entire project graph with all nords, connections, and their types. Use for broad exploration when the horizon is insufficient. | *(none)* | Full graph: nords[], connections[], types[] | ★ All |
+| `nords_get_nord` | Get a single nord by ID with all its properties. | `nord_id` (uuid, required) | Nord with type info and properties | ★ All |
+| `nords_query_nords` | Search nords by type and/or title substring. | `type_id` (uuid), `title` (string) — both optional | Matching nords[] | ★ All |
+| `nords_get_connections` | Get all connections to/from a specific nord, enriched with type info and stage labels. | `nord_id` (uuid, required) | Connections[] with type metadata | ★ All |
+| `nords_get_session_state` | Get full session state: current position, all session nords with completion progress, and traversal history. | *(none)* | Session + session_nords[] + traversals[] | ★ All |
+| `nords_get_incomplete_nords` | Get all nords in the session that still have unfilled required properties. | *(none)* | Incomplete session_nords[] | 📋🎯 |
+| `nords_get_goals` | Get session goals with per-goal progress, status, bound properties, and prerequisite chains. Goal events also arrive automatically after every `nords_update_session_nord`. | *(none)* | Session goals[] with property-level completion | 🎯 only |
+| `nords_get_briefing` | Cold-start composite tool — returns dictionary + horizon + goals in a single call. Use at session start instead of calling dictionary and horizon separately. | *(none)* | `{ dictionary, horizon, goals }` | ★ All |
+| `nords_get_analytics` | Get aggregate project analytics: session counts by status, traversal stats, and top-visited nords. | *(none)* | Analytics summary | ★ All |
+
+---
+
+### Tier 2 — Session (navigation & data collection)
+
+Move through the graph and save collected data. Available when MCP is enabled.
+
+| Tool | Description | Parameters | Returns | Gate | Mode |
+|------|-------------|------------|---------|------|------|
+| `nords_traverse_connection` | Move to a connected nord by traversing a connection. Updates the session's `current_nord_id` and returns the updated horizon. | `connection_id` (uuid), `source_nord_id` (uuid), `target_nord_id` (uuid), `direction` (`forward` · `backward`), `traversal_type` (`read` · `advance` · `rework` · `create` · `assign` · `evaluate`), `context` (object, optional) | Updated `SessionHorizon` | — | ★ All |
+| `nords_update_session_nord` | Save collected property values to a session nord. Validates against the nord type's schema, recalculates completion, evaluates goal progress, and returns updated horizon with any `goal_events`. | `nord_id` (uuid), `properties` (object), `required_count` (number, optional), `filled_count` (number, optional) | Updated `SessionHorizon` + `goal_events[]` | `mcp_capture_data` | 📋🎯 |
+| `nords_visit_nord` | Log a visit to a nord with optional before/after property snapshots. Used for audit trail. | `nord_id` (uuid), `visit_type` (`inspect` · `update` · `complete` · `create` · `gate_check`), `properties_before` (object, optional), `properties_after` (object, optional), `context` (object, optional) | Visit record | — | ★ All |
+| `nords_switch_persona` | Switch the active persona lens. Changes how neighbors are weighted by persona bias and returns the updated horizon with reweighted neighbors. | `persona_id` (uuid or null) | Updated `SessionHorizon` | — | ★ All |
+
+---
+
+### Tier 3 — Mutative (graph modification)
+
+Create, update, or delete nords and connections. **Only available when `mcp_mutable = true`.**
+
+| Tool | Description | Parameters | Gate | Mode |
+|------|-------------|------------|------|------|
+| `nords_create_nord` | Create a new nord in the project. | `type_id` (uuid), `title` (string), `properties` (object, optional), `position_x` (number, optional), `position_y` (number, optional) | `mcp_mutable` | ★ All |
+| `nords_update_nord` | Update an existing nord's title or properties. | `nord_id` (uuid), `title` (string, optional), `properties` (object, optional) | `mcp_mutable` | ★ All |
+| `nords_delete_nord` | Soft-delete a nord. | `nord_id` (uuid) | `mcp_mutable` | ★ All |
+| `nords_create_connection` | Create a typed connection between two nords. | `type_id` (uuid), `source_nord_id` (uuid), `target_nord_id` (uuid), `direction` (string, optional), `distance_x` (float, optional), `distance_y` (float, optional) | `mcp_mutable` | ★ All |
+| `nords_update_connection` | Update a connection's distance, direction, or properties. | `connection_id` (uuid), `distance_x` (float, optional), `distance_y` (float, optional), `direction` (string, optional), `properties` (object, optional) | `mcp_mutable` | ★ All |
+| `nords_delete_connection` | Soft-delete a connection. | `connection_id` (uuid) | `mcp_mutable` | ★ All |
+
+---
+
+### Tier 4 — External MCP Only
+
+Available only through the native MCP server (`mcp-server.ts` via stdio transport) for external AI clients (Claude Desktop, Cursor, etc.). **Not available through the built-in Gemini chat.**
+
+| Tool | Description | Parameters | Returns | Mode |
+|------|-------------|------------|---------|------|
+| `nords_reset_session` | Abandon the current session and start a fresh one. Ends the existing session with status `abandoned` and creates a new session with the configured default persona and start nord. | *(none)* | New `session_id` + fresh `SessionHorizon` | ★ All |
+
+---
+
+### Tool Gating Summary
+
+| Gate | Controlled By | Effect When `false` |
+|------|--------------|-------------------|
+| `mcp_enabled` | Project Settings toggle | All MCP tools disabled. No sessions, no chat, no tool calls |
+| `mcp_capture_data` | Derived from `project_mode` (`collect` or `guided` → true) | `nords_update_session_nord` is read-only (no writes). Properties cannot be collected by the AI |
+| `mcp_mutable` | Project Settings toggle | Tier 3 tools (create/update/delete nords and connections) are removed from the tool declarations entirely |
+
+### Goal Events (returned by `nords_update_session_nord`)
+
+| Event | Trigger | AI Behavior |
+|-------|---------|-------------|
+| `goal_completed` | All bound properties for a goal are collected | Acknowledge the milestone conversationally. Weave `achieved_prompt` naturally if set |
+| `goal_activated` | A prerequisite goal completed, unlocking a downstream goal | Transition to the new goal's topics naturally |
+| `goal_cancelled` | A sibling branch was structurally excluded | Stop pursuing those topics silently. Do NOT mention to user |
+| `session_terminating` | A terminal goal (with `end_type`) was completed | `reset`: bring conversation to warm close. `continue`: close warmly, mention picking up next time |
