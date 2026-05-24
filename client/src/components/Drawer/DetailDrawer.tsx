@@ -14,6 +14,7 @@
  */
 
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { useDrawerEntity } from '../../hooks/useDrawerEntity';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
@@ -434,7 +435,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
           <div className="nords-drawer-type-eyebrow" style={{ color: entity.typeColor }}>
             {entity.type}
           </div>
-          <button className="nords-close-btn" onClick={onClose} aria-label="Close">×</button>
+          <button className="nords-close-btn" onClick={onClose} aria-label="Close"><X size={18} strokeWidth={2} /></button>
         </header>
 
         <div className="nords-drawer-content">
@@ -567,7 +568,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
               title="Delete this connection"
               aria-label="Delete connection"
             >×</button>
-            <button className="nords-close-btn" onClick={onClose} aria-label="Close">×</button>
+            <button className="nords-close-btn" onClick={onClose} aria-label="Close"><X size={18} strokeWidth={2} /></button>
           </div>
         </header>
 
@@ -659,7 +660,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
     <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
       <header className="nords-drawer-header">
         <div className="nords-drawer-type">Loading…</div>
-        <button className="nords-close-btn" onClick={onClose} aria-label="Close">×</button>
+        <button className="nords-close-btn" onClick={onClose} aria-label="Close"><X size={18} strokeWidth={2} /></button>
       </header>
       <div className="nords-drawer-content">
         <div className="nords-drawer-empty">Select a nord or connection to view details.</div>

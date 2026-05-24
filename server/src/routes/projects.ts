@@ -61,7 +61,7 @@ projectsRouter.get('/projects', async (_req: Request, res: Response) => {
  */
 projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Request, res: Response) => {
   try {
-    const { org_id, name, description, purpose, icon, mcp_enabled, mcp_mutable, mcp_system_prompt, default_persona_id, default_start_nord_id, default_end_nord_id } = req.body;
+    const { org_id, name, description, purpose, icon, accent_color, mcp_enabled, mcp_mutable, mcp_system_prompt, default_persona_id, default_start_nord_id, default_end_nord_id } = req.body;
     const project_mode = req.body.project_mode || 'explore';
 
     // Derive MCP flags from project mode
@@ -76,6 +76,7 @@ projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Requ
       description,
       purpose,
       icon,
+      accent_color: accent_color ?? '#6b7aed',
       created_by: null,
       mcp_enabled: mcp_enabled ?? false,
       mcp_capture_data,

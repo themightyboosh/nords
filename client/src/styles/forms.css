@@ -316,3 +316,24 @@
 .nords-form__btn--danger:hover:not(:disabled) {
   filter: brightness(1.1);
 }
+
+/* ── Close button (shared across all panels & drawers) ── */
+.nords-close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--nords-color-text-secondary);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--nords-radius-md);
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+}
+
+.nords-close-btn:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}

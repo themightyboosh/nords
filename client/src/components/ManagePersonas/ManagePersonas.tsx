@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { X, Plus, Trash2, GripVertical } from 'lucide-react';
+import { X, Plus, Trash2, GripVertical, Shuffle } from 'lucide-react';
 import { usePersonas, type Persona } from '../../hooks/usePersonas';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
@@ -240,6 +240,17 @@ function PersonaEditor({
       {/* ── Avatar Picker ── */}
       {showAvatarPicker && (
         <div className="manage-personas__avatar-picker">
+          <button
+            className="manage-personas__avatar-option manage-personas__avatar-randomize"
+            onClick={() => {
+              const randomSeed = `persona-random-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+              onUpdate(persona.id, { avatar_seed: randomSeed });
+            }}
+            title="Randomize avatar"
+          >
+            <Shuffle size={20} />
+            <span className="manage-personas__randomize-label">Random</span>
+          </button>
           {avatarSeeds.map(seed => (
             <button
               key={seed}

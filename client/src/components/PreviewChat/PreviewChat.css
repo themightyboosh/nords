@@ -1,15 +1,37 @@
 /**
  * PreviewChat.css — Chat window styling with Dev Mode panel.
  * Premium dark-glass aesthetic with tool timeline, horizon inspector.
+ * Free-floating draggable/resizable window.
  */
 
-/* ── Container (now lives inside FloatingPanel) ── */
+/* ── Container (free-floating window) ── */
 .preview-chat {
   display: flex; flex-direction: column;
-  height: 100%;
   background: var(--nords-color-bg-base, #0d0f13);
   color: var(--nords-color-text-primary, #e8e8ec);
-  font-family: var(--nords-font-family, 'Inter', sans-serif);
+  font-family: var(--nords-font-primary, 'Inter', sans-serif);
+  border-radius: var(--nords-radius-xl, 16px);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04);
+  min-width: 320px;
+  min-height: 300px;
+}
+
+/* ── Header / Drag Handle ── */
+.preview-chat__drag-handle {
+  cursor: grab;
+}
+.preview-chat__drag-handle:active {
+  cursor: grabbing;
+}
+.preview-chat__grip-icon {
+  color: var(--nords-color-text-disabled, #4b5563);
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.preview-chat__drag-handle:hover .preview-chat__grip-icon {
+  opacity: 1;
 }
 
 /* ── Header ── */
@@ -18,6 +40,7 @@
   padding: 10px 16px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   background: rgba(255,255,255,0.03); flex-shrink: 0;
+  border-radius: var(--nords-radius-xl, 16px) var(--nords-radius-xl, 16px) 0 0;
 }
 .preview-chat__header-left { display: flex; align-items: center; gap: 8px; color: #9ca3af; }
 .preview-chat__title { font-weight: 600; font-size: 13px; color: #e8e8ec; }

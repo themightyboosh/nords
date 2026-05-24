@@ -15,9 +15,9 @@ import {
   Send, RotateCcw, Code2, X, ChevronDown, ChevronRight,
   Activity, Zap, MessageSquare, Bot, User, Cpu,
   Wrench, Eye, Map, FileText, AlertTriangle, FlaskConical, Loader2,
+  GripVertical,
 } from 'lucide-react';
 import { api } from '../../api/client';
-import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import './PreviewChat.css';
 
 interface ToolCall {
@@ -83,6 +83,72 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
   const [testProgress, setTestProgress] = useState<{ round: number; maxRounds: number } | null>(null);
   const [testResult, setTestResult] = useState<any>(null);
   const testEventSourceRef = useRef<EventSource | null>(null);
+
+  // ── Drag / Resize State ──
+  const STORAGE_KEY = 'nords-preview-chat-rect';
+  const getStoredRect = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw) as { x: number; y: number; w: number; h: number };
+    } catch { /* ignore */ }
+    return null;
+  };
+
+  const defaultRect = { x: window.innerWidth - 480, y: 60, w: 440, h: 600 };
+  const [rect, setRect] = useState(() => getStoredRect() || defaultRect);
+  const isDragging = useRef(false);
+  const dragOffset = useRef({ dx: 0, dy: 0 });
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  // Persist rect changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(rect));
+  }, [rect]);
+
+  // ResizeObserver to track user-resize via CSS resize
+  useEffect(() => {
+    const el = chatRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          setRect(prev => ({ ...prev, w: width, h: height }));
+        }
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isOpen]);
+
+  // Drag handlers
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    // Only start drag from the header area (not buttons)
+    if ((e.target as HTMLElement).closest('button, select, input')) return;
+    e.preventDefault();
+    isDragging.current = true;
+    dragOffset.current = { dx: e.clientX - rect.x, dy: e.clientY - rect.y };
+
+    const handleMouseMove = (ev: MouseEvent) => {
+      if (!isDragging.current) return;
+      const newX = Math.max(0, Math.min(ev.clientX - dragOffset.current.dx, window.innerWidth - 200));
+      const newY = Math.max(0, Math.min(ev.clientY - dragOffset.current.dy, window.innerHeight - 60));
+      setRect(prev => ({ ...prev, x: newX, y: newY }));
+    };
+
+    const handleMouseUp = () => {
+      isDragging.current = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'grabbing';
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [rect.x, rect.y]);
 
   const MODELS = [
     { id: 'gemini-2.5-flash',      label: '2.5 Flash',      desc: 'Fast & balanced' },
@@ -642,12 +708,31 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
     );
   }
 
+  if (!isOpen) return null;
+
   return (
-    <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose} width="440px">
-    <div className="preview-chat" data-testid="preview-chat">
-      {/* Header */}
-      <div className="preview-chat__header">
+    <div
+      ref={chatRef}
+      className="preview-chat"
+      data-testid="preview-chat"
+      style={{
+        position: 'fixed',
+        left: rect.x,
+        top: rect.y,
+        width: rect.w,
+        height: rect.h,
+        zIndex: 500,
+        resize: 'both',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Header — doubles as drag handle */}
+      <div
+        className="preview-chat__header preview-chat__drag-handle"
+        onMouseDown={handleDragStart}
+      >
         <div className="preview-chat__header-left">
+          <GripVertical size={14} className="preview-chat__grip-icon" />
           <Bot size={16} />
           <span className="preview-chat__title">Agent Preview</span>
           {sessionId && (
@@ -891,6 +976,5 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
         </button>
       </div>
     </div>
-    </FloatingPanel>
   );
 }

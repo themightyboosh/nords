@@ -1,5 +1,8 @@
 import { Router, type Request, type Response } from 'express';
 import * as goalsRepo from '../repositories/goals.js';
+import logger from '../lib/logger.js';
+
+const log = logger.child({ route: 'goals' });
 
 export const goalsRouter = Router();
 
@@ -9,7 +12,7 @@ goalsRouter.get('/projects/:id/goals', async (req: Request, res: Response) => {
     const goals = await goalsRepo.findByProjectWithProperties(req.params.id as string);
     res.json(goals);
   } catch (err: any) {
-    console.error('Error fetching goals:', err);
+    log.error('Error fetching goals', { error: err.message, requestId: req.requestId, projectId: req.params.id });
     res.status(500).json({ error: err.message });
   }
 });
@@ -23,7 +26,7 @@ goalsRouter.post('/projects/:id/goals', async (req: Request, res: Response) => {
     });
     res.status(201).json(goal);
   } catch (err: any) {
-    console.error('Error creating goal:', err);
+    log.error('Error creating goal', { error: err.message, requestId: req.requestId, projectId: req.params.id });
     res.status(500).json({ error: err.message });
   }
 });
@@ -35,7 +38,7 @@ goalsRouter.put('/goals/:id', async (req: Request, res: Response) => {
     if (!goal) return res.status(404).json({ error: 'Goal not found' });
     res.json(goal);
   } catch (err: any) {
-    console.error('Error updating goal:', err);
+    log.error('Error updating goal', { error: err.message, requestId: req.requestId, goalId: req.params.id });
     res.status(500).json({ error: err.message });
   }
 });
@@ -47,7 +50,7 @@ goalsRouter.delete('/goals/:id', async (req: Request, res: Response) => {
     if (!deleted) return res.status(404).json({ error: 'Goal not found' });
     res.status(204).send();
   } catch (err: any) {
-    console.error('Error deleting goal:', err);
+    log.error('Error deleting goal', { error: err.message, requestId: req.requestId, goalId: req.params.id });
     res.status(500).json({ error: err.message });
   }
 });
@@ -63,7 +66,7 @@ goalsRouter.post('/goals/:id/properties', async (req: Request, res: Response) =>
     if (!prop) return res.status(409).json({ error: 'Property binding already exists' });
     res.status(201).json(prop);
   } catch (err: any) {
-    console.error('Error adding goal property:', err);
+    log.error('Error adding goal property', { error: err.message, requestId: req.requestId, goalId: req.params.id });
     res.status(500).json({ error: err.message });
   }
 });
@@ -75,7 +78,7 @@ goalsRouter.delete('/goals/:id/properties/:propId', async (req: Request, res: Re
     if (!deleted) return res.status(404).json({ error: 'Property binding not found' });
     res.status(204).send();
   } catch (err: any) {
-    console.error('Error removing goal property:', err);
+    log.error('Error removing goal property', { error: err.message, requestId: req.requestId, propId: req.params.propId });
     res.status(500).json({ error: err.message });
   }
 });
@@ -92,7 +95,7 @@ goalsRouter.get('/goals/check-nord/:nordId', async (req: Request, res: Response)
     }
     res.json({ ok: true });
   } catch (err: any) {
-    console.error('Error checking nord goals:', err);
+    log.error('Error checking nord goals', { error: err.message, requestId: req.requestId, nordId: req.params.nordId });
     res.status(500).json({ error: err.message });
   }
 });
@@ -107,7 +110,7 @@ goalsRouter.get('/projects/:id/goal-edges', async (req: Request, res: Response) 
     const edges = await goalsRepo.findEdgesByProject(req.params.id as string);
     res.json(edges);
   } catch (err: any) {
-    console.error('Error fetching goal edges:', err);
+    log.error('Error fetching goal edges', { error: err.message, requestId: req.requestId, projectId: req.params.id });
     res.status(500).json({ error: err.message });
   }
 });
@@ -126,7 +129,7 @@ goalsRouter.post('/projects/:id/goal-edges', async (req: Request, res: Response)
     if (!edge) return res.status(409).json({ error: 'Edge already exists' });
     res.status(201).json(edge);
   } catch (err: any) {
-    console.error('Error creating goal edge:', err);
+    log.error('Error creating goal edge', { error: err.message, requestId: req.requestId, projectId: req.params.id });
     res.status(500).json({ error: err.message });
   }
 });
@@ -138,7 +141,7 @@ goalsRouter.delete('/goal-edges/:id', async (req: Request, res: Response) => {
     if (!deleted) return res.status(404).json({ error: 'Edge not found' });
     res.status(204).send();
   } catch (err: any) {
-    console.error('Error removing goal edge:', err);
+    log.error('Error removing goal edge', { error: err.message, requestId: req.requestId, edgeId: req.params.id });
     res.status(500).json({ error: err.message });
   }
 });

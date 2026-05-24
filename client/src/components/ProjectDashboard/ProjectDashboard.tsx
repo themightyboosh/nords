@@ -21,12 +21,12 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
-import { useAuth } from '../../context/AuthContext';
 import ViewportHeader from '../Layout/ViewportHeader';
 import { IconPicker } from '../shared/IconPicker';
 import { ColorIcon } from '../shared/ColorIcon';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { ProjectSettings } from '../ProjectSettings/ProjectSettings';
+import { HueSlider } from '../shared/HueSlider';
 import './ProjectDashboard.css';
 
 /** Feature flag: set to true to show the Admin sidebar section */
@@ -36,6 +36,7 @@ interface Project {
   id: string;
   name: string;
   icon: string | null;
+  accent_color: string | null;
   description: string | null;
   purpose: string | null;
   project_mode: 'explore' | 'collect' | 'guided';
@@ -49,7 +50,6 @@ interface Project {
 
 export default function ProjectDashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +60,8 @@ export default function ProjectDashboard() {
     name: '',
     description: '',
     purpose: '',
-    icon: '📁',
+    icon: 'Folder',
+    accent_color: '#6b7aed',
     mcp_enabled: false,
     project_mode: 'explore' as 'explore' | 'collect' | 'guided',
   });
@@ -77,9 +78,6 @@ export default function ProjectDashboard() {
 
   // Settings modal state
   const [settingsProjectId, setSettingsProjectId] = useState<string | null>(null);
-
-  // Personalized header
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Your';
 
   const loadProjects = useCallback(async () => {
     try {
@@ -116,13 +114,14 @@ export default function ProjectDashboard() {
         name: createForm.name.trim(),
         description: createForm.description.trim(),
         purpose: createForm.purpose.trim(),
-        icon: createForm.icon || '📁',
+        icon: createForm.icon || 'Folder',
+        accent_color: createForm.accent_color || '#6b7aed',
         mcp_enabled: createForm.mcp_enabled,
         project_mode: createForm.mcp_enabled ? createForm.project_mode : 'explore',
       });
       setShowCreateModal(false);
       setShowCreateIconPicker(false);
-      setCreateForm({ name: '', description: '', purpose: '', icon: 'Folder', mcp_enabled: false, project_mode: 'explore' });
+      setCreateForm({ name: '', description: '', purpose: '', icon: 'Folder', accent_color: '#6b7aed', mcp_enabled: false, project_mode: 'explore' });
       await loadProjects();
     } catch (err: any) {
       setCreateErrors([err.message || 'Failed to create project']);
@@ -226,6 +225,14 @@ export default function ProjectDashboard() {
 
       <main className="nords-dashboard__main">
 
+        {error && (
+          <div className="nords-modal__errors" style={{ marginBottom: '16px' }}>
+            <div className="nords-modal__error">
+              <AlertTriangle size={12} /> {error}
+            </div>
+          </div>
+        )}
+
         {loading && (
           <div className="nords-dashboard__loading">
             <div className="nords-canvas-loading__spinner" />
@@ -245,7 +252,7 @@ export default function ProjectDashboard() {
                 <span className="nords-dashboard__card-icon">
                   <ColorIcon
                     icon={project.icon}
-                    color={'#6b7aed'}
+                    color={project.accent_color || '#6b7aed'}
                     size={32}
                     strokeWidth={1.4}
                   />
@@ -365,11 +372,21 @@ export default function ProjectDashboard() {
                   <div style={{ marginTop: '8px' }}>
                     <IconPicker
                       currentIcon={createForm.icon || 'Folder'}
+                      accentColor={createForm.accent_color || '#6b7aed'}
                       onSelect={(iconName) => {
                         setCreateForm({ ...createForm, icon: iconName });
                         setShowCreateIconPicker(false);
                       }}
                     />
+                    <div style={{ marginTop: '12px', padding: '0 8px' }}>
+                      <label className="nords-form__label" style={{ marginBottom: '6px' }}>Color</label>
+                      <HueSlider
+                        color={createForm.accent_color || '#6b7aed'}
+                        onChange={(hex) => setCreateForm({ ...createForm, accent_color: hex })}
+                        saturation={55}
+                        lightness={50}
+                      />
+                    </div>
                   </div>
                 )}
               </label>

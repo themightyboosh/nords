@@ -297,7 +297,7 @@ export function TestRunner({ projectId, projectMode, goalsEnabled, open, onClose
             <FlaskConical size={18} />
             <h2>Test Runner</h2>
           </div>
-          <button className="test-runner__close" onClick={onClose}><X size={16} /></button>
+          <button className="nords-close-btn" onClick={onClose} aria-label="Close"><X size={18} strokeWidth={2} /></button>
         </div>
 
         <div className="test-runner__body">

@@ -131,7 +131,7 @@ export function buildToolDeclarations(
   const session: FunctionDeclaration[] = [
     {
       name: 'nords_traverse_connection',
-      description: `Move to a connected nord by traversing a connection. This updates your current position and automatically returns the updated horizon. Use traversal_type to describe why you are moving (read, advance, rework, create, assign, evaluate).${ctx}`,
+      description: `Move to a connected nord by traversing a connection. Get the connection_id from neighbors[].relationship.connection_id in the horizon. The source_nord_id is your current position (horizon.current_nord.id) and target_nord_id is neighbors[].nord.id. direction should match neighbors[].relationship.direction. This updates your position and automatically returns the updated horizon.${ctx}`,
       parameters: {
         type: 'OBJECT' as Type,
         properties: {
@@ -147,14 +147,12 @@ export function buildToolDeclarations(
     },
     {
       name: 'nords_update_session_nord',
-      description: 'Save collected property values to a session nord. This validates properties against the nord type schema and returns the updated horizon. Use this when you have gathered information from the user.',
+      description: 'Save collected property values to a session nord. Validates properties against the nord type schema, computes completion automatically, and returns the updated horizon. Use this when you have gathered information from the user. You can save to any nord, not just the current one.',
       parameters: {
         type: 'OBJECT' as Type,
         properties: {
           nord_id: { type: 'STRING' as Type, description: 'UUID of the nord to update' },
           properties: { type: 'OBJECT' as Type, description: 'Key-value pairs of collected properties', properties: {} },
-          required_count: { type: 'NUMBER' as Type, description: 'Total required fields for this nord' },
-          filled_count: { type: 'NUMBER' as Type, description: 'Number of required fields now filled' },
         },
         required: ['nord_id', 'properties'],
       },

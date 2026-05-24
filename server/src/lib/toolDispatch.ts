@@ -11,6 +11,7 @@ import * as projectsRepo from '../repositories/projects.js';
 import * as goalsRepo from '../repositories/goals.js';
 import { nordTypesRepo, connectionTypesRepo } from '../repositories/types.js';
 import { queryOne, query } from '../db.js';
+import logger from './logger.js';
 
 export interface ToolContext {
   sessionId: string;
@@ -36,42 +37,95 @@ function buildProtocol(
   project: { name?: string | null; purpose?: string | null; mcp_system_prompt?: string | null; project_mode?: string | null } | null,
   horizon: mcpRepo.SessionHorizon
 ): Record<string, unknown> {
-  return {
-    overview: 'You navigate a knowledge graph ("Nords") via MCP tools. Your job is to gather information naturally through conversation, then save structured properties using nords_update_session_nord. The participant should never feel like they are filling out a form.',
-    project: {
-      name: project?.name || null,
-      purpose: project?.purpose || null,
-      mode: project?.project_mode || 'collect',
-      instructions: project?.mcp_system_prompt || null,
+  const mode = project?.project_mode || 'collect';
+
+  // Mode-specific behavioral guidance
+  const modeOverview: Record<string, string> = {
+    explore: 'You navigate a knowledge graph via MCP tools. Your role is to guide and discuss — help the user explore their project, understand relationships, and discover insights. Follow the user\'s curiosity. Do NOT push data collection unless the user volunteers information.',
+    collect: 'You navigate a knowledge graph via MCP tools. Your job is to gather information naturally through conversation, then save structured properties using nords_update_session_nord. The participant should never feel like they are filling out a form. Capture data organically as it comes up.',
+    guided: 'You navigate a knowledge graph via MCP tools. You are actively working toward specific goals. Use the planning_queue and goal bindings to steer the conversation toward uncollected properties. Be purposeful but never robotic — the user should feel heard, not interrogated.',
+  };
+
+  const modeCollection: Record<string, Record<string, string>> = {
+    explore: {
+      remaining_schema: 'The remaining_schema shows what properties exist but are unfilled. In explore mode, treat these as conversation topics you MAY discuss if the user is interested — not as a checklist to complete.',
+      save_opportunistically: 'If the user naturally shares information that matches a property, save it with nords_update_session_nord. But do NOT ask probing questions specifically to fill properties.',
+      planning_queue: 'The planning_queue shows unvisited nords. Use it to suggest interesting areas to explore, but always follow the user\'s lead.',
+      pacing: 'Let the user guide the pace. If they want to linger on a topic, stay there. If they want to move on, follow them.',
     },
-    navigation: {
-      verbs: 'Connection verbs encode causality: "flows into" / "leads to" = prerequisite gate (source before target). "depends on" = dependency (target before source). "assigned to" = resource binding. "blocks" = blocker. "contains" / "has" = composition. Use verbs to infer sequencing.',
-      stages: 'Connection distance_x/distance_y (0.0–1.0) map to stage labels. Use the label name in conversation (e.g., "In Progress"), never raw numbers.',
-      suggested_next: 'The horizon\'s suggested_next field guides your internal plan. Follow it unless the user\'s story leads elsewhere.',
-      predicted_path: 'The predicted_path is a 2-hop lookahead. Use it for internal planning only.',
-    },
-    collection: {
+    collect: {
       remaining_schema: 'Each property in remaining_schema has name, type, required, and may have description (what to collect) and hint (how to ask). Use the hint as a conversational prompt. Properties are sorted by priority — ask about earlier items first.',
       save_incrementally: 'Save values with nords_update_session_nord as soon as you learn them. Do NOT wait until all properties are gathered.',
+      cross_nord_capture: 'You CAN save properties to any nord you know about, not just the current one. If the user naturally mentions something relevant to another nord, capture it immediately — don\'t wait until you traverse there. But prioritize the current nord\'s remaining_schema first.',
       planning_queue: 'The planning_queue is YOUR internal roadmap. Never share it with the user. Never say "we still need to cover X, Y, Z." Complete the current conversational thread before pivoting to queue items.',
       pacing: 'Explore topics deeply before moving on. Better to deeply explore 3 topics than shallowly touch 10. If a user gives a short answer, probe before moving on.',
     },
-    goal_events: {
-      goal_completed: 'Acknowledge the milestone conversationally. If the goal has an achieved_prompt, weave it naturally into your response. Do NOT say "Goal complete!" or reference the goal system.',
-      goal_activated: 'A new goal has unlocked (its prerequisites are met). Transition to its topics naturally, as if following the user\'s story.',
-      goal_cancelled: 'A sibling branch was structurally excluded. Stop pursuing those topics silently. Do NOT mention this to the user.',
-      session_terminating: 'A terminal goal was reached. If end_type is "reset", bring the conversation to a warm close and say goodbye. If "continue", close warmly but mention you\'ll pick up where you left off next time.',
+    guided: {
+      remaining_schema: 'Each property in remaining_schema has name, type, required, and may have description and hint. In guided mode, actively steer toward required properties that are bound to active goals. Use hints as conversational prompts.',
+      save_incrementally: 'Save values with nords_update_session_nord as soon as you learn them. Do NOT wait until all properties are gathered.',
+      cross_nord_capture: 'You CAN save properties to any nord you know about, not just the current one. If the user naturally mentions something relevant to another nord, capture it immediately — don\'t wait until you traverse there. But prioritize the current nord\'s remaining_schema first.',
+      planning_queue: 'The planning_queue is YOUR internal roadmap aligned with active goals. Prioritize nords bound to active goals. Never share the queue with the user.',
+      pacing: 'Balance depth with goal progress. Probe important topics but keep momentum toward goal completion.',
     },
-    persona: horizon.persona
-      ? 'You are operating as the persona described in the dictionary. Adopt its voice, tone, decision frameworks, and attention bias. When choosing which neighbor to explore, prefer connections with higher persona weight.'
-      : null,
-    rules: [
+  };
+
+  const modeRules: Record<string, string[]> = {
+    explore: [
+      'You navigate a real graph. Don\'t invent nords or connections — discover them with your tools.',
+      'Never reference the graph structure, nords, schemas, or tools to the user.',
+      'Follow the user\'s interests. Suggest related topics from the graph but never force a direction.',
+      'If the user shares useful information unprompted, save it — but don\'t interrogate.',
+      'Summarize insights and connections you notice. Your value is in synthesis, not extraction.',
+    ],
+    collect: [
       'You navigate a real graph. Don\'t invent nords or connections — discover them with your tools.',
       'Infer prerequisite gates from connection verbs. Don\'t skip a "depends on" target.',
       'Never list remaining fields or ask for them in sequence. That is a survey, not an interview.',
       'Never reference the graph structure, nords, schemas, or tools to the user.',
       'When a nord is complete, provide a brief reflection that validates what the user shared before transitioning.',
     ],
+    guided: [
+      'You navigate a real graph. Don\'t invent nords or connections — discover them with your tools.',
+      'Infer prerequisite gates from connection verbs. Don\'t skip a "depends on" target.',
+      'Never list remaining fields or ask for them in sequence. That is a survey, not an interview.',
+      'Never reference the graph structure, nords, schemas, goals, or tools to the user.',
+      'When a nord is complete, provide a brief reflection that validates what the user shared before transitioning.',
+      'Actively work toward active goal bindings. The goal_events in tool responses tell you when goals complete.',
+    ],
+  };
+
+  return {
+    overview: modeOverview[mode] || modeOverview.collect,
+    project: {
+      name: project?.name || null,
+      purpose: project?.purpose || null,
+      mode,
+      instructions: project?.mcp_system_prompt || null,
+    },
+    first_turn: 'On your FIRST turn, call ONLY nords_get_briefing. Read the protocol it returns. Then greet the user warmly and start the conversation. Do NOT traverse, update, or call other tools on your first turn.',
+    navigation: {
+      verbs: 'Connection verbs encode causality: "flows into" / "leads to" = prerequisite gate (source before target). "depends on" = dependency (target before source). "assigned to" = resource binding. "blocks" = blocker. "contains" / "has" = composition. Use verbs to infer sequencing.',
+      stages: 'Connection distance_x/distance_y (0.0–1.0) map to stage labels. Use the label name in conversation (e.g., "In Progress"), never raw numbers.',
+      suggested_next: 'The horizon\'s suggested_next field guides your internal plan. Follow it unless the user\'s story leads elsewhere.',
+      predicted_path: 'The predicted_path is a 2-hop lookahead. Use it for internal planning only.',
+    },
+    collection: modeCollection[mode] || modeCollection.collect,
+    goal_events: {
+      goal_completed: 'Acknowledge the milestone conversationally. If the goal has an achieved_prompt, weave it naturally into your response. Do NOT say "Goal complete!" or reference the goal system.',
+      goal_activated: 'A new goal has unlocked (its prerequisites are met). Transition to its topics naturally, as if following the user\'s story.',
+      goal_cancelled: 'A sibling branch was structurally excluded. Stop pursuing those topics silently. Do NOT mention this to the user.',
+      session_terminating: 'A terminal goal was reached. If end_type is "reset", bring the conversation to a warm close and say goodbye. If "continue", close warmly but mention you\'ll pick up where you left off next time.',
+    },
+    error_recovery: {
+      tool_error: 'If a tool returns success=false, handle it gracefully. Explain the situation naturally to the user if relevant, or silently try an alternative approach. Never show raw error messages or tool names.',
+      invalid_property: 'If nords_update_session_nord rejects a value, rephrase your question to help the user provide a valid format. For example, if a date field is rejected, ask "Could you share that as a specific date?"',
+      dead_end: 'If the current nord has no uncollected properties and no unvisited neighbors, check the planning_queue for the next priority nord. Use nords_traverse_connection to navigate there via the graph.',
+      missing_data: 'If the user says "I don\'t know" or "skip that", respect it. Move to the next topic. Do NOT repeatedly ask for the same information.',
+    },
+    persona: horizon.persona
+      ? 'You are operating as the persona described in the dictionary. Adopt its voice, tone, decision frameworks, and attention bias. When choosing which neighbor to explore, prefer connections with higher persona weight.'
+      : null,
+    rules: modeRules[mode] || modeRules.collect,
   };
 }
 
@@ -87,8 +141,15 @@ const tools: Record<string, ToolHandler> = {
   },
 
   nords_get_graph: async (ctx) => {
-    const nords = await query('SELECT n.*, nt.name as type_name FROM nords n JOIN nord_types nt ON nt.id = n.type_id WHERE n.project_id = $1 AND n.deleted_at IS NULL', [ctx.projectId]);
-    const connections = await query('SELECT c.*, ct.name as type_name FROM connections c JOIN connection_types ct ON ct.id = c.type_id WHERE c.project_id = $1 AND c.deleted_at IS NULL', [ctx.projectId]);
+    const nords = await query<{ id: string; title: string; type_name: string; type_id: string; properties: Record<string, unknown> }>(
+      `SELECT n.id, n.title, nt.name as type_name, n.type_id, n.properties
+       FROM nords n JOIN nord_types nt ON nt.id = n.type_id
+       WHERE n.project_id = $1 AND n.deleted_at IS NULL
+       ORDER BY n.title`, [ctx.projectId]);
+    const connections = await query<{ id: string; source_nord_id: string; target_nord_id: string; type_name: string; direction: string; distance_x: number; distance_y: number }>(
+      `SELECT c.id, c.source_nord_id, c.target_nord_id, ct.name as type_name, c.direction, c.distance_x, c.distance_y
+       FROM connections c JOIN connection_types ct ON ct.id = c.type_id
+       WHERE c.project_id = $1 AND c.deleted_at IS NULL`, [ctx.projectId]);
     const nordTypes = await nordTypesRepo.findByProject(ctx.projectId);
     const connTypes = await connectionTypesRepo.findByProject(ctx.projectId);
     return { success: true, data: { nords, connections, nord_types: nordTypes, connection_types: connTypes } };
@@ -155,10 +216,20 @@ const tools: Record<string, ToolHandler> = {
       goalsRepo.findSessionGoals(ctx.sessionId, ctx.projectId),
       projectsRepo.findById(ctx.projectId),
     ]);
+
+    // De-duplicate: if the active persona is fully represented in horizon.persona,
+    // strip it from dictionary.personas to save ~1000 tokens.
+    const slimDictionary = { ...dictionary };
+    if (horizon.persona?.id && slimDictionary.personas) {
+      slimDictionary.personas = slimDictionary.personas.filter(
+        (p: { id: string }) => p.id !== horizon.persona!.id
+      );
+    }
+
     return {
       success: true,
       data: {
-        dictionary,
+        dictionary: slimDictionary,
         horizon,
         goals,
         protocol: buildProtocol(project, horizon),
@@ -224,17 +295,26 @@ const tools: Record<string, ToolHandler> = {
   },
 
   nords_update_session_nord: async (ctx, args) => {
+    const nordId = args.nord_id as string;
+    const newProperties = (args.properties as Record<string, unknown>) || {};
+
     // Property validation against schema
-    if (args.properties && args.nord_id) {
-      const validationError = await validateProperties(ctx.projectId, args.nord_id as string, args.properties as Record<string, unknown>);
+    if (Object.keys(newProperties).length > 0) {
+      const validationError = await validateProperties(ctx.projectId, nordId, newProperties);
       if (validationError) return { success: false, error: validationError };
     }
+
+    // Server-side completion counting: compute from schema + merged properties
+    const { requiredCount, filledCount } = await computeCompletionCounts(
+      ctx.sessionId, nordId, newProperties
+    );
+
     const sessionNord = await mcpRepo.upsertSessionNord(
       ctx.sessionId,
-      args.nord_id as string,
-      (args.properties as Record<string, unknown>) || {},
-      (args.required_count as number) ?? 0,
-      (args.filled_count as number) ?? 0,
+      nordId,
+      newProperties,
+      requiredCount,
+      filledCount,
     );
 
     // Reactively evaluate goals after every property save
@@ -356,35 +436,36 @@ async function validateProperties(
   const nordType = await nordTypesRepo.findById(nord.type_id);
   if (!nordType?.properties_schema?.length) return null; // No schema = no validation
 
-  const schema = nordType.properties_schema as Array<{ key: string; type: string; required?: boolean; options?: string[] }>;
+  const schema = nordType.properties_schema as Array<{ name: string; type: string; required?: boolean; options?: string[] }>;
 
   for (const field of schema) {
-    const value = properties[field.key];
+    const value = properties[field.name];
 
     // Type checking
     if (value !== undefined && value !== null) {
       switch (field.type) {
-        case 'text':
-        case 'textarea':
+        case 'short_text':
+        case 'long_text':
         case 'url':
-        case 'email':
-          if (typeof value !== 'string') return `Property "${field.key}" must be a string, got ${typeof value}`;
+          if (typeof value !== 'string') return `Property "${field.name}" must be a string, got ${typeof value}`;
           break;
         case 'number':
-          if (typeof value !== 'number') return `Property "${field.key}" must be a number, got ${typeof value}`;
+        case 'currency':
+        case 'percentage':
+          if (typeof value !== 'number') return `Property "${field.name}" must be a number, got ${typeof value}`;
           break;
         case 'boolean':
-        case 'checkbox':
-          if (typeof value !== 'boolean') return `Property "${field.key}" must be a boolean, got ${typeof value}`;
+          if (typeof value !== 'boolean') return `Property "${field.name}" must be a boolean, got ${typeof value}`;
           break;
         case 'select':
           if (field.options && !field.options.includes(value as string)) {
-            return `Property "${field.key}" must be one of: ${field.options.join(', ')}`;
+            return `Property "${field.name}" must be one of: ${field.options.join(', ')}`;
           }
           break;
         case 'date':
+        case 'date_range':
           if (typeof value === 'string' && isNaN(Date.parse(value))) {
-            return `Property "${field.key}" must be a valid date string`;
+            return `Property "${field.name}" must be a valid date string`;
           }
           break;
       }
@@ -392,6 +473,53 @@ async function validateProperties(
   }
 
   return null; // All valid
+}
+
+// ── Server-Side Completion Counting ──
+
+/**
+ * Compute required_count and filled_count from the nord type schema
+ * and merged session properties. This replaces AI-provided counts
+ * which were frequently hallucinated.
+ */
+async function computeCompletionCounts(
+  sessionId: string,
+  nordId: string,
+  newProperties: Record<string, unknown>
+): Promise<{ requiredCount: number; filledCount: number }> {
+  // 1. Get the nord's type schema
+  const nord = await queryOne<{ type_id: string }>(
+    'SELECT type_id FROM nords WHERE id = $1 AND deleted_at IS NULL',
+    [nordId]
+  );
+  if (!nord) return { requiredCount: 0, filledCount: 0 };
+
+  const nordType = await nordTypesRepo.findById(nord.type_id);
+  if (!nordType?.properties_schema?.length) return { requiredCount: 0, filledCount: 0 };
+
+  const schema = nordType.properties_schema as Array<{ name: string; required?: boolean }>;
+  const requiredFields = schema.filter(f => f.required);
+  const requiredCount = requiredFields.length;
+
+  if (requiredCount === 0) return { requiredCount: 0, filledCount: 0 };
+
+  // 2. Get existing session properties for this nord
+  const existing = await queryOne<{ properties: Record<string, unknown> }>(
+    'SELECT properties FROM mcp_session_nords WHERE session_id = $1 AND nord_id = $2',
+    [sessionId, nordId]
+  );
+  const existingProps = (existing?.properties as Record<string, unknown>) || {};
+
+  // 3. Merge: new properties override existing
+  const merged = { ...existingProps, ...newProperties };
+
+  // 4. Count filled required fields
+  const filledCount = requiredFields.filter(f => {
+    const val = merged[f.name];
+    return val !== undefined && val !== null && val !== '';
+  }).length;
+
+  return { requiredCount, filledCount };
 }
 
 // ── Dispatcher ──
@@ -408,6 +536,7 @@ export async function dispatchTool(
   try {
     return await handler(ctx, args);
   } catch (err: any) {
+    logger.error('Tool dispatch error', { tool: toolName, error: err.message });
     return { success: false, error: err.message };
   }
 }

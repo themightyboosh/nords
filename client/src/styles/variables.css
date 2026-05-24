@@ -1,49 +1,21 @@
-/* client/src/styles/variables.css */
+/**
+ * variables.css — Legacy bridge file.
+ *
+ * The canonical design tokens live in the theme files (theme-obsidian.css, etc.).
+ * This file maps legacy variable names to their theme equivalents so that
+ * older components (Canvas, Layout) continue to work without modification.
+ *
+ * TODO: Migrate remaining consumers to use --nords-color-* tokens directly,
+ * then delete this file.
+ */
 :root {
-  /* Colors - Light Mode Default */
-  --nords-bg-canvas: #f4f5f7;
-  --nords-bg-surface: #ffffff;
-  --nords-bg-dock: rgba(255, 255, 255, 0.95);
-  --nords-text-primary: #172b4d;
-  --nords-text-secondary: #5e6c84;
-  --nords-border-color: #dfe1e6;
-  
-  /* Palette Colors for Graph */
-  --nords-color-tether-active: #0052cc;
-  --nords-color-tether-ghost: rgba(9, 30, 66, 0.13);
-  --nords-color-nard-default: #ffffff;
-  --nords-color-accent: #0065ff;
-  
-  /* Shadow & Depth */
-  --nords-shadow-dock: 0 8px 32px rgba(9, 30, 66, 0.15);
-  --nords-shadow-card: 0 1px 4px rgba(9, 30, 66, 0.25);
-  
-  /* Dimensions */
-  --nords-header-height: 56px;
-  --nords-dock-height: 64px;
-  --nords-drawer-width: 400px;
+  /* Layout dimensions — these are also defined in theme files, but some
+     components reference them before a [data-theme] is set */
+  --nords-header-height: 48px;
+  --nords-dock-height: 52px;
+  --nords-drawer-width: 380px;
   --nords-palette-width: 280px;
-  
-  /* Typography */
-  --nords-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Colors - Dark Mode */
-    --nords-bg-canvas: #1d2125;
-    --nords-bg-surface: #22272b;
-    --nords-bg-dock: rgba(34, 39, 43, 0.95);
-    --nords-text-primary: #b6c2cf;
-    --nords-text-secondary: #8c9bab;
-    --nords-border-color: #38414a;
-    
-    --nords-color-tether-active: #579dff;
-    --nords-color-tether-ghost: rgba(166, 197, 226, 0.16);
-    --nords-color-nard-default: #22272b;
-    --nords-color-accent: #579dff;
-    
-    --nords-shadow-dock: 0 8px 32px rgba(3, 4, 4, 0.5);
-    --nords-shadow-card: 0 1px 4px rgba(3, 4, 4, 0.8);
-  }
+  /* Typography bridge */
+  --nords-font-family: var(--nords-font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif);
 }

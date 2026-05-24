@@ -34,25 +34,7 @@
   opacity: 0.85;
 }
 
-.nords-close-btn {
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--nords-color-text-secondary);
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--nords-radius-md);
-  transition: all 0.12s ease;
-}
-
-.nords-close-btn:hover {
-  background: var(--nords-color-bg-hover);
-  color: var(--nords-color-text-primary);
-}
+/* .nords-close-btn → moved to styles/forms.css (shared across all panels) */
 
 .nords-drawer-content {
   padding: 20px;

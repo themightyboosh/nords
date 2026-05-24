@@ -35,6 +35,7 @@ export interface Project {
   description: string | null;
   purpose: string | null;
   icon: string | null;
+  accent_color: string | null;
   created_by: string | null;
   mcp_enabled: boolean;
   mcp_capture_data: boolean;

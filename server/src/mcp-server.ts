@@ -32,10 +32,52 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import { createLogger, format, transports } from 'winston';
 import { dispatchTool, type ToolContext } from './lib/toolDispatch.js';
 import * as mcpRepo from './repositories/mcpSessions.js';
 import { query } from './db.js';
 import { nordTypesRepo, connectionTypesRepo } from './repositories/types.js';
+
+// MCP uses stdio transport — stdout is reserved for protocol messages.
+// We create a dedicated stderr logger so structured logs don't corrupt the protocol.
+const mcpLogger = createLogger({
+  level: 'info',
+  format: format.combine(format.timestamp(), format.json()),
+  defaultMeta: { service: 'nords-mcp' },
+  transports: [new transports.Console({ stderrLevels: ['error', 'warn', 'info', 'debug'] })],
+});
+
+// ── Project Context for Tool Descriptions ──
+// Built at startup and injected into key tool descriptions so external
+// LLM clients (Claude, GPT, Cursor) get zero-shot orientation.
+
+let projectContext = '';
+
+async function buildProjectContext(): Promise<string> {
+  const projectId = process.env.PROJECT_ID!;
+  try {
+    const nordTypes = await nordTypesRepo.findByProject(projectId);
+    const connTypes = await connectionTypesRepo.findByProject(projectId);
+    const personas = await query<{ name: string }>(
+      'SELECT name FROM personas WHERE project_id = $1 AND deleted_at IS NULL', [projectId]
+    );
+    const project = await query<{ project_mode: string }>(
+      'SELECT project_mode FROM projects WHERE id = $1', [projectId]
+    );
+    const parts: string[] = [];
+    if (project[0]?.project_mode) parts.push(`Mode: ${project[0].project_mode}`);
+    if (nordTypes.length > 0) parts.push(`Nord types: ${nordTypes.map(t => t.name).join(', ')}`);
+    if (connTypes.length > 0) {
+      parts.push(`Connection types: ${connTypes.map(ct => {
+        let s = ct.name;
+        if (ct.verb) s += ` (${ct.verb})`;
+        return s;
+      }).join(', ')}`);
+    }
+    if (personas.length > 0) parts.push(`Personas: ${personas.map(p => p.name).join(', ')}`);
+    return parts.length > 0 ? ` [Project context — ${parts.join('. ')}]` : '';
+  } catch { return ''; }
+}
 
 // ── Session Management ──
 
@@ -71,7 +113,7 @@ const server = new McpServer({
 // ── Tier 1: Read-Only Tools ──
 
 server.tool('nords_get_dictionary',
-  'Get the project dictionary — full ontology of nord types, connection types (verbs, stages), and personas. Call this FIRST.',
+  'Get the project dictionary — full ontology of nord types, connection types (verbs, stages), and personas. The horizon already gives you inline schemas, so you may not need this unless you want the full ontology.',
   {},
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
@@ -81,7 +123,7 @@ server.tool('nords_get_dictionary',
 );
 
 server.tool('nords_get_horizon',
-  'Get Session Horizon — current position, persona-weighted neighbors, completion %, predicted path.',
+  `Get Session Horizon — current position, persona-weighted neighbors, completion %, predicted path.${projectContext}`,
   {},
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
@@ -172,7 +214,7 @@ server.tool('nords_get_goals',
 );
 
 server.tool('nords_get_briefing',
-  'Cold-start composite — returns dictionary + horizon + goals in one call. Use at session start.',
+  `Cold-start composite — returns dictionary + horizon + goals + protocol in one call. Use this at the very start of a session.${projectContext}`,
   {},
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
@@ -194,11 +236,11 @@ server.tool('nords_get_analytics',
 // ── Tier 2: Session Tools ──
 
 server.tool('nords_traverse_connection',
-  'Move to a connected nord. Returns updated horizon.',
+  `Move to a connected nord. Get connection_id from the horizon's neighbors[].relationship.connection_id. source_nord_id is your current position, target_nord_id is neighbors[].nord.id. Returns updated horizon.${projectContext}`,
   {
-    connection_id: z.string().describe('UUID of the connection'),
-    source_nord_id: z.string().describe('UUID of the source nord'),
-    target_nord_id: z.string().describe('UUID of the target nord'),
+    connection_id: z.string().describe('UUID of the connection (from horizon neighbors[].relationship.connection_id)'),
+    source_nord_id: z.string().describe('UUID of the source nord (your current position)'),
+    target_nord_id: z.string().describe('UUID of the target nord (from horizon neighbors[].nord.id)'),
     direction: z.enum(['forward', 'backward']).describe('Direction of traversal'),
     traversal_type: z.enum(['read', 'advance', 'rework', 'create', 'assign', 'evaluate']).describe('Why you are traversing'),
   },
@@ -210,12 +252,10 @@ server.tool('nords_traverse_connection',
 );
 
 server.tool('nords_update_session_nord',
-  'Save collected properties to a session nord. Validates against schema.',
+  'Save collected properties to a session nord. Validates against schema, computes completion server-side, and returns updated horizon. You can save to any nord, not just the current one.',
   {
     nord_id: z.string().describe('UUID of the nord'),
     properties: z.record(z.unknown()).describe('Key-value pairs of collected properties'),
-    required_count: z.number().optional().describe('Total required fields'),
-    filled_count: z.number().optional().describe('Filled required fields'),
   },
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
@@ -240,7 +280,7 @@ server.tool('nords_visit_nord',
 );
 
 server.tool('nords_switch_persona',
-  'Switch the active persona lens. Returns reweighted horizon.',
+  `Switch the active persona lens. Returns reweighted horizon.${projectContext}`,
   { persona_id: z.string().nullable().describe('UUID of the persona, or null to clear') },
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
@@ -412,20 +452,23 @@ server.resource(
 
 async function main() {
   if (!process.env.PROJECT_ID) {
-    console.error('Error: PROJECT_ID environment variable is required');
+    mcpLogger.error('PROJECT_ID environment variable is required');
     process.exit(1);
   }
   if (!process.env.DATABASE_URL) {
-    console.error('Error: DATABASE_URL environment variable is required');
+    mcpLogger.error('DATABASE_URL environment variable is required');
     process.exit(1);
   }
 
+  // Build project context for tool descriptions
+  projectContext = await buildProjectContext();
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error(`Nords MCP server started (project: ${process.env.PROJECT_ID})`);
+  mcpLogger.info('Nords MCP server started', { projectId: process.env.PROJECT_ID });
 }
 
 main().catch((err) => {
-  console.error('Fatal MCP server error:', err);
+  mcpLogger.error('Fatal MCP server error', { error: err instanceof Error ? err.message : String(err), stack: err instanceof Error ? err.stack : undefined });
   process.exit(1);
 });

@@ -269,6 +269,35 @@
   border-radius: 50%;
 }
 
+/* ── Randomize button ── */
+.manage-personas__avatar-randomize {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: var(--nords-radius-lg);
+  border: 2px dashed var(--nords-color-border-subtle);
+  background: var(--nords-color-bg-surface);
+  color: var(--nords-color-text-tertiary);
+  width: 52px;
+  height: 52px;
+}
+
+.manage-personas__avatar-randomize:hover {
+  border-color: var(--nords-color-accent);
+  color: var(--nords-color-accent);
+  background: var(--nords-color-accent-dim);
+  transform: scale(1.1);
+}
+
+.manage-personas__randomize-label {
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* ── Section titles ── */
 .manage-personas__section {
   margin-bottom: var(--nords-space-xl);

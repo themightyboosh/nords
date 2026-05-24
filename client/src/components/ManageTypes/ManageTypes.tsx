@@ -1131,7 +1131,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
               </>
             ) : (
               <div className="manage-types__empty">
-                <p>{items.length === 0
+                <p>{sidebarList.length === 0
                   ? (activeTab === 'nord' ? UI_STRINGS.types.emptyNordTypes : UI_STRINGS.types.emptyCategories)
                   : UI_STRINGS.types.emptyEditor}</p>
               </div>

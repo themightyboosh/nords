@@ -17,6 +17,9 @@ import { api } from '../../api/client';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { IconPicker } from '../shared/IconPicker';
 import { resolveIcon } from '../../utils/iconRegistry';
+import { HueSlider } from '../shared/HueSlider';
+import { CustomSelect } from '../shared/CustomSelect';
+import type { CustomSelectOption } from '../shared/CustomSelect';
 import './ProjectSettings.css';
 
 interface ProjectSettingsProps {
@@ -33,6 +36,7 @@ interface ProjectData {
   description: string | null;
   purpose: string | null;
   icon: string | null;
+  accent_color: string | null;
   mcp_enabled: boolean;
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
@@ -47,22 +51,25 @@ interface ProjectData {
 interface PersonaSummary {
   id: string;
   name: string;
+  accent_color?: string | null;
 }
 
 interface NordSummary {
   id: string;
   title: string;
   type_id: string;
+  accent_color?: string | null;
 }
 
 interface NordTypeSummary {
   id: string;
   name: string;
   icon: string;
+  accent_color?: string | null;
 }
 
 export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChange }: ProjectSettingsProps) {
-  const [project, setProject] = useState<ProjectData | null>(null);
+  const [_project, setProject] = useState<ProjectData | null>(null);
   const [form, setForm] = useState<Partial<ProjectData>>({});
   const [errors, setErrors] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
@@ -93,7 +100,8 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           name: data.name,
           description: data.description || '',
           purpose: data.purpose || '',
-          icon: data.icon || '📁',
+          icon: data.icon || 'Folder',
+          accent_color: data.accent_color || '#6b7aed',
           mcp_enabled: data.mcp_enabled,
           mcp_capture_data: data.mcp_capture_data,
           mcp_mutable: data.mcp_mutable,
@@ -170,6 +178,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
         description: form.description!.trim(),
         purpose: form.purpose!.trim(),
         icon: form.icon,
+        accent_color: form.accent_color,
         mcp_enabled: form.mcp_enabled,
         mcp_mutable: form.mcp_mutable,
         project_mode: form.mcp_enabled ? form.project_mode : 'explore',
@@ -231,7 +240,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
                     title="Change project icon"
                     data-testid="project-icon-btn"
                   >
-                    <ProjectIcon size={20} strokeWidth={1.6} />
+                    <ProjectIcon size={20} strokeWidth={1.6} style={{ color: form.accent_color || '#6b7aed' }} />
                   </button>
                 );
               })()}
@@ -246,11 +255,21 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
               <div style={{ marginTop: '8px' }}>
                 <IconPicker
                   currentIcon={form.icon || 'Folder'}
+                  accentColor={form.accent_color || '#6b7aed'}
                   onSelect={(iconName) => {
                     setForm({ ...form, icon: iconName });
                     setShowIconPicker(false);
                   }}
                 />
+                <div style={{ marginTop: '12px', padding: '0 8px' }}>
+                  <label className="nords-form__label" style={{ marginBottom: '6px' }}>Color</label>
+                  <HueSlider
+                    color={form.accent_color || '#6b7aed'}
+                    onChange={(hex) => setForm({ ...form, accent_color: hex })}
+                    saturation={55}
+                    lightness={50}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -286,17 +305,20 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           {/* ── Default Persona ── */}
           <div className="nords-form__field">
             <label className="nords-form__label">Default Persona</label>
-            <select
-              className={`nords-form__select${personas.length === 0 ? ' nords-form__select--disabled' : ''}`}
+            <CustomSelect
+              options={[
+                { value: '', label: personas.length === 0 ? 'No personas defined' : '— None —' },
+                ...personas.map(p => ({
+                  value: p.id,
+                  label: p.name,
+                  color: p.accent_color,
+                })),
+              ]}
               value={form.default_persona_id || ''}
-              onChange={e => setForm({ ...form, default_persona_id: e.target.value || null })}
+              onChange={v => setForm({ ...form, default_persona_id: v || null })}
               disabled={personas.length === 0}
-            >
-              <option value="">{personas.length === 0 ? 'No personas defined' : '— None —'}</option>
-              {personas.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+              placeholder={personas.length === 0 ? 'No personas defined' : '— None —'}
+            />
           </div>
 
           {/* ── Default Start Nord (Category → Nord cascade) ── */}
@@ -308,33 +330,37 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
               <div className="nords-form__cascade-row">
                 <div className="nords-form__field">
                   <label className="nords-form__label">Nord Type</label>
-                  <select
-                    className="nords-form__select"
+                  <CustomSelect
+                    options={[
+                      { value: '', label: '— None —' },
+                      ...nordTypes.map(t => ({
+                        value: t.id,
+                        label: t.name,
+                        color: t.accent_color,
+                        icon: resolveIcon(t.icon),
+                      })),
+                    ]}
                     value={selectedCategoryForNord}
-                    onChange={e => {
-                      setSelectedCategoryForNord(e.target.value);
+                    onChange={v => {
+                      setSelectedCategoryForNord(v);
                       setForm({ ...form, default_start_nord_id: null });
                     }}
-                  >
-                    <option value="">— None —</option>
-                    {nordTypes.map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 <div className="nords-form__field">
                   <label className="nords-form__label">Nord</label>
-                  <select
-                    className="nords-form__select"
+                  <CustomSelect
+                    options={[
+                      { value: '', label: '— None —' },
+                      ...filteredNords.map(n => ({
+                        value: n.id,
+                        label: n.title,
+                      })),
+                    ]}
                     value={form.default_start_nord_id || ''}
-                    onChange={e => setForm({ ...form, default_start_nord_id: e.target.value || null })}
+                    onChange={v => setForm({ ...form, default_start_nord_id: v || null })}
                     disabled={!selectedCategoryForNord || filteredNords.length === 0}
-                  >
-                    <option value="">— None —</option>
-                    {filteredNords.map(n => (
-                      <option key={n.id} value={n.id}>{n.title}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
               </div>
             )}
@@ -353,33 +379,37 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
                 <div className="nords-form__cascade-row">
                   <div className="nords-form__field">
                     <label className="nords-form__label">Nord Type</label>
-                    <select
-                      className="nords-form__select"
+                    <CustomSelect
+                      options={[
+                        { value: '', label: '— None —' },
+                        ...nordTypes.map(t => ({
+                          value: t.id,
+                          label: t.name,
+                          color: t.accent_color,
+                          icon: resolveIcon(t.icon),
+                        })),
+                      ]}
                       value={selectedCategoryForEndNord}
-                      onChange={e => {
-                        setSelectedCategoryForEndNord(e.target.value);
+                      onChange={v => {
+                        setSelectedCategoryForEndNord(v);
                         setForm({ ...form, default_end_nord_id: null });
                       }}
-                    >
-                      <option value="">— None —</option>
-                      {nordTypes.map(t => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="nords-form__field">
                     <label className="nords-form__label">Nord</label>
-                    <select
-                      className="nords-form__select"
+                    <CustomSelect
+                      options={[
+                        { value: '', label: '— None —' },
+                        ...filteredEndNords.map(n => ({
+                          value: n.id,
+                          label: n.title,
+                        })),
+                      ]}
                       value={form.default_end_nord_id || ''}
-                      onChange={e => setForm({ ...form, default_end_nord_id: e.target.value || null })}
+                      onChange={v => setForm({ ...form, default_end_nord_id: v || null })}
                       disabled={!selectedCategoryForEndNord || filteredEndNords.length === 0}
-                    >
-                      <option value="">— None —</option>
-                      {filteredEndNords.map(n => (
-                        <option key={n.id} value={n.id}>{n.title}</option>
-                      ))}
-                    </select>
+                    />
                   </div>
                 </div>
               </>

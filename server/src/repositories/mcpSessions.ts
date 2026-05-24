@@ -324,8 +324,7 @@ export interface HorizonNeighbor {
   nord: {
     id: string; title: string; type_id: string; type_name: string;
     properties: Record<string, unknown>;
-    session_properties: Record<string, unknown>;
-    remaining_schema: unknown[]; // only uncollected fields
+    remaining_count: number; // slim payload: just the count of uncollected fields
   };
   relationship: {
     connection_id: string;
@@ -547,13 +546,15 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       const session_progress = sn ? { filled: sn.filled_count, required: sn.required_count, complete: sn.complete } : null;
       const neighborSchema = safeParseJSON<Record<string, unknown>[]>(row.neighbor_properties_schema, []);
       const neighborSessionProps = sn?.properties as Record<string, unknown> || {};
+      // Slim payload: neighbors get remaining_count (integer), not full remaining_schema.
+      // The AI gets the full schema only for the current nord.
+      const neighborRemaining = computeRemainingSchema(neighborSchema, neighborSessionProps, globallyKnownKeys);
 
       neighbors.push({
         nord: {
           id: row.neighbor_id, title: row.neighbor_title, type_id: row.neighbor_type_id, type_name: row.neighbor_type_name,
           properties: row.neighbor_properties,
-          session_properties: neighborSessionProps,
-          remaining_schema: computeRemainingSchema(neighborSchema, neighborSessionProps, globallyKnownKeys),
+          remaining_count: neighborRemaining.length,
         },
         relationship: {
           connection_id: row.conn_id, type_name: row.conn_type_name, verb: row.conn_verb,
