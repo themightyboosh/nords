@@ -35,48 +35,48 @@
   --nords-letter-spacing-normal: 0;
   --nords-letter-spacing-wide: 0.06em;
 
-  /* ── Surfaces (cool steel neutrals) ── */
-  --nords-color-bg-deep: #e2e8f0;
-  --nords-color-bg-canvas: #eef2f6;
-  --nords-color-bg-surface: #ffffff;
-  --nords-color-bg-elevated: #ffffff;
-  --nords-color-bg-hover: #f1f5f9;
+  /* ── Surfaces (darker midpoint — 0.5 steel neutrals) ── */
+  --nords-color-bg-deep: #8b95a3;
+  --nords-color-bg-canvas: #9aa4b2;
+  --nords-color-bg-surface: #b0b8c4;
+  --nords-color-bg-elevated: #bcc4cf;
+  --nords-color-bg-hover: #a3adb9;
 
   /* ── Borders ── */
-  --nords-color-border-subtle: rgba(0, 0, 0, 0.08);
-  --nords-color-border-default: rgba(0, 0, 0, 0.12);
-  --nords-color-border-strong: rgba(0, 0, 0, 0.20);
+  --nords-color-border-subtle: rgba(0, 0, 0, 0.10);
+  --nords-color-border-default: rgba(0, 0, 0, 0.16);
+  --nords-color-border-strong: rgba(0, 0, 0, 0.28);
 
   /* ── Text ── */
-  --nords-color-text-primary: #111827;
-  --nords-color-text-secondary: #6b7280;
-  --nords-color-text-tertiary: #9ca3af;
-  --nords-color-text-disabled: #d1d5db;
-  --nords-color-grid-dot: rgba(0, 0, 0, 0.15);
+  --nords-color-text-primary: #0f1419;
+  --nords-color-text-secondary: #2d3748;
+  --nords-color-text-tertiary: #4a5568;
+  --nords-color-text-disabled: #718096;
+  --nords-color-grid-dot: rgba(0, 0, 0, 0.12);
 
-  /* ── Accent (same blue, slightly deepened for light) ── */
-  --nords-color-accent: #2563eb;
-  --nords-color-accent-dim: rgba(37, 99, 235, 0.08);
-  --nords-color-accent-hover: #3b82f6;
+  /* ── Accent (deeper blue for mid-gray surfaces) ── */
+  --nords-color-accent: #1d4ed8;
+  --nords-color-accent-dim: rgba(29, 78, 216, 0.12);
+  --nords-color-accent-hover: #2563eb;
 
   /* ── Semantic ── */
-  --nords-color-success: #059669;
-  --nords-color-warning: #d97706;
-  --nords-color-danger: #dc2626;
-  --nords-color-info: #2563eb;
+  --nords-color-success: #047857;
+  --nords-color-warning: #b45309;
+  --nords-color-danger: #b91c1c;
+  --nords-color-info: #1d4ed8;
 
   /* ── Label on Color ── */
   --nords-color-label-on-color: #ffffff;
 
   /* ── Connections ── */
-  --nords-color-connection-active: #2563eb;
-  --nords-color-connection-ghost: rgba(37, 99, 235, 0.12);
+  --nords-color-connection-active: #1d4ed8;
+  --nords-color-connection-ghost: rgba(29, 78, 216, 0.15);
 
-  /* ── Shadows (softer for light) ── */
-  --nords-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --nords-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.06);
-  --nords-shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.05);
-  --nords-shadow-glow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  /* ── Shadows (stronger for mid-tone surfaces) ── */
+  --nords-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.10);
+  --nords-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.08);
+  --nords-shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.16), 0 0 1px rgba(0, 0, 0, 0.08);
+  --nords-shadow-glow: 0 0 0 2px rgba(29, 78, 216, 0.25);
 
   /* ── Radius ── */
   --nords-radius-sm: 4px;
@@ -99,7 +99,7 @@
   --nords-drawer-width: 380px;
 
   /* ── Glass ── */
-  --nords-glass-bg: rgba(255, 255, 255, 0.85);
+  --nords-glass-bg: rgba(176, 184, 196, 0.80);
   --nords-glass-blur: 16px;
 }
 

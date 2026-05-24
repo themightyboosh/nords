@@ -153,8 +153,9 @@ export default function ProjectDashboard() {
   };
 
   // Theme state (shared with header)
-  const [currentTheme] = useState(() => localStorage.getItem('nords-theme') || 'obsidian');
+  const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('nords-theme') || 'obsidian');
   const handleThemeChange = useCallback((theme: string) => {
+    setCurrentTheme(theme);
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('nords-theme', theme);
   }, []);
