@@ -1001,6 +1001,45 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                           {expandedMcpPropIdx === i && (
                             <div className="manage-types__prop-detail">
                               <div className="manage-types__prop-detail-row">
+                                <div className="manage-types__prop-detail-field" style={{ flex: 1 }}>
+                                  <span className="manage-types__prop-detail-label">Description (what to collect)</span>
+                                  <input
+                                    type="text"
+                                    className="manage-types__prop-default-input"
+                                    value={prop.description || ''}
+                                    onChange={(e) => updateMcpProperty(i, { description: e.target.value || undefined })}
+                                    placeholder="e.g., Annual project budget in USD"
+                                  />
+                                </div>
+                              </div>
+                              <div className="manage-types__prop-detail-row">
+                                <div className="manage-types__prop-detail-field" style={{ flex: 1 }}>
+                                  <span className="manage-types__prop-detail-label">Hint (how to ask)</span>
+                                  <input
+                                    type="text"
+                                    className="manage-types__prop-default-input"
+                                    value={prop.hint || ''}
+                                    onChange={(e) => updateMcpProperty(i, { hint: e.target.value || undefined })}
+                                    placeholder="e.g., What's the approximate annual budget?"
+                                  />
+                                </div>
+                              </div>
+                              <div className="manage-types__prop-detail-row">
+                                <div className="manage-types__prop-detail-field">
+                                  <span className="manage-types__prop-detail-label">Priority</span>
+                                  <select
+                                    className="manage-types__prop-default-select"
+                                    value={prop.priority ?? 0}
+                                    onChange={(e) => updateMcpProperty(i, { priority: parseInt(e.target.value) || 0 })}
+                                  >
+                                    <option value={0}>Default</option>
+                                    <option value={1}>1 — Low</option>
+                                    <option value={2}>2 — Medium</option>
+                                    <option value={3}>3 — High</option>
+                                    <option value={4}>4 — Critical</option>
+                                    <option value={5}>5 — Must Ask First</option>
+                                  </select>
+                                </div>
                                 <div className="manage-types__prop-detail-field">
                                   <span className="manage-types__prop-detail-label">Default (Example)</span>
                                   {prop.type === 'tags' ? (
@@ -1033,6 +1072,52 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                                   onChange={(opts) => updateMcpProperty(i, { options: opts })}
                                 />
                               )}
+                              {/* Depends On — conditional property logic */}
+                              <div className="manage-types__prop-detail-row">
+                                <div className="manage-types__prop-detail-field" style={{ flex: 1 }}>
+                                  <span className="manage-types__prop-detail-label">Depends On (optional)</span>
+                                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                    <select
+                                      className="manage-types__prop-default-select"
+                                      value={prop.depends_on?.property || ''}
+                                      onChange={(e) => {
+                                        if (!e.target.value) {
+                                          updateMcpProperty(i, { depends_on: undefined });
+                                        } else {
+                                          updateMcpProperty(i, {
+                                            depends_on: {
+                                              property: e.target.value,
+                                              values: prop.depends_on?.values || [],
+                                            },
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <option value="">— No dependency —</option>
+                                      {mcpProps
+                                        .filter((_: PropertySchema, j: number) => j !== i)
+                                        .map((other: PropertySchema) => (
+                                          <option key={other.name} value={other.name}>{other.name}</option>
+                                        ))}
+                                    </select>
+                                    {prop.depends_on?.property && (
+                                      <input
+                                        type="text"
+                                        className="manage-types__prop-default-input"
+                                        value={(prop.depends_on?.values || []).join(', ')}
+                                        onChange={(e) => updateMcpProperty(i, {
+                                          depends_on: {
+                                            property: prop.depends_on!.property,
+                                            values: e.target.value.split(',').map(v => v.trim()).filter(Boolean),
+                                          },
+                                        })}
+                                        placeholder="Matching values (comma-separated)"
+                                        style={{ flex: 1 }}
+                                      />
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>

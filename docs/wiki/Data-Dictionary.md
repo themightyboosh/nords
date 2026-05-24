@@ -22,16 +22,16 @@ The top-level container. Configures which features are active and how the AI beh
 
 | Field | Type | Description | MCP Usage | Mode |
 |-------|------|-------------|-----------|------|
-| `name` | text | Display name of the project | **System prompt** — injected as `## Project: {name}` | ★ All |
+| `name` | text | Display name of the project | **Briefing protocol** → `protocol.project.name` | ★ All |
 | `description` | text | Human-readable summary for the dashboard | **—** UI only | ★ All |
-| `purpose` | text | Why the project exists; guides AI intent | **System prompt** — appended below project name. Also in **horizon** → `session_meta.project_purpose` | ★ All |
+| `purpose` | text | Why the project exists; guides AI intent | **Briefing protocol** → `protocol.project.purpose`. Also in **horizon** → `session_meta.project_purpose` | ★ All |
 | `icon` | text | Lucide icon name for dashboard display | **—** UI only | ★ All |
 | `project_mode` | enum: `explore` · `collect` · `guided` | MCP integration tier (see [Project Modes](#project-modes)) | **Horizon** → `session_meta.project_mode`. Also drives server-side goal initialization and neighbor sorting | ★ All |
 | `mcp_enabled` | boolean | Master switch — enables Agent Preview, chat, and MCP tools | **Gate** — if false, no MCP features are available at all | ★ All |
 | `mcp_capture_data` | boolean | *(Derived from mode)* — enables property collection and analytics audit trail | **Tool context** — passed as `mcpCaptureData` to `dispatchTool`; gates `nords_update_session_nord` writes | 📋🎯 |
 | `mcp_mutable` | boolean | Whether the AI can create/delete nords and connections | **Tool context** — passed as `mcpMutable`; gates `nords_create_nord`, `nords_create_connection`, etc. | ★ All |
 | `goals_enabled` | boolean | *(Derived from mode)* — enables the goal DAG orchestration engine | **Server-side** — controls whether `initializeSessionGoals` creates session goal records | 🎯 only |
-| `mcp_system_prompt` | text (long) | Custom business logic, capabilities, and guardrails for the AI | **System prompt** — injected as `## Project Instructions` block | ★ All |
+| `mcp_system_prompt` | text (long) | Custom business logic, capabilities, and guardrails for the AI | **Briefing protocol** → `protocol.project.instructions`. Delivered to any MCP client via `nords_get_briefing` | ★ All |
 | `mcp_welcome_message` | text | First message shown in chat before user types | **Chat response** — returned as `welcomeMessage` on new session creation | ★ All |
 | `end_prompt_suggestion` | text | Suggested closing message template | **—** UI hint for project designers | 📋🎯 |
 | `default_persona_id` | uuid | The persona auto-assigned to new sessions | **Session init** — passed to `createSession()`, determines which persona's voice/weights are active | ★ All |
@@ -74,6 +74,10 @@ Each property in `properties_schema` is an object with these fields:
 | `defaultValue` | any | Pre-populated value for new instances | **—** Applied at nord creation time | ★ All |
 | `options` | string[] | Dropdown choices (only when type = `select`) | **Dictionary** → included in schema | ★ All |
 | `source` | enum: `user` · `mcp` | Who fills this property | **Horizon** — `source: 'user'` properties are excluded from `remaining_schema`. `source: 'mcp'` properties are collectible by the AI | See below |
+| `description` | text | Human-readable description of what to collect | **Horizon** → `remaining_schema[].description`. Tells the AI *what* this property means (e.g., "Annual budget in USD") | 📋🎯 |
+| `hint` | text | Conversational prompt for the AI | **Horizon** → `remaining_schema[].hint`. Tells the AI *how to ask* (e.g., "What's the approximate annual budget?") | 📋🎯 |
+| `priority` | number (0–5) | Collection priority. Higher = ask first | **Horizon** → `remaining_schema` is sorted by priority descending. AI naturally asks about first items first | 📋🎯 |
+| `depends_on` | object: `{ property, values }` | Conditional dependency | **Server** — `computeRemainingSchema()` evaluates conditions and excludes inapplicable properties before any LLM sees them | 📋🎯 |
 | `card_row` | number | Visual row position on the detail drawer card | **—** UI only | ★ All |
 | `config` | object | Extra config (formula, output_type for computed) | **—** UI computation only | ★ All |
 

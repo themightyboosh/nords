@@ -42,13 +42,22 @@ export interface ConnectionTypeData {
 
 export interface PropertySchema {
   name: string;
-  type: 'string' | 'number' | 'select' | 'date' | 'markdown' | 'url' | 'tags';
+  type: 'string' | 'number' | 'select' | 'date' | 'markdown' | 'url' | 'tags' | 'computed';
   required?: boolean;
   defaultValue?: string | number | boolean | null;
   options?: string[];
   card_row?: number; // 1 or 2 — which row on the collapsed card
   /** Property source: 'user' (default) or 'mcp' (managed by MCP server) */
   source?: 'user' | 'mcp';
+  config?: Record<string, unknown>;
+  /** Human-readable description of what this property collects (shown to AI) */
+  description?: string;
+  /** Conversational prompt hint for the AI (e.g., "What's the annual budget?") */
+  hint?: string;
+  /** Collection priority (1–5). Higher = ask first. Default 0. */
+  priority?: number;
+  /** Conditional dependency — only show this property if the controlling property has a matching value */
+  depends_on?: { property: string; values: string[] };
 }
 
 // ── Hook ──

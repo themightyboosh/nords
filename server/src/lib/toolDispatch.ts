@@ -10,7 +10,7 @@ import * as mcpRepo from '../repositories/mcpSessions.js';
 import * as projectsRepo from '../repositories/projects.js';
 import * as goalsRepo from '../repositories/goals.js';
 import { nordTypesRepo, connectionTypesRepo } from '../repositories/types.js';
-import { query, queryOne } from '../db.js';
+import { queryOne, query } from '../db.js';
 
 export interface ToolContext {
   sessionId: string;
@@ -26,6 +26,54 @@ export interface ToolResult {
 }
 
 type ToolHandler = (ctx: ToolContext, args: Record<string, unknown>) => Promise<ToolResult>;
+
+// ── Protocol Builder ──
+// This generates the behavioral guidance block embedded in nords_get_briefing.
+// Any MCP client (built-in Gemini, Claude, GPT, etc.) receives this protocol
+// in the tool response — no system prompt needed.
+
+function buildProtocol(
+  project: { name?: string | null; purpose?: string | null; mcp_system_prompt?: string | null; project_mode?: string | null } | null,
+  horizon: mcpRepo.SessionHorizon
+): Record<string, unknown> {
+  return {
+    overview: 'You navigate a knowledge graph ("Nords") via MCP tools. Your job is to gather information naturally through conversation, then save structured properties using nords_update_session_nord. The participant should never feel like they are filling out a form.',
+    project: {
+      name: project?.name || null,
+      purpose: project?.purpose || null,
+      mode: project?.project_mode || 'collect',
+      instructions: project?.mcp_system_prompt || null,
+    },
+    navigation: {
+      verbs: 'Connection verbs encode causality: "flows into" / "leads to" = prerequisite gate (source before target). "depends on" = dependency (target before source). "assigned to" = resource binding. "blocks" = blocker. "contains" / "has" = composition. Use verbs to infer sequencing.',
+      stages: 'Connection distance_x/distance_y (0.0–1.0) map to stage labels. Use the label name in conversation (e.g., "In Progress"), never raw numbers.',
+      suggested_next: 'The horizon\'s suggested_next field guides your internal plan. Follow it unless the user\'s story leads elsewhere.',
+      predicted_path: 'The predicted_path is a 2-hop lookahead. Use it for internal planning only.',
+    },
+    collection: {
+      remaining_schema: 'Each property in remaining_schema has name, type, required, and may have description (what to collect) and hint (how to ask). Use the hint as a conversational prompt. Properties are sorted by priority — ask about earlier items first.',
+      save_incrementally: 'Save values with nords_update_session_nord as soon as you learn them. Do NOT wait until all properties are gathered.',
+      planning_queue: 'The planning_queue is YOUR internal roadmap. Never share it with the user. Never say "we still need to cover X, Y, Z." Complete the current conversational thread before pivoting to queue items.',
+      pacing: 'Explore topics deeply before moving on. Better to deeply explore 3 topics than shallowly touch 10. If a user gives a short answer, probe before moving on.',
+    },
+    goal_events: {
+      goal_completed: 'Acknowledge the milestone conversationally. If the goal has an achieved_prompt, weave it naturally into your response. Do NOT say "Goal complete!" or reference the goal system.',
+      goal_activated: 'A new goal has unlocked (its prerequisites are met). Transition to its topics naturally, as if following the user\'s story.',
+      goal_cancelled: 'A sibling branch was structurally excluded. Stop pursuing those topics silently. Do NOT mention this to the user.',
+      session_terminating: 'A terminal goal was reached. If end_type is "reset", bring the conversation to a warm close and say goodbye. If "continue", close warmly but mention you\'ll pick up where you left off next time.',
+    },
+    persona: horizon.persona
+      ? 'You are operating as the persona described in the dictionary. Adopt its voice, tone, decision frameworks, and attention bias. When choosing which neighbor to explore, prefer connections with higher persona weight.'
+      : null,
+    rules: [
+      'You navigate a real graph. Don\'t invent nords or connections — discover them with your tools.',
+      'Infer prerequisite gates from connection verbs. Don\'t skip a "depends on" target.',
+      'Never list remaining fields or ask for them in sequence. That is a survey, not an interview.',
+      'Never reference the graph structure, nords, schemas, or tools to the user.',
+      'When a nord is complete, provide a brief reflection that validates what the user shared before transitioning.',
+    ],
+  };
+}
 
 // ── Tool Implementations ──
 
@@ -101,10 +149,11 @@ const tools: Record<string, ToolHandler> = {
   },
 
   nords_get_briefing: async (ctx) => {
-    const [dictionary, horizon, goals] = await Promise.all([
+    const [dictionary, horizon, goals, project] = await Promise.all([
       mcpRepo.getProjectDictionary(ctx.projectId),
       mcpRepo.getSessionHorizon(ctx.sessionId),
       goalsRepo.findSessionGoals(ctx.sessionId, ctx.projectId),
+      projectsRepo.findById(ctx.projectId),
     ]);
     return {
       success: true,
@@ -112,7 +161,7 @@ const tools: Record<string, ToolHandler> = {
         dictionary,
         horizon,
         goals,
-        _hint: 'This is a composite cold-start response. You now have full ontology, spatial context, and goal state. Begin the conversation.',
+        protocol: buildProtocol(project, horizon),
       },
     };
   },

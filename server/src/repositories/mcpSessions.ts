@@ -289,10 +289,35 @@ function computeRemainingSchema(
   });
   if (collectibleFields.length === 0) return [];
   const localKeys = new Set(Object.keys(sessionProps || {}));
-  return collectibleFields.filter((field: Record<string, unknown>) => {
+  const remaining = collectibleFields.filter((field: Record<string, unknown>) => {
     const name = field.name as string;
-    return !localKeys.has(name) && !globallyKnownKeys?.has(name);
+    if (localKeys.has(name) || globallyKnownKeys?.has(name)) return false;
+
+    // Conditional dependency: skip if depends_on condition is not met
+    const dependsOn = field.depends_on as { property: string; values: string[] } | undefined;
+    if (dependsOn) {
+      const depValue = sessionProps[dependsOn.property];
+      // If the controlling property hasn't been collected yet, show this field (it may apply)
+      if (depValue !== undefined && depValue !== null && depValue !== '') {
+        // Controlling property IS collected — check if its value matches
+        if (!dependsOn.values.includes(String(depValue))) {
+          return false; // Condition not met — hide this property
+        }
+      }
+    }
+
+    return true;
   });
+
+  // Sort by priority descending (higher priority = ask first)
+  // Default priority is 0 for unset fields
+  remaining.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
+    const pa = (a.priority as number) || 0;
+    const pb = (b.priority as number) || 0;
+    return pb - pa;
+  });
+
+  return remaining;
 }
 
 export interface HorizonNeighbor {
