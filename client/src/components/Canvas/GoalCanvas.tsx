@@ -239,7 +239,7 @@ function GoalCanvasInner({
       className="goal-canvas"
       connectionLineStyle={{ stroke: '#6366f1', strokeWidth: 2, opacity: 0.5 }}
     >
-      <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--nords-color-grid-dot, rgba(255,255,255,0.04))" />
+      <Background variant={BackgroundVariant.Dots} gap={10} size={1} color="rgba(0, 160, 180, 0.35)" />
       <ZoomControls />
     </ReactFlow>
   );

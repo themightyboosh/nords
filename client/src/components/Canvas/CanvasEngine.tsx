@@ -862,8 +862,8 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         onReconnectEnd={onReconnectEnd}
       >
         {/* Dual-layer background: dots + subtle cross grid for depth */}
-        <Background id="dots" variant={BackgroundVariant.Dots} gap={32} size={2.5} color="var(--nords-color-grid-dot)" />
-        <Background id="cross" variant={BackgroundVariant.Cross} gap={200} size={0.5} color="var(--nords-color-grid-dot)" style={{ opacity: 0.4 }} />
+        <Background id="dots" variant={BackgroundVariant.Dots} gap={16} size={2.5} color="rgba(0, 160, 180, 0.35)" />
+        <Background id="cross" variant={BackgroundVariant.Cross} gap={100} size={0.5} color="rgba(0, 160, 180, 0.20)" style={{ opacity: 0.4 }} />
       </ReactFlow>
       </div>
 
