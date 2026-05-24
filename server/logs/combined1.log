@@ -22507,3 +22507,6 @@ Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the cli
 15:25:20.060 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
 15:25:20.062 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
 15:25:20.063 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}
+15:26:07.917 [33mwarn[39m: No Firebase config found. Auth middleware will run in PASSTHROUGH mode. {"service":"nords-server"}
+15:26:07.920 [32minfo[39m: Nords API listening on port 3000 {"service":"nords-server"}
+15:26:07.920 [32minfo[39m: Swagger UI available at http://localhost:3000/api-docs {"service":"nords-server"}

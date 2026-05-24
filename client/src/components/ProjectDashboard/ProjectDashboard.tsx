@@ -24,6 +24,7 @@ import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import ViewportHeader from '../Layout/ViewportHeader';
 import { IconPicker } from '../shared/IconPicker';
+import { ColorIcon } from '../shared/ColorIcon';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { ProjectSettings } from '../ProjectSettings/ProjectSettings';
 import './ProjectDashboard.css';
@@ -37,6 +38,7 @@ interface Project {
   icon: string | null;
   description: string | null;
   purpose: string | null;
+  project_mode: 'explore' | 'collect' | 'guided';
   mcp_enabled: boolean;
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
@@ -223,9 +225,6 @@ export default function ProjectDashboard() {
       </aside>
 
       <main className="nords-dashboard__main">
-        <div className="nords-dashboard__main-header">
-          <h1 className="nords-dashboard__title">{displayName}'s Projects</h1>
-        </div>
 
         {loading && (
           <div className="nords-dashboard__loading">
@@ -244,14 +243,24 @@ export default function ProjectDashboard() {
             >
               <div className="nords-dashboard__card-header">
                 <span className="nords-dashboard__card-icon">
-                {(() => {
-                  const CardIcon = resolveIcon(project.icon);
-                  return <CardIcon size={36} strokeWidth={1.4} />;
-                })()}
-              </span>
+                  <ColorIcon
+                    icon={project.icon}
+                    color={'#6b7aed'}
+                    size={32}
+                    strokeWidth={1.4}
+                  />
+                </span>
                 <div className="nords-dashboard__card-header-right">
                   {project.mcp_enabled && (
-                    <span className="nords-dashboard__mcp-badge" title="MCP Enabled">MCP</span>
+                    <span
+                      className={`nords-dashboard__mode-badge nords-dashboard__mode-badge--${project.project_mode}`}
+                      title={`Mode: ${project.project_mode}`}
+                    >
+                      {project.project_mode === 'explore' && <Compass size={10} />}
+                      {project.project_mode === 'collect' && <ClipboardList size={10} />}
+                      {project.project_mode === 'guided' && <Target size={10} />}
+                      {project.project_mode.charAt(0).toUpperCase() + project.project_mode.slice(1)}
+                    </span>
                   )}
                   <button
                     className="nords-dashboard__card-menu"

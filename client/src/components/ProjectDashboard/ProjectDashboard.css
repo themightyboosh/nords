@@ -339,15 +339,31 @@
 }
 
 /* ── MCP Badge ── */
-.nords-dashboard__mcp-badge {
+.nords-dashboard__mode-badge {
   font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--nords-color-accent);
-  background: color-mix(in srgb, var(--nords-color-accent) 12%, transparent);
-  padding: 2px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
   border-radius: var(--nords-radius-sm);
+}
+
+.nords-dashboard__mode-badge--explore {
+  color: hsl(200, 60%, 55%);
+  background: hsla(200, 60%, 55%, 0.12);
+}
+
+.nords-dashboard__mode-badge--collect {
+  color: hsl(35, 75%, 55%);
+  background: hsla(35, 75%, 55%, 0.12);
+}
+
+.nords-dashboard__mode-badge--guided {
+  color: hsl(150, 55%, 45%);
+  background: hsla(150, 55%, 45%, 0.12);
 }
 
 /* ── Context Menu ── */
