@@ -224,9 +224,22 @@ const MAX_CONTEXT_TOKENS = 900_000;
 export async function executeTestRun(
   scenario: TestScenario,
   runId: string,
-  onProgress?: (progress: RunProgress) => void
+  onProgress?: (progress: RunProgress) => void,
+  isCancelled?: () => boolean
 ): Promise<void> {
-  const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+  const gcpProject = 'nords-spatial-1776012153';
+  const gcpLocation = process.env.VERTEX_AI_LOCATION || 'us-central1';
+  // FORCIBLY override the ambient environment variable that is hijacking the quota project
+  process.env.GOOGLE_CLOUD_PROJECT = gcpProject;
+  
+  let genai: GoogleGenAI;
+  if (process.env.GEMINI_API_KEY) {
+    genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  } else if (gcpProject) {
+    genai = new GoogleGenAI({ vertexai: true, project: gcpProject, location: gcpLocation });
+  } else {
+    throw new Error('No GEMINI_API_KEY or GOOGLE_CLOUD_PROJECT configured');
+  }
   const projectId = scenario.project_id;
 
   try {
@@ -305,6 +318,12 @@ The briefing contains all the instructions you need. Follow the protocol it prov
     let stopReason: string | null = null;
 
     for (let round = 1; round <= scenario.max_rounds; round++) {
+      // Check cancellation before each round
+      if (isCancelled?.()) {
+        stopReason = 'cancelled';
+        break;
+      }
+
       const roundStart = Date.now();
 
       // ── Step 1: Synthetic User generates a message ──
@@ -635,7 +654,19 @@ SENTIMENT: [2 sentences]`
 export async function generateCritique(
   runId: string
 ): Promise<Record<string, unknown>> {
-  const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+  const gcpProject = 'nords-spatial-1776012153';
+  const gcpLocation = process.env.VERTEX_AI_LOCATION || 'us-central1';
+  // FORCIBLY override the ambient environment variable that is hijacking the quota project
+  process.env.GOOGLE_CLOUD_PROJECT = gcpProject;
+
+  let genai: GoogleGenAI;
+  if (process.env.GEMINI_API_KEY) {
+    genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  } else if (gcpProject) {
+    genai = new GoogleGenAI({ vertexai: true, project: gcpProject, location: gcpLocation });
+  } else {
+    throw new Error('No GEMINI_API_KEY or GOOGLE_CLOUD_PROJECT configured');
+  }
 
   const run = await queryOne<TestRunRecord>(
     'SELECT * FROM test_runs WHERE id = $1',

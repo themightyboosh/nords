@@ -5,10 +5,11 @@
  *   1. Project (new ID, name prefixed "Demo: ")
  *   2. Nord types (remapped)
  *   3. Connection types (remapped)
- *   4. Personas (remapped)
+ *   4. Personas (remapped) + mental models + category weights + goal weights
  *   5. Nords (remapped type_id)
  *   6. Connections (remapped type_id, source, target)
- *   7. Goals + goal edges (remapped)
+ *   7. Goals + goal edges + goal properties (remapped)
+ *   8. Test scenarios (remapped project + goal refs)
  *
  * All in a single transaction for consistency.
  */
@@ -91,11 +92,11 @@ export async function cloneProject(sourceProjectId: string, targetOrgId: string,
       const newId = randomUUID();
       personaMap.set(p.id, newId);
       await client.query(`
-        INSERT INTO personas (id, project_id, name, description, icon, accent_color,
-          system_prompt, sort_order, temperature)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      `, [newId, newProjectId, p.name, p.description, p.icon, p.accent_color,
-          p.system_prompt, p.sort_order, p.temperature]);
+        INSERT INTO personas (id, project_id, name, avatar_seed, background, primary_motivation,
+          voice_and_tone, guardrails, sort_order, temperature)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `, [newId, newProjectId, p.name, p.avatar_seed || '', p.background || '', p.primary_motivation || '',
+          p.voice_and_tone || '', JSON.stringify(p.guardrails || []), p.sort_order, p.temperature]);
     }
 
     // ── 5. Clone Nords ──
@@ -163,6 +164,101 @@ export async function cloneProject(sourceProjectId: string, targetOrgId: string,
           goalMap.get(ge.target_goal_id) || ge.target_goal_id]);
     }
 
+    // ── 8. Clone Goal Properties (bind goals to specific nord properties) ──
+    let goalPropsCount = 0;
+    for (const [oldGoalId, newGoalId] of goalMap) {
+      const { rows: goalProps } = await client.query(
+        'SELECT * FROM goal_properties WHERE goal_id = $1',
+        [oldGoalId]
+      );
+      for (const gp of goalProps) {
+        const newNordId = nordMap.get(gp.nord_id);
+        if (!newNordId) continue; // skip if nord wasn't cloned
+        await client.query(`
+          INSERT INTO goal_properties (id, goal_id, nord_id, property_name)
+          VALUES ($1, $2, $3, $4)
+        `, [randomUUID(), newGoalId, newNordId, gp.property_name]);
+        goalPropsCount++;
+      }
+    }
+
+    // ── 9. Clone Persona Mental Models ──
+    let mentalModelsCount = 0;
+    for (const [oldPersonaId, newPersonaId] of personaMap) {
+      const { rows: models } = await client.query(
+        'SELECT * FROM persona_mental_models WHERE persona_id = $1',
+        [oldPersonaId]
+      );
+      for (const m of models) {
+        await client.query(`
+          INSERT INTO persona_mental_models (id, persona_id, name, body, sort_order)
+          VALUES ($1, $2, $3, $4, $5)
+        `, [randomUUID(), newPersonaId, m.name, m.body, m.sort_order]);
+        mentalModelsCount++;
+      }
+    }
+
+    // ── 10. Clone Persona Category Weights ──
+    let categoryWeightsCount = 0;
+    for (const [oldPersonaId, newPersonaId] of personaMap) {
+      const { rows: weights } = await client.query(
+        'SELECT * FROM persona_category_weights WHERE persona_id = $1',
+        [oldPersonaId]
+      );
+      for (const w of weights) {
+        const newConnTypeId = connTypeMap.get(w.connection_type_id);
+        if (!newConnTypeId) continue;
+        await client.query(`
+          INSERT INTO persona_category_weights (id, persona_id, connection_type_id, weight)
+          VALUES ($1, $2, $3, $4)
+        `, [randomUUID(), newPersonaId, newConnTypeId, w.weight]);
+        categoryWeightsCount++;
+      }
+    }
+
+    // ── 11. Clone Persona Goal Weights ──
+    let goalWeightsCount = 0;
+    for (const [oldPersonaId, newPersonaId] of personaMap) {
+      const { rows: weights } = await client.query(
+        'SELECT * FROM persona_goal_weights WHERE persona_id = $1',
+        [oldPersonaId]
+      );
+      for (const w of weights) {
+        const newGoalId = goalMap.get(w.goal_id);
+        if (!newGoalId) continue;
+        await client.query(`
+          INSERT INTO persona_goal_weights (id, persona_id, goal_id, weight)
+          VALUES ($1, $2, $3, $4)
+        `, [randomUUID(), newPersonaId, newGoalId, w.weight]);
+        goalWeightsCount++;
+      }
+    }
+
+    // ── 12. Clone Test Scenarios ──
+    let testScenariosCount = 0;
+    const { rows: testScenarios } = await client.query(
+      'SELECT * FROM test_scenarios WHERE project_id = $1 AND deleted_at IS NULL',
+      [sourceProjectId]
+    );
+    for (const ts of testScenarios) {
+      await client.query(`
+        INSERT INTO test_scenarios (
+          id, project_id, name, description, user_objective, user_profile, user_profile_custom,
+          user_context, agent_model, user_model, max_rounds,
+          stop_on_completion_pct, stop_on_goal_id, stop_on_session_end, min_completion_pct
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+      `, [
+        randomUUID(), newProjectId, ts.name, ts.description, ts.user_objective,
+        ts.user_profile, ts.user_profile_custom,
+        JSON.stringify(ts.user_context || {}),
+        ts.agent_model, ts.user_model, ts.max_rounds,
+        ts.stop_on_completion_pct,
+        ts.stop_on_goal_id ? (goalMap.get(ts.stop_on_goal_id) || null) : null,
+        ts.stop_on_session_end, ts.min_completion_pct,
+      ]);
+      testScenariosCount++;
+    }
+
     await client.query('COMMIT');
 
     logger.info('Project cloned successfully', {
@@ -170,9 +266,15 @@ export async function cloneProject(sourceProjectId: string, targetOrgId: string,
       newProjectId,
       nordTypes: nordTypeMap.size,
       connTypes: connTypeMap.size,
+      personas: personaMap.size,
       nords: nordMap.size,
       connections: connections.length,
       goals: goalMap.size,
+      goalProperties: goalPropsCount,
+      mentalModels: mentalModelsCount,
+      categoryWeights: categoryWeightsCount,
+      goalWeights: goalWeightsCount,
+      testScenarios: testScenariosCount,
     });
 
     return newProjectId;

@@ -10,6 +10,7 @@
  */
 
 import React from 'react';
+import { Square } from 'lucide-react';
 
 export interface NordCardProps {
   title: string;
@@ -66,7 +67,7 @@ export const NordCard: React.FC<NordCardProps> = ({
     >
       <div className="nords-node__titlebar">
         <div className="nords-node__header">
-          {Icon && <Icon size={14} strokeWidth={2} color={typeColor} />}
+          {Icon ? <Icon size={14} strokeWidth={2} color={typeColor} /> : <Square size={14} strokeWidth={2} color={typeColor} />}
           <span className="nords-node__type-label" style={{ color: typeColor }}>
             {typeName}
           </span>

@@ -10,6 +10,8 @@ interface AuthContextType {
   loading: boolean;
   isAuthenticated: boolean;
   isEmailVerified: boolean;
+  isAdmin: boolean;
+  role: string | null;
   logout: () => Promise<void>;
 }
 
@@ -18,6 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<string | null>(null);
 
   // Dev bypass: set VITE_SKIP_AUTH=true in .env.local to skip auth entirely
   const isDevBypass = import.meta.env.DEV && import.meta.env.VITE_SKIP_AUTH === 'true';
@@ -26,19 +29,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isDevBypass) {
       // Create a minimal fake user for dev mode
       setUser({ uid: 'dev-user', email: 'dev@nords.local', displayName: 'Dev User', emailVerified: true } as unknown as User);
+      setRole('admin');
       setLoading(false);
       logger.info('Auth dev bypass: auto-authenticated as dev-user');
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
       if (currentUser) {
         logger.info('Auth state changed: signed in', { uid: currentUser.uid });
+        // Fetch role from server
+        try {
+          const token = await currentUser.getIdToken();
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const res = await fetch(`${apiUrl}/api/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setRole(data.role || 'member');
+          } else {
+            setRole('member');
+          }
+        } catch {
+          setRole('member');
+        }
       } else {
         logger.info('Auth state changed: signed out');
+        setRole(null);
       }
+      setLoading(false);
     }, (error) => {
       logger.error('Auth state listener error', error);
       setLoading(false);
@@ -47,11 +68,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, [isDevBypass]);
 
-  const value = {
+  const value: AuthContextType = {
     user,
     loading,
     isAuthenticated: !!user,
-    isEmailVerified: user?.emailVerified || false, // Note: Google sign-ins auto-verify
+    isEmailVerified: user?.emailVerified || false,
+    isAdmin: role === 'admin',
+    role,
     logout: signOut
   };
 

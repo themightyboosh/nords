@@ -233,8 +233,9 @@ testRunnerRouter.post('/test-scenarios/:id/run', async (req: Request, res: Respo
     };
 
     // Fire and forget — the run executes in the background
-    executeTestRun(scenario, runId, onProgress).finally(() => {
-      // Clean up SSE connections when run finishes
+    executeTestRun(scenario, runId, onProgress, () => cancelledRuns.has(runId)).finally(() => {
+      // Clean up SSE connections and cancellation flag when run finishes
+      cancelledRuns.delete(runId);
       const listeners = activeStreams.get(runId);
       if (listeners) {
         for (const listener of listeners) {
@@ -429,3 +430,192 @@ testRunnerRouter.delete('/test-runs/:id', async (req: Request, res: Response) =>
     res.status(500).json({ error: 'Failed to delete run' });
   }
 });
+
+/**
+ * GET /api/test-runs/:id/report/conversation
+ * Generate a clean Markdown conversation report.
+ */
+testRunnerRouter.get('/test-runs/:id/report/conversation', async (req: Request, res: Response) => {
+  try {
+    const run = await queryOne<TestRunRecord>(
+      'SELECT * FROM test_runs WHERE id = $1',
+      [req.params.id as string]
+    );
+    if (!run) return res.status(404).json({ error: 'Run not found' });
+
+    const scenario = await queryOne<TestScenario>(
+      'SELECT * FROM test_scenarios WHERE id = $1',
+      [run.scenario_id]
+    );
+
+    const transcript = typeof run.transcript === 'string'
+      ? JSON.parse(run.transcript) : (run.transcript || []);
+
+    const statusIcon = run.passed ? '✅' : run.status === 'cancelled' ? '⚠️' : '❌';
+    const statusLabel = run.passed ? 'PASS' : run.status === 'cancelled' ? 'CANCELLED' : 'FAIL';
+    const date = new Date(run.started_at).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+
+    const lines: string[] = [
+      `# Test Run Report: ${scenario?.name || 'Unknown Scenario'}`,
+      '',
+      `**Date**: ${date} | **Status**: ${statusIcon} ${statusLabel} | **NPS**: ${run.synthetic_nps ?? 'N/A'}/10`,
+      '',
+      '## Summary',
+      '',
+      `| Metric | Value |`,
+      `|--------|-------|`,
+      `| Rounds | ${run.rounds_completed} |`,
+      `| Completion | ${run.completion_pct ?? 0}% |`,
+      `| Stop Reason | ${run.stop_reason || 'N/A'} |`,
+      `| Profile | ${scenario?.user_profile || 'N/A'} |`,
+      '',
+    ];
+
+    if (run.user_sentiment) {
+      lines.push(`**Sentiment**: "${run.user_sentiment}"`, '');
+    }
+
+    lines.push('---', '', '## Conversation', '');
+
+    for (const round of transcript) {
+      lines.push(`### Round ${round.round}`, '');
+      if (round.user_msg) {
+        lines.push(`**🧪 User**: ${round.user_msg}`, '');
+      }
+      if (round.agent_msg) {
+        lines.push(`**🤖 Agent**: ${round.agent_msg}`, '');
+      }
+    }
+
+    res.json({ markdown: lines.join('\n') });
+  } catch (err: any) {
+    logger.error('Failed to generate conversation report', { error: err.message });
+    res.status(500).json({ error: 'Failed to generate report' });
+  }
+});
+
+/**
+ * GET /api/test-runs/:id/report/detailed
+ * Generate a detailed Markdown report with tool calls, metrics, and per-round breakdown.
+ */
+testRunnerRouter.get('/test-runs/:id/report/detailed', async (req: Request, res: Response) => {
+  try {
+    const run = await queryOne<TestRunRecord>(
+      'SELECT * FROM test_runs WHERE id = $1',
+      [req.params.id as string]
+    );
+    if (!run) return res.status(404).json({ error: 'Run not found' });
+
+    const scenario = await queryOne<TestScenario>(
+      'SELECT * FROM test_scenarios WHERE id = $1',
+      [run.scenario_id]
+    );
+
+    const transcript = typeof run.transcript === 'string'
+      ? JSON.parse(run.transcript) : (run.transcript || []);
+    const score = typeof run.score === 'string'
+      ? JSON.parse(run.score) : (run.score || {});
+
+    const statusIcon = run.passed ? '✅' : run.status === 'cancelled' ? '⚠️' : '❌';
+    const statusLabel = run.passed ? 'PASS' : run.status === 'cancelled' ? 'CANCELLED' : 'FAIL';
+    const date = new Date(run.started_at).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+
+    const totalTokensIn = transcript.reduce((sum: number, r: any) => sum + (r.tokens_in || 0), 0);
+    const totalTokensOut = transcript.reduce((sum: number, r: any) => sum + (r.tokens_out || 0), 0);
+    const totalToolCalls = transcript.reduce((sum: number, r: any) => sum + (r.tool_calls?.length || 0), 0);
+    const avgLatency = transcript.length > 0
+      ? Math.round(transcript.reduce((sum: number, r: any) => sum + (r.latency_ms || 0), 0) / transcript.length)
+      : 0;
+
+    const lines: string[] = [
+      `# Detailed Test Report: ${scenario?.name || 'Unknown Scenario'}`,
+      '',
+      `**Date**: ${date} | **Status**: ${statusIcon} ${statusLabel} | **NPS**: ${run.synthetic_nps ?? 'N/A'}/10`,
+      '',
+      '## Configuration',
+      '',
+      '| Setting | Value |',
+      '|---------|-------|',
+      `| Agent Model | ${scenario?.agent_model || 'N/A'} |`,
+      `| User Model | ${scenario?.user_model || 'N/A'} |`,
+      `| User Profile | ${scenario?.user_profile || 'N/A'} |`,
+      `| Max Rounds | ${scenario?.max_rounds || 'N/A'} |`,
+      `| Stop on Completion % | ${scenario?.stop_on_completion_pct ?? 'N/A'} |`,
+      `| Min Completion % | ${scenario?.min_completion_pct ?? 'N/A'} |`,
+      '',
+      '## Metrics',
+      '',
+      '| Metric | Value |',
+      '|--------|-------|',
+      `| Total Tokens | ${((totalTokensIn + totalTokensOut) / 1000).toFixed(1)}K (in: ${(totalTokensIn / 1000).toFixed(1)}K, out: ${(totalTokensOut / 1000).toFixed(1)}K) |`,
+      `| Avg Latency | ${avgLatency.toLocaleString()}ms |`,
+      `| Tool Calls | ${totalToolCalls} |`,
+      `| Rounds Completed | ${run.rounds_completed} |`,
+      `| Completion | ${run.completion_pct ?? 0}% |`,
+      `| Stop Reason | ${run.stop_reason || 'N/A'} |`,
+      '',
+    ];
+
+    if (run.user_sentiment) {
+      lines.push(`**Sentiment**: "${run.user_sentiment}"`, '');
+    }
+
+    if (score.coverage_gaps?.length > 0) {
+      lines.push('### Coverage Gaps', '');
+      for (const gap of score.coverage_gaps) {
+        lines.push(`- ${gap}`);
+      }
+      lines.push('');
+    }
+
+    lines.push('---', '', '## Per-Round Breakdown', '');
+
+    for (const round of transcript) {
+      const latency = round.latency_ms ? `${round.latency_ms.toLocaleString()}ms` : '?';
+      const tokens = `${((round.tokens_in || 0) + (round.tokens_out || 0) / 1000).toFixed(1)}K tokens`;
+      const tools = round.tool_calls?.length || 0;
+
+      lines.push(`### Round ${round.round} (${latency} | ${tokens} | ${tools} tools)`, '');
+
+      if (round.user_msg) {
+        lines.push(`**🧪 User**: ${round.user_msg}`, '');
+      }
+      if (round.agent_msg) {
+        lines.push(`**🤖 Agent**: ${round.agent_msg}`, '');
+      }
+
+      if (round.tool_calls?.length > 0) {
+        lines.push('<details><summary>Tool Calls</summary>', '');
+        for (const tc of round.tool_calls) {
+          const args = tc.args ? JSON.stringify(tc.args).slice(0, 200) : '';
+          lines.push(`- \`${tc.name}\` ${args ? `→ ${args}` : ''}`);
+        }
+        lines.push('', '</details>', '');
+      }
+    }
+
+    // Add critique if available
+    if (run.critique) {
+      const critique = typeof run.critique === 'string' ? JSON.parse(run.critique) : run.critique;
+      lines.push('---', '', '## AI Critique', '');
+      if (critique.summary) lines.push(critique.summary, '');
+      if (critique.findings?.length > 0) {
+        lines.push('| Severity | Category | Finding |', '|----------|----------|---------|');
+        for (const f of critique.findings) {
+          lines.push(`| ${f.severity || 'info'} | ${f.category || 'general'} | ${f.message || f.text || ''} |`);
+        }
+        lines.push('');
+      }
+    }
+
+    res.json({ markdown: lines.join('\n') });
+  } catch (err: any) {
+    logger.error('Failed to generate detailed report', { error: err.message });
+    res.status(500).json({ error: 'Failed to generate report' });
+  }
+});
+

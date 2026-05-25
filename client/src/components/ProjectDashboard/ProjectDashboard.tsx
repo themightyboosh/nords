@@ -14,7 +14,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   FolderKanban, Plus, MoreHorizontal,
-  Layers, Star, Users,
+  Star, Users,
   Trash2, Download, Settings, X, AlertTriangle, BookOpen,
   ShieldCheck, BarChart3, CreditCard, Settings2,
   Compass, ClipboardList, Target,
@@ -27,12 +27,10 @@ import { ColorIcon } from '../shared/ColorIcon';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { ProjectSettings } from '../ProjectSettings/ProjectSettings';
 import { HueSlider } from '../shared/HueSlider';
+import { useAuth } from '../../context/AuthContext';
 import UserAdmin from '../Admin/UserAdmin';
 import '../Admin/UserAdmin.css';
 import './ProjectDashboard.css';
-
-/** Feature flag: set to true to show the Admin sidebar section */
-const SHOW_ADMIN_SECTION = import.meta.env.VITE_SHOW_ADMIN === 'true';
 
 interface Project {
   id: string;
@@ -84,6 +82,7 @@ export default function ProjectDashboard() {
   const [settingsProjectId, setSettingsProjectId] = useState<string | null>(null);
 
   // Admin panel state
+  const { isAdmin } = useAuth();
   const [adminView, setAdminView] = useState<'projects' | 'users'>('projects');
 
   const loadProjects = useCallback(async () => {
@@ -232,7 +231,7 @@ export default function ProjectDashboard() {
         <div style={{ flex: 1 }} />
 
         {/* ── Admin Section (feature-flagged) ── */}
-        {SHOW_ADMIN_SECTION && (
+        {isAdmin && (
           <>
             <div className="nords-dashboard__sidebar-header" style={{ marginTop: 8 }}>
               <span className="nords-dashboard__sidebar-title">
@@ -303,45 +302,80 @@ export default function ProjectDashboard() {
               <Star size={14} strokeWidth={1.5} style={{ color: '#f59e0b' }} />
               Favorites
             </h2>
-            <div className="nords-dashboard__grid nords-dashboard__grid--favorites">
+            <div className="nords-dashboard__grid">
               {projects.filter(p => p.is_starred).map(project => (
                 <div
                   key={`fav-${project.id}`}
-                  className="nords-dashboard__card nords-dashboard__card--favorite"
+                  className="nords-dashboard__card"
                   onClick={() => navigate(`/project/${project.id}`)}
+                  data-testid={`project-card-fav-${project.id}`}
                 >
                   <div className="nords-dashboard__card-header">
                     <span className="nords-dashboard__card-icon">
                       <ColorIcon
                         icon={project.icon}
                         color={project.accent_color || '#6b7aed'}
-                        size={24}
+                        size={32}
                         strokeWidth={1.4}
                       />
                     </span>
-                    <button
-                      className="nords-dashboard__star-btn is-starred"
-                      onClick={(e) => handleToggleStar(e, project.id)}
-                      title="Unstar"
-                    >
-                      <Star size={14} strokeWidth={1.5} />
-                    </button>
+                    <div className="nords-dashboard__card-header-right">
+                      <button
+                        className="nords-dashboard__star-btn is-starred"
+                        onClick={(e) => handleToggleStar(e, project.id)}
+                        title="Unstar"
+                      >
+                        <Star size={13} strokeWidth={1.5} />
+                      </button>
+                      {project.mcp_enabled && (
+                        <span
+                          className={`nords-dashboard__mode-badge nords-dashboard__mode-badge--${project.project_mode}`}
+                          title={`Mode: ${project.project_mode}`}
+                        >
+                          {project.project_mode === 'explore' && <Compass size={10} />}
+                          {project.project_mode === 'collect' && <ClipboardList size={10} />}
+                          {project.project_mode === 'guided' && <Target size={10} />}
+                          {project.project_mode.charAt(0).toUpperCase() + project.project_mode.slice(1)}
+                        </span>
+                      )}
+                      <button
+                        className="nords-dashboard__card-menu"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = (e.target as HTMLElement).getBoundingClientRect();
+                          setContextMenu(contextMenu?.projectId === project.id ? null : { projectId: project.id, x: rect.left, y: rect.bottom + 4 });
+                        }}
+                      >
+                        <MoreHorizontal size={14} strokeWidth={1.5} />
+                      </button>
+                    </div>
                   </div>
                   <h3 className="nords-dashboard__card-name">{project.name}</h3>
+                  <p className="nords-dashboard__card-desc">{project.description || 'No description'}</p>
+                  <div className="nords-dashboard__card-footer">
+                    {project.is_demo && (
+                      <span className="nords-dashboard__demo-badge">
+                        <BookOpen size={10} /> Demo
+                      </span>
+                    )}
+                    <span className="nords-dashboard__card-time">
+                      {project.updated_at ? new Date(project.updated_at).toLocaleDateString() : ''}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
           </>
         )}
 
-        {/* ── All Projects ── */}
+        {/* ── All Projects (excludes starred) ── */}
         <h2 className="nords-dashboard__section-title">
           <FolderKanban size={14} strokeWidth={1.5} />
           All Projects
         </h2>
 
         <div className="nords-dashboard__grid">
-          {projects.map(project => (
+          {projects.filter(p => !p.is_starred).map(project => (
             <div
               key={project.id}
               className="nords-dashboard__card"
@@ -391,10 +425,6 @@ export default function ProjectDashboard() {
               <h3 className="nords-dashboard__card-name">{project.name}</h3>
               <p className="nords-dashboard__card-desc">{project.description || 'No description'}</p>
               <div className="nords-dashboard__card-footer">
-                <span className="nords-dashboard__card-stat">
-                  <Layers size={11} strokeWidth={1.5} />
-                  project
-                </span>
                 {project.is_demo && (
                   <span className="nords-dashboard__demo-badge">
                     <BookOpen size={10} /> Demo
@@ -435,7 +465,7 @@ export default function ProjectDashboard() {
             <button className="nords-dashboard__context-danger" onClick={() => { setDeleteTarget(projects.find(p => p.id === contextMenu.projectId)!); setContextMenu(null); }}>
               <Trash2 size={13} /> Delete
             </button>
-            {SHOW_ADMIN_SECTION && (
+            {isAdmin && (
               <button onClick={() => handleToggleDemo(contextMenu.projectId)}>
                 <BookOpen size={13} />
                 {projects.find(p => p.id === contextMenu.projectId)?.is_demo ? 'Remove Demo Flag' : 'Flag as Demo'}
@@ -544,29 +574,27 @@ export default function ProjectDashboard() {
                 <span>Enable Agent (MCP)</span>
               </label>
 
-              {createForm.mcp_enabled && (
-                <div className="nords-modal__mode-selector">
-                  <span className="nords-modal__mode-label">Project Mode</span>
-                  <div className="nords-modal__mode-cards">
-                    {[
-                      { key: 'explore' as const, icon: <Compass size={20} strokeWidth={1.4} />, name: 'Explore', desc: 'Open-ended discovery. No data collection or session goals.' },
-                      { key: 'collect' as const, icon: <ClipboardList size={20} strokeWidth={1.4} />, name: 'Collect', desc: 'Opportunistic data capture. The agent collects properties as they surface.' },
-                      { key: 'guided' as const, icon: <Target size={20} strokeWidth={1.4} />, name: 'Guided', desc: 'Goal-directed sessions. The agent steers toward completing defined objectives.' },
-                    ].map(mode => (
-                      <button
-                        key={mode.key}
-                        type="button"
-                        className={`nords-modal__mode-card ${createForm.project_mode === mode.key ? 'is-active' : ''}`}
-                        onClick={() => setCreateForm({ ...createForm, project_mode: mode.key })}
-                      >
-                        <span className="nords-modal__mode-card-icon">{mode.icon}</span>
-                        <span className="nords-modal__mode-card-name">{mode.name}</span>
-                        <span className="nords-modal__mode-card-desc">{mode.desc}</span>
-                      </button>
-                    ))}
-                  </div>
+              <div className="nords-modal__mode-selector">
+                <span className="nords-modal__mode-label">Project Mode</span>
+                <div className="nords-modal__mode-cards">
+                  {[
+                    { key: 'explore' as const, icon: <Compass size={20} strokeWidth={1.4} />, name: 'Explore', desc: 'Open-ended discovery. No data collection or session goals.' },
+                    { key: 'collect' as const, icon: <ClipboardList size={20} strokeWidth={1.4} />, name: 'Collect', desc: 'Opportunistic data capture. The agent collects properties as they surface.' },
+                    { key: 'guided' as const, icon: <Target size={20} strokeWidth={1.4} />, name: 'Guided', desc: 'Goal-directed sessions. The agent steers toward completing defined objectives.' },
+                  ].map(mode => (
+                    <button
+                      key={mode.key}
+                      type="button"
+                      className={`nords-modal__mode-card ${createForm.project_mode === mode.key ? 'is-active' : ''}`}
+                      onClick={() => setCreateForm({ ...createForm, project_mode: mode.key })}
+                    >
+                      <span className="nords-modal__mode-card-icon">{mode.icon}</span>
+                      <span className="nords-modal__mode-card-name">{mode.name}</span>
+                      <span className="nords-modal__mode-card-desc">{mode.desc}</span>
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="nords-modal__footer">

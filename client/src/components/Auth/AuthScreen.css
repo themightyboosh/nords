@@ -67,7 +67,7 @@
   flex: 1;
   background: linear-gradient(135deg, color-mix(in srgb, var(--nords-color-bg-deep) 40%, var(--nords-color-accent)), var(--nords-color-bg-deep));
   position: relative;
-  padding: 48px;
+  padding: 36px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -101,11 +101,11 @@
 
 .nords-auth-split-card__marketing h1 {
   font-family: var(--nords-font-primary);
-  font-size: 1.8rem;
+  font-size: 1.45rem;
   font-weight: var(--nords-font-weight-bold);
   color: white;
-  margin: 0 0 16px 0;
-  line-height: 1.2;
+  margin: 0 0 12px 0;
+  line-height: 1.25;
   text-wrap: balance;
   letter-spacing: -0.02em;
 }

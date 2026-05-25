@@ -59,6 +59,7 @@ export interface ConnectionType {
   name: string;
   description: string;
   accent_color: string | null;
+  icon?: string | null;
   stroke_style: string;
   measurement_mode: 'spectrum' | 'quadrant' | 'none';
   default_direction: string;

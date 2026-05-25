@@ -82,6 +82,7 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
   const [testRunning, setTestRunning] = useState(false);
   const [testProgress, setTestProgress] = useState<{ round: number; maxRounds: number } | null>(null);
   const [testResult, setTestResult] = useState<any>(null);
+  const [sessionNps, setSessionNps] = useState<number | null>(null);
   const testEventSourceRef = useRef<EventSource | null>(null);
 
   // ── Drag / Resize State ──
@@ -106,10 +107,16 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
   }, [rect]);
 
   // ResizeObserver to track user-resize via CSS resize
+  const resizeMountedRef = useRef(false);
   useEffect(() => {
     const el = chatRef.current;
     if (!el) return;
+    resizeMountedRef.current = false;
     const ro = new ResizeObserver((entries) => {
+      if (!resizeMountedRef.current) {
+        resizeMountedRef.current = true;
+        return; // Skip initial layout measurement to prevent shrink animation
+      }
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
         if (width > 0 && height > 0) {
@@ -365,6 +372,7 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
           if (data.type === 'run_complete') {
             setTestRunning(false);
             setTestResult(data);
+            if (data.nps != null) setSessionNps(data.nps);
             es.close();
           }
 
@@ -476,6 +484,11 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
           <div className="preview-chat__dev-metrics">
             <span><Cpu size={10} /> {lastTokens.in.toLocaleString()}→{lastTokens.out.toLocaleString()} tokens</span>
             <span><Zap size={10} /> {lastTokens.latency}ms</span>
+            {sessionNps != null && (
+              <span className={`preview-chat__nps-badge ${sessionNps >= 9 ? 'nps--promoter' : sessionNps >= 7 ? 'nps--passive' : 'nps--detractor'}`}>
+                NPS: {sessionNps}/10 · {sessionNps >= 9 ? 'Promoter' : sessionNps >= 7 ? 'Passive' : 'Detractor'}
+              </span>
+            )}
           </div>
         )}
 
@@ -721,6 +734,10 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
         top: rect.y,
         width: rect.w,
         height: rect.h,
+        minWidth: 360,
+        minHeight: 400,
+        maxWidth: '90vw',
+        maxHeight: '90vh',
         zIndex: 500,
         resize: 'both',
         overflow: 'hidden',
@@ -811,23 +828,86 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
         </div>
       </div>
 
-      {/* Sessions Dropdown */}
-      {showSessions && sessions.length > 0 && (
-        <div className="preview-chat__sessions-dropdown">
-          {sessions.map(s => (
-            <button
-              key={s.id}
-              className={`preview-chat__session-item ${s.id === sessionId ? 'is-active' : ''}`}
-              onClick={() => loadSession(s.id)}
-            >
-              <span className="preview-chat__session-status" data-status={s.status} />
-              <code>{s.id.slice(0, 8)}…</code>
-              <span className="preview-chat__session-date">
-                {new Date(s.started_at).toLocaleDateString()}
-              </span>
-              <span className="preview-chat__session-badge">{s.status}</span>
+      {/* Sessions Panel — full chat body replacement */}
+      {showSessions && (
+        <div className="preview-chat__sessions-panel">
+          <div className="preview-chat__sessions-header">
+            <span>Sessions ({sessions.length})</span>
+            <button className="preview-chat__action-btn" onClick={() => setShowSessions(false)} title="Close sessions">
+              <X size={14} />
             </button>
-          ))}
+          </div>
+          {sessions.length === 0 ? (
+            <div className="preview-chat__dev-empty">
+              <Activity size={20} strokeWidth={1} />
+              <p>No sessions yet. Start a conversation to create one.</p>
+            </div>
+          ) : (
+            <div className="preview-chat__sessions-list">
+              {sessions.map(s => (
+                <div
+                  key={s.id}
+                  className={`preview-chat__session-card ${s.id === sessionId ? 'is-active' : ''}`}
+                >
+                  <div className="preview-chat__session-card-top" onClick={() => loadSession(s.id)}>
+                    <span className="preview-chat__session-status" data-status={s.status} />
+                    <code>{s.id.slice(0, 8)}…</code>
+                    <span className="preview-chat__session-badge">{s.status}</span>
+                    <span className="preview-chat__session-date">
+                      {new Date(s.started_at).toLocaleDateString()} {new Date(s.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <div className="preview-chat__session-card-actions">
+                    <button
+                      className="preview-chat__session-action-btn"
+                      onClick={() => loadSession(s.id)}
+                      title="Load session"
+                    >
+                      <MessageSquare size={11} /> Load
+                    </button>
+                    <button
+                      className="preview-chat__session-action-btn"
+                      onClick={async () => {
+                        try {
+                          const data = await api.get<{ messages: Message[] }>(`/api/sessions/${s.id}/messages`);
+                          const transcript = (data.messages || [])
+                            .map(m => `[${m.role}] ${m.content}`)
+                            .join('\n\n');
+                          const blob = new Blob([transcript], { type: 'text/plain' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `session-${s.id.slice(0, 8)}.txt`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        } catch { /* ignore */ }
+                      }}
+                      title="Export transcript"
+                    >
+                      <FileText size={11} /> Export
+                    </button>
+                    <button
+                      className="preview-chat__session-action-btn preview-chat__session-action-btn--danger"
+                      onClick={async () => {
+                        try {
+                          await api.put(`/api/mcp-sessions/${s.id}`, { status: 'abandoned' });
+                          setSessions(prev => prev.map(x => x.id === s.id ? { ...x, status: 'abandoned' } : x));
+                          if (sessionId === s.id) {
+                            setSessionId(null);
+                            setMessages([]);
+                          }
+                        } catch { /* ignore */ }
+                      }}
+                      title="Abandon session"
+                      disabled={s.status === 'abandoned' || s.status === 'completed'}
+                    >
+                      <X size={11} /> Abandon
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

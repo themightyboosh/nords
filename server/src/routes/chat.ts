@@ -183,8 +183,9 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
     const toolCtx: ToolContext = { sessionId, projectId, mcpMutable, mcpCaptureData };
 
     // 6. Initialize Gemini — API key or Vertex AI (Application Default Credentials)
-    const gcpProject = process.env.VITE_GOOGLE_CLOUD_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT;
+    const gcpProject = 'nords-spatial-1776012153';
     const gcpLocation = process.env.VERTEX_AI_LOCATION || 'us-central1';
+    process.env.GOOGLE_CLOUD_PROJECT = gcpProject;
 
     let genai: GoogleGenAI;
     if (apiKey) {

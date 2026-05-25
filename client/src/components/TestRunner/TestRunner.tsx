@@ -558,7 +558,7 @@ export function TestRunner({ projectId, projectMode, goalsEnabled, open, onClose
                             <span>{run.passed ? 'PASS' : run.status === 'running' ? 'Running...' : run.status === 'failed' ? 'FAILED' : 'FAIL'}</span>
                           </div>
                           <div className="test-runner__run-stats">
-                            {run.synthetic_nps != null && <span>NPS: {run.synthetic_nps}/10</span>}
+                            {run.synthetic_nps != null && <span style={{ color: run.synthetic_nps >= 9 ? '#22c55e' : run.synthetic_nps >= 7 ? '#eab308' : '#ef4444' }}>NPS: {run.synthetic_nps}/10</span>}
                             <span>{Math.round(run.completion_pct)}%</span>
                             <span>{run.rounds_completed} rnds</span>
                             <span>{new Date(run.started_at).toLocaleDateString()}</span>
@@ -580,7 +580,13 @@ export function TestRunner({ projectId, projectMode, goalsEnabled, open, onClose
                               </div>
                               <div className="test-runner__score-item">
                                 <span className="test-runner__score-label">NPS</span>
-                                <span className="test-runner__score-value">{runDetail.synthetic_nps ?? '—'}/10</span>
+                                <span className="test-runner__score-value" style={{
+                                  color: runDetail.synthetic_nps != null
+                                    ? runDetail.synthetic_nps >= 9 ? '#22c55e'
+                                    : runDetail.synthetic_nps >= 7 ? '#eab308'
+                                    : '#ef4444'
+                                    : undefined
+                                }}>{ runDetail.synthetic_nps ?? '—'}/10</span>
                               </div>
                               <div className="test-runner__score-item">
                                 <span className="test-runner__score-label">Tokens</span>
@@ -643,6 +649,30 @@ export function TestRunner({ projectId, projectMode, goalsEnabled, open, onClose
                               </button>
                               <button onClick={() => handleExport(run.id, true)}>
                                 <Download size={14} /> Export (Verbose)
+                              </button>
+                              <button onClick={async () => {
+                                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                                const res = await fetch(`${apiUrl}/api/test-runs/${run.id}/report/conversation`);
+                                const data = await res.json();
+                                const blob = new Blob([data.markdown], { type: 'text/markdown' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a'); a.href = url;
+                                a.download = `report-conversation-${run.id.slice(0,8)}.md`;
+                                a.click(); URL.revokeObjectURL(url);
+                              }}>
+                                <Download size={14} /> Report (.md)
+                              </button>
+                              <button onClick={async () => {
+                                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                                const res = await fetch(`${apiUrl}/api/test-runs/${run.id}/report/detailed`);
+                                const data = await res.json();
+                                const blob = new Blob([data.markdown], { type: 'text/markdown' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a'); a.href = url;
+                                a.download = `report-detailed-${run.id.slice(0,8)}.md`;
+                                a.click(); URL.revokeObjectURL(url);
+                              }}>
+                                <Download size={14} /> Detailed Report (.md)
                               </button>
                               <button className="test-runner__delete-btn" onClick={() => handleDeleteRun(run.id)}>
                                 <Trash2 size={14} /> Delete Run

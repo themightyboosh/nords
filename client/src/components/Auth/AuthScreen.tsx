@@ -156,10 +156,10 @@ export default function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
         {/* MARKETING PANE */}
         <div className="nords-auth-split-card__marketing">
           <div className="nords-auth-split-card__marketing-content">
-            <div className="nords-auth__logo" style={{ marginBottom: 24 }}>
-              <NordsLogo size={48} />
+            <div className="nords-auth__logo" style={{ marginBottom: 20 }}>
+              <NordsLogo size={64} />
             </div>
-            <h1>A visual knowledge space for AI and Humans.</h1>
+            <h1>Think visually, build pragmatically.</h1>
             <p>
               Nords lets you drag, drop, and connect your context and expertise into a structured map that AI can navigate, reason over, and act upon.
             </p>
