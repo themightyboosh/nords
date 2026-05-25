@@ -23,13 +23,42 @@ export const projectsRouter = Router();
  *               items:
  *                 $ref: '#/components/schemas/Project'
  */
-projectsRouter.get('/projects', async (_req: Request, res: Response) => {
+projectsRouter.get('/projects', async (req: Request, res: Response) => {
   try {
-    const projects = await projectsRepo.findAll();
+    const userId = req.user?.uid;
+    const projects = await projectsRepo.findAllWithStars(userId);
     res.json(projects);
   } catch (err: any) {
     logger.error('Failed to load projects', { error: err.message });
     res.status(500).json({ error: 'Failed to load projects' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/projects/{id}/star:
+ *   post:
+ *     tags: [Projects]
+ *     summary: Toggle star/favorite on a project
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Star toggled — returns { is_starred: boolean }
+ */
+projectsRouter.post('/projects/:id/star', async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.uid;
+    const isStarred = await projectsRepo.toggleStar(req.params.id as string, userId);
+    res.json({ is_starred: isStarred });
+  } catch (err: any) {
+    logger.error('Failed to toggle star', { error: err.message, projectId: req.params.id });
+    res.status(500).json({ error: 'Failed to toggle star' });
   }
 });
 
@@ -89,6 +118,7 @@ projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Requ
       default_persona_id: default_persona_id ?? null,
       default_start_nord_id: default_start_nord_id ?? null,
       default_end_nord_id: default_end_nord_id ?? null,
+      is_demo: false,
     });
     res.status(201).json(project);
   } catch (err: any) {

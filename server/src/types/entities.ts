@@ -48,6 +48,7 @@ export interface Project {
   default_persona_id: string | null;
   default_start_nord_id: string | null;
   default_end_nord_id: string | null;
+  is_demo: boolean;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;

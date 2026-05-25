@@ -1,0 +1,177 @@
+/* ── UserAdmin.css — Admin User Management ── */
+
+.nords-user-admin {
+  width: 100%;
+  max-width: 900px;
+}
+
+.nords-user-admin__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.nords-user-admin__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--nords-color-text-primary);
+  margin: 0;
+}
+
+.nords-user-admin__refresh {
+  background: none;
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  color: var(--nords-color-text-tertiary);
+  transition: all 0.15s;
+}
+
+.nords-user-admin__refresh:hover {
+  color: var(--nords-color-accent);
+  border-color: var(--nords-color-accent);
+}
+
+.nords-user-admin__refresh .spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.nords-user-admin__error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+/* ── Table ── */
+.nords-user-admin__table-wrap {
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.nords-user-admin__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.nords-user-admin__table thead {
+  background: var(--nords-color-bg-elevated);
+}
+
+.nords-user-admin__table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 500;
+  color: var(--nords-color-text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--nords-color-border-subtle);
+}
+
+.nords-user-admin__table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--nords-color-border-subtle);
+  color: var(--nords-color-text-primary);
+}
+
+.nords-user-admin__table tr:last-child td {
+  border-bottom: none;
+}
+
+.nords-user-admin__table tbody tr:hover {
+  background: var(--nords-color-bg-elevated);
+}
+
+/* ── Name cell with avatar ── */
+.nords-user-admin__name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nords-user-admin__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nords-user-admin__avatar-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--nords-color-accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.nords-user-admin__email {
+  color: var(--nords-color-text-secondary);
+}
+
+.nords-user-admin__date {
+  color: var(--nords-color-text-tertiary);
+  font-size: 12px;
+}
+
+/* ── Role badge ── */
+.nords-user-admin__role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--nords-color-border-subtle);
+  background: transparent;
+  color: var(--nords-color-text-secondary);
+  transition: all 0.15s;
+  text-transform: capitalize;
+}
+
+.nords-user-admin__role-badge:hover {
+  border-color: var(--nords-color-accent);
+  color: var(--nords-color-accent);
+}
+
+.nords-user-admin__role-badge.is-admin {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* ── Delete button ── */
+.nords-user-admin__delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--nords-color-text-disabled);
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.nords-user-admin__delete-btn:hover {
+  color: #ef4444;
+}

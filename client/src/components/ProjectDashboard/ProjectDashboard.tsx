@@ -11,11 +11,11 @@
  *   - Export placeholder
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   FolderKanban, Plus, MoreHorizontal,
-  Layers, Star,
-  Trash2, Download, Settings, X, AlertTriangle,
+  Layers, Star, Users,
+  Trash2, Download, Settings, X, AlertTriangle, BookOpen,
   ShieldCheck, BarChart3, CreditCard, Settings2,
   Compass, ClipboardList, Target,
 } from 'lucide-react';
@@ -27,6 +27,8 @@ import { ColorIcon } from '../shared/ColorIcon';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { ProjectSettings } from '../ProjectSettings/ProjectSettings';
 import { HueSlider } from '../shared/HueSlider';
+import UserAdmin from '../Admin/UserAdmin';
+import '../Admin/UserAdmin.css';
 import './ProjectDashboard.css';
 
 /** Feature flag: set to true to show the Admin sidebar section */
@@ -44,6 +46,8 @@ interface Project {
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
   goals_enabled: boolean;
+  is_starred: boolean;
+  is_demo: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -78,6 +82,9 @@ export default function ProjectDashboard() {
 
   // Settings modal state
   const [settingsProjectId, setSettingsProjectId] = useState<string | null>(null);
+
+  // Admin panel state
+  const [adminView, setAdminView] = useState<'projects' | 'users'>('projects');
 
   const loadProjects = useCallback(async () => {
     try {
@@ -152,6 +159,44 @@ export default function ProjectDashboard() {
     setContextMenu(null);
   };
 
+  // ── Star Toggle ──
+  const handleToggleStar = useCallback(async (e: React.MouseEvent, projectId: string) => {
+    e.stopPropagation();
+    // Optimistic update
+    setProjects(prev => prev.map(p =>
+      p.id === projectId ? { ...p, is_starred: !p.is_starred } : p
+    ));
+    try {
+      await api.post(`/api/projects/${projectId}/star`, {});
+    } catch (err) {
+      // Revert on failure
+      setProjects(prev => prev.map(p =>
+        p.id === projectId ? { ...p, is_starred: !p.is_starred } : p
+      ));
+      console.error('Failed to toggle star:', err);
+    }
+  }, []);
+
+  // ── Toggle Demo Flag ──
+  const handleToggleDemo = useCallback(async (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    const newValue = !project.is_demo;
+    // Optimistic
+    setProjects(prev => prev.map(p =>
+      p.id === projectId ? { ...p, is_demo: newValue } : p
+    ));
+    try {
+      await api.put(`/api/projects/${projectId}`, { is_demo: newValue });
+    } catch (err) {
+      setProjects(prev => prev.map(p =>
+        p.id === projectId ? { ...p, is_demo: !newValue } : p
+      ));
+      console.error('Failed to toggle demo:', err);
+    }
+    setContextMenu(null);
+  }, [projects]);
+
   // Theme state (shared with header)
   const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('nords-theme') || 'obsidian');
   const handleThemeChange = useCallback((theme: string) => {
@@ -174,15 +219,13 @@ export default function ProjectDashboard() {
         </div>
 
         <nav className="nords-dashboard__sidebar-nav">
-          <button className="nords-dashboard__nav-item is-active">
+          <button
+            className={`nords-dashboard__nav-item ${adminView === 'projects' ? 'is-active' : ''}`}
+            onClick={() => setAdminView('projects')}
+          >
             <FolderKanban size={14} strokeWidth={1.5} />
             All Projects
             <span className="nords-dashboard__nav-count">{projects.length}</span>
-          </button>
-          <button className="nords-dashboard__nav-item">
-            <Star size={14} strokeWidth={1.5} />
-            Starred
-            <span className="nords-dashboard__nav-count">0</span>
           </button>
         </nav>
 
@@ -198,6 +241,13 @@ export default function ProjectDashboard() {
               </span>
             </div>
             <nav className="nords-dashboard__sidebar-nav">
+              <button
+                className={`nords-dashboard__nav-item ${adminView === 'users' ? 'is-active' : ''}`}
+                onClick={() => setAdminView('users')}
+              >
+                <Users size={14} strokeWidth={1.5} />
+                Users
+              </button>
               <button className="nords-dashboard__nav-item">
                 <BarChart3 size={14} strokeWidth={1.5} />
                 Analytics
@@ -226,6 +276,11 @@ export default function ProjectDashboard() {
 
       <main className="nords-dashboard__main">
 
+        {adminView === 'users' ? (
+          <UserAdmin />
+        ) : (
+        <>
+
         {error && (
           <div className="nords-modal__errors" style={{ marginBottom: '16px' }}>
             <div className="nords-modal__error">
@@ -240,6 +295,50 @@ export default function ProjectDashboard() {
             <span>Loading projects…</span>
           </div>
         )}
+
+        {/* ── Favorites Row ── */}
+        {projects.some(p => p.is_starred) && (
+          <>
+            <h2 className="nords-dashboard__section-title">
+              <Star size={14} strokeWidth={1.5} style={{ color: '#f59e0b' }} />
+              Favorites
+            </h2>
+            <div className="nords-dashboard__grid nords-dashboard__grid--favorites">
+              {projects.filter(p => p.is_starred).map(project => (
+                <div
+                  key={`fav-${project.id}`}
+                  className="nords-dashboard__card nords-dashboard__card--favorite"
+                  onClick={() => navigate(`/project/${project.id}`)}
+                >
+                  <div className="nords-dashboard__card-header">
+                    <span className="nords-dashboard__card-icon">
+                      <ColorIcon
+                        icon={project.icon}
+                        color={project.accent_color || '#6b7aed'}
+                        size={24}
+                        strokeWidth={1.4}
+                      />
+                    </span>
+                    <button
+                      className="nords-dashboard__star-btn is-starred"
+                      onClick={(e) => handleToggleStar(e, project.id)}
+                      title="Unstar"
+                    >
+                      <Star size={14} strokeWidth={1.5} />
+                    </button>
+                  </div>
+                  <h3 className="nords-dashboard__card-name">{project.name}</h3>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* ── All Projects ── */}
+        <h2 className="nords-dashboard__section-title">
+          <FolderKanban size={14} strokeWidth={1.5} />
+          All Projects
+        </h2>
 
         <div className="nords-dashboard__grid">
           {projects.map(project => (
@@ -259,6 +358,13 @@ export default function ProjectDashboard() {
                   />
                 </span>
                 <div className="nords-dashboard__card-header-right">
+                  <button
+                    className={`nords-dashboard__star-btn ${project.is_starred ? 'is-starred' : ''}`}
+                    onClick={(e) => handleToggleStar(e, project.id)}
+                    title={project.is_starred ? 'Unstar' : 'Star'}
+                  >
+                    <Star size={13} strokeWidth={1.5} />
+                  </button>
                   {project.mcp_enabled && (
                     <span
                       className={`nords-dashboard__mode-badge nords-dashboard__mode-badge--${project.project_mode}`}
@@ -289,6 +395,11 @@ export default function ProjectDashboard() {
                   <Layers size={11} strokeWidth={1.5} />
                   project
                 </span>
+                {project.is_demo && (
+                  <span className="nords-dashboard__demo-badge">
+                    <BookOpen size={10} /> Demo
+                  </span>
+                )}
                 <span className="nords-dashboard__card-time">
                   {project.updated_at ? new Date(project.updated_at).toLocaleDateString() : ''}
                 </span>
@@ -305,6 +416,8 @@ export default function ProjectDashboard() {
             <span>Create New Project</span>
           </div>
         </div>
+        </>
+        )}
       </main>
       </div>
 
@@ -322,6 +435,12 @@ export default function ProjectDashboard() {
             <button className="nords-dashboard__context-danger" onClick={() => { setDeleteTarget(projects.find(p => p.id === contextMenu.projectId)!); setContextMenu(null); }}>
               <Trash2 size={13} /> Delete
             </button>
+            {SHOW_ADMIN_SECTION && (
+              <button onClick={() => handleToggleDemo(contextMenu.projectId)}>
+                <BookOpen size={13} />
+                {projects.find(p => p.id === contextMenu.projectId)?.is_demo ? 'Remove Demo Flag' : 'Flag as Demo'}
+              </button>
+            )}
           </div>
         </>
       )}

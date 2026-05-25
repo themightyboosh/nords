@@ -40,7 +40,7 @@ export async function create(project: Omit<Project, 'id' | 'created_at' | 'updat
   ]) as Promise<Project>;
 }
 
-type UpdatableProjectFields = Pick<Project, 'name' | 'description' | 'purpose' | 'icon' | 'accent_color' | 'mcp_enabled' | 'mcp_capture_data' | 'mcp_mutable' | 'goals_enabled' | 'mcp_system_prompt' | 'mcp_welcome_message' | 'project_mode' | 'end_prompt_suggestion' | 'default_persona_id' | 'default_start_nord_id' | 'default_end_nord_id'>;
+type UpdatableProjectFields = Pick<Project, 'name' | 'description' | 'purpose' | 'icon' | 'accent_color' | 'mcp_enabled' | 'mcp_capture_data' | 'mcp_mutable' | 'goals_enabled' | 'mcp_system_prompt' | 'mcp_welcome_message' | 'project_mode' | 'end_prompt_suggestion' | 'default_persona_id' | 'default_start_nord_id' | 'default_end_nord_id' | 'is_demo'>;
 
 export async function update(id: string, updates: Partial<UpdatableProjectFields>): Promise<Project | null> {
   const allowedKeys: (keyof UpdatableProjectFields)[] = [
@@ -48,6 +48,7 @@ export async function update(id: string, updates: Partial<UpdatableProjectFields
     'mcp_enabled', 'mcp_capture_data', 'mcp_mutable', 'goals_enabled', 'mcp_system_prompt', 'mcp_welcome_message',
     'project_mode', 'end_prompt_suggestion',
     'default_persona_id', 'default_start_nord_id', 'default_end_nord_id',
+    'is_demo',
   ];
 
   const setClauses: string[] = [];
@@ -81,4 +82,36 @@ export async function update(id: string, updates: Partial<UpdatableProjectFields
 export async function softDelete(id: string): Promise<boolean> {
   const result = await queryOne<{ id: string }>('UPDATE projects SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL RETURNING id', [id]);
   return result !== null;
+}
+
+// ── Favorites ──
+
+const DEV_USER_ID = '00000000-0000-0000-0000-000000000001';
+
+export async function findAllWithStars(userId?: string): Promise<(Project & { is_starred: boolean })[]> {
+  const uid = userId || DEV_USER_ID;
+  return query<Project & { is_starred: boolean }>(
+    `SELECT p.*, (uf.user_id IS NOT NULL) AS is_starred
+     FROM projects p
+     LEFT JOIN user_favorites uf ON uf.project_id = p.id AND uf.user_id = $1
+     WHERE p.deleted_at IS NULL
+     ORDER BY p.updated_at DESC`,
+    [uid]
+  );
+}
+
+export async function toggleStar(projectId: string, userId?: string): Promise<boolean> {
+  const uid = userId || DEV_USER_ID;
+  // Try to delete first — if a row was deleted, it was starred → now unstarred
+  const removed = await queryOne<{ project_id: string }>(
+    'DELETE FROM user_favorites WHERE user_id = $1 AND project_id = $2 RETURNING project_id',
+    [uid, projectId]
+  );
+  if (removed) return false; // was starred → unstarred
+  // Otherwise insert
+  await queryOne(
+    'INSERT INTO user_favorites (user_id, project_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+    [uid, projectId]
+  );
+  return true; // now starred
 }

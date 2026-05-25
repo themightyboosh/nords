@@ -21,6 +21,7 @@ import { accessTokensRouter } from './routes/accessTokens.js';
 import { chatRouter } from './routes/chat.js';
 import { goalsRouter } from './routes/goals.js';
 import { testRunnerRouter } from './routes/testRunner.js';
+import { adminRouter } from './routes/admin.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -80,6 +81,7 @@ app.use('/api', accessTokensRouter);
 app.use('/api', chatRouter);
 app.use('/api', goalsRouter);
 app.use('/api', testRunnerRouter);
+app.use('/api', adminRouter);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
