@@ -121,7 +121,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
                 setLens('persona');
                 setActiveConnectionTypeId(null);
                 setOpenPanel(null);
-                if (!activePersonaId && personas.length > 0) setActivePersonaId(personas[0].id);
+                // Don't auto-select persona — let user click to activate (issue #34)
               }}
               title="Persona — weighted graph view through a persona's lens"
               data-testid="lens-persona"
@@ -176,7 +176,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
                 </button>
               </div>
 
-              {/* Board: Connection direction filter */}
+              {/* Direction filter hidden for now (issue #30)
               <div className="nords-dock__section">
                 <button
                   className={`nords-dock__item ${openPanel === 'direction' ? 'is-active' : ''}`}
@@ -187,6 +187,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
                   <ChevronDown size={10} className="nords-dock__chevron" />
                 </button>
               </div>
+              */}
             </>
           )}
 
@@ -269,7 +270,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
                   return (
                     <div key={type.id} className={`nords-flyout__row nords-flyout__row--selectable ${!hidden ? 'is-active' : ''}`} onClick={() => toggleLaneCollapse(type.id)}>
                       <div className="nords-flyout__row-left">
-                        <span className="nords-flyout__line-swatch" style={{ background: type.color, width: 10, height: 10, borderRadius: '50%', flexShrink: 0 }} />
+                        {type.icon && <type.icon size={13} style={{ color: type.color, flexShrink: 0 }} />}
                         <span className="nords-flyout__row-name">{type.name}</span>
                         <span className="nords-flyout__row-count">{type.count}</span>
                       </div>
@@ -301,7 +302,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
                       style={isSelected ? { background: `${type.color}18`, borderLeft: `3px solid ${type.color}` } : { borderLeft: '3px solid transparent' }}
                     >
                       <div className="nords-flyout__row-left">
-                        <span className="nords-flyout__line-swatch" style={{ background: type.color, width: 10, height: 10, borderRadius: '50%', flexShrink: 0 }} />
+                        {type.icon && <type.icon size={13} style={{ color: type.color, flexShrink: 0 }} />}
                         <span className="nords-flyout__row-name" style={isSelected ? { color: type.color, fontWeight: 600 } : undefined}>{type.name}</span>
                         <span className="nords-flyout__row-count">{type.count}</span>
                       </div>

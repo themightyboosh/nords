@@ -22,6 +22,7 @@ export interface NordTypeMock {
 export interface ConnectionTypeMock {
   id: string;
   name: string;
+  icon: LucideIcon;
   color: string;
   accent_color?: string;
   measurementMode: 'spectrum' | 'quadrant' | 'none';
@@ -49,6 +50,7 @@ export function useTypeRegistry() {
     connectionTypes.map(t => ({
       id: t.id,
       name: t.name,
+      icon: t.icon,
       color: t.color,
       measurementMode: t.measurementMode,
       xStageLabels: t.xStageLabels || [],

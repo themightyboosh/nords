@@ -26,6 +26,7 @@ import type { StageLabel } from '../hooks/useProjectGraph';
 export interface ResolvedConnectionType {
   id: string;
   name: string;
+  icon: LucideIcon;
   color: string;
   strokeStyle: string;
   measurementMode: 'spectrum' | 'quadrant' | 'none';
@@ -97,6 +98,7 @@ export function TypeRegistryProvider({
     rawConnectionTypes.map(t => ({
       id: t.id,
       name: t.name,
+      icon: resolveIcon(t.icon || 'Link'),
       color: t.accent_color || '#a78bfa',
       strokeStyle: t.stroke_style || 'solid',
       measurementMode: t.measurement_mode || 'spectrum',

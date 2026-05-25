@@ -28,6 +28,7 @@ export interface ConnectionTypeData {
   name: string;
   description: string;
   accent_color: string;
+  icon: string;
   stroke_style: 'solid' | 'dashed' | 'dotted';
   default_direction: 'to' | 'from' | 'both' | 'neither' | 'none';
   direction_filter: 'all' | 'forward' | 'reverse' | 'both' | 'none';
@@ -95,6 +96,7 @@ export function useTypeMutations(projectId: string | null) {
     name: string;
     description?: string;
     accent_color?: string;
+    icon?: string;
     stroke_style?: string;
     default_direction?: string;
     measurement_mode?: string;
@@ -108,7 +110,7 @@ export function useTypeMutations(projectId: string | null) {
 
   const updateConnectionType = useCallback(async (
     typeId: string,
-    updates: Partial<Pick<ConnectionTypeData, 'name' | 'description' | 'verb' | 'accent_color' | 'stroke_style' | 'default_direction' | 'direction_filter' | 'direction_prepositions' | 'measurement_mode' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>
+    updates: Partial<Pick<ConnectionTypeData, 'name' | 'description' | 'icon' | 'verb' | 'accent_color' | 'stroke_style' | 'default_direction' | 'direction_filter' | 'direction_prepositions' | 'measurement_mode' | 'x_stage_labels' | 'y_stage_labels' | 'properties_schema' | 'sort_order'>>
   ): Promise<ConnectionTypeData> => {
     return api.put<ConnectionTypeData>(`/api/connection-types/${typeId}`, updates);
   }, []);

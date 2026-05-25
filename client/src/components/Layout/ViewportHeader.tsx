@@ -142,34 +142,34 @@ export default function ViewportHeader({
         {!isDashboard && onOpenSettings && (
           <button
             className="nords-viewport-header__nav-item"
-            title="Project Settings"
+            title="Settings"
             onClick={onOpenSettings}
             data-testid="header-settings"
           >
             <Settings size={14} strokeWidth={1.6} />
-            <span>Project Settings</span>
+            <span>Settings</span>
           </button>
         )}
         {!isDashboard && onOpenPreview && (
           <button
             className="nords-viewport-header__nav-item"
-            title="Agent Preview"
+            title="Preview"
             onClick={onOpenPreview}
             data-testid="header-preview"
           >
             <Eye size={14} strokeWidth={1.6} />
-            <span>Agent Preview</span>
+            <span>Preview</span>
           </button>
         )}
         {!isDashboard && onOpenTestRunner && (
           <button
             className="nords-viewport-header__nav-item"
-            title="Test Runner"
+            title="Test"
             onClick={onOpenTestRunner}
             data-testid="header-test-runner"
           >
             <FlaskConical size={14} strokeWidth={1.6} />
-            <span>Test Runner</span>
+            <span>Test</span>
           </button>
         )}
         <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />
