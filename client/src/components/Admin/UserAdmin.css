@@ -175,3 +175,52 @@
 .nords-user-admin__delete-btn:hover {
   color: #ef4444;
 }
+
+/* ── Invite Key Create Form ── */
+.nords-user-admin__create-key {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.nords-user-admin__key-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: 6px;
+  background: var(--nords-color-bg-elevated);
+  color: var(--nords-color-text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.nords-user-admin__key-input:focus {
+  border-color: var(--nords-color-accent);
+}
+
+.nords-user-admin__key-input::placeholder {
+  color: var(--nords-color-text-disabled);
+}
+
+.nords-user-admin__key-create-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--nords-color-accent);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.nords-user-admin__key-create-btn:hover {
+  opacity: 0.85;
+}
+
+.nords-user-admin__key-create-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -141,3 +141,79 @@ adminRouter.delete('/admin/users/:id', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to delete user' });
   }
 });
+
+// ══════════════════════════════════════════════════════════
+//  INVITE KEY MANAGEMENT
+// ══════════════════════════════════════════════════════════
+
+interface InviteKeyRow {
+  id: string;
+  key: string;
+  label: string | null;
+  max_uses: number | null;
+  use_count: number;
+  created_at: string;
+  revoked_at: string | null;
+}
+
+/**
+ * GET /api/admin/invite-keys — List all invite keys
+ */
+adminRouter.get('/admin/invite-keys', async (_req: Request, res: Response) => {
+  try {
+    const keys = await query<InviteKeyRow>(
+      'SELECT * FROM invite_keys ORDER BY created_at DESC'
+    );
+    res.json(keys);
+  } catch (err: any) {
+    logger.error('Admin: failed to list invite keys', { error: err.message });
+    res.status(500).json({ error: 'Failed to list invite keys' });
+  }
+});
+
+/**
+ * POST /api/admin/invite-keys — Create a new invite key
+ */
+adminRouter.post('/admin/invite-keys', async (req: Request, res: Response) => {
+  try {
+    const { key, label, max_uses } = req.body;
+    if (!key || typeof key !== 'string') {
+      res.status(400).json({ error: 'Key string is required' });
+      return;
+    }
+    const created = await queryOne<InviteKeyRow>(
+      `INSERT INTO invite_keys (key, label, max_uses)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [key.trim(), label || null, max_uses ?? null]
+    );
+    res.status(201).json(created);
+  } catch (err: any) {
+    if (err.code === '23505') {
+      res.status(409).json({ error: 'An invite key with that value already exists' });
+      return;
+    }
+    logger.error('Admin: failed to create invite key', { error: err.message });
+    res.status(500).json({ error: 'Failed to create invite key' });
+  }
+});
+
+/**
+ * DELETE /api/admin/invite-keys/:id — Revoke an invite key (soft-delete)
+ */
+adminRouter.delete('/admin/invite-keys/:id', async (req: Request, res: Response) => {
+  try {
+    const result = await queryOne<{ id: string }>(
+      'UPDATE invite_keys SET revoked_at = NOW() WHERE id = $1 AND revoked_at IS NULL RETURNING id',
+      [req.params.id]
+    );
+    if (!result) {
+      res.status(404).json({ error: 'Invite key not found' });
+      return;
+    }
+    res.status(204).end();
+  } catch (err: any) {
+    logger.error('Admin: failed to revoke invite key', { error: err.message });
+    res.status(500).json({ error: 'Failed to revoke invite key' });
+  }
+});

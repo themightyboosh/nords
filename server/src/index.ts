@@ -22,6 +22,7 @@ import { chatRouter } from './routes/chat.js';
 import { goalsRouter } from './routes/goals.js';
 import { testRunnerRouter } from './routes/testRunner.js';
 import { adminRouter } from './routes/admin.js';
+import { registerRouter } from './routes/register.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -62,6 +63,9 @@ app.get('/api-docs.json', (_req, res) => {
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'nords-api', timestamp: new Date().toISOString() });
 });
+
+// ── Public API Routes (no auth required) ──
+app.use('/api', registerRouter);
 
 // ── API Routes (protected by Firebase auth) ──
 app.use('/api', requireAuth);
