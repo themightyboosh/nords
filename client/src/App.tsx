@@ -13,8 +13,7 @@ import DetailDrawer from './components/Drawer/DetailDrawer';
 import CanvasEngine from './components/Canvas/CanvasEngine';
 import ProjectDashboard from './components/ProjectDashboard/ProjectDashboard';
 import AdminScreen from './components/Admin/AdminScreen';
-import LoginScreen from './components/Auth/LoginScreen';
-import SignupScreen from './components/Auth/SignupScreen';
+import AuthScreen from './components/Auth/AuthScreen';
 import VerifyEmailScreen from './components/Auth/VerifyEmailScreen';
 import ForgotPasswordScreen from './components/Auth/ForgotPasswordScreen';
 import { ManageTypes } from './components/ManageTypes/ManageTypes';
@@ -400,8 +399,8 @@ function App() {
         {/* Auth screens: only render when auth is enabled */}
         {!skipAuth && (
           <>
-            <Route path="/login" element={<LoginScreen />} />
-            <Route path="/signup" element={<SignupScreen />} />
+            <Route path="/login" element={<AuthScreen initialMode="login" />} />
+            <Route path="/signup" element={<AuthScreen initialMode="signup" />} />
             <Route path="/verify-email" element={<VerifyEmailScreen />} />
             <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
             <Route

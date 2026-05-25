@@ -48,23 +48,134 @@
   50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
 }
 
-/* ── Auth Card (Login / Signup) ── */
-.nords-auth-card {
+/* ── Split Auth Card (Login / Signup) ── */
+.nords-auth-split-card {
   position: relative;
-  width: 380px;
+  width: 800px;
+  max-width: 90vw;
+  min-height: 540px;
   z-index: 10;
-  padding: 40px 36px;
   background: var(--nords-color-bg-surface);
   border: 1px solid var(--nords-color-border-subtle);
   border-radius: var(--nords-radius-xl);
   box-shadow: var(--nords-shadow-lg);
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--nords-space-md);
+  overflow: hidden;
 }
 
-/* Logo */
+.nords-auth-split-card__marketing {
+  flex: 1;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--nords-color-bg-deep) 40%, var(--nords-color-accent)), var(--nords-color-bg-deep));
+  position: relative;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  border-right: 1px solid var(--nords-color-border-subtle);
+}
+
+/* Glassmorphism for marketing pane overlay */
+.nords-auth-split-card__marketing::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--nords-color-accent) 20%, transparent), transparent 60%);
+  animation: auth-marketing-glow 15s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes auth-marketing-glow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(10%, 10%) scale(1.1); }
+}
+
+.nords-auth-split-card__marketing-content {
+  position: relative;
+  z-index: 1;
+}
+
+.nords-auth-split-card__marketing h1 {
+  font-family: var(--nords-font-primary);
+  font-size: 1.8rem;
+  font-weight: var(--nords-font-weight-bold);
+  color: white;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  text-wrap: balance;
+  letter-spacing: -0.02em;
+}
+
+.nords-auth-split-card__marketing p {
+  font-family: var(--nords-font-primary);
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+.nords-auth-split-card__features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nords-auth-split-card__features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-family: var(--nords-font-primary);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.4;
+}
+
+.nords-auth-split-card__feature-icon {
+  color: #a78bfa; /* Slightly lighter accent */
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.nords-auth-split-card__form-pane {
+  width: 380px;
+  flex-shrink: 0;
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--nords-space-md);
+  background: var(--nords-color-bg-surface);
+}
+
+@media (max-width: 768px) {
+  .nords-auth-split-card {
+    flex-direction: column;
+    width: 380px;
+    max-width: 90vw;
+  }
+  .nords-auth-split-card__marketing {
+    padding: 32px 24px;
+    border-right: none;
+    border-bottom: 1px solid var(--nords-color-border-subtle);
+  }
+  .nords-auth-split-card__form-pane {
+    width: 100%;
+    padding: 32px 24px;
+  }
+  .nords-auth-split-card__marketing h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Logo (moved to split card pane) */
 .nords-auth__logo {
   display: flex;
   align-items: center;
@@ -105,10 +216,10 @@
   justify-content: center;
   gap: var(--nords-space-sm);
   padding: 10px 16px;
-  background: var(--nords-color-bg-inset);
-  border: 1px solid var(--nords-color-border-default);
+  background: #000000;
+  border: 1px solid var(--nords-color-border-subtle);
   border-radius: var(--nords-radius-md);
-  color: var(--nords-color-text-primary);
+  color: #ffffff;
   font-family: var(--nords-font-primary);
   font-size: var(--nords-font-size-sm);
   font-weight: var(--nords-font-weight-medium);
@@ -117,8 +228,8 @@
 }
 
 .nords-auth__sso-btn:hover {
-  background: var(--nords-color-bg-hover);
-  border-color: var(--nords-color-border-strong);
+  background: #111111;
+  border-color: var(--nords-color-border-default);
 }
 
 /* ── Divider ── */
@@ -171,8 +282,8 @@
 .nords-auth__input-wrap {
   display: flex;
   align-items: center;
-  background: var(--nords-color-bg-inset);
-  border: 1px solid var(--nords-color-border-default);
+  background: #000000;
+  border: 1px solid var(--nords-color-border-subtle);
   border-radius: var(--nords-radius-md);
   padding: 0 12px;
   transition: border-color 0.15s ease;
@@ -197,7 +308,22 @@
   outline: none;
   font-family: var(--nords-font-primary);
   font-size: var(--nords-font-size-sm);
-  color: var(--nords-color-text-primary);
+  color: #ffffff;
+}
+
+.nords-auth__input:-webkit-autofill,
+.nords-auth__input:-webkit-autofill:hover, 
+.nords-auth__input:-webkit-autofill:focus, 
+.nords-auth__input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #000000 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #ffffff;
+}
+
+.nords-auth__input::selection {
+  background: color-mix(in srgb, var(--nords-color-accent) 40%, transparent);
+  color: #ffffff;
 }
 
 .nords-auth__input::placeholder {
@@ -231,6 +357,10 @@
 }
 
 .nords-auth__forgot {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
   font-family: var(--nords-font-primary);
   font-size: var(--nords-font-size-xs);
   color: var(--nords-color-accent);

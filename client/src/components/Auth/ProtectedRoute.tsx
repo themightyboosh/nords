@@ -26,8 +26,8 @@ export function ProtectedRoute({ children, requireVerification = true }: Protect
 
   if (!isAuthenticated) {
     logger.info('Redirecting to login', { from: location.pathname });
-    // Redirect unauthenticated users to login page, but save the current location they were trying to go to
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Redirect unauthenticated users to signup page (invite-key gated) by default
+    return <Navigate to="/signup" state={{ from: location }} replace />;
   }
 
   if (requireVerification && !isEmailVerified && !config.skipEmailVerification) {

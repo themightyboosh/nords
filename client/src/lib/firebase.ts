@@ -51,6 +51,7 @@ export const signUpEmail = async (email: string, pass: string, displayName: stri
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(cred.user, { displayName });
+    await sendEmailVerification(cred.user);
     logger.info('Email sign-up successful', { uid: cred.user.uid, displayName });
     return cred;
   } catch (err) {
