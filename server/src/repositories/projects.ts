@@ -88,8 +88,10 @@ export async function softDelete(id: string): Promise<boolean> {
 
 const DEV_USER_ID = '00000000-0000-0000-0000-000000000001';
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function findAllWithStars(userId?: string): Promise<(Project & { is_starred: boolean })[]> {
-  const uid = userId || DEV_USER_ID;
+  const uid = (userId && UUID_RE.test(userId)) ? userId : DEV_USER_ID;
   return query<Project & { is_starred: boolean }>(
     `SELECT p.*, (uf.user_id IS NOT NULL) AS is_starred
      FROM projects p
@@ -101,7 +103,7 @@ export async function findAllWithStars(userId?: string): Promise<(Project & { is
 }
 
 export async function toggleStar(projectId: string, userId?: string): Promise<boolean> {
-  const uid = userId || DEV_USER_ID;
+  const uid = (userId && UUID_RE.test(userId)) ? userId : DEV_USER_ID;
   // Try to delete first — if a row was deleted, it was starred → now unstarred
   const removed = await queryOne<{ project_id: string }>(
     'DELETE FROM user_favorites WHERE user_id = $1 AND project_id = $2 RETURNING project_id',

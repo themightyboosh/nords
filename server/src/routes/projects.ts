@@ -49,7 +49,7 @@ projectsRouter.get('/projects', async (req: Request, res: Response) => {
  *           format: uuid
  *     responses:
  *       200:
- *         description: Star toggled — returns { is_starred: boolean }
+ *         description: Star toggled, returns is_starred boolean
  */
 projectsRouter.post('/projects/:id/star', async (req: Request, res: Response) => {
   try {
