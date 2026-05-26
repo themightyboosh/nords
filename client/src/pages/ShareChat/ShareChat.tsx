@@ -9,10 +9,24 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Send, Bot, Loader2 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
 import './ShareChat.css';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+/** Lightweight markdown → HTML for chat bubbles (no dep needed) */
+function renderMarkdown(md: string): string {
+  return md
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') // escape HTML
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')                    // bold
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')                                // italic
+    .replace(/`([^`]+)`/g, '<code>$1</code>')                            // inline code
+    .replace(/^\s*[-*]\s+(.+)$/gm, '<li>$1</li>')                       // list items
+    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')                           // wrap in ul
+    .replace(/\n{2,}/g, '</p><p>')                                       // paragraphs
+    .replace(/\n/g, '<br/>')                                              // line breaks
+    .replace(/^/, '<p>').replace(/$/, '</p>')                             // wrap
+    .replace(/<p><\/p>/g, '');                                            // clean empty
+}
 
 interface Message {
   id: string;
@@ -195,7 +209,7 @@ export function ShareChat() {
             )}
             <div className="share-chat__bubble">
               {msg.role === 'assistant' ? (
-                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                <div dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
               ) : (
                 <p>{msg.content}</p>
               )}
