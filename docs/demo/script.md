@@ -6,7 +6,7 @@
 >
 > `...` = pause. Let it breathe.
 >
-> **Total runtime: ~3 minutes**
+> **Total runtime: ~4 minutes**
 
 ---
 
@@ -28,7 +28,65 @@ So we built one.
 
 ---
 
-## THE CANVAS (0:15 – 0:45)
+## THE PROBLEM (0:15 – 0:35)
+
+`[Quick montage: screenshots of Jira, Miro, Confluence, a spreadsheet, a Slack thread. Or just describe it.]`
+
+Here's the problem.
+
+Your project lives in six different tools. Tasks in one. Diagrams in another. Specs in a wiki. Risks in a spreadsheet. People in an org chart. Decisions in a Slack thread.
+
+None of them talk to each other. And none of them speak *graph*.
+
+So when you bring in AI... you have to brief it. Every time. Copy, paste, explain, hope it gets it.
+
+That's not collaboration. That's data entry.
+
+...
+
+What if your AI could just... walk through the project? See what's connected. See what's blocked. See what matters — and to whom?
+
+That's what we built.
+
+---
+
+## THE SOLUTION (0:35 – 0:50)
+
+`[Open Nords. Show a project canvas at a high level — don't zoom in yet.]`
+
+Nords is a visual knowledge graph.
+
+That sounds complicated. It's not.
+
+You know what a card is. You know what a line between two cards means. That's it. That's the whole thing.
+
+Cards... with typed properties. Lines... with typed meaning and a real, measurable value. On an infinite canvas where position isn't decoration — it's data.
+
+The difference is... everything you draw here is structured. Machine-readable. AI-navigable. From the moment you drag it onto the canvas.
+
+---
+
+## WHY NORDS (0:50 – 1:05)
+
+Graphs are the most powerful data structure in computer science. Google runs on one. Social networks run on one. Your brain runs on one.
+
+But graph tools... are ugly. They're technical. They're for database engineers, not for product teams.
+
+...
+
+So we asked — what if a graph felt like a whiteboard?
+
+What if the nodes were cards you could drag? What if the edges had real meaning you could see? What if the whole thing looked like something you'd actually *want* to open on a Monday morning?
+
+Nodes plus cards. That's the name. That's the product.
+
+`[Brief flash of the name treatment: N-O-R-D-S]`
+
+Let me show you what it does.
+
+---
+
+## THE CANVAS (1:05 – 1:30)
 
 `[Open Pulse Sense project. Full canvas visible. ~60 cards.]`
 
@@ -52,7 +110,7 @@ That's the idea. Distance... is data. And the AI reads these exact same values.
 
 ---
 
-## BOARD VIEW (0:45 – 1:05)
+## BOARD VIEW (1:30 – 1:55)
 
 `[Click Board View.]`
 
@@ -80,7 +138,7 @@ Every relationship type you create... is already a board. You never configure an
 
 ---
 
-## PERSONA LENS (1:05 – 1:30)
+## PERSONA LENS (1:55 – 2:20)
 
 `[Click Persona Lens.]`
 
@@ -118,7 +176,7 @@ And when AI adopts one of these personas... it doesn't just see differently. It 
 
 ---
 
-## GOALS (1:30 – 1:50)
+## GOALS (2:20 – 2:40)
 
 `[Click Goals view. Show the DAG.]`
 
@@ -142,7 +200,7 @@ The data IS the status. No ceremonies. No judgment calls. Computed.
 
 ---
 
-## THE AI SESSION (1:50 – 2:40)
+## THE AI SESSION (2:40 – 3:25)
 
 `[Open Preview Chat. Dr. Sharma persona. Guided mode.]`
 
@@ -190,7 +248,7 @@ The AI didn't summarize my project. It worked... in it.
 
 ---
 
-## THREE MODES (2:40 – 2:50)
+## THREE MODES (3:25 – 3:40)
 
 `[Show Project Settings → Mode selector.]`
 
@@ -210,7 +268,7 @@ Start exploring. Start collecting. Start shipping.
 
 ---
 
-## THE CLOSE (2:50 – 3:00)
+## THE CLOSE (3:40 – 3:50)
 
 `[Pull back to full canvas. Slow zoom out.]`
 
