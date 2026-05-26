@@ -209,22 +209,30 @@ async function main() {
   ];
 
   for (const sl of shareLinksData) {
+    // Deterministic token: same project + label → same token in every environment
+    const hash = crypto.createHash('sha256').update(`${PROJECT_ID}:${sl.label}`).digest('hex').slice(0, 24);
+    const token = `nrd_${hash}`;
+
     const existing = await qOne<{ id: string; token: string }>(
-      'SELECT id, token FROM share_links WHERE project_id = $1 AND label = $2 AND revoked_at IS NULL',
-      [PROJECT_ID, sl.label]
+      'SELECT id, token FROM share_links WHERE project_id = $1 AND token = $2 AND revoked_at IS NULL',
+      [PROJECT_ID, token]
     );
 
     if (existing) {
-      console.log(`  ♻️  Share link exists: ${sl.label} → token: ${(existing as any).token}`);
+      console.log(`  ♻️  Share link exists: ${sl.label} → ${token}`);
     } else {
-      const token = `nrd_${crypto.randomBytes(12).toString('hex')}`;
-      const expiresAt = new Date(Date.now() + 30 * 86400000).toISOString(); // 30 days
-      const [row] = await q<{ id: string; token: string }>(`
+      // Clean up any old link with the same label (different random token from prior runs)
+      await q(
+        'UPDATE share_links SET revoked_at = NOW() WHERE project_id = $1 AND label = $2 AND revoked_at IS NULL',
+        [PROJECT_ID, sl.label]
+      );
+      const expiresAt = new Date(Date.now() + 90 * 86400000).toISOString(); // 90 days
+      await q(`
         INSERT INTO share_links (project_id, label, token, welcome_message_override, model, expires_at)
         VALUES ($1, $2, $3, $4, $5, $6::timestamptz)
-        RETURNING id, token
+        ON CONFLICT (token) DO NOTHING
       `, [PROJECT_ID, sl.label, token, sl.welcome_message_override, sl.model, expiresAt]);
-      console.log(`  ✅ Created share link: ${sl.label} → token: ${row.token}`);
+      console.log(`  ✅ Created share link: ${sl.label} → ${token}`);
     }
   }
 
