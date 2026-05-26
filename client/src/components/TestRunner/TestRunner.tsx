@@ -77,6 +77,7 @@ interface TestRunnerProps {
   goalsEnabled: boolean;
   open: boolean;
   onClose: () => void;
+  onReplay?: (transcript: any[], label: string) => void;
 }
 
 const PROFILES = [
@@ -96,7 +97,7 @@ const MODELS = [
 
 const OTHER_PLACEHOLDER = `Describe how this user behaves. Example: 'You are an elderly person who is not tech-savvy. You ask the AI to repeat things. You use informal language and sometimes misunderstand questions.'`;
 
-export function TestRunner({ projectId, projectMode, goalsEnabled, open, onClose }: TestRunnerProps) {
+export function TestRunner({ projectId, projectMode, goalsEnabled, open, onClose, onReplay }: TestRunnerProps) {
   const [scenarios, setScenarios] = useState<TestScenario[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<'scenario' | 'runs'>('scenario');
@@ -644,6 +645,19 @@ export function TestRunner({ projectId, projectMode, goalsEnabled, open, onClose
                               <button onClick={() => handleCritique(run.id)}>
                                 <Search size={14} /> {critique ? 'Regenerate Critique' : 'Generate Critique'}
                               </button>
+                              {onReplay && runDetail?.transcript && Array.isArray(runDetail.transcript) && (
+                                <button
+                                  onClick={() => {
+                                    onReplay(
+                                      runDetail.transcript as any[],
+                                      `${scenarios.find(s => s.id === run.scenario_id)?.name || 'Test'} — ${run.passed ? 'PASS' : 'FAIL'}`
+                                    );
+                                  }}
+                                  style={{ color: '#a78bfa' }}
+                                >
+                                  <Play size={14} /> Replay in Chat
+                                </button>
+                              )}
                               <button onClick={() => handleExport(run.id, false)}>
                                 <Download size={14} /> Export (Clean)
                               </button>

@@ -52,11 +52,15 @@ interface PreviewChatProps {
   projectId: string;
   isOpen: boolean;
   onClose: () => void;
+  /** When set, renders in read-only replay mode showing a test run transcript */
+  replayTranscript?: Array<{ round: number; user_msg: string; agent_msg: string; tool_calls?: any[]; tokens_in?: number; tokens_out?: number; latency_ms?: number }> | null;
+  replayLabel?: string | null;
+  onClearReplay?: () => void;
 }
 
 type DevTab = 'tools' | 'prompt' | 'horizon';
 
-export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
+export function PreviewChat({ projectId, isOpen, onClose, replayTranscript, replayLabel, onClearReplay }: PreviewChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -70,11 +74,50 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
 
-  // Dev panel state — persists across messages
   const [lastSystemPrompt, setLastSystemPrompt] = useState<string | null>(null);
   const [lastHorizon, setLastHorizon] = useState<Record<string, unknown> | null>(null);
   const [lastToolCalls, setLastToolCalls] = useState<ToolCall[]>([]);
   const [lastTokens, setLastTokens] = useState<{ in: number; out: number; latency: number } | null>(null);
+
+  // ── Replay mode ──
+  const isReplayMode = !!replayTranscript;
+  useEffect(() => {
+    if (!replayTranscript) return;
+    const replayMessages: Message[] = [];
+    for (const r of replayTranscript) {
+      if (r.user_msg) {
+        replayMessages.push({
+          id: `replay-user-${r.round}`,
+          role: 'user',
+          content: r.user_msg,
+          created_at: new Date().toISOString(),
+        });
+      }
+      if (r.agent_msg) {
+        replayMessages.push({
+          id: `replay-agent-${r.round}`,
+          role: 'assistant',
+          content: r.agent_msg,
+          tool_calls: r.tool_calls || null,
+          tokens_in: r.tokens_in,
+          tokens_out: r.tokens_out,
+          latency_ms: r.latency_ms,
+          created_at: new Date().toISOString(),
+        });
+      }
+    }
+    setMessages(replayMessages);
+    // Populate dev panel from last agent message
+    const lastAgent = replayTranscript[replayTranscript.length - 1];
+    if (lastAgent) {
+      if (lastAgent.tool_calls) setLastToolCalls(lastAgent.tool_calls);
+      setLastTokens({
+        in: lastAgent.tokens_in || 0,
+        out: lastAgent.tokens_out || 0,
+        latency: lastAgent.latency_ms || 0,
+      });
+    }
+  }, [replayTranscript]);
 
   // ── Test Runner state ──
   const [testScenarios, setTestScenarios] = useState<Array<{ id: string; name: string; user_profile: string }>>([]);
@@ -751,8 +794,11 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
         <div className="preview-chat__header-left">
           <GripVertical size={14} className="preview-chat__grip-icon" />
           <Bot size={16} />
-          <span className="preview-chat__title">Agent Preview</span>
-          {sessionId && (
+          <span className="preview-chat__title">{isReplayMode ? '🔁 Replay' : 'Agent Preview'}</span>
+          {isReplayMode && replayLabel && (
+            <code className="preview-chat__session-id" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa' }}>{replayLabel}</code>
+          )}
+          {!isReplayMode && sessionId && (
             <code className="preview-chat__session-id">{sessionId.slice(0, 8)}…</code>
           )}
         </div>
@@ -1037,24 +1083,40 @@ export function PreviewChat({ projectId, isOpen, onClose }: PreviewChatProps) {
       </div>
 
       {/* Input */}
-      <div className="preview-chat__input-area">
-        <textarea
-          className="preview-chat__input"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Send a message…"
-          rows={1}
-          disabled={sending}
-        />
-        <button
-          className="preview-chat__send-btn"
-          onClick={handleSend}
-          disabled={!input.trim() || sending}
-        >
-          <Send size={14} />
-        </button>
-      </div>
+      {isReplayMode ? (
+        <div className="preview-chat__input-area" style={{ justifyContent: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, opacity: 0.6 }}>Viewing test run replay ({messages.length} messages)</span>
+          <button
+            className="preview-chat__send-btn"
+            onClick={() => {
+              onClearReplay?.();
+              setMessages([]);
+            }}
+            style={{ background: 'rgba(139, 92, 246, 0.2)', borderColor: 'rgba(139, 92, 246, 0.3)' }}
+          >
+            <X size={14} /> Exit
+          </button>
+        </div>
+      ) : (
+        <div className="preview-chat__input-area">
+          <textarea
+            className="preview-chat__input"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Send a message…"
+            rows={1}
+            disabled={sending}
+          />
+          <button
+            className="preview-chat__send-btn"
+            onClick={handleSend}
+            disabled={!input.trim() || sending}
+          >
+            <Send size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

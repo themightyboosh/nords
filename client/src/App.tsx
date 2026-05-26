@@ -107,6 +107,10 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [projectName, setProjectName] = useState<string>('Loading…');
   const [projectMode, setProjectMode] = useState<'explore' | 'collect' | 'guided'>('explore');
 
+  // Replay state — shared between TestRunner and PreviewChat
+  const [replayTranscript, setReplayTranscript] = useState<any[] | null>(null);
+  const [replayLabel, setReplayLabel] = useState<string | null>(null);
+
   // Goals data for the Goals lens canvas
   const goalsData = useGoals(projectId || null);
 
@@ -364,6 +368,12 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           projectId={projectId}
           isOpen={previewOpen}
           onClose={() => setPreviewOpen(false)}
+          replayTranscript={replayTranscript}
+          replayLabel={replayLabel}
+          onClearReplay={() => {
+            setReplayTranscript(null);
+            setReplayLabel(null);
+          }}
         />
       )}
       {projectId && (
@@ -373,6 +383,11 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           goalsEnabled={projectMode === 'guided'}
           open={testRunnerOpen}
           onClose={() => setTestRunnerOpen(false)}
+          onReplay={(transcript, label) => {
+            setReplayTranscript(transcript);
+            setReplayLabel(label);
+            setPreviewOpen(true);
+          }}
         />
       )}
     </div>
