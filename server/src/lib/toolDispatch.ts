@@ -34,8 +34,9 @@ type ToolHandler = (ctx: ToolContext, args: Record<string, unknown>) => Promise<
 // in the tool response — no system prompt needed.
 
 function buildProtocol(
-  project: { name?: string | null; purpose?: string | null; mcp_system_prompt?: string | null; project_mode?: string | null } | null,
-  horizon: mcpRepo.SessionHorizon
+  project: { name?: string | null; purpose?: string | null; mcp_system_prompt?: string | null; mcp_welcome_message?: string | null; project_mode?: string | null } | null,
+  horizon: mcpRepo.SessionHorizon,
+  welcomeOverride?: string | null,
 ): Record<string, unknown> {
   const mode = project?.project_mode || 'collect';
 
@@ -102,7 +103,12 @@ function buildProtocol(
       mode,
       instructions: project?.mcp_system_prompt || null,
     },
-    first_turn: 'On your FIRST turn, call ONLY nords_get_briefing. Read the protocol it returns. Then greet the user warmly and start the conversation. Do NOT traverse, update, or call other tools on your first turn.',
+    welcome_message: (() => {
+      const msg = welcomeOverride || project?.mcp_welcome_message;
+      if (!msg) return 'On your first turn, greet the user warmly and start the conversation naturally.';
+      return `On your FIRST response, say this VERBATIM as your opening message (do not paraphrase or summarize it):\n\n"${msg}"\n\nAfter delivering the welcome, wait for the user to respond before asking follow-up questions.`;
+    })(),
+    first_turn: 'On your FIRST turn, call ONLY nords_get_briefing. Read the protocol. Deliver the welcome_message exactly as instructed. Do NOT traverse, update, or call other tools on your first turn.',
     navigation: {
       verbs: 'Connection verbs encode causality: "flows into" / "leads to" = prerequisite gate (source before target). "depends on" = dependency (target before source). "assigned to" = resource binding. "blocks" = blocker. "contains" / "has" = composition. Use verbs to infer sequencing.',
       stages: 'Connection distance_x/distance_y (0.0–1.0) map to stage labels. Use the label name in conversation (e.g., "In Progress"), never raw numbers.',

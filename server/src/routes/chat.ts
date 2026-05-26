@@ -347,11 +347,6 @@ Set GEMINI_API_KEY in server/.env or configure GOOGLE_CLOUD_PROJECT for Vertex A
     // Fetch current horizon for dev panel
     const finalHorizon = await mcpRepo.getSessionHorizon(sessionId);
 
-    // Fetch project for welcome message (only needed for new sessions)
-    const welcomeMessage = isNewSession
-      ? (await projectsRepo.findById(projectId))?.mcp_welcome_message || null
-      : null;
-
     res.json({
       reply: finalReply,
       sessionId,
@@ -360,7 +355,6 @@ Set GEMINI_API_KEY in server/.env or configure GOOGLE_CLOUD_PROJECT for Vertex A
       completion: completionCheck,
       systemPrompt,
       horizon: finalHorizon,
-      welcomeMessage,
     });
 
   } catch (err: any) {

@@ -28,6 +28,7 @@ import { ProjectSettings } from './components/ProjectSettings/ProjectSettings';
 import { PreviewChat } from './components/PreviewChat/PreviewChat';
 import { GoalDetailDrawer } from './components/Drawer/GoalDetailDrawer';
 import { useGoals } from './hooks/useGoals';
+import { ShareChat } from './pages/ShareChat/ShareChat';
 import { TestRunner } from './components/TestRunner/TestRunner';
 
 /**
@@ -409,8 +410,14 @@ function App() {
   const skipAuth = import.meta.env.VITE_SKIP_AUTH === 'true';
 
   return (
-    <AuthProvider>
-      <Routes>
+    <Routes>
+      {/* Public share link — outside auth entirely */}
+      <Route path="/share/:token" element={<ShareChat />} />
+
+      {/* Everything else wrapped in AuthProvider */}
+      <Route path="*" element={
+        <AuthProvider>
+          <Routes>
         {/* Auth screens: only render when auth is enabled */}
         {!skipAuth && (
           <>
@@ -456,8 +463,10 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Routes>
-    </AuthProvider>
+          </Routes>
+        </AuthProvider>
+      } />
+    </Routes>
   );
 }
 

@@ -284,7 +284,6 @@ export function PreviewChat({ projectId, isOpen, onClose, replayTranscript, repl
         completion: { shouldTransition: boolean; endNordId: string | null; incompleteCount: number };
         systemPrompt?: string;
         horizon?: Record<string, unknown>;
-        welcomeMessage?: string | null;
       }>(`/api/projects/${projectId}/chat`, {
         message: userMessage,
         sessionId,
@@ -305,25 +304,11 @@ export function PreviewChat({ projectId, isOpen, onClose, replayTranscript, repl
         });
       }
 
-      // Build new messages: welcome (if new session) + user + assistant
-      const newMessages: Message[] = [];
-      if (data.welcomeMessage) {
-        newMessages.push({
-          id: `welcome-${Date.now()}`,
-          role: 'assistant',
-          content: data.welcomeMessage,
-          created_at: new Date().toISOString(),
-        });
-      }
-      newMessages.push(
-        { id: `user-${Date.now()}`, role: 'user', content: userMessage, created_at: new Date().toISOString() },
-        data.message,
-      );
-
-      // Replace temp message + add welcome (if any) + user + assistant
+      // Replace temp message with real user + assistant messages
       setMessages(prev => [
         ...prev.filter(m => m.id !== tempId),
-        ...newMessages,
+        { id: `user-${Date.now()}`, role: 'user', content: userMessage, created_at: new Date().toISOString() },
+        data.message,
       ]);
 
       // If session completed, show transition notification

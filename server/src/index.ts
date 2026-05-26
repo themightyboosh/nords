@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import logger from './lib/logger.js';
 import { initFirebaseAdmin } from './lib/firebaseAdmin.js';
@@ -24,6 +25,8 @@ import { testRunnerRouter } from './routes/testRunner.js';
 import { adminRouter } from './routes/admin.js';
 import { registerRouter } from './routes/register.js';
 import { meRouter } from './routes/me.js';
+import { shareChatRouter } from './routes/shareChat.js';
+import shareLinksRoutes from './routes/shareLinksRoutes.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -47,6 +50,7 @@ if (!process.env.CORS_ORIGIN && process.env.NODE_ENV !== 'development') {
 }
 app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: '5mb' }));
+app.use(cookieParser());
 app.use(requestLogger);
 
 // ── Swagger UI ──
@@ -67,6 +71,7 @@ app.get('/health', (_req, res) => {
 
 // ── Public API Routes (no auth required) ──
 app.use('/api', registerRouter);
+app.use('/api', shareChatRouter);
 
 // ── API Routes (protected by Firebase auth) ──
 app.use('/api', requireAuth);
@@ -88,6 +93,7 @@ app.use('/api', goalsRouter);
 app.use('/api', testRunnerRouter);
 app.use('/api', adminRouter);
 app.use('/api', meRouter);
+app.use('/api', shareLinksRoutes);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
