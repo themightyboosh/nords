@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, AlertTriangle, Save, Copy, Trash2, Plus, Key, Compass, ClipboardList, Target } from 'lucide-react';
+import { X, AlertTriangle, Save, Copy, Trash2, Plus, Key, Compass, ClipboardList, Target, Link, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { api } from '../../api/client';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { IconPicker } from '../shared/IconPicker';
@@ -88,6 +88,25 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
   const [tokens, setTokens] = useState<TokenInfo[]>([]);
   const [newTokenRaw, setNewTokenRaw] = useState<string | null>(null);
 
+  // Share Links
+  interface ShareLinkInfo {
+    id: string;
+    label: string;
+    token: string;
+    welcome_message_override: string | null;
+    model: string;
+    persona_id_override: string | null;
+    max_sessions: number | null;
+    expires_at: string | null;
+    session_count: number;
+    created_at: string;
+  }
+  const [shareLinks, setShareLinks] = useState<ShareLinkInfo[]>([]);
+  const [showCreateLink, setShowCreateLink] = useState(false);
+  const [newLink, setNewLink] = useState({ label: '', welcome_message_override: '', model: 'gemini-2.5-flash', persona_id_override: '', expires_days: '7' });
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
+
   // Load project data + reference data for dropdowns
   useEffect(() => {
     if (!isOpen || !projectId) return;
@@ -150,6 +169,14 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
     api.get<TokenInfo[]>(`/api/projects/${projectId}/tokens`)
       .then(setTokens)
       .catch(() => setTokens([]));
+  }, [isOpen, projectId]);
+
+  // Load share links
+  useEffect(() => {
+    if (!isOpen || !projectId) return;
+    api.get<ShareLinkInfo[]>(`/api/projects/${projectId}/share-links`)
+      .then(setShareLinks)
+      .catch(() => setShareLinks([]));
   }, [isOpen, projectId]);
 
   // Nords filtered by the selected category
@@ -483,6 +510,227 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
               <Plus size={14} />
               Generate Token
             </button>
+          </div>
+
+          <div className="nords-form__divider" />
+
+          {/* ── Share Links ── */}
+          <div className="nords-form__cascade-group">
+            <span className="nords-form__cascade-title">
+              <Link size={14} style={{ marginRight: 6 }} />
+              Share Links
+            </span>
+            <span className="nords-form__hint" style={{ marginTop: '-6px', marginBottom: '8px' }}>
+              Create links for external users to chat with the AI agent. No login required.
+            </span>
+
+            {/* Existing links */}
+            {shareLinks.length > 0 && (
+              <div className="nords-form__token-list">
+                {shareLinks.map(link => {
+                  const shareUrl = `${window.location.origin}/share/${link.token}`;
+                  const isExpanded = expandedLinkId === link.id;
+                  return (
+                    <div key={link.id} className="nords-form__share-link-card">
+                      <div className="nords-form__token-row">
+                        <span className="nords-form__token-label" style={{ flex: 1 }}>{link.label}</span>
+                        <span className="nords-form__token-scopes">
+                          {link.session_count} session{link.session_count !== 1 ? 's' : ''}
+                        </span>
+                        <button
+                          className="nords-form__icon-btn"
+                          title={copiedLinkId === link.id ? 'Copied!' : 'Copy link'}
+                          onClick={() => {
+                            navigator.clipboard.writeText(shareUrl);
+                            setCopiedLinkId(link.id);
+                            setTimeout(() => setCopiedLinkId(null), 2000);
+                          }}
+                        >
+                          {copiedLinkId === link.id ? <span style={{ fontSize: 12, color: '#4ade80' }}>✓</span> : <Copy size={14} />}
+                        </button>
+                        <button
+                          className="nords-form__icon-btn"
+                          title="Open in new tab"
+                          onClick={() => window.open(shareUrl, '_blank')}
+                        >
+                          <ExternalLink size={14} />
+                        </button>
+                        <button
+                          className="nords-form__icon-btn"
+                          title={isExpanded ? 'Collapse' : 'Details'}
+                          onClick={() => setExpandedLinkId(isExpanded ? null : link.id)}
+                        >
+                          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </button>
+                        <button
+                          className="nords-form__icon-btn"
+                          title="Revoke"
+                          onClick={async () => {
+                            if (!confirm('Revoke this share link? Anyone using it will lose access.')) return;
+                            await api.delete(`/api/projects/${projectId}/share-links/${link.id}`);
+                            setShareLinks(prev => prev.filter(l => l.id !== link.id));
+                          }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                      {isExpanded && (
+                        <div className="nords-form__share-link-details">
+                          <div className="nords-form__share-link-detail">
+                            <span className="nords-form__share-link-detail-label">URL</span>
+                            <code className="nords-form__share-link-url">{shareUrl}</code>
+                          </div>
+                          <div className="nords-form__share-link-detail">
+                            <span className="nords-form__share-link-detail-label">Model</span>
+                            <span>{link.model}</span>
+                          </div>
+                          {link.welcome_message_override && (
+                            <div className="nords-form__share-link-detail">
+                              <span className="nords-form__share-link-detail-label">Welcome Override</span>
+                              <span style={{ fontStyle: 'italic', opacity: 0.7 }}>"{link.welcome_message_override.slice(0, 80)}{link.welcome_message_override.length > 80 ? '…' : ''}"</span>
+                            </div>
+                          )}
+                          {link.persona_id_override && (
+                            <div className="nords-form__share-link-detail">
+                              <span className="nords-form__share-link-detail-label">Persona</span>
+                              <span>{personas.find(p => p.id === link.persona_id_override)?.name || 'Custom'}</span>
+                            </div>
+                          )}
+                          {link.expires_at && (
+                            <div className="nords-form__share-link-detail">
+                              <span className="nords-form__share-link-detail-label">Expires</span>
+                              <span>{new Date(link.expires_at).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Create form */}
+            {showCreateLink ? (
+              <div className="nords-form__share-link-create">
+                <div className="nords-form__field">
+                  <label className="nords-form__label">Label *</label>
+                  <input
+                    className="nords-form__input"
+                    value={newLink.label}
+                    onChange={e => setNewLink({ ...newLink, label: e.target.value })}
+                    placeholder="e.g., Beta Testers Batch 1"
+                  />
+                </div>
+                <div className="nords-form__field">
+                  <label className="nords-form__label">Welcome Message Override</label>
+                  <textarea
+                    className="nords-form__textarea"
+                    value={newLink.welcome_message_override}
+                    onChange={e => setNewLink({ ...newLink, welcome_message_override: e.target.value })}
+                    placeholder="Leave empty to use project default"
+                    rows={2}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <div className="nords-form__field" style={{ flex: 1 }}>
+                    <label className="nords-form__label">Model</label>
+                    <select
+                      className="nords-form__select"
+                      value={newLink.model}
+                      onChange={e => setNewLink({ ...newLink, model: e.target.value })}
+                    >
+                      <option value="gemini-2.5-flash-lite">Flash Lite</option>
+                      <option value="gemini-2.5-flash">Flash</option>
+                      <option value="gemini-2.5-pro">Pro</option>
+                    </select>
+                  </div>
+                  <div className="nords-form__field" style={{ flex: 1 }}>
+                    <label className="nords-form__label">Expires in</label>
+                    <select
+                      className="nords-form__select"
+                      value={newLink.expires_days}
+                      onChange={e => setNewLink({ ...newLink, expires_days: e.target.value })}
+                    >
+                      <option value="1">1 day</option>
+                      <option value="3">3 days</option>
+                      <option value="7">7 days</option>
+                      <option value="14">14 days</option>
+                      <option value="30">30 days</option>
+                      <option value="90">90 days</option>
+                      <option value="">Never</option>
+                    </select>
+                  </div>
+                </div>
+                {personas.length > 0 && (
+                  <div className="nords-form__field">
+                    <label className="nords-form__label">Persona Override</label>
+                    <select
+                      className="nords-form__select"
+                      value={newLink.persona_id_override}
+                      onChange={e => setNewLink({ ...newLink, persona_id_override: e.target.value })}
+                    >
+                      <option value="">Use project default</option>
+                      {personas.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
+                  <button
+                    className="nords-form__btn nords-form__btn--secondary"
+                    style={{ width: 'auto' }}
+                    onClick={() => setShowCreateLink(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="nords-form__btn nords-form__btn--primary"
+                    style={{ width: 'auto' }}
+                    disabled={!newLink.label.trim()}
+                    onClick={async () => {
+                      try {
+                        const expiresAt = newLink.expires_days
+                          ? new Date(Date.now() + parseInt(newLink.expires_days) * 86400000).toISOString()
+                          : null;
+                        const result = await api.post<ShareLinkInfo>(
+                          `/api/projects/${projectId}/share-links`,
+                          {
+                            label: newLink.label.trim(),
+                            welcome_message_override: newLink.welcome_message_override.trim() || null,
+                            model: newLink.model,
+                            persona_id_override: newLink.persona_id_override || null,
+                            expires_at: expiresAt,
+                          }
+                        );
+                        setShareLinks(prev => [{ ...result, session_count: 0 }, ...prev]);
+                        setShowCreateLink(false);
+                        setNewLink({ label: '', welcome_message_override: '', model: 'gemini-2.5-flash', persona_id_override: '', expires_days: '7' });
+                        // Auto-copy the link
+                        navigator.clipboard.writeText(`${window.location.origin}/share/${result.token}`);
+                        setCopiedLinkId(result.id);
+                        setTimeout(() => setCopiedLinkId(null), 3000);
+                      } catch (err: any) {
+                        console.error('Failed to create share link:', err);
+                      }
+                    }}
+                  >
+                    <Link size={14} />
+                    Create Link
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="nords-form__btn nords-form__btn--secondary"
+                style={{ marginTop: 8, width: 'auto' }}
+                onClick={() => setShowCreateLink(true)}
+              >
+                <Plus size={14} />
+                Create Share Link
+              </button>
+            )}
           </div>
 
           <div className="nords-form__divider" />

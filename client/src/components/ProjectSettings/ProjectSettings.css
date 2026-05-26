@@ -197,3 +197,85 @@
 .nords-form__cascade-group--disabled .nords-form__cascade-title {
   color: var(--nords-color-text-disabled);
 }
+
+/* ── Share Link Styles ── */
+.nords-form__share-link-card {
+  border-radius: var(--nords-radius-md);
+  border: 1px solid var(--nords-color-border-default);
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.nords-form__share-link-card:hover {
+  border-color: var(--nords-color-border-emphasis);
+}
+
+.nords-form__share-link-card .nords-form__token-row {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.nords-form__share-link-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px 10px;
+  border-top: 1px solid var(--nords-color-border-subtle);
+  background: var(--nords-color-bg-base, rgba(0, 0, 0, 0.15));
+  animation: shareDetailsFadeIn 0.15s ease;
+}
+
+@keyframes shareDetailsFadeIn {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 200px; }
+}
+
+.nords-form__share-link-detail {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  align-items: baseline;
+}
+
+.nords-form__share-link-detail-label {
+  flex-shrink: 0;
+  width: 90px;
+  color: var(--nords-color-text-tertiary);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.nords-form__share-link-url {
+  font-family: var(--nords-font-mono);
+  font-size: 10px;
+  color: var(--nords-color-accent);
+  word-break: break-all;
+}
+
+.nords-form__share-link-create {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--nords-radius-md);
+  border: 1px dashed var(--nords-color-border-emphasis);
+  background: var(--nords-color-bg-surface);
+  animation: shareCreateSlideIn 0.2s ease;
+}
+
+@keyframes shareCreateSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nords-form__share-link-create .nords-form__field {
+  margin-bottom: 0;
+}
+
+.nords-form__share-link-create .nords-form__textarea {
+  min-height: 48px;
+  resize: vertical;
+}
