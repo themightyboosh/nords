@@ -88,6 +88,7 @@ Cross-project intelligence, advanced AI authorship, and enterprise features.
 | 🔵 | **3D Canvas** | WebGL/Three.js integration with billboarded labels |
 | 🔵 | **Advanced Algorithms** | Centrality plotting, critical path detection, cluster analysis |
 | 🔵 | **Enterprise SSO & Audit Logs** | SAML/OIDC SSO, activity audit trails, role-based access |
+| 🔵 | **Regulatory Compliance (FINRA & HIPAA)** | Assured Workloads, Vertex AI migration, CMEK encryption, VPC, field-level encryption, consent capture, WORM archival. See [Regulatory Compliance](#regulatory-compliance-finra--hipaa) below |
 
 ---
 
@@ -307,6 +308,77 @@ Cross-project Connections that establish typed, distance-aware relationships bet
 - Portfolio-level views connecting strategic goals to execution projects
 
 **Depends on:** Workspace Folders (organizational context for cross-project discovery)
+
+---
+
+### Regulatory Compliance (FINRA & HIPAA)
+
+> **Phase 3** · 🔵 Planned
+
+Enterprise compliance track enabling Nords to handle regulated data for financial services (FINRA) and healthcare (HIPAA) customers. All work is Google Cloud-native.
+
+**Workstreams:**
+
+#### Infrastructure (P0 — blockers)
+
+| Status | Change | What | Effort |
+|--------|--------|------|--------|
+| 🔵 | **Assured Workloads + BAA** | Move GCP project into an Assured Workloads folder. Sign Google Business Associate Agreement. Enforces data residency, personnel controls, FIPS 140-2 Level 3 encryption | Legal, 1–2 weeks |
+| 🔵 | **Vertex AI Migration** | Replace consumer Gemini API (`@google/genai`) with Vertex AI SDK. Consumer API has no HIPAA/FINRA coverage, no data residency, no CMEK, and up to 30-day data retention by Google | 1–2 days |
+| 🔵 | **CMEK (Customer-Managed Encryption Keys)** | Cloud KMS keyring with per-service keys for Cloud SQL, Cloud Run, GCS. Requires Cloud SQL instance re-creation + data migration | 1–2 days |
+| 🔵 | **VPC + Private Networking** | Serverless VPC Connector, Cloud SQL private IP only, Cloud Armor WAF. Eliminates public database access | 1 day |
+
+#### Application (P1 — hardening)
+
+| Status | Change | What | Effort |
+|--------|--------|------|--------|
+| 🔵 | **Immutable Audit Logging** | Structured audit events (login, data access, mutations, exports) to Cloud Logging with locked retention buckets (6 years for FINRA/HIPAA). Export to BigQuery for supervisory search | 2–3 days |
+| 🔵 | **Field-Level Encryption** | Application-layer envelope encryption via Cloud KMS for PII/PHI columns: `mcp_messages.content`, `nords.properties` (names, quotes, participant data). Protects against DB-level access | 3–5 days |
+| 🔵 | **Consent Capture** | Pre-chat consent screen on ShareChat with configurable disclosures. Consent records stored per-session with timestamp, IP, and accepted terms version | 2 days |
+| 🔵 | **RBAC + MFA** | Firebase Auth MFA enforcement. Role-based access control (admin, researcher, viewer) with per-project scoping. Row-level security in PostgreSQL. 15-minute idle session timeout | 2–3 days |
+
+#### FINRA-Specific (P2)
+
+| Status | Change | What | Effort |
+|--------|--------|------|--------|
+| 🔵 | **WORM Archival** | Nightly export of `mcp_messages` to GCS bucket with Bucket Lock (Write-Once-Read-Many). 6-year locked retention per SEC Rule 17a-4 / FINRA Rule 4511. Object versioning for tamper-proofing | 3–4 days |
+| 🔵 | **Supervisory Review** | Admin dashboard for reviewing chat transcripts. Search by participant, date range, keyword. Required for FINRA Rule 3110 communications supervision | 2–3 days |
+| 🔵 | **Data Retention Automation** | Configurable retention policies per project. Automated anonymization after retention period. Soft-delete → hard-purge lifecycle | 2 days |
+
+**Architecture (target state):**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Google Cloud — Assured Workloads Folder (us-central1)              │
+│                                                                     │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────────┐  │
+│  │ Cloud Armor  │───▶│ Cloud Run    │───▶│ Cloud SQL (CMEK)     │  │
+│  │ (WAF)        │    │ (VPC, CMEK)  │    │ (Private IP only)    │  │
+│  └──────────────┘    └──────┬───────┘    └──────────────────────┘  │
+│                             │                                       │
+│                     ┌───────▼────────┐   ┌──────────────────────┐  │
+│                     │ Vertex AI      │   │ Cloud KMS            │  │
+│                     │ (regional,     │   │ (CMEK key ring)      │  │
+│                     │  BAA-covered)  │   │                      │  │
+│                     └────────────────┘   └──────────────────────┘  │
+│                                                                     │
+│  ┌──────────────────────┐    ┌──────────────────────────────────┐  │
+│  │ Cloud Logging         │    │ GCS Bucket (Locked retention)   │  │
+│  │ (6yr retention,       │    │ (WORM, 6yr, CMEK)              │  │
+│  │  CMEK, immutable)     │    │ → Nightly message export       │  │
+│  └──────────────────────┘    └──────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Open Decisions:**
+- Scope: Which data classes require field-level encryption? (all chat content vs. only flagged PHI/PII fields)
+- Multi-tenancy: Should compliance level be per-project or per-workspace?
+- Cost: CMEK + Assured Workloads + Vertex AI increases GCP costs ~20–40%
+- WORM: Full SEC 17a-4 WORM compliance (broker-dealers only) vs. FINRA cybersecurity guidelines (all members)
+
+**Depends on:** Enterprise SSO & Audit Logs (Phase 3), Event Trigger System (Phase 2 for audit event emission)
+
+**Total estimated effort:** ~3–4 weeks engineering + 2–4 weeks legal/admin
 
 ---
 
