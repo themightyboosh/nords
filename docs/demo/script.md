@@ -1,258 +1,245 @@
-# Nords Product Demo — Video Script
+# Nords — Talk Track Script
 
-> **Byline:** Map Knowledge. Wire Meaning. Deliver Expertise.
+> **Read this out loud. Every line is exactly what you say.**
 >
-> **Runtime:** 3:00–3:15
+> `[BRACKETS]` = what you do on screen. Don't read these.
 >
-> **Format:** Screen capture with voiceover
+> `...` = pause. Let it breathe.
 >
-> **Demo Project:** Meridian Medical — Pulse Sense CGM
+> **Total runtime: ~3 minutes**
 
 ---
 
-## Scene 0: The Hook (0:00–0:15)
+## THE HOOK (0:00 – 0:15)
 
-*Black screen. Text appears word by word, synced to VO.*
+You know what happens every single day in every company using AI?
 
-**VO:**
+Someone copies their Kanban board... pastes it into ChatGPT... and says, "Help me prioritize this."
 
-> You paste your sprint board into ChatGPT. You copy your risk matrix into Claude. You screenshot your architecture diagram and ask AI to "review it."
->
-> And every time — the AI says *"Based on the information provided..."*
->
-> Because it has no map. No structure. No idea where anything is.
->
-> What if it did?
+And the AI says... "Based on the information provided..."
 
-**VISUAL:** Quick cuts of copy-paste chaos → fade to black → Nords logo fades in.
+Because it has no idea what's connected to what. What's blocked. What matters. It has no map.
 
-**TEXT ON SCREEN:**
+...
 
-```
-NORDS
-Map Knowledge. Wire Meaning. Deliver Expertise.
-```
+So we built one.
+
+`[NORDS LOGO — "Map Knowledge. Wire Meaning. Deliver Expertise."]`
 
 ---
 
-## Scene 1: The Canvas + Data Model (0:15–0:45)
+## THE CANVAS (0:15 – 0:45)
 
-*Fade into the Pulse Sense project. Full spatial canvas, ~60 nords visible. Ambient electronic music begins.*
+`[Open Pulse Sense project. Full canvas visible. ~60 cards.]`
 
-**VO:**
+This is Nords. You're looking at a medical device team building a continuous glucose monitor.
 
-> This is Nords. A medical device team building a continuous glucose monitor. Every card is a typed data object — requirements, risks, test cases, subsystems. Every line is a typed relationship with a real, continuous value.
+Every card you see is a typed data object — requirements, risks, test cases, team members. Every line between them is a typed relationship... with a real value.
 
-**ACTIONS:**
-1. Pan across the canvas slowly (2s) — show the full topology
-2. Zoom from macro (cluster view) → meso (card names) → micro (full property sheet on a Risk card showing `hazard`, `severity`, `probability`, `risk_score`)
-3. Hover over a connection line — tooltip shows: `Mitigates · distance_x: 0.35 · Stage: "Monitoring"`
+`[Zoom in slowly to a Risk card. Show the property sheet.]`
 
-**VO (cont):**
+This risk — "battery thermal runaway" — has a severity of 4, a probability of 1, and a mitigation strategy. It's connected to a requirement... through a relationship called "Mitigates."
 
-> Watch this. I'll drag this risk card closer to the requirement it mitigates.
+Now watch this.
 
-**ACTIONS:**
-4. Drag "Battery thermal runaway" Risk closer to "14-day continuous operation" Requirement
-5. Show `distance_x` updating in real-time from `0.6` to `0.3`
-6. Stage label flips from "Controls" → "Monitoring"
+`[Drag the Risk card closer to the Requirement.]`
 
-**VO (cont):**
+I just dragged it closer. And the distance value changed. From 0.6... to 0.3. The stage label updated from "Controls"... to "Monitoring."
 
-> I just changed the data by dragging a card. Distance *is* data. The AI reads these exact same values.
+I changed the data... by dragging a card.
+
+That's the idea. Distance... is data. And the AI reads these exact same values.
 
 ---
 
-## Scene 2: Board View (0:45–1:05)
+## BOARD VIEW (0:45 – 1:05)
 
-*Click Board View icon in toolbar. Transition animation.*
+`[Click Board View.]`
 
-**VO:**
+Now — same project. Board view.
 
-> Any relationship type becomes a kanban board. This is the FDA design control waterfall — User Need through Transfer to Production — generated from one connection type.
+`[Show Design Control Phase columns.]`
 
-**ACTIONS:**
-1. Show "Design Control Phase" board — 6 columns with cards sorted
-2. Grab a Test Case card, drag from "Protocol Ready" → "Tested"
-3. Show the `distance_x` badge update
+These columns? They're the FDA design control waterfall. User Need... Design Input... Verification... Validation... Transfer to Production. Generated from one relationship type. No setup.
 
-**VO (cont):**
+`[Drag a Test Case card from "Protocol Ready" to "Tested".]`
 
-> Now switch the dimension.
+Drag a card to advance it. The value updates everywhere — the canvas, the AI session, the goals. Everywhere.
 
-**ACTIONS:**
-4. Click dimension dropdown → select "Blocks"
-5. Board reshuffles — columns become: Soft Dependency → Hard Dependency → Critical Blocker
-6. Three cards in the "Critical Blocker" column are immediately visible
+But here's the thing.
 
-**VO (cont):**
+`[Click the dimension dropdown. Switch to "Blocks".]`
 
-> Same cards. Different question. Switch to "Assigned To" —
+Switch the dimension... and the same cards rearrange by what's BLOCKING what.
 
-**ACTIONS:**
-7. Switch to "Assigned To" — columns: Available → Allocated → Overloaded
-8. Marcus Cole's column has 7 items stacked
+`[Switch to "Assigned To".]`
 
-**VO (cont):**
+Switch again — now you see capacity. Marcus has seven items. He's overloaded. You can see that... in one click.
 
-> — and your capacity problem is visible in one click. No board configuration. No setup. Every relationship is a board.
+Every relationship type you create... is already a board. You never configure anything.
 
 ---
 
-## Scene 3: Persona Lens (1:05–1:30)
+## PERSONA LENS (1:05 – 1:30)
 
-*Click Persona Lens icon. The heatmap renders.*
+`[Click Persona Lens.]`
 
-**VO:**
+Five people work on this device. They need to see five different things.
 
-> Five people work on this device. They need to see five different things. Activate Dr. Priya Sharma — VP of Regulatory Affairs.
+`[Click Dr. Priya Sharma — Regulatory.]`
 
-**ACTIONS:**
-1. Click Dr. Sharma's avatar in the persona selector
-2. Heatmap renders — Risks and blocked Requirements snap to the center. Regulatory Submissions orbit close. Architecture Decisions fade to the edges.
+This is Dr. Sharma. VP of Regulatory Affairs. Watch what happens.
 
-**VO (cont):**
+`[Heatmap renders. Risks and regulatory items snap to center.]`
 
-> Risks, traceability gaps, and submission blockers — front and center. Everything else fades.
->
-> Now switch to Marcus Cole, Lead Systems Engineer.
+Risks... submission blockers... traceability gaps — they snap to the center. Architecture decisions, team assignments — they fade.
 
-**ACTIONS:**
-3. Click Marcus Cole
-4. The entire graph reshapes — Subsystems and "Part Of" connections pull to center. Architecture Decisions orbit close. Regulatory items fade.
+She sees what she needs to see. Without a filter. Without a dashboard. The graph reshapes around her priorities.
 
-**VO (cont):**
+`[Click Marcus Cole — Engineering.]`
 
-> Same sixty-four nords. Completely different map. And when AI adopts a persona, it inherits the priorities *and* the voice. Dr. Sharma's AI is precise and citation-heavy. Elena's is strategic and market-focused.
+Now Marcus. Lead Systems Engineer.
 
-**ACTIONS:**
-5. Quick flash: click Sarah Kim (Clinical) — another complete reshape. Clinical Protocols and patient-facing requirements center.
+`[Graph reshapes. Subsystems and architecture pull to center.]`
 
----
+Completely different map. Same sixty-four cards. He sees architecture, interfaces, failure surfaces.
 
-## Scene 4: Goals (1:30–1:50)
+`[Quick click Sarah Kim — Clinical.]`
 
-*Click Goals icon. The DAG canvas renders.*
+Sarah — Clinical Affairs.
 
-**VO:**
+`[Clinical protocols and patient-facing items center.]`
 
-> Goals aren't status labels you toggle. They're bound to actual data. This is the path to FDA submission — six goals in a dependency chain.
+Clinical endpoints. Patient data. Study protocols.
 
-**ACTIONS:**
-1. Show full DAG — 6 goal circles with nord rectangles connected. Color coding: 2 green (achievable), 3 amber (blocked), 1 red.
-2. Click "Risk Analysis Complete" — detail panel shows: 8 Risk nords bound, 6/8 have `mitigation` filled. Progress: 75%.
+Same project. Three people. Three completely different maps.
 
-**VO (cont):**
-
-> Risk Analysis is at seventy-five percent. Two risk items are missing mitigation strategies.
-
-**ACTIONS:**
-3. Click "Verification Complete" — shows BLOCKED badge. Prerequisite arrow points to "Requirements Locked" (incomplete).
-
-**VO (cont):**
-
-> And you can't verify what you haven't specified. The system *knows* the critical path. Not from someone's slide deck — from the actual data.
+And when AI adopts one of these personas... it doesn't just see differently. It *thinks* differently. It *talks* differently.
 
 ---
 
-## Scene 5: AI Integration — The Money Shot (1:50–2:40)
+## GOALS (1:30 – 1:50)
 
-*Open Preview Chat panel. Select Guided mode. Dr. Sharma persona active.*
+`[Click Goals view. Show the DAG.]`
 
-**VO:**
+Now — goals.
 
-> Here's where it all comes together. The AI doesn't get a text dump. It enters a *session* — with a position in the graph, a persona, and a live view of what's around it.
+These aren't status labels you toggle in a meeting. They're bound to actual data in the graph.
 
-**ACTIONS:**
-1. Click "New Session." AI greeting appears:
+`[Point to the DAG — 6 goals, prerequisite edges visible.]`
 
-> *"I see the 510(k) submission requires four upstream goals. Risk Analysis is at 75% — two risk items need mitigation strategies. Requirements Locked is at 87%. Should I walk through the gaps?"*
+This is the path to FDA submission. Six goals. A dependency chain. You can't submit until verification is complete. You can't verify until requirements are locked AND risk analysis is done.
 
-**VO (cont):**
+`[Click "Risk Analysis Complete" — show 75% complete.]`
 
-> It already knows. Ask it what's blocking verification.
+Risk Analysis is at seventy-five percent. Two risk items are missing mitigation strategies. The goal knows this... because it's reading the properties.
 
-**ACTIONS:**
-2. Type: "What's blocking verification?"
-3. AI responds — calls `nords_get_horizon` → `nords_traverse_connection`. Identifies Requirement REQ-003 missing `trace_status`.
+`[Click "Verification Complete" — show BLOCKED.]`
 
-**VO (cont):**
+Verification is blocked. Not because someone marked it blocked. Because its prerequisite... isn't finished yet.
 
-> Now watch it work. The AI finds a risk with no mitigation and asks the right question.
-
-**ACTIONS:**
-4. AI navigates to Risk #7 ("Adhesive contact dermatitis"): *"This risk has severity 3 and probability 4, giving a score of 12. What mitigation is the team pursuing?"*
-5. User types: "Hypoallergenic medical-grade adhesive with 72-hour biocompatibility testing per ISO 10993-5."
-6. AI calls `nords_update_session_nord` — property fills.
-7. Goal progress badge updates: 75% → 87.5%
-
-**VO (cont):**
-
-> The data filled. The goal advanced. No status ceremony. Now — let me show you what's under the hood.
-
-**ACTIONS:**
-8. Toggle **Dev Mode** ON
-9. Show tool call timeline: `nords_get_briefing` → `nords_get_horizon` → `nords_traverse_connection` → `nords_update_session_nord`
-10. Expand one call — show the JSON arguments and response
-11. Flash the system prompt tab — show persona definition, mental models, goal bindings
-
-**VO (cont):**
-
-> Every tool call. Every argument. The full system prompt with persona weights and goal bindings. No black box. You can see exactly why the AI said what it said.
-
-**ACTIONS:**
-12. Switch back to Canvas — show the Risk card the AI just updated has animated to a new position (Mitigates connection distance changed).
-
-**VO (cont):**
-
-> The AI didn't summarize your project. It *worked in it*. And the graph moved.
+The data IS the status. No ceremonies. No judgment calls. Computed.
 
 ---
 
-## Scene 6: Three Modes (2:40–2:50)
+## THE AI SESSION (1:50 – 2:40)
 
-*Quick visual — show Project Settings → Mode selector.*
+`[Open Preview Chat. Dr. Sharma persona. Guided mode.]`
 
-**VO:**
+OK. Here's where it all comes together.
 
-> Three modes. One dial for how deterministic your AI gets.
+When AI connects to this project, it doesn't get a text dump. It gets a session. A position in the graph. A persona. And a live view of what's around it — what's incomplete, what's blocked, what goals it can advance.
 
-**ACTIONS:**
-1. Flash "Explore" card — *"Open-ended graph navigation. No tracking."*
-2. Flash "Collect" card — *"Structured data capture. Completion tracking."*
-3. Flash "Guided" card — *"Goal orchestration. Prerequisites. Session termination."*
+We call that the Horizon.
 
-**VO (cont):**
+`[Click New Session. AI greeting appears with full context awareness.]`
 
-> Start exploring. Start collecting. Start shipping.
+Look at that first message. It already knows. 510(k) requires four upstream goals. Risk Analysis is at seventy-five percent. Two items need mitigation. It's not guessing. It read the graph.
+
+`[Type: "What's blocking verification?"]`
+
+I'll ask it — what's blocking verification?
+
+`[AI responds, traverses the graph, identifies the specific gap.]`
+
+It traversed the dependency chain. Found the specific requirement missing traceability. Told me exactly what to fix.
+
+Now watch it work.
+
+`[AI navigates to Risk #5 — adhesive contact dermatitis. Asks about mitigation.]`
+
+It found a risk with no mitigation strategy. Severity 3, probability 4. And it's asking me the right question.
+
+`[Type a mitigation answer. AI fills the property. Goal progress updates.]`
+
+I answered. It saved the data. And the goal... just moved from seventy-five to eighty-seven percent.
+
+`[Toggle Dev Mode ON. Show tool call timeline.]`
+
+And if you want to see under the hood... Dev Mode. Every tool call. Every argument. The full system prompt with persona weights and goal bindings.
+
+`[Flash the system prompt tab. Flash the tool call sequence.]`
+
+No black box. You see exactly what the AI sees, why it said what it said, and every step it took to get there.
+
+`[Switch back to Canvas. Show the Risk card has animated to a new position.]`
+
+And look — back on the canvas... the card moved. The AI updated a value, and the physics engine animated the graph.
+
+The AI didn't summarize my project. It worked... in it.
 
 ---
 
-## Scene 7: Close (2:50–3:00)
+## THREE MODES (2:40 – 2:50)
 
-*Pull back to full canvas view. Slow zoom out. Music swells.*
+`[Show Project Settings → Mode selector.]`
 
-**VO:**
+One more thing.
 
-> Your AI has been guessing long enough. Give it a map.
+Three project modes. One dial for how structured you want the AI to be.
 
-**VISUAL:** Canvas blurs elegantly. Logo and byline fade in center screen.
+`[Flash each mode card.]`
 
-```
-NORDS
-Map Knowledge. Wire Meaning. Deliver Expertise.
+Explore — open canvas, no tracking. Think of it as research mode.
 
-nords.dev — Free to start.
-```
+Collect — structured data capture with completion tracking. Interview mode.
 
-*Music out. Black.*
+Guided — full goal orchestration with prerequisites, gates, and sessions that end when the mission is complete. This is what you just saw.
+
+Start exploring. Start collecting. Start shipping.
 
 ---
 
-## Production Notes
+## THE CLOSE (2:50 – 3:00)
 
-- **Music:** Ambient electronic — think Tycho or Boards of Canada. Low energy during canvas/board. Builds during AI session. Swells at close.
-- **Pacing:** Each scene is a single unbroken screen recording. No jump cuts within a scene. Cuts happen at scene transitions only.
-- **Text overlays:** Feature names appear as subtle bottom-left badges when each feature is first shown (e.g., `⬡ SPATIAL CANVAS`, `⬡ BOARD VIEW`).
-- **Cursor:** Use a large, visible cursor. Every click and drag should be deliberate and trackable.
-- **Resolution:** 1920×1080, 60fps. Canvas should be on a dark theme.
+`[Pull back to full canvas. Slow zoom out.]`
+
+Your AI has been guessing long enough.
+
+Give it a map.
+
+`[Canvas blurs. Logo and byline fade in.]`
+
+Nords. Map Knowledge. Wire Meaning. Deliver Expertise.
+
+`[Beat.]`
+
+Free to start. nords.dev.
+
+`[Black.]`
+
+---
+
+## DELIVERY NOTES
+
+**Pacing:** This is NOT a feature tour. It's a story with a reveal. The hook sets up a problem everyone recognizes. The canvas is the "wait, what?" moment. Board and Persona are "oh, that's smart." Goals build tension. The AI session is the climax — the payoff of everything before it. Three Modes is the denouement. The close is the mic drop.
+
+**Tone:** Confident but not aggressive. You're showing someone something you genuinely love. Steve Jobs energy is not hype — it's *conviction*. You believe this is better. You're proving it.
+
+**Pauses:** The script has natural breath points marked with `...`. USE THEM. The most powerful moments are the ones where you let the demo speak. Drag the card. Let the number change. Say nothing for a beat. Then explain what just happened.
+
+**Speed:** Scenes 1-4 move quickly — you're building momentum. Scene 5 (AI session) slows down. This is where you let the viewer absorb. Don't rush the goal event. Don't rush Dev Mode. Let the viewer see the data change.
+
+**Voice:** Conversational. Like you're showing a friend. Not presenting to a boardroom. Drop the "As you can see..." and "What I'd like to show you..." fillers. Just talk.
+
+**Music:** Low ambient electronic underneath. Builds slightly during the persona switches. Swells during the AI session reveal. Drops to silence for the close.
