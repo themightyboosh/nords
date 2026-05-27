@@ -6,6 +6,7 @@ import { signInEmail, signInGoogle, signUpEmail, signOut, auth } from '../../lib
 import { getAuthErrorMessage } from './authErrors';
 import { GoogleIcon } from './GoogleIcon';
 import NordsLogo from '../NordsLogo';
+import LoginBackground from './LoginBackground';
 import { config } from '../../config/env';
 import './AuthScreen.css';
 
@@ -150,7 +151,8 @@ export default function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
   };
 
   return (
-    <div className="nords-auth-overlay" data-testid="auth-screen" data-theme="obsidian">
+    <div className="nords-auth-overlay nords-auth-overlay--has-bg" data-testid="auth-screen" data-theme="obsidian">
+      <LoginBackground />
       <div className="nords-auth-split-card">
         
         {/* MARKETING PANE */}
