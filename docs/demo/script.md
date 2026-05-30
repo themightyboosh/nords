@@ -10,15 +10,19 @@
 
 ---
 
-## THE HOOK (0:00 – 0:15)
+## THE HOOK (0:00 – 0:20)
 
-You know what happens every single day in every company using AI?
+Every single day, in every company, someone pastes a wall of text into an AI. 
 
-Someone copies their Kanban board... pastes it into ChatGPT... and says, "Help me prioritize this."
+And every single day, the AI replies: *"Based on the information provided..."*
 
-And the AI says... "Based on the information provided..."
+So companies try to fix it. They dump all their files into a vector database and build a RAG system.
 
-Because it has no idea what's connected to what. What's blocked. What matters. It has no map.
+But standard RAG is dumb. It just does semantic keyword matching. It might pull a paragraph from a two-year-old spec document because the words match, but it has absolutely no idea if that spec was rejected, if it's currently blocked by engineering, or if it contradicts a decision made yesterday.
+
+It has data, but it has no context. It doesn't know what's connected. It doesn't know what actually matters. 
+
+Right now, your AI is either flying blind on a single prompt, or it's reading from a pile of disjointed text. There is no map for your team's expertise. 
 
 ...
 
@@ -32,19 +36,21 @@ So we built one.
 
 `[Quick montage: screenshots of Jira, Miro, Confluence, a spreadsheet, a Slack thread. Or just describe it.]`
 
-Here's the problem.
+Here's why this is broken.
 
-Your project lives in six different tools. Tasks in one. Diagrams in another. Specs in a wiki. Risks in a spreadsheet. People in an org chart. Decisions in a Slack thread.
+Your project is scattered across six different tools. Tasks in one. Architecture in another. Specs in a wiki. Risks in a spreadsheet. Decisions buried in a Slack thread.
 
 None of them talk to each other. And none of them speak *graph*.
 
-So when you bring in AI... you have to brief it. Every time. Copy, paste, explain, hope it gets it.
+So when you want AI to help... you have to brief it. Every single time. Copy, paste, explain the context, and pray it understands. 
 
 That's not collaboration. That's data entry.
 
 ...
 
-What if your AI could just... walk through the project? See what's connected. See what's blocked. See what matters — and to whom?
+But what if your AI didn't need a briefing? 
+
+What if it could just... walk through your project? See the dependencies. See the blockers. Understand what matters—and to whom. Not as a generic assistant, but as an expert that thinks exactly the way your team works.
 
 That's what we built.
 
@@ -68,9 +74,11 @@ The difference is... everything you draw here is structured. Machine-readable. A
 
 ## WHY NORDS (0:50 – 1:05)
 
-Graphs are the most powerful data structure in computer science. Google runs on one. Social networks run on one. Your brain runs on one.
+Here's the secret everyone in tech knows: Graph databases and AI were practically made for each other. Graphs give AI the exact context it needs to solve these exact problems.
 
-But graph tools... are ugly. They're technical. They're for database engineers, not for product teams.
+But graph tools... are ugly. They're technical. They're built for database engineers, not for product teams. 
+
+There needed to be an easy way for normal people to build a graph, manage it, and actually collaborate with AI inside it.
 
 ...
 

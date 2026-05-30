@@ -52,6 +52,8 @@ interface PreviewChatProps {
   projectId: string;
   isOpen: boolean;
   onClose: () => void;
+  /** Called after AI updates data (properties, goals) so the canvas can refetch */
+  onDataChanged?: () => void;
   /** When set, renders in read-only replay mode showing a test run transcript */
   replayTranscript?: Array<{ round: number; user_msg: string; agent_msg: string; tool_calls?: any[]; tokens_in?: number; tokens_out?: number; latency_ms?: number }> | null;
   replayLabel?: string | null;
@@ -60,7 +62,7 @@ interface PreviewChatProps {
 
 type DevTab = 'tools' | 'prompt' | 'horizon';
 
-export function PreviewChat({ projectId, isOpen, onClose, replayTranscript, replayLabel, onClearReplay }: PreviewChatProps) {
+export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayTranscript, replayLabel, onClearReplay }: PreviewChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -311,6 +313,41 @@ export function PreviewChat({ projectId, isOpen, onClose, replayTranscript, repl
         data.message,
       ]);
 
+      // Extract goal_events from tool call results (nords_update_session_nord)
+      const goalMessages: Message[] = [];
+      if (data.toolCalls?.length) {
+        for (const tc of data.toolCalls) {
+          const result = tc.result as Record<string, unknown> | undefined;
+          const goalEvents = result?.goal_events as Array<{ type: string; goal_name: string; progress?: { filled: number; total: number }; status?: string }> | undefined;
+          if (goalEvents?.length) {
+            for (const evt of goalEvents) {
+              const pct = evt.progress ? Math.round((evt.progress.filled / evt.progress.total) * 100) : null;
+              let label = '';
+              if (evt.type === 'goal_completed') {
+                label = `🎯 Goal complete: ${evt.goal_name}`;
+              } else if (evt.type === 'goal_activated') {
+                label = `🔓 Goal unlocked: ${evt.goal_name}`;
+              } else if (evt.type === 'goal_progress') {
+                label = `📊 ${evt.goal_name}: ${pct}%`;
+              } else if (evt.type === 'session_terminating') {
+                label = `✅ Session complete — ${evt.goal_name} achieved`;
+              } else {
+                label = `🎯 ${evt.goal_name}: ${evt.type}`;
+              }
+              goalMessages.push({
+                id: `goal-${Date.now()}-${evt.goal_name}`,
+                role: 'system',
+                content: label,
+                created_at: new Date().toISOString(),
+              });
+            }
+          }
+        }
+      }
+      if (goalMessages.length > 0) {
+        setMessages(prev => [...prev, ...goalMessages]);
+      }
+
       // If session completed, show transition notification
       if (data.completion?.shouldTransition) {
         setMessages(prev => [...prev, {
@@ -319,6 +356,11 @@ export function PreviewChat({ projectId, isOpen, onClose, replayTranscript, repl
           content: `✅ All required properties filled. Session transitioned to End Nord.`,
           created_at: new Date().toISOString(),
         }]);
+      }
+
+      // Notify parent that data changed so canvas/goals can refetch
+      if (data.toolCalls?.some(tc => ['nords_update_session_nord', 'nords_update_nord', 'nords_create_nord', 'nords_create_connection', 'nords_update_connection', 'nords_delete_nord', 'nords_delete_connection'].includes(tc.name))) {
+        onDataChanged?.();
       }
     } catch (err) {
       // Replace temp with error
@@ -330,7 +372,7 @@ export function PreviewChat({ projectId, isOpen, onClose, replayTranscript, repl
     } finally {
       setSending(false);
     }
-  }, [input, sending, projectId, sessionId, model]);
+  }, [input, sending, projectId, sessionId, model, onDataChanged]);
 
   // Reset session
   const handleReset = useCallback(async () => {

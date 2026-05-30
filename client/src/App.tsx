@@ -369,6 +369,10 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           projectId={projectId}
           isOpen={previewOpen}
           onClose={() => setPreviewOpen(false)}
+          onDataChanged={() => {
+            refetch();
+            goalsData.refetch();
+          }}
           replayTranscript={replayTranscript}
           replayLabel={replayLabel}
           onClearReplay={() => {

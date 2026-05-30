@@ -34,6 +34,18 @@ declare global {
 }
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+  // ── Dev bypass (SKIP_AUTH=true) — used for demo recording ──
+  if (process.env.SKIP_AUTH === 'true') {
+    const devUserId = req.headers['x-user-id'] as string;
+    req.user = {
+      uid: devUserId || 'dev-user-000',
+      email: 'dev@nords.local',
+      name: 'Dev User',
+      email_verified: true,
+    };
+    return next();
+  }
+
   // ── Passthrough mode (no Firebase config) ──
   if (!isFirebaseInitialized()) {
     // In dev without Firebase, use x-user-id header or a placeholder

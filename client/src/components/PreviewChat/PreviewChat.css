@@ -518,3 +518,12 @@
 .preview-chat__nps-badge.nps--detractor {
   background: rgba(248, 113, 113, 0.15); color: #f87171;
 }
+
+/* ── Goal Event Notifications ── */
+.preview-chat__message--system .preview-chat__message-content p:has(+ *):first-child,
+.preview-chat__message[class*="goal-"] .preview-chat__message-content p {
+  /* Fallback: regular system messages that start with goal emoji get accent */
+}
+.preview-chat__message--system .preview-chat__message-avatar {
+  background: rgba(99, 102, 241, 0.12); color: #a78bfa;
+}
