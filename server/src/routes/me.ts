@@ -17,31 +17,53 @@ meRouter.get('/me', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    // Dev bypass user
-    if (uid === 'dev-user-000') {
-      return res.json({
-        id: 'dev-user-000',
-        email: 'dev@nords.local',
-        display_name: 'Dev User',
-        role: 'admin',
-        org_id: null,
-      });
-    }
+    // No special dev bypass — all users (including dev passthrough)
+    // go through the normal DB lookup path.
 
-    const user = await queryOne<{
+    let user = await queryOne<{
       id: string;
       email: string;
       display_name: string;
       role: string;
-      org_id: string | null;
+      is_tester: boolean;
     }>(
-      `SELECT u.id, u.email, u.display_name, u.role, om.org_id
+      `SELECT u.id, u.email, u.display_name, u.role, u.is_tester
        FROM users u
-       LEFT JOIN org_members om ON om.user_id = u.id
        WHERE u.firebase_uid = $1
        LIMIT 1`,
       [uid]
     );
+
+    logger.info('/me lookup', { firebaseUid: uid, email: (req as any).user?.email, foundByUid: !!user });
+
+    // Fallback: if no match by firebase_uid, try by email and auto-link.
+    // This handles manually provisioned users whose firebase_uid is a placeholder.
+    if (!user) {
+      const email = (req as any).user?.email;
+      if (email) {
+        user = await queryOne<{
+          id: string;
+          email: string;
+          display_name: string;
+          role: string;
+          is_tester: boolean;
+        }>(
+          `SELECT u.id, u.email, u.display_name, u.role, u.is_tester
+           FROM users u
+           WHERE LOWER(u.email) = LOWER($1) AND u.deleted_at IS NULL
+           LIMIT 1`,
+          [email]
+        );
+        if (user) {
+          // Link the real Firebase UID so future lookups are fast
+          await queryOne(
+            'UPDATE users SET firebase_uid = $1 WHERE id = $2',
+            [uid, user.id]
+          );
+          logger.info('Linked Firebase UID to existing user via email', { userId: user.id, email });
+        }
+      }
+    }
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });

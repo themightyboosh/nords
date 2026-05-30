@@ -264,6 +264,21 @@ server.tool('nords_update_session_nord',
   }
 );
 
+server.tool('nords_update_session_variables',
+  'Save collected project variable values. Variables are project-level data points. Pass variable_id from remaining_variables in the horizon. Evaluates goal completion and returns goal events + updated horizon.',
+  {
+    variables: z.array(z.object({
+      variable_id: z.string().describe('UUID of the project variable'),
+      value: z.unknown().describe('The collected value'),
+    })).describe('Array of variable values to save'),
+  },
+  async (args) => {
+    const sid = await ensureSession(process.env.PROJECT_ID!);
+    const result = await dispatchTool('nords_update_session_variables', getToolContext(sid), args);
+    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+  }
+);
+
 server.tool('nords_visit_nord',
   'Log a visit event with optional before/after snapshots.',
   {

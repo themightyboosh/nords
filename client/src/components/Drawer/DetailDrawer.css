@@ -795,3 +795,32 @@
   color: var(--nords-color-text-disabled);
   font-style: italic;
 }
+
+/* ── Goal Row (Goals tab in nord detail) ── */
+.nords-drawer-goal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--nords-radius-sm);
+  transition: background 0.12s ease;
+}
+
+.nords-drawer-goal-row:hover {
+  background: var(--nords-color-bg-hover);
+}
+
+.nords-drawer-goal-row__icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.nords-drawer-goal-row__name {
+  flex: 1;
+  font-size: var(--nords-font-size-sm);
+  font-weight: 500;
+  color: var(--nords-color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

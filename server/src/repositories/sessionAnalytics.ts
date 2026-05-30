@@ -80,13 +80,13 @@ export async function getProjectAnalytics(projectId: string, limit = 50): Promis
       END AS duration_minutes,
       (SELECT COUNT(*) FROM mcp_traversals t WHERE t.session_id = s.id)::int AS traversal_count,
       (SELECT COUNT(*) FROM mcp_nord_visits v WHERE v.session_id = s.id)::int AS visit_count,
-      (SELECT COUNT(*) FROM mcp_session_nords sn WHERE sn.session_id = s.id)::int AS nords_tracked,
-      (SELECT COUNT(*) FROM mcp_session_nords sn WHERE sn.session_id = s.id AND sn.complete = true)::int AS nords_completed,
+      (SELECT COUNT(*) FROM mcp_session_variables sv WHERE sv.session_id = s.id)::int AS nords_tracked,
+      (SELECT COUNT(*) FROM mcp_session_variables sv WHERE sv.session_id = s.id AND sv.value IS NOT NULL)::int AS nords_completed,
       CASE
-        WHEN (SELECT SUM(sn.required_count) FROM mcp_session_nords sn WHERE sn.session_id = s.id) > 0
+        WHEN (SELECT COUNT(*) FROM mcp_session_variables sv WHERE sv.session_id = s.id) > 0
         THEN ROUND(
-          (SELECT SUM(sn.filled_count)::numeric FROM mcp_session_nords sn WHERE sn.session_id = s.id) /
-          (SELECT SUM(sn.required_count)::numeric FROM mcp_session_nords sn WHERE sn.session_id = s.id) * 100
+          (SELECT COUNT(*) FROM mcp_session_variables sv WHERE sv.session_id = s.id AND sv.value IS NOT NULL)::numeric /
+          (SELECT COUNT(*) FROM mcp_session_variables sv WHERE sv.session_id = s.id)::numeric * 100
         )::int
         ELSE 100
       END AS completion_percentage,
@@ -133,12 +133,7 @@ export async function getProjectAnalytics(projectId: string, limit = 50): Promis
           ELSE NULL
         END
       )::int AS avg_time_seconds,
-      CASE
-        WHEN COUNT(DISTINCT sn.session_id) > 0
-        THEN (COUNT(DISTINCT CASE WHEN sn.complete THEN sn.session_id END)::numeric /
-              COUNT(DISTINCT sn.session_id)::numeric)
-        ELSE 0
-      END AS completion_rate
+      0::numeric AS completion_rate
     FROM nords n
     JOIN nord_types nt ON nt.id = n.type_id
     LEFT JOIN mcp_nord_visits v ON v.nord_id = n.id
@@ -150,8 +145,6 @@ export async function getProjectAnalytics(projectId: string, limit = 50): Promis
         WHERE session_id = v.session_id AND visited_at > v.visited_at
         ORDER BY visited_at ASC LIMIT 1
       )
-    LEFT JOIN mcp_session_nords sn ON sn.nord_id = n.id
-      AND sn.session_id IN (SELECT id FROM mcp_sessions WHERE project_id = $1)
     WHERE n.project_id = $1 AND n.deleted_at IS NULL
     GROUP BY n.id, n.title, nt.name
     ORDER BY visit_count DESC

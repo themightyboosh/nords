@@ -1,6 +1,7 @@
 import { query, queryOne } from '../db.js';
-import type { McpSession, McpTraversal, McpNordVisit, McpSessionNord, Project } from '../types/entities.js';
+import type { McpSession, McpTraversal, McpNordVisit, Project, ProjectVariable } from '../types/entities.js';
 import * as goalsRepo from './goals.js';
+import * as variablesRepo from './variables.js';
 
 // ── Sessions ──
 
@@ -26,29 +27,8 @@ export async function createSession(
     RETURNING *
   `, [projectId, personaId || null, startNordId || null]) as McpSession;
 
-  // Pre-populate mcp_session_nords for every nord with required properties.
-  // This ensures checkSessionCompletion correctly sees incomplete nords
-  // instead of finding zero rows and immediately marking the session complete.
-  await query(`
-    INSERT INTO mcp_session_nords (session_id, nord_id, properties, required_count, filled_count, complete)
-    SELECT
-      $1,
-      n.id,
-      '{}'::jsonb,
-      (SELECT COUNT(*) FROM jsonb_array_elements(nt.properties_schema) AS prop
-       WHERE (prop->>'required')::boolean = true)::int,
-      0,
-      false
-    FROM nords n
-    JOIN nord_types nt ON nt.id = n.type_id
-    WHERE n.project_id = $2
-      AND n.deleted_at IS NULL
-      AND nt.deleted_at IS NULL
-      AND EXISTS (
-        SELECT 1 FROM jsonb_array_elements(nt.properties_schema) AS prop
-        WHERE (prop->>'required')::boolean = true
-      )
-  `, [session.id, projectId]);
+
+
 
   return session;
 }
@@ -154,62 +134,11 @@ export async function findVisitsByNord(nordId: string, limit = 50): Promise<McpN
   );
 }
 
-// ── Session-scoped Nord Completion (Instance Layer) ──
 
-/**
- * Upsert session-scoped properties for a Nord.
- * Merges new properties into existing, recalculates filled/complete.
- */
-export async function upsertSessionNord(
-  sessionId: string,
-  nordId: string,
-  properties: Record<string, unknown>,
-  requiredCount: number,
-  filledCount: number
-): Promise<McpSessionNord> {
-  return queryOne<McpSessionNord>(`
-    INSERT INTO mcp_session_nords (session_id, nord_id, properties, required_count, filled_count, complete)
-    VALUES ($1, $2, $3, $4, $5, $6)
-    ON CONFLICT (session_id, nord_id) DO UPDATE SET
-      properties = mcp_session_nords.properties || $3::jsonb,
-      required_count = $4,
-      filled_count = $5,
-      complete = $6,
-      last_visited = NOW()
-    RETURNING *
-  `, [
-    sessionId,
-    nordId,
-    JSON.stringify(properties),
-    requiredCount,
-    filledCount,
-    filledCount >= requiredCount && requiredCount > 0,
-  ]) as Promise<McpSessionNord>;
-}
 
-/** Get a single Nord's completion state within a session */
-export async function findSessionNord(sessionId: string, nordId: string): Promise<McpSessionNord | null> {
-  return queryOne<McpSessionNord>(
-    'SELECT * FROM mcp_session_nords WHERE session_id = $1 AND nord_id = $2',
-    [sessionId, nordId]
-  );
-}
 
-/** Get all Nord completion states for a session */
-export async function findSessionNords(sessionId: string): Promise<McpSessionNord[]> {
-  return query<McpSessionNord>(
-    'SELECT * FROM mcp_session_nords WHERE session_id = $1 ORDER BY last_visited DESC',
-    [sessionId]
-  );
-}
 
-/** Get only incomplete Nords for a session (gate-readiness check) */
-export async function findIncompleteSessionNords(sessionId: string): Promise<McpSessionNord[]> {
-  return query<McpSessionNord>(
-    'SELECT * FROM mcp_session_nords WHERE session_id = $1 AND complete = FALSE ORDER BY last_visited DESC',
-    [sessionId]
-  );
-}
+
 
 // ── Session Completion Engine (Option A — Server-Side) ──
 
@@ -349,7 +278,7 @@ export interface SessionHorizon {
   current_nord: {
     id: string; title: string; type_name: string; properties: Record<string, unknown>;
     session_properties: Record<string, unknown>;
-    remaining_schema: unknown[]; // only uncollected fields
+    remaining_schema: unknown[]; // only uncollected fields (user properties)
     session_progress: { filled: number; required: number; complete: boolean } | null;
   } | null;
   persona: {
@@ -359,8 +288,12 @@ export interface SessionHorizon {
     guardrails: Array<{ mode: string; text: string }>;
   } | null;
   completion: { filled: number; required: number; percentage: number };
+  remaining_variables: Array<{
+    id: string; name: string; type: string; required: boolean;
+    description: string; tags: string[]; hint: string;
+  }>;
   neighbors: HorizonNeighbor[];
-  planning_queue: Array<{ nord_id: string; title: string; type_name: string }>;
+  planning_queue: Array<{ nord_id: string; title: string; type_name: string; goal_relevant: boolean }>;
   traversal_history: Array<{
     source_id: string; source_title: string;
     target_id: string; target_title: string;
@@ -371,10 +304,16 @@ export interface SessionHorizon {
   goals: Array<{
     goal_id: string; goal_name: string; icon: string;
     status: string;
-    progress: { filled: number; total: number };
+    progress: { filled: number; required: number; total: number };
     end_type: 'reset' | 'continue' | null;
     achieved_prompt: string | null;
+    persona_weight: number | null;
   }>;
+  suggested_persona: {
+    persona_id: string; persona_name: string;
+    reason: string;
+    current_weight: number; suggested_weight: number;
+  } | null;
   session_meta: {
     session_id: string;
     project_mode: string;
@@ -403,9 +342,11 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     return {
       current_nord: null, persona: null,
       completion: { filled: 0, required: 0, percentage: 0 },
+      remaining_variables: [],
       neighbors: [], planning_queue: [], traversal_history: [],
       suggested_next: null, predicted_path: [],
       goals: [],
+      suggested_persona: null,
       session_meta: { session_id: sessionId, project_mode: 'collect', project_purpose: null, end_nord: null, session_status: 'unknown' },
     };
   }
@@ -413,9 +354,9 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
   // Fetch project metadata for session_meta
   const projectRow = await queryOne<{
     project_mode: string; purpose: string | null;
-    default_end_nord_id: string | null;
+    default_end_nord_id: string | null; graph_only: boolean;
   }>(
-    'SELECT project_mode, purpose, default_end_nord_id FROM projects WHERE id = $1',
+    'SELECT project_mode, purpose, default_end_nord_id, graph_only FROM projects WHERE id = $1',
     [session.project_id]
   );
   let endNord: { id: string; title: string } | null = null;
@@ -427,23 +368,26 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     if (en) endNord = { id: en.id, title: en.title };
   }
 
-  // Pre-fetch all session nords (used for completion + neighbor progress)
-  const sessionNords = await findSessionNords(sessionId);
-  const sessionNordMap = new Map(sessionNords.map(sn => [sn.nord_id, sn]));
+  // Pre-fetch session variables for completion tracking
+  const sessionVarRows = await query<{ variable_id: string; value: unknown; name: string }>(
+    `SELECT sv.variable_id, sv.value, pv.name
+     FROM mcp_session_variables sv
+     JOIN project_variables pv ON pv.id = sv.variable_id
+     WHERE sv.session_id = $1`,
+    [sessionId]
+  );
+  const totalVarCount = sessionVarRows.length;
+  const filledVarCount = sessionVarRows.filter(v => v.value != null && v.value !== '').length;
 
-  // Build global set of all property keys collected across ANY session nord.
-  // MCP properties are shared globally — once known at one nord, known everywhere.
+  // Build global set of all collected variable names (for remaining schema computation)
   const globallyKnownKeys = new Set<string>();
-  for (const sn of sessionNords) {
-    const props = sn.properties as Record<string, unknown> || {};
-    for (const [key, value] of Object.entries(props)) {
-      if (value !== undefined && value !== null && value !== '') {
-        globallyKnownKeys.add(key);
-      }
+  for (const sv of sessionVarRows) {
+    if (sv.value !== undefined && sv.value !== null && sv.value !== '') {
+      globallyKnownKeys.add(sv.name);
     }
   }
 
-  // 2. Current nord WITH session completion (#7)
+  // 2. Current nord with remaining schema
   let currentNord: SessionHorizon['current_nord'] = null;
   if (session.current_nord_id) {
     const nord = await queryOne<{ id: string; title: string; type_id: string; properties: Record<string, unknown> }>(
@@ -452,14 +396,13 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     );
     if (nord) {
       const nordType = await queryOne<{ name: string; properties_schema: string }>('SELECT name, properties_schema::text FROM nord_types WHERE id = $1', [nord.type_id]);
-      const sn = sessionNordMap.get(nord.id);
       const fullSchema = safeParseJSON<Record<string, unknown>[]>(nordType?.properties_schema || '[]', []);
-      const sessionProps = sn?.properties as Record<string, unknown> || {};
+      const nordProps = nord.properties as Record<string, unknown> || {};
       currentNord = {
         id: nord.id, title: nord.title, type_name: nordType?.name || 'Unknown', properties: nord.properties,
-        session_properties: sessionProps,
-        remaining_schema: computeRemainingSchema(fullSchema, sessionProps, globallyKnownKeys),
-        session_progress: sn ? { filled: sn.filled_count, required: sn.required_count, complete: sn.complete } : null,
+        session_properties: nordProps,
+        remaining_schema: computeRemainingSchema(fullSchema, nordProps, globallyKnownKeys),
+        session_progress: totalVarCount > 0 ? { filled: filledVarCount, required: totalVarCount, complete: filledVarCount >= totalVarCount } : null,
       };
     }
   }
@@ -541,14 +484,13 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       const stage = resolveStageLabel(row.distance_x, stageLabels);
       const dirPreps = safeParseJSON<{ forward: string; reverse: string; both: string } | null>(row.conn_direction_prepositions, null);
 
-      // #2: session progress for this neighbor
-      const sn = sessionNordMap.get(row.neighbor_id);
-      const session_progress = sn ? { filled: sn.filled_count, required: sn.required_count, complete: sn.complete } : null;
+      // #2: session progress (now global, not per-neighbor)
+      const session_progress = totalVarCount > 0 ? { filled: filledVarCount, required: totalVarCount, complete: filledVarCount >= totalVarCount } : null;
       const neighborSchema = safeParseJSON<Record<string, unknown>[]>(row.neighbor_properties_schema, []);
-      const neighborSessionProps = sn?.properties as Record<string, unknown> || {};
+      const neighborProps = row.neighbor_properties as Record<string, unknown> || {};
       // Slim payload: neighbors get remaining_count (integer), not full remaining_schema.
       // The AI gets the full schema only for the current nord.
-      const neighborRemaining = computeRemainingSchema(neighborSchema, neighborSessionProps, globallyKnownKeys);
+      const neighborRemaining = computeRemainingSchema(neighborSchema, neighborProps, globallyKnownKeys);
 
       neighbors.push({
         nord: {
@@ -571,20 +513,15 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       });
     }
 
-    // ── Guided Mode: Goal path proximity boost ──
-    // In guided mode, neighbors bound to active goals get a priority boost.
-    // This is additive with persona_bias — it nudges, never restricts.
-    const projectMode = projectRow?.project_mode || 'collect';
+    // ── Goal proximity boost: nords linked to active goals via goal_relevant_nords ──
     let goalBoundNordIds = new Set<string>();
-    if (projectMode === 'guided') {
-      const activeGoalBindings = await query<{ nord_id: string }>(`
-        SELECT DISTINCT gp.nord_id
-        FROM goal_properties gp
-        JOIN mcp_session_goals sg ON sg.goal_id = gp.goal_id
-        WHERE sg.session_id = $1 AND sg.status = 'active'
-      `, [sessionId]);
-      goalBoundNordIds = new Set(activeGoalBindings.map(b => b.nord_id));
-    }
+    const activeGoalNords = await query<{ nord_id: string }>(`
+      SELECT DISTINCT grn.nord_id
+      FROM goal_relevant_nords grn
+      JOIN mcp_session_goals sg ON sg.goal_id = grn.goal_id
+      WHERE sg.session_id = $1 AND sg.status = 'active'
+    `, [sessionId]);
+    goalBoundNordIds = new Set(activeGoalNords.map(b => b.nord_id));
 
     // Apply goal_proximity to each neighbor
     for (const n of neighbors) {
@@ -607,14 +544,31 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     neighbors.splice(NEIGHBOR_LIMIT);
   }
 
-  // 5. Completion stats
-  const totalRequired = sessionNords.reduce((sum, sn) => sum + sn.required_count, 0);
-  const totalFilled = sessionNords.reduce((sum, sn) => sum + sn.filled_count, 0);
+  // 5. Completion stats — variable-based
+  const projectVars = await variablesRepo.findByProject(session.project_id);
+  const requiredVarCount = projectVars.filter(v => v.required).length;
+  const sessionVars = await query<{ variable_id: string; value: unknown }>(`
+    SELECT variable_id, value FROM mcp_session_variables WHERE session_id = $1
+  `, [sessionId]);
+  const filledVarIds = new Set(
+    sessionVars
+      .filter(sv => sv.value !== undefined && sv.value !== null && sv.value !== '')
+      .map(sv => sv.variable_id)
+  );
+  const filledRequiredCount = projectVars.filter(v => v.required && filledVarIds.has(v.id)).length;
   const completion = {
-    filled: totalFilled,
-    required: totalRequired,
-    percentage: totalRequired > 0 ? Math.round((totalFilled / totalRequired) * 100) : 100,
+    filled: filledRequiredCount,
+    required: requiredVarCount,
+    percentage: requiredVarCount > 0 ? Math.round((filledRequiredCount / requiredVarCount) * 100) : 100,
   };
+
+  // 5b. Remaining variables — uncollected project variables
+  const remaining_variables = projectVars
+    .filter(v => !filledVarIds.has(v.id))
+    .map(v => ({
+      id: v.id, name: v.name, type: v.type, required: v.required,
+      description: v.description, tags: v.tags, hint: v.hint,
+    }));
 
   // 6. Traversal history — single JOIN query, capped at last N entries
   const traversalRows = await query<{
@@ -644,24 +598,24 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     connection_id: r.connection_id || '',
   }));
 
-  // 7. Suggested next — highest persona_bias incomplete neighbor
-  const incompleteNordIds = new Set(
-    sessionNords.filter(sn => !sn.complete && sn.required_count > 0).map(sn => sn.nord_id)
-  );
-
+  // 7. Suggested next — persona-weighted exploration score
+  // Score = persona_bias × (1 - distance_x) — closer nords on high-weight connections score higher.
   let suggested_next: SessionHorizon['suggested_next'] = null;
-  for (const n of neighbors) {
-    if (incompleteNordIds.has(n.nord.id)) {
-      suggested_next = {
-        nord_id: n.nord.id, title: n.nord.title,
-        reason: `Highest persona bias neighbor (${(n.persona_bias * 100).toFixed(0)}%) with incomplete required properties`,
-      };
-      break;
-    }
-  }
-  if (!suggested_next && neighbors.length > 0) {
-    const top = neighbors[0];
-    suggested_next = { nord_id: top.nord.id, title: top.nord.title, reason: `Highest persona bias neighbor (${(top.persona_bias * 100).toFixed(0)}%)` };
+  if (neighbors.length > 0) {
+    const scored = neighbors
+      .filter(n => !(n.session_progress?.complete))
+      .map(n => ({
+        ...n,
+        explore_score: n.persona_bias * (1 - n.spectrum_position),
+      }))
+      .sort((a, b) => b.explore_score - a.explore_score);
+
+    const top = scored[0] || neighbors[0];
+    suggested_next = {
+      nord_id: top.nord.id,
+      title: top.nord.title,
+      reason: `Persona exploration: ${(top.persona_bias * 100).toFixed(0)}% bias × ${((1 - top.spectrum_position) * 100).toFixed(0)}% proximity`,
+    };
   }
 
   // 8. Predicted path — 2-hop lookahead from suggested_next (predictive)
@@ -686,76 +640,106 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     );
   }
 
-  // 9. Planning queue — all incomplete nords, prioritized by MCP properties (collectible) first
-  const planningQueue = await query<{ nord_id: string; title: string; type_name: string; has_mcp_properties: boolean }>(`
+  // 9. Planning queue — blended persona + goal relevance score
+  // Goal-relevant nords sort first, then persona-biased nords by connection type
+  const planningQueue = await query<{ nord_id: string; title: string; type_name: string; goal_relevant: boolean }>(`
     SELECT n.id AS nord_id, n.title, nt.name AS type_name,
            EXISTS (
-             SELECT 1 FROM jsonb_array_elements(nt.properties_schema) AS prop
-             WHERE (prop->>'source') = 'mcp'
-           ) AS has_mcp_properties
+             SELECT 1 FROM goal_relevant_nords grn
+             JOIN mcp_session_goals sg ON sg.goal_id = grn.goal_id
+             WHERE grn.nord_id = n.id AND sg.session_id = $2 AND sg.status = 'active'
+           ) AS goal_relevant
     FROM nords n
     JOIN nord_types nt ON nt.id = n.type_id
     WHERE n.project_id = $1 AND n.deleted_at IS NULL
-      AND n.id NOT IN (SELECT nord_id FROM mcp_session_nords WHERE session_id = $2 AND complete = true)
+      /* All nords are eligible — completion is tracked via variables/goals */
     ORDER BY
-      has_mcp_properties DESC,
-      EXISTS (
-        SELECT 1 FROM jsonb_array_elements(nt.properties_schema) AS prop
-        WHERE (prop->>'required')::boolean = true
-      ) DESC,
+      goal_relevant DESC,
       n.title
     LIMIT 15
   `, [session.project_id, sessionId]);
 
-  // 10. Goals — fetch session goal state with progress
-  const sessionGoals = await goalsRepo.findSessionGoals(sessionId, session.project_id);
+  // 10. Goals — fetch session goal state with variable progress + persona weights
+  const sessionGoals = await goalsRepo.findSessionGoals(sessionId, session.project_id, session.persona_id);
   const goals = sessionGoals
     .filter(g => !g.is_implicit)
     .map(g => {
-      const filled = g.properties?.filter(p => p.collected).length || 0;
-      const total = g.properties?.length || 0;
+      const filled = g.variables?.filter(v => v.collected).length || 0;
+      const required = g.variables?.filter(v => v.required).length || 0;
+      const total = g.variables?.length || 0;
       return {
         goal_id: g.goal_id,
         goal_name: g.goal_name,
         icon: g.goal_icon || '🎯',
         status: g.status,
-        progress: { filled, total },
+        progress: { filled, required, total },
         end_type: g.end_type,
         achieved_prompt: g.achieved_prompt,
+        persona_weight: g.persona_weight,
       };
     });
 
-  // Build session_meta
+  // 11. Suggested persona — recommend a different persona if another weights the top active goal higher
+  let suggested_persona: SessionHorizon['suggested_persona'] = null;
+  if (session.persona_id) {
+    const activeGoals = goals.filter(g => g.status === 'active');
+    if (activeGoals.length > 0) {
+      const topGoal = activeGoals[0]; // already sorted by persona_weight desc
+      // Check if another persona weights this goal significantly higher
+      const allPersonaWeights = await query<{ persona_id: string; persona_name: string; weight: number }>(`
+        SELECT pgw.persona_id, p.name AS persona_name, pgw.weight
+        FROM persona_goal_weights pgw
+        JOIN personas p ON p.id = pgw.persona_id AND p.deleted_at IS NULL
+        WHERE pgw.goal_id = $1
+        ORDER BY pgw.weight DESC
+      `, [topGoal.goal_id]);
+
+      const currentWeight = topGoal.persona_weight ?? 0;
+      const bestAlt = allPersonaWeights.find(w => w.persona_id !== session.persona_id);
+      if (bestAlt && bestAlt.weight > 50 && (bestAlt.weight - currentWeight) > 30) {
+        suggested_persona = {
+          persona_id: bestAlt.persona_id,
+          persona_name: bestAlt.persona_name,
+          reason: `Higher affinity for "${topGoal.goal_name}" (weight: ${bestAlt.weight} vs current: ${currentWeight})`,
+          current_weight: currentWeight,
+          suggested_weight: bestAlt.weight,
+        };
+      }
+    }
+  }
+
+  // Auto-infer project mode for session_meta
+  const hasExplicitGoals = goals.length > 0;
+  const hasVariables = projectVars.length > 0;
+  const inferredMode = projectRow?.graph_only
+    ? 'explore'
+    : hasExplicitGoals
+      ? 'guided'
+      : hasVariables
+        ? 'collect'
+        : 'explore';
+
   const session_meta = {
     session_id: sessionId,
-    project_mode: projectRow?.project_mode || 'collect',
+    project_mode: inferredMode,
     project_purpose: projectRow?.purpose || null,
     end_nord: endNord,
     session_status: session.status || 'active',
   };
 
   return {
-    current_nord: currentNord, persona, completion, neighbors,
-    planning_queue: planningQueue, traversal_history,
+    current_nord: currentNord, persona, completion, remaining_variables,
+    neighbors, planning_queue: planningQueue, traversal_history,
     suggested_next, predicted_path,
-    goals, session_meta,
+    goals, suggested_persona, session_meta,
   };
 }
 
 export async function checkSessionCompletion(
   sessionId: string
 ): Promise<{ shouldTransition: boolean; endNordId: string | null; incompleteCount: number }> {
-  // 1. Count remaining incomplete nords with required fields
-  const incomplete = await query<McpSessionNord>(
-    'SELECT * FROM mcp_session_nords WHERE session_id = $1 AND complete = FALSE AND required_count > 0',
-    [sessionId]
-  );
-
-  if (incomplete.length > 0) {
-    return { shouldTransition: false, endNordId: null, incompleteCount: incomplete.length };
-  }
-
-  // 2. All required fields filled — look up project's end nord
+  // Completion is now tracked via goal variable bindings (mcp_session_variables).
+  // Check if all active goals are complete.
   const session = await queryOne<McpSession>(
     'SELECT * FROM mcp_sessions WHERE id = $1',
     [sessionId]
@@ -764,6 +748,19 @@ export async function checkSessionCompletion(
     return { shouldTransition: false, endNordId: null, incompleteCount: 0 };
   }
 
+  const sessionGoals = await goalsRepo.findSessionGoals(sessionId, session.project_id, session.persona_id);
+  const activeGoals = sessionGoals.filter(g => !g.is_implicit && g.status === 'active');
+  const incompleteGoals = activeGoals.filter(g => {
+    const filled = g.variables?.filter(v => v.collected).length || 0;
+    const total = g.variables?.length || 0;
+    return total === 0 || filled < total;
+  });
+
+  if (incompleteGoals.length > 0) {
+    return { shouldTransition: false, endNordId: null, incompleteCount: incompleteGoals.length };
+  }
+
+  // All goals complete — look up project's end nord
   const project = await queryOne<Project>(
     'SELECT default_end_nord_id FROM projects WHERE id = $1',
     [session.project_id]
@@ -774,7 +771,7 @@ export async function checkSessionCompletion(
     return { shouldTransition: false, endNordId: null, incompleteCount: 0 };
   }
 
-  // 3. Transition: update current nord to End Nord
+  // Transition: update current nord to End Nord
   await updateCurrentNord(sessionId, endNordId);
 
   return { shouldTransition: true, endNordId, incompleteCount: 0 };
@@ -939,4 +936,130 @@ async function _fetchProjectDictionary(projectId: string): Promise<ProjectDictio
       category_weights: weightsByPersona.get(p.id) || [],
     })),
   };
+}
+
+// ══════════════════════════════════════════════════════════
+// Session Variable Capture + Goal Evaluation
+// ══════════════════════════════════════════════════════════
+
+export interface McpSessionVariable {
+  id: string;
+  session_id: string;
+  variable_id: string;
+  value: unknown;
+  nord_id: string | null;
+  persona_id: string | null;
+  sequence: number;
+  collected_at: string;
+}
+
+/**
+ * Upsert a session variable value (with provenance).
+ *
+ * After writing the variable, this automatically:
+ * 1. Evaluates all session goals (for potential completion cascading)
+ * 2. Logs any resulting goal events (completion, activation, cancellation)
+ * 3. Checks for persona switching recommendation
+ *
+ * Returns the updated variable + any goal events.
+ */
+export async function upsertSessionVariable(
+  sessionId: string,
+  variableId: string,
+  value: unknown,
+  nordId: string | null,
+  personaId: string | null
+): Promise<{ variable: McpSessionVariable; goalEvents: goalsRepo.GoalEvent[] }> {
+  // Get sequence number (max + 1)
+  const seqRow = await queryOne<{ seq: string }>(`
+    SELECT COALESCE(MAX(sequence), 0) + 1 AS seq FROM mcp_session_variables WHERE session_id = $1
+  `, [sessionId]);
+  const sequence = parseInt(seqRow?.seq || '1', 10);
+
+  const variable = await queryOne<McpSessionVariable>(`
+    INSERT INTO mcp_session_variables (session_id, variable_id, value, nord_id, persona_id, sequence)
+    VALUES ($1, $2, $3, $4, $5, $6)
+    ON CONFLICT (session_id, variable_id) DO UPDATE SET
+      value = $3, nord_id = $4, persona_id = $5, sequence = $6, collected_at = NOW()
+    RETURNING *
+  `, [sessionId, variableId, JSON.stringify(value), nordId, personaId, sequence]) as McpSessionVariable;
+
+  // Get project_id from session
+  const session = await queryOne<McpSession>('SELECT * FROM mcp_sessions WHERE id = $1', [sessionId]);
+  if (!session) return { variable, goalEvents: [] };
+
+  // Evaluate goals — this handles DAG chaining, structural exclusion, etc.
+  const goalEvents = await goalsRepo.evaluateGoals(sessionId, session.project_id);
+
+  // Log each goal event to the session_goal_events table
+  for (const event of goalEvents) {
+    await logGoalEvent(sessionId, event);
+  }
+
+  return { variable, goalEvents };
+}
+
+/**
+ * Log a goal event to the mcp_session_goal_events table for analytics/replay.
+ */
+export async function logGoalEvent(
+  sessionId: string,
+  event: goalsRepo.GoalEvent
+): Promise<void> {
+  await query(`
+    INSERT INTO mcp_session_goal_events (session_id, goal_id, event_type, event_data)
+    VALUES ($1, $2, $3, $4)
+  `, [
+    sessionId,
+    event.goal_id,
+    event.type,
+    JSON.stringify({
+      goal_name: event.goal_name,
+      achieved_prompt: event.achieved_prompt,
+      reason: event.reason,
+      excluded_by_goal: event.excluded_by_goal,
+      end_type: event.end_type,
+      progress: event.progress,
+    }),
+  ]);
+}
+
+/**
+ * Automatically switch personas based on suggested_persona from horizon.
+ * Called by the MCP tool layer after variable collection when a switch is recommended.
+ */
+export async function autoSwitchPersona(
+  sessionId: string,
+  suggestedPersonaId: string
+): Promise<McpSession | null> {
+  return updateSessionPersona(sessionId, suggestedPersonaId);
+}
+
+/**
+ * Get all session variables for a session.
+ */
+export async function findSessionVariables(sessionId: string): Promise<McpSessionVariable[]> {
+  return query<McpSessionVariable>(`
+    SELECT * FROM mcp_session_variables
+    WHERE session_id = $1
+    ORDER BY sequence ASC
+  `, [sessionId]);
+}
+
+/**
+ * Get all goal events for a session (analytics/replay).
+ */
+export async function findGoalEvents(sessionId: string): Promise<Array<{
+  id: string;
+  session_id: string;
+  goal_id: string;
+  event_type: string;
+  event_data: Record<string, unknown>;
+  created_at: string;
+}>> {
+  return query(`
+    SELECT * FROM mcp_session_goal_events
+    WHERE session_id = $1
+    ORDER BY created_at ASC
+  `, [sessionId]);
 }

@@ -42,10 +42,9 @@ registerRouter.post('/auth/register', async (req: Request, res: Response) => {
     let avatarUrl: string | null = null;
 
     if (!isFirebaseInitialized()) {
-      // Dev passthrough
-      firebaseUid = 'dev-user-000';
-      email = 'dev@nords.local';
-      displayName = 'Dev User';
+      // Dev mode without Firebase — registration requires real auth
+      res.status(400).json({ error: 'Firebase not configured — cannot register in dev passthrough mode. Use a real Firebase token.' });
+      return;
     } else {
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith('Bearer ')) {
@@ -76,6 +75,23 @@ registerRouter.post('/auth/register', async (req: Request, res: Response) => {
       // Active user — no invite key needed
       res.json({ existing: true, user_id: existingUser.id });
       return;
+    }
+
+    // ── 2b. Fallback: match by email (for pre-seeded users) ──
+    if (email) {
+      const emailUser = await queryOne<{ id: string }>(
+        'SELECT id FROM users WHERE email = $1 AND deleted_at IS NULL',
+        [email]
+      );
+      if (emailUser) {
+        // Link the Firebase UID to the existing email-matched record
+        await queryOne(
+          'UPDATE users SET firebase_uid = $1 WHERE id = $2',
+          [firebaseUid, emailUser.id]
+        );
+        res.json({ existing: true, user_id: emailUser.id });
+        return;
+      }
     }
 
     // ── 3. Validate invite key (only for NEW users) ──
@@ -113,28 +129,7 @@ registerRouter.post('/auth/register', async (req: Request, res: Response) => {
       return;
     }
 
-    // ── 5. Provision org + account ──
-    const org = await queryOne<{ id: string }>(
-      `INSERT INTO organizations (name, slug)
-       VALUES ($1, $2)
-       RETURNING id`,
-      [`${displayName || email}'s Workspace`, `user-${user.id.slice(0, 8)}`]
-    );
-
-    if (org) {
-      // Link user to org
-      await queryOne(
-        'INSERT INTO org_members (org_id, user_id, role) VALUES ($1, $2, $3)',
-        [org.id, user.id, 'owner']
-      );
-
-      // Create account for org
-      await queryOne(
-        `INSERT INTO accounts (name, owner_user_id, billing_email)
-         VALUES ($1, $2, $3)`,
-        [`${displayName || email}'s Account`, user.id, email]
-      );
-    }
+    // ── 5. (Org provisioning removed — projects scoped by created_by) ──
 
     // ── 6. Increment invite key use count ──
     await queryOne(
@@ -148,11 +143,10 @@ registerRouter.post('/auth/register', async (req: Request, res: Response) => {
     );
 
     let projectsCloned = 0;
-    const targetOrgId = org?.id || '00000000-0000-0000-0000-000000000000';
 
     for (const demo of demoProjects) {
       try {
-        await cloneProject(demo.id, targetOrgId, user.id);
+        await cloneProject(demo.id, user.id);
         projectsCloned++;
       } catch (err) {
         logger.error('Failed to clone demo project during registration', {

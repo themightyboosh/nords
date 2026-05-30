@@ -11,6 +11,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isEmailVerified: boolean;
   isAdmin: boolean;
+  isTester: boolean;
   role: string | null;
   logout: () => Promise<void>;
 }
@@ -21,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<string | null>(null);
+  const [isTester, setIsTester] = useState(false);
 
   // Dev bypass: set VITE_SKIP_AUTH=true in .env.local to skip auth entirely
   const isDevBypass = import.meta.env.DEV && import.meta.env.VITE_SKIP_AUTH === 'true';
@@ -30,6 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Create a minimal fake user for dev mode
       setUser({ uid: 'dev-user', email: 'dev@nords.local', displayName: 'Dev User', emailVerified: true } as unknown as User);
       setRole('admin');
+      setIsTester(true);
       setLoading(false);
       logger.info('Auth dev bypass: auto-authenticated as dev-user');
       return;
@@ -39,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(currentUser);
       if (currentUser) {
         logger.info('Auth state changed: signed in', { uid: currentUser.uid });
-        // Fetch role from server
+        // Fetch role + flags from server
         try {
           const token = await currentUser.getIdToken();
           const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -49,15 +52,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (res.ok) {
             const data = await res.json();
             setRole(data.role || 'member');
+            setIsTester(data.is_tester || false);
           } else {
             setRole('member');
+            setIsTester(false);
           }
         } catch {
           setRole('member');
+          setIsTester(false);
         }
       } else {
         logger.info('Auth state changed: signed out');
         setRole(null);
+        setIsTester(false);
       }
       setLoading(false);
     }, (error) => {
@@ -74,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!user,
     isEmailVerified: user?.emailVerified || false,
     isAdmin: role === 'admin',
+    isTester,
     role,
     logout: signOut
   };

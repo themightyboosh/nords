@@ -22,6 +22,7 @@ import { useLens } from '../../context/LensContext';
 import { PropertyField } from './PropertyField';
 
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
+import type { Goal } from '../../hooks/useGoals';
 import './DetailDrawer.css';
 import './PropertyField.css';
 
@@ -46,6 +47,8 @@ interface DetailDrawerProps {
   graph?: ProjectGraph | null;
   /** Refetch graph after mutations so both views stay in sync */
   refetchGraph?: () => Promise<void>;
+  /** All goals (to show 'Goals' tab linking nords to goals) */
+  goals?: Goal[];
 }
 
 // ── Direction Toggle Button Group ──
@@ -310,10 +313,11 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
   onSelectNord,
   graph,
   refetchGraph,
+  goals,
 }) => {
   const { entity, mutations } = useDrawerEntity(entityId, entityType, graph || null, refetchGraph);
   const { setActiveConnectionTypeId } = useLens();
-  const [activeTab, setActiveTab] = useState<'properties' | 'connections'>('properties');
+  const [activeTab, setActiveTab] = useState<'properties' | 'connections' | 'goals'>('properties');
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   // When entity changes, reset tab to properties and sync lens
@@ -470,6 +474,23 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
                 <span className="nords-drawer-tab__count">{categoryConnectionCount}</span>
               )}
             </button>
+            {goals && goals.length > 0 && (() => {
+              const linkedGoals = goals.filter(g =>
+                g.relevant_nords?.some(rn => rn.nord_id === entity.id) ||
+                g.relevant_nord_types?.some(rt => rt.nord_type_id === entity.typeId)
+              );
+              return (
+                <button
+                  className={`nords-drawer-tab ${activeTab === 'goals' ? 'is-active' : ''}`}
+                  onClick={() => setActiveTab('goals')}
+                >
+                  Goals
+                  {linkedGoals.length > 0 && (
+                    <span className="nords-drawer-tab__count">{linkedGoals.length}</span>
+                  )}
+                </button>
+              );
+            })()}
           </div>
 
           {/* Properties Tab — Schema-Driven + Description */}
@@ -520,6 +541,41 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
               Loading categories…
             </div>
           )}
+
+          {/* Goals Tab — Shows goals that reference this nord */}
+          {activeTab === 'goals' && (() => {
+            const linkedGoals = (goals || []).filter(g =>
+              g.relevant_nords?.some(rn => rn.nord_id === entity.id) ||
+              g.relevant_nord_types?.some(rt => rt.nord_type_id === entity.typeId)
+            );
+            if (linkedGoals.length === 0) {
+              return (
+                <div className="nords-drawer-empty">
+                  No goals reference this nord.
+                  <span className="nords-drawer-empty__hint">
+                    Link goals to nords in the Goal detail drawer.
+                  </span>
+                </div>
+              );
+            }
+            return (
+              <div className="nords-properties-list">
+                {linkedGoals.map(g => (
+                  <div key={g.id} className="nords-drawer-goal-row">
+                    <span className="nords-drawer-goal-row__icon" style={{ color: g.accent_color }}>
+                      🎯
+                    </span>
+                    <span className="nords-drawer-goal-row__name">{g.name}</span>
+                    {g.variable_bindings?.length > 0 && (
+                      <span className="nords-drawer-tab__count">
+                        {g.variable_bindings.filter(vb => vb.required).length} req
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </FloatingPanel>
     );

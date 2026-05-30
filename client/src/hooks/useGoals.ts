@@ -2,7 +2,7 @@
  * useGoals.ts — Fetches and manages goals + edges for a project.
  *
  * Returns the goals list, edges list, loading state, and mutation functions.
- * Follows the same pattern as usePersonas for consistency.
+ * Goals now use variable bindings, relevant nords/types, and persona weights.
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -10,12 +10,31 @@ import { api } from '../api/client';
 
 // ── Types ──
 
-export interface GoalProperty {
+export interface GoalVariableBinding {
+  id: string;
+  goal_id: string;
+  variable_id: string;
+  required: boolean;
+  created_at: string;
+}
+
+export interface GoalRelevantNord {
   id: string;
   goal_id: string;
   nord_id: string;
-  property_name: string;
-  created_at: string;
+}
+
+export interface GoalRelevantNordType {
+  id: string;
+  goal_id: string;
+  nord_type_id: string;
+}
+
+export interface PersonaGoalWeight {
+  id: string;
+  persona_id: string;
+  goal_id: string;
+  weight: number;
 }
 
 export interface Goal {
@@ -32,7 +51,12 @@ export interface Goal {
   is_implicit: boolean;
   created_at: string;
   updated_at: string;
-  properties: GoalProperty[];
+  /** Variable bindings (replaces old properties) */
+  variable_bindings: GoalVariableBinding[];
+  /** Relevant nords linked to this goal */
+  relevant_nords: GoalRelevantNord[];
+  /** Relevant nord types linked to this goal */
+  relevant_nord_types: GoalRelevantNordType[];
 }
 
 /** Directed edge in the goal DAG: source → target */
@@ -95,7 +119,6 @@ export function useGoals(projectId: string | null) {
     try {
       await api.delete(`/api/goals/${id}`);
       setGoals(prev => prev.filter(g => g.id !== id));
-      // Also remove edges involving this goal
       setEdges(prev => prev.filter(e => e.source_goal_id !== id && e.target_goal_id !== id));
     } catch (err) { console.error('Failed to delete goal:', err); }
   }, []);
@@ -121,34 +144,114 @@ export function useGoals(projectId: string | null) {
     } catch (err) { console.error('Failed to delete edge:', err); }
   }, []);
 
-  // ── Property mutations ──
+  // ── Variable Binding mutations (replaces old property bindings) ──
 
-  const addProperty = useCallback(async (goalId: string, nordId: string, propertyName: string) => {
+  const addVariableBinding = useCallback(async (goalId: string, variableId: string, required: boolean = true) => {
     try {
-      const prop = await api.post<GoalProperty>(`/api/goals/${goalId}/properties`, {
-        nord_id: nordId,
-        property_name: propertyName,
+      const binding = await api.post<GoalVariableBinding>(`/api/goals/${goalId}/variable-bindings`, {
+        variable_id: variableId,
+        required,
       });
       setGoals(prev => prev.map(g =>
-        g.id === goalId ? { ...g, properties: [...g.properties, prop] } : g
+        g.id === goalId ? { ...g, variable_bindings: [...g.variable_bindings, binding] } : g
       ));
-      return prop;
-    } catch (err) { console.error('Failed to add property:', err); return null; }
+      return binding;
+    } catch (err) { console.error('Failed to add variable binding:', err); return null; }
   }, []);
 
-  const removeProperty = useCallback(async (goalId: string, propId: string) => {
+  const updateVariableBinding = useCallback(async (goalId: string, bindingId: string, required: boolean) => {
     try {
-      await api.delete(`/api/goals/${goalId}/properties/${propId}`);
+      const binding = await api.put<GoalVariableBinding>(`/api/goals/${goalId}/variable-bindings/${bindingId}`, { required });
       setGoals(prev => prev.map(g =>
-        g.id === goalId ? { ...g, properties: g.properties.filter(p => p.id !== propId) } : g
+        g.id === goalId ? {
+          ...g,
+          variable_bindings: g.variable_bindings.map(b => b.id === bindingId ? { ...b, ...binding } : b),
+        } : g
       ));
-    } catch (err) { console.error('Failed to remove property:', err); }
+      return binding;
+    } catch (err) { console.error('Failed to update variable binding:', err); return null; }
+  }, []);
+
+  const removeVariableBinding = useCallback(async (goalId: string, bindingId: string) => {
+    try {
+      await api.delete(`/api/goals/${goalId}/variable-bindings/${bindingId}`);
+      setGoals(prev => prev.map(g =>
+        g.id === goalId ? {
+          ...g,
+          variable_bindings: g.variable_bindings.filter(b => b.id !== bindingId),
+        } : g
+      ));
+    } catch (err) { console.error('Failed to remove variable binding:', err); }
+  }, []);
+
+  // ── Relevant Nord mutations ──
+
+  const addRelevantNord = useCallback(async (goalId: string, nordId: string) => {
+    try {
+      const result = await api.post<GoalRelevantNord>(`/api/goals/${goalId}/relevant-nords`, { nord_id: nordId });
+      setGoals(prev => prev.map(g =>
+        g.id === goalId ? { ...g, relevant_nords: [...g.relevant_nords, result] } : g
+      ));
+      return result;
+    } catch (err) { console.error('Failed to add relevant nord:', err); return null; }
+  }, []);
+
+  const removeRelevantNord = useCallback(async (goalId: string, nordId: string) => {
+    try {
+      await api.delete(`/api/goals/${goalId}/relevant-nords/${nordId}`);
+      setGoals(prev => prev.map(g =>
+        g.id === goalId ? {
+          ...g,
+          relevant_nords: g.relevant_nords.filter(rn => rn.nord_id !== nordId),
+        } : g
+      ));
+    } catch (err) { console.error('Failed to remove relevant nord:', err); }
+  }, []);
+
+  // ── Relevant Nord Type mutations ──
+
+  const addRelevantNordType = useCallback(async (goalId: string, nordTypeId: string) => {
+    try {
+      const result = await api.post<GoalRelevantNordType>(`/api/goals/${goalId}/relevant-types`, { nord_type_id: nordTypeId });
+      setGoals(prev => prev.map(g =>
+        g.id === goalId ? { ...g, relevant_nord_types: [...g.relevant_nord_types, result] } : g
+      ));
+      return result;
+    } catch (err) { console.error('Failed to add relevant nord type:', err); return null; }
+  }, []);
+
+  const removeRelevantNordType = useCallback(async (goalId: string, nordTypeId: string) => {
+    try {
+      await api.delete(`/api/goals/${goalId}/relevant-types/${nordTypeId}`);
+      setGoals(prev => prev.map(g =>
+        g.id === goalId ? {
+          ...g,
+          relevant_nord_types: g.relevant_nord_types.filter(rt => rt.nord_type_id !== nordTypeId),
+        } : g
+      ));
+    } catch (err) { console.error('Failed to remove relevant nord type:', err); }
+  }, []);
+
+  // ── Persona Weight mutations ──
+
+  const setPersonaWeight = useCallback(async (goalId: string, personaId: string, weight: number) => {
+    try {
+      await api.put(`/api/goals/${goalId}/persona-weights/${personaId}`, { weight });
+      // No local state to update — weights are fetched separately
+    } catch (err) { console.error('Failed to set persona weight:', err); }
   }, []);
 
   return {
     goals, edges, isLoading, refetch: fetchGoals,
     createGoal, updateGoal, deleteGoal,
     createEdge, deleteEdge,
-    addProperty, removeProperty,
+    // Variable bindings (replaces old addProperty/removeProperty)
+    addVariableBinding, updateVariableBinding, removeVariableBinding,
+    // Relevant nords
+    addRelevantNord, removeRelevantNord,
+    // Relevant types
+    addRelevantNordType, removeRelevantNordType,
+    // Persona weights
+    setPersonaWeight,
   };
 }

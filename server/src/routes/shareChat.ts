@@ -163,15 +163,20 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
       const projectMode = project?.project_mode || 'collect';
       await goalsRepo.initializeSessionGoals(sessionId, projectId, projectMode);
 
-      // Apply property pre-fills
+      // Apply property pre-fills directly to nords
       if (link.prefills.length > 0) {
         for (const pf of link.prefills) {
-          await mcpRepo.upsertSessionNord(
-            sessionId,
-            pf.nord_id,
-            { [pf.property_name]: pf.property_value },
-            0, 0 // completion counts will be recalculated on next update
+          const nord = await queryOne<{ properties: Record<string, unknown> }>(
+            'SELECT properties FROM nords WHERE id = $1 AND deleted_at IS NULL',
+            [pf.nord_id]
           );
+          if (nord) {
+            const merged = { ...(nord.properties || {}), [pf.property_name]: pf.property_value };
+            await queryOne(
+              'UPDATE nords SET properties = $1 WHERE id = $2 RETURNING id',
+              [JSON.stringify(merged), pf.nord_id]
+            );
+          }
         }
         logger.info('Applied share link prefills', { linkId: link.id, count: link.prefills.length });
       }

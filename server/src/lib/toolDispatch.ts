@@ -43,8 +43,8 @@ function buildProtocol(
   // Mode-specific behavioral guidance
   const modeOverview: Record<string, string> = {
     explore: 'You navigate a knowledge graph via MCP tools. Your role is to guide and discuss — help the user explore their project, understand relationships, and discover insights. Follow the user\'s curiosity. Do NOT push data collection unless the user volunteers information.',
-    collect: 'You navigate a knowledge graph via MCP tools. Your job is to gather information naturally through conversation, then save structured properties using nords_update_session_nord. The participant should never feel like they are filling out a form. Capture data organically as it comes up.',
-    guided: 'You navigate a knowledge graph via MCP tools. You are actively working toward specific goals. Use the planning_queue and goal bindings to steer the conversation toward uncollected properties. Be purposeful but never robotic — the user should feel heard, not interrogated.',
+    collect: 'You navigate a knowledge graph via MCP tools. Your job is to gather information naturally through conversation, then save structured values using nords_update_session_variables (for project variables) and nords_update_session_nord (for nord-specific properties). The participant should never feel like they are filling out a form. Capture data organically as it comes up.',
+    guided: 'You navigate a knowledge graph via MCP tools. You are actively working toward specific goals. Use the remaining_variables and goal bindings to steer the conversation toward uncollected variables. Be purposeful but never robotic — the user should feel heard, not interrogated.',
   };
 
   const modeCollection: Record<string, Record<string, string>> = {
@@ -55,17 +55,17 @@ function buildProtocol(
       pacing: 'Let the user guide the pace. If they want to linger on a topic, stay there. If they want to move on, follow them.',
     },
     collect: {
-      remaining_schema: 'Each property in remaining_schema has name, type, required, and may have description (what to collect) and hint (how to ask). Use the hint as a conversational prompt. Properties are sorted by priority — ask about earlier items first.',
-      save_incrementally: 'Save values with nords_update_session_nord as soon as you learn them. Do NOT wait until all properties are gathered.',
-      cross_nord_capture: 'You CAN save properties to any nord you know about, not just the current one. If the user naturally mentions something relevant to another nord, capture it immediately — don\'t wait until you traverse there. But prioritize the current nord\'s remaining_schema first.',
+      remaining_variables: 'The remaining_variables in the horizon show uncollected project variables. Each has name, type, required, description, hint, and tags. Save collected values with nords_update_session_variables. Variables are sorted by priority — ask about earlier items first.',
+      remaining_schema: 'The remaining_schema on current_nord shows nord-specific user properties not yet filled. Save these with nords_update_session_nord.',
+      save_incrementally: 'Save values with nords_update_session_variables (for project variables) or nords_update_session_nord (for nord properties) as soon as you learn them. Do NOT wait until all are gathered.',
       planning_queue: 'The planning_queue is YOUR internal roadmap. Never share it with the user. Never say "we still need to cover X, Y, Z." Complete the current conversational thread before pivoting to queue items.',
       pacing: 'Explore topics deeply before moving on. Better to deeply explore 3 topics than shallowly touch 10. If a user gives a short answer, probe before moving on.',
     },
     guided: {
-      remaining_schema: 'Each property in remaining_schema has name, type, required, and may have description and hint. In guided mode, actively steer toward required properties that are bound to active goals. Use hints as conversational prompts.',
-      save_incrementally: 'Save values with nords_update_session_nord as soon as you learn them. Do NOT wait until all properties are gathered.',
-      cross_nord_capture: 'You CAN save properties to any nord you know about, not just the current one. If the user naturally mentions something relevant to another nord, capture it immediately — don\'t wait until you traverse there. But prioritize the current nord\'s remaining_schema first.',
-      planning_queue: 'The planning_queue is YOUR internal roadmap aligned with active goals. Prioritize nords bound to active goals. Never share the queue with the user.',
+      remaining_variables: 'The remaining_variables show uncollected project variables. In guided mode, actively steer toward required variables bound to active goals. Use hints as conversational prompts.',
+      remaining_schema: 'The remaining_schema on current_nord shows nord-specific properties. Save these with nords_update_session_nord if relevant.',
+      save_incrementally: 'Save values with nords_update_session_variables as soon as you learn them. Goal completion is evaluated automatically after each save.',
+      planning_queue: 'The planning_queue is YOUR internal roadmap aligned with active goals. Nords marked goal_relevant are bound to active goals — prioritize them. Never share the queue with the user.',
       pacing: 'Balance depth with goal progress. Probe important topics but keep momentum toward goal completion.',
     },
   };
@@ -195,14 +195,20 @@ const tools: Record<string, ToolHandler> = {
 
   nords_get_session_state: async (ctx) => {
     const session = await queryOne('SELECT * FROM mcp_sessions WHERE id = $1', [ctx.sessionId]);
-    const nords = await mcpRepo.findSessionNords(ctx.sessionId);
+    const variables = await query(
+      'SELECT sv.*, pv.name FROM mcp_session_variables sv JOIN project_variables pv ON pv.id = sv.variable_id WHERE sv.session_id = $1',
+      [ctx.sessionId]
+    );
     const traversals = await mcpRepo.findTraversalsBySession(ctx.sessionId);
-    return { success: true, data: { session, nords, traversals } };
+    return { success: true, data: { session, variables, traversals } };
   },
 
   nords_get_incomplete_nords: async (ctx) => {
-    const nords = await mcpRepo.findIncompleteSessionNords(ctx.sessionId);
-    return { success: true, data: nords };
+    const variables = await query(
+      'SELECT sv.*, pv.name FROM mcp_session_variables sv JOIN project_variables pv ON pv.id = sv.variable_id WHERE sv.session_id = $1 AND sv.value IS NULL',
+      [ctx.sessionId]
+    );
+    return { success: true, data: variables };
   },
 
   nords_get_horizon: async (ctx) => {
@@ -310,17 +316,17 @@ const tools: Record<string, ToolHandler> = {
       if (validationError) return { success: false, error: validationError };
     }
 
-    // Server-side completion counting: compute from schema + merged properties
-    const { requiredCount, filledCount } = await computeCompletionCounts(
-      ctx.sessionId, nordId, newProperties
+    // Update properties directly on the nord (merge with existing)
+    const existingNord = await queryOne<{ properties: Record<string, unknown> }>(
+      'SELECT properties FROM nords WHERE id = $1 AND deleted_at IS NULL',
+      [nordId]
     );
+    if (!existingNord) return { success: false, error: 'Nord not found' };
 
-    const sessionNord = await mcpRepo.upsertSessionNord(
-      ctx.sessionId,
-      nordId,
-      newProperties,
-      requiredCount,
-      filledCount,
+    const merged = { ...(existingNord.properties || {}), ...newProperties };
+    await queryOne(
+      'UPDATE nords SET properties = $2 WHERE id = $1 RETURNING id',
+      [nordId, JSON.stringify(merged)]
     );
 
     // Reactively evaluate goals after every property save
@@ -336,7 +342,60 @@ const tools: Record<string, ToolHandler> = {
 
     // Auto-return horizon (#5)
     const horizon = await mcpRepo.getSessionHorizon(ctx.sessionId);
-    return { success: true, data: { sessionNord, horizon, goal_events: goalEvents.length > 0 ? goalEvents : undefined } };
+    return { success: true, data: { properties: merged, horizon, goal_events: goalEvents.length > 0 ? goalEvents : undefined } };
+  },
+
+  nords_update_session_variables: async (ctx, args) => {
+    const variables = (args.variables as Array<{ variable_id: string; value: unknown }>) || [];
+    if (variables.length === 0) {
+      return { success: false, error: 'At least one variable is required' };
+    }
+
+    // Get session for current position context
+    const session = await mcpRepo.findActiveSession(ctx.projectId);
+    const currentNordId = session?.current_nord_id || null;
+    const personaId = session?.persona_id || null;
+
+    const allGoalEvents: goalsRepo.GoalEvent[] = [];
+    const saved: Array<{ variable_id: string; value: unknown }> = [];
+
+    for (const v of variables) {
+      const { variable: savedVar, goalEvents } = await mcpRepo.upsertSessionVariable(
+        ctx.sessionId, v.variable_id, v.value, currentNordId, personaId
+      );
+      saved.push({ variable_id: savedVar.variable_id, value: savedVar.value });
+      allGoalEvents.push(...goalEvents);
+    }
+
+    // Auto-terminate session if a terminal goal fired
+    const terminatingEvent = allGoalEvents.find(e => e.type === 'session_terminating');
+    if (terminatingEvent) {
+      await mcpRepo.endSession(ctx.sessionId, 'completed',
+        `Session ended: ${terminatingEvent.goal_name} (${terminatingEvent.end_type || 'reset'})`
+      );
+    }
+
+    // Get updated horizon (includes suggested_persona)
+    const horizon = await mcpRepo.getSessionHorizon(ctx.sessionId);
+
+    // Auto-switch persona if strongly recommended
+    let persona_switched = false;
+    if (horizon.suggested_persona && !terminatingEvent) {
+      await mcpRepo.autoSwitchPersona(ctx.sessionId, horizon.suggested_persona.persona_id);
+      persona_switched = true;
+    }
+
+    return {
+      success: true,
+      data: {
+        saved_variables: saved,
+        goal_events: allGoalEvents.length > 0 ? allGoalEvents : undefined,
+        persona_switched: persona_switched ? horizon.suggested_persona : undefined,
+        horizon: persona_switched
+          ? await mcpRepo.getSessionHorizon(ctx.sessionId) // re-fetch after persona switch
+          : horizon,
+      },
+    };
   },
 
   nords_visit_nord: async (ctx, args) => {
@@ -481,52 +540,8 @@ async function validateProperties(
   return null; // All valid
 }
 
-// ── Server-Side Completion Counting ──
 
-/**
- * Compute required_count and filled_count from the nord type schema
- * and merged session properties. This replaces AI-provided counts
- * which were frequently hallucinated.
- */
-async function computeCompletionCounts(
-  sessionId: string,
-  nordId: string,
-  newProperties: Record<string, unknown>
-): Promise<{ requiredCount: number; filledCount: number }> {
-  // 1. Get the nord's type schema
-  const nord = await queryOne<{ type_id: string }>(
-    'SELECT type_id FROM nords WHERE id = $1 AND deleted_at IS NULL',
-    [nordId]
-  );
-  if (!nord) return { requiredCount: 0, filledCount: 0 };
 
-  const nordType = await nordTypesRepo.findById(nord.type_id);
-  if (!nordType?.properties_schema?.length) return { requiredCount: 0, filledCount: 0 };
-
-  const schema = nordType.properties_schema as Array<{ name: string; required?: boolean }>;
-  const requiredFields = schema.filter(f => f.required);
-  const requiredCount = requiredFields.length;
-
-  if (requiredCount === 0) return { requiredCount: 0, filledCount: 0 };
-
-  // 2. Get existing session properties for this nord
-  const existing = await queryOne<{ properties: Record<string, unknown> }>(
-    'SELECT properties FROM mcp_session_nords WHERE session_id = $1 AND nord_id = $2',
-    [sessionId, nordId]
-  );
-  const existingProps = (existing?.properties as Record<string, unknown>) || {};
-
-  // 3. Merge: new properties override existing
-  const merged = { ...existingProps, ...newProperties };
-
-  // 4. Count filled required fields
-  const filledCount = requiredFields.filter(f => {
-    const val = merged[f.name];
-    return val !== undefined && val !== null && val !== '';
-  }).length;
-
-  return { requiredCount, filledCount };
-}
 
 // ── Dispatcher ──
 

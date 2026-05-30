@@ -200,7 +200,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
                   onClick={() => togglePanel('relationship')}
                 >
                   {activeConnectionType
-                    ? <span className="nords-dock__color-dot" style={{ background: activeConnectionType.color }} />
+                    ? <activeConnectionType.icon size={14} strokeWidth={1.6} style={{ color: activeConnectionType.color }} />
                     : <Layers size={14} strokeWidth={1.6} />
                   }
                   <span className="nords-dock__label">{activeConnectionType?.name || 'Category'}</span>

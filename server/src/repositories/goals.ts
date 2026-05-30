@@ -1,5 +1,8 @@
 import { query, queryOne } from '../db.js';
-import type { Goal, GoalEdge, GoalProperty, PersonaGoalWeight } from '../types/entities.js';
+import type {
+  Goal, GoalEdge, GoalVariableBinding, GoalRelevantNord,
+  GoalRelevantNordType, PersonaGoalWeight,
+} from '../types/entities.js';
 
 // ══════════════════════════════════════════════════════════
 // Goals CRUD
@@ -129,7 +132,7 @@ export async function removeEdgeByEndpoints(
 // Implicit Goal
 // ══════════════════════════════════════════════════════════
 
-/** Get or create the implicit goal for a project (Collect mode) */
+/** Get or create the implicit goal for a project (auto-inferred collect mode) */
 export async function ensureImplicitGoal(projectId: string): Promise<Goal> {
   const existing = await queryOne<Goal>(
     'SELECT * FROM goals WHERE project_id = $1 AND is_implicit = true',
@@ -139,79 +142,116 @@ export async function ensureImplicitGoal(projectId: string): Promise<Goal> {
 
   return create({
     project_id: projectId,
-    name: 'Complete All Required Fields',
-    description: 'Automatically tracks all required MCP properties across all nords.',
+    name: 'Complete All Required Variables',
+    description: 'Automatically tracks all required project variables.',
     icon: 'ClipboardCheck',
     is_implicit: true,
   });
 }
 
 // ══════════════════════════════════════════════════════════
-// Goal Properties
+// Goal Variable Bindings (replaces goal_properties)
 // ══════════════════════════════════════════════════════════
 
-export async function findPropertiesByGoal(goalId: string): Promise<GoalProperty[]> {
-  return query<GoalProperty>(
-    'SELECT * FROM goal_properties WHERE goal_id = $1 ORDER BY created_at',
+export async function findVariableBindingsByGoal(goalId: string): Promise<GoalVariableBinding[]> {
+  return query<GoalVariableBinding>(
+    'SELECT * FROM goal_variable_bindings WHERE goal_id = $1 ORDER BY created_at',
     [goalId]
   );
 }
 
-export async function addProperty(goalId: string, nordId: string, propertyName: string): Promise<GoalProperty> {
-  return queryOne<GoalProperty>(`
-    INSERT INTO goal_properties (goal_id, nord_id, property_name)
+export async function addVariableBinding(
+  goalId: string,
+  variableId: string,
+  required: boolean = true
+): Promise<GoalVariableBinding | null> {
+  return queryOne<GoalVariableBinding>(`
+    INSERT INTO goal_variable_bindings (goal_id, variable_id, required)
     VALUES ($1, $2, $3)
-    ON CONFLICT (goal_id, nord_id, property_name) DO NOTHING
+    ON CONFLICT (goal_id, variable_id) DO NOTHING
     RETURNING *
-  `, [goalId, nordId, propertyName]) as Promise<GoalProperty>;
+  `, [goalId, variableId, required]);
 }
 
-export async function removeProperty(propertyId: string): Promise<boolean> {
+export async function updateVariableBinding(
+  bindingId: string,
+  required: boolean
+): Promise<GoalVariableBinding | null> {
+  return queryOne<GoalVariableBinding>(`
+    UPDATE goal_variable_bindings SET required = $2 WHERE id = $1 RETURNING *
+  `, [bindingId, required]);
+}
+
+export async function removeVariableBinding(bindingId: string): Promise<boolean> {
   const result = await queryOne<{ id: string }>(
-    'DELETE FROM goal_properties WHERE id = $1 RETURNING id', [propertyId]
+    'DELETE FROM goal_variable_bindings WHERE id = $1 RETURNING id', [bindingId]
   );
-  return result !== null;
+  return !!result;
 }
 
-/** Check if a nord is bound to any goals (for deletion protection) */
-export async function findGoalsByNord(nordId: string): Promise<Array<{ goal_name: string; goal_id: string }>> {
-  return query<{ goal_name: string; goal_id: string }>(`
-    SELECT DISTINCT g.name AS goal_name, g.id AS goal_id
-    FROM goal_properties gp
-    JOIN goals g ON g.id = gp.goal_id
-    WHERE gp.nord_id = $1
+// ══════════════════════════════════════════════════════════
+// Goal Relevant Nords (bidirectional linking)
+// ══════════════════════════════════════════════════════════
+
+export async function findRelevantNords(goalId: string): Promise<GoalRelevantNord[]> {
+  return query<GoalRelevantNord>(
+    'SELECT * FROM goal_relevant_nords WHERE goal_id = $1',
+    [goalId]
+  );
+}
+
+export async function findGoalsByNord(nordId: string): Promise<Array<{ goal_id: string; goal_name: string }>> {
+  return query<{ goal_id: string; goal_name: string }>(`
+    SELECT grn.goal_id, g.name AS goal_name
+    FROM goal_relevant_nords grn
+    JOIN goals g ON g.id = grn.goal_id
+    WHERE grn.nord_id = $1
   `, [nordId]);
 }
 
-// ══════════════════════════════════════════════════════════
-// Combined Fetch — Goals + Edges + Properties
-// ══════════════════════════════════════════════════════════
-
-export interface GoalWithProperties extends Goal {
-  properties: GoalProperty[];
+export async function addRelevantNord(goalId: string, nordId: string): Promise<GoalRelevantNord | null> {
+  return queryOne<GoalRelevantNord>(`
+    INSERT INTO goal_relevant_nords (goal_id, nord_id)
+    VALUES ($1, $2)
+    ON CONFLICT (goal_id, nord_id) DO NOTHING
+    RETURNING *
+  `, [goalId, nordId]);
 }
 
-export async function findByProjectWithProperties(projectId: string): Promise<GoalWithProperties[]> {
-  const goals = await findByProject(projectId);
-  if (goals.length === 0) return [];
-
-  const goalIds = goals.map(g => g.id);
-  const allProps = await query<GoalProperty>(
-    'SELECT * FROM goal_properties WHERE goal_id = ANY($1) ORDER BY created_at',
-    [goalIds]
+export async function removeRelevantNord(goalId: string, nordId: string): Promise<boolean> {
+  const result = await queryOne<{ id: string }>(
+    'DELETE FROM goal_relevant_nords WHERE goal_id = $1 AND nord_id = $2 RETURNING id',
+    [goalId, nordId]
   );
+  return !!result;
+}
 
-  const propsByGoal = new Map<string, GoalProperty[]>();
-  for (const prop of allProps) {
-    const arr = propsByGoal.get(prop.goal_id) || [];
-    arr.push(prop);
-    propsByGoal.set(prop.goal_id, arr);
-  }
+// ══════════════════════════════════════════════════════════
+// Goal Relevant Nord Types
+// ══════════════════════════════════════════════════════════
 
-  return goals.map(g => ({
-    ...g,
-    properties: propsByGoal.get(g.id) || [],
-  }));
+export async function findRelevantNordTypes(goalId: string): Promise<GoalRelevantNordType[]> {
+  return query<GoalRelevantNordType>(
+    'SELECT * FROM goal_relevant_nord_types WHERE goal_id = $1',
+    [goalId]
+  );
+}
+
+export async function addRelevantNordType(goalId: string, nordTypeId: string): Promise<GoalRelevantNordType | null> {
+  return queryOne<GoalRelevantNordType>(`
+    INSERT INTO goal_relevant_nord_types (goal_id, nord_type_id)
+    VALUES ($1, $2)
+    ON CONFLICT (goal_id, nord_type_id) DO NOTHING
+    RETURNING *
+  `, [goalId, nordTypeId]);
+}
+
+export async function removeRelevantNordType(goalId: string, nordTypeId: string): Promise<boolean> {
+  const result = await queryOne<{ id: string }>(
+    'DELETE FROM goal_relevant_nord_types WHERE goal_id = $1 AND nord_type_id = $2 RETURNING id',
+    [goalId, nordTypeId]
+  );
+  return !!result;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -225,6 +265,13 @@ export async function findWeightsByPersona(personaId: string): Promise<PersonaGo
   );
 }
 
+export async function findWeightsByGoal(goalId: string): Promise<PersonaGoalWeight[]> {
+  return query<PersonaGoalWeight>(
+    'SELECT * FROM persona_goal_weights WHERE goal_id = $1',
+    [goalId]
+  );
+}
+
 export async function upsertWeight(personaId: string, goalId: string, weight: number): Promise<PersonaGoalWeight> {
   return queryOne<PersonaGoalWeight>(`
     INSERT INTO persona_goal_weights (persona_id, goal_id, weight)
@@ -235,29 +282,109 @@ export async function upsertWeight(personaId: string, goalId: string, weight: nu
 }
 
 // ══════════════════════════════════════════════════════════
-// Session Goal Initialization
+// Combined Fetch — Goals + Variable Bindings + Relevant Nords
+// ══════════════════════════════════════════════════════════
+
+export interface GoalWithBindings extends Goal {
+  variable_bindings: GoalVariableBinding[];
+  relevant_nords: GoalRelevantNord[];
+  relevant_nord_types: GoalRelevantNordType[];
+}
+
+export async function findByProjectWithBindings(projectId: string): Promise<GoalWithBindings[]> {
+  const goals = await findByProject(projectId);
+  if (goals.length === 0) return [];
+
+  const goalIds = goals.map(g => g.id);
+
+  const [allBindings, allRelevantNords, allRelevantTypes] = await Promise.all([
+    query<GoalVariableBinding>(
+      'SELECT * FROM goal_variable_bindings WHERE goal_id = ANY($1) ORDER BY created_at',
+      [goalIds]
+    ),
+    query<GoalRelevantNord>(
+      'SELECT * FROM goal_relevant_nords WHERE goal_id = ANY($1)',
+      [goalIds]
+    ),
+    query<GoalRelevantNordType>(
+      'SELECT * FROM goal_relevant_nord_types WHERE goal_id = ANY($1)',
+      [goalIds]
+    ),
+  ]);
+
+  const bindingsByGoal = new Map<string, GoalVariableBinding[]>();
+  for (const b of allBindings) {
+    const arr = bindingsByGoal.get(b.goal_id) || [];
+    arr.push(b);
+    bindingsByGoal.set(b.goal_id, arr);
+  }
+
+  const nordsByGoal = new Map<string, GoalRelevantNord[]>();
+  for (const rn of allRelevantNords) {
+    const arr = nordsByGoal.get(rn.goal_id) || [];
+    arr.push(rn);
+    nordsByGoal.set(rn.goal_id, arr);
+  }
+
+  const typesByGoal = new Map<string, GoalRelevantNordType[]>();
+  for (const rt of allRelevantTypes) {
+    const arr = typesByGoal.get(rt.goal_id) || [];
+    arr.push(rt);
+    typesByGoal.set(rt.goal_id, arr);
+  }
+
+  return goals.map(g => ({
+    ...g,
+    variable_bindings: bindingsByGoal.get(g.id) || [],
+    relevant_nords: nordsByGoal.get(g.id) || [],
+    relevant_nord_types: typesByGoal.get(g.id) || [],
+  }));
+}
+
+/** @deprecated Use findByProjectWithBindings instead */
+export async function findByProjectWithProperties(projectId: string) {
+  return findByProjectWithBindings(projectId);
+}
+
+// ══════════════════════════════════════════════════════════
+// Session Goal Initialization (auto-inferred mode)
 // ══════════════════════════════════════════════════════════
 
 /**
  * Initialize session goals when a session is created.
  *
- * - Collect mode: ensure implicit goal, create 1 active session goal
- * - Guided mode: create session goals for all explicit goals
+ * Auto-inferred mode:
+ * - No goals + no variables (graph_only): skip entirely
+ * - No explicit goals + has variables: ensure implicit goal, 1 active session goal
+ * - Has explicit goals (guided): create session goals
  *   - Root goals (no incoming edges) start as 'active'
  *   - Gated goals (have incoming edges) start as 'pending'
- * - Guided with no goals: falls back to Collect behavior
  */
 export async function initializeSessionGoals(
   sessionId: string,
   projectId: string,
-  projectMode: string
+  _projectMode: string     // kept for signature compat, now auto-inferred
 ): Promise<void> {
-  if (projectMode === 'explore') return;
+  // Check if graph_only
+  const project = await queryOne<{ graph_only: boolean }>(`
+    SELECT graph_only FROM projects WHERE id = $1
+  `, [projectId]);
+  if (project?.graph_only) return;
 
   const projectGoals = await findByProject(projectId);
   const explicitGoals = projectGoals.filter(g => !g.is_implicit);
 
-  if (projectMode === 'collect' || explicitGoals.length === 0) {
+  // Check if there are variables
+  const varCount = await queryOne<{ count: string }>(
+    'SELECT COUNT(*) FROM project_variables WHERE project_id = $1',
+    [projectId]
+  );
+  const hasVariables = parseInt(varCount?.count || '0', 10) > 0;
+
+  if (explicitGoals.length === 0) {
+    // No explicit goals — use implicit goal if there are variables
+    if (!hasVariables) return;
+
     const implicitGoal = await ensureImplicitGoal(projectId);
     await query(`
       INSERT INTO mcp_session_goals (session_id, goal_id, status)
@@ -284,7 +411,7 @@ export async function initializeSessionGoals(
 }
 
 // ══════════════════════════════════════════════════════════
-// Goal Evaluation Engine — DAG-based with structural exclusion
+// Goal Evaluation Engine — Variable-based with DAG sequencing
 // ══════════════════════════════════════════════════════════
 
 export interface GoalEvent {
@@ -295,14 +422,15 @@ export interface GoalEvent {
   reason?: string;
   excluded_by_goal?: string;
   end_type?: 'reset' | 'continue' | null;
+  progress?: { filled: number; required: number; total: number };
 }
 
 /**
- * Evaluate all session goals after a property save.
+ * Evaluate all session goals after a variable save.
  *
- * DAG evaluation with structural exclusion:
- * 1. Check if any active goal's bound properties are all filled → complete it
- * 2. On completion: activate children (targets of outgoing edges)
+ * Variable-based evaluation with DAG sequencing:
+ * 1. Check if any active goal's required variable bindings are all filled → complete it
+ * 2. On completion: activate children (targets of outgoing edges) if ALL parents complete
  * 3. Structural exclusion: cancel sibling goals (other targets of same parent)
  * 4. If completed goal has end_type → fire session_terminating
  */
@@ -332,11 +460,15 @@ export async function evaluateGoals(
   // Load all edges for the project
   const edges = await findEdgesByProject(projectId);
 
-  // Load session nords for property value lookup
-  const sessionNords = await query<{ nord_id: string; properties: Record<string, unknown> }>(`
-    SELECT nord_id, properties FROM mcp_session_nords WHERE session_id = $1
+  // Load session variable values
+  const sessionVars = await query<{ variable_id: string; value: unknown }>(`
+    SELECT variable_id, value FROM mcp_session_variables WHERE session_id = $1
   `, [sessionId]);
-  const sessionNordProps = new Map(sessionNords.map(sn => [sn.nord_id, sn.properties]));
+  const filledVarIds = new Set(
+    sessionVars
+      .filter(sv => sv.value !== undefined && sv.value !== null && sv.value !== '')
+      .map(sv => sv.variable_id)
+  );
 
   // Evaluate each active goal
   for (const sg of sessionGoals) {
@@ -347,11 +479,18 @@ export async function evaluateGoals(
 
     let isComplete = false;
     let completedData: Record<string, unknown> = {};
+    let progress: GoalEvent['progress'];
 
     if (goal.is_implicit) {
-      isComplete = await evaluateImplicitGoal(sessionId, projectId, completedData);
+      const result = await evaluateImplicitGoal(sessionId, projectId);
+      isComplete = result.complete;
+      completedData = result.data;
+      progress = result.progress;
     } else {
-      isComplete = await evaluateExplicitGoal(sg.goal_id, sessionNordProps, completedData);
+      const result = await evaluateExplicitGoal(sg.goal_id, filledVarIds);
+      isComplete = result.complete;
+      completedData = result.data;
+      progress = result.progress;
     }
 
     if (!isComplete) continue;
@@ -368,15 +507,14 @@ export async function evaluateGoals(
       goal_id: goal.id,
       goal_name: goal.name,
       achieved_prompt: goal.achieved_prompt,
+      progress,
     });
 
     // ── Structural exclusion: cancel sibling branches ──
-    // Find all parents of the completed goal
     const parentsOfCompleted = edges
       .filter(e => e.target_goal_id === goal.id)
       .map(e => e.source_goal_id);
 
-    // For each parent, find sibling targets and cancel them
     for (const parentId of parentsOfCompleted) {
       const siblingTargets = edges
         .filter(e => e.source_goal_id === parentId && e.target_goal_id !== goal.id)
@@ -391,7 +529,6 @@ export async function evaluateGoals(
         const id = queue.shift()!;
         if (toCancel.has(id)) continue;
         toCancel.add(id);
-        // Add children of this node to the queue (cascade down)
         for (const e of edges) {
           if (e.source_goal_id === id) queue.push(e.target_goal_id);
         }
@@ -431,7 +568,6 @@ export async function evaluateGoals(
           .filter(e => e.target_goal_id === childId)
           .map(e => e.source_goal_id);
 
-        // Check if all parents are complete
         const parentStates = await query<{ goal_id: string; status: string }>(`
           SELECT goal_id, status FROM mcp_session_goals
           WHERE session_id = $1 AND goal_id = ANY($2)
@@ -476,88 +612,106 @@ export async function evaluateGoals(
   return events;
 }
 
-/** Evaluate an implicit goal: all required MCP properties across all nords */
+/** Evaluate an implicit goal: all required project variables collected */
 async function evaluateImplicitGoal(
   sessionId: string,
-  _projectId: string,
-  completedData: Record<string, unknown>
-): Promise<boolean> {
-  const incomplete = await query<{ nord_id: string; title: string }>(`
-    SELECT sn.nord_id, n.title
-    FROM mcp_session_nords sn
-    JOIN nords n ON n.id = sn.nord_id
-    WHERE sn.session_id = $1
-      AND sn.complete = false
-      AND sn.required_count > 0
-  `, [sessionId]);
+  projectId: string
+): Promise<{ complete: boolean; data: Record<string, unknown>; progress: GoalEvent['progress'] }> {
+  const requiredVars = await query<{ id: string; name: string }>(`
+    SELECT id, name FROM project_variables
+    WHERE project_id = $1 AND required = true
+    ORDER BY sort_order
+  `, [projectId]);
 
-  if (incomplete.length > 0) return false;
+  if (requiredVars.length === 0) {
+    return { complete: false, data: {}, progress: { filled: 0, required: 0, total: 0 } };
+  }
 
-  completedData.total_nords_completed = await query<{ count: string }>(
-    'SELECT COUNT(*) FROM mcp_session_nords WHERE session_id = $1 AND complete = true',
-    [sessionId]
-  ).then(rows => parseInt(rows[0]?.count || '0', 10));
+  const filledVars = await query<{ variable_id: string }>(`
+    SELECT variable_id FROM mcp_session_variables
+    WHERE session_id = $1
+      AND variable_id = ANY($2)
+      AND value IS NOT NULL AND value != 'null'::jsonb
+  `, [sessionId, requiredVars.map(v => v.id)]);
 
-  return true;
+  const filledSet = new Set(filledVars.map(f => f.variable_id));
+  const filled = filledSet.size;
+  const required = requiredVars.length;
+
+  // Also count total vars
+  const totalVarsRow = await queryOne<{ count: string }>(
+    'SELECT COUNT(*) FROM project_variables WHERE project_id = $1',
+    [projectId]
+  );
+  const total = parseInt(totalVarsRow?.count || '0', 10);
+
+  if (filled < required) {
+    return {
+      complete: false,
+      data: { filled, required },
+      progress: { filled, required, total },
+    };
+  }
+
+  return {
+    complete: true,
+    data: { filled, required, total_variables: total },
+    progress: { filled, required, total },
+  };
 }
 
 /**
- * Evaluate an explicit goal: all bound properties have values.
+ * Evaluate an explicit goal: all REQUIRED variable bindings have values.
  *
- * MCP properties are shared globally by key name — if "Name" is collected
- * on ANY session nord, it counts as known for goal bindings on every nord.
- * The bound nord is checked first (direct match), then falls back to global lookup.
- * Filled values always win over empty ones.
+ * A goal completes when all its required variable bindings are filled.
+ * Non-required bindings are tracked but don't block completion.
  */
 async function evaluateExplicitGoal(
   goalId: string,
-  sessionNordProps: Map<string, Record<string, unknown>>,
-  completedData: Record<string, unknown>
-): Promise<boolean> {
-  const bindings = await query<GoalProperty>(
-    'SELECT * FROM goal_properties WHERE goal_id = $1', [goalId]
+  filledVarIds: Set<string>
+): Promise<{ complete: boolean; data: Record<string, unknown>; progress: GoalEvent['progress'] }> {
+  const bindings = await query<GoalVariableBinding>(
+    'SELECT * FROM goal_variable_bindings WHERE goal_id = $1', [goalId]
   );
 
-  if (bindings.length === 0) return false;
+  if (bindings.length === 0) return {
+    complete: false,
+    data: {},
+    progress: { filled: 0, required: 0, total: 0 },
+  };
 
-  // Build global property lookup — shared by key name across all session nords
-  const globalProps = new Map<string, { value: unknown; source_nord_id: string }>();
-  for (const [nordId, props] of sessionNordProps) {
-    for (const [key, value] of Object.entries(props)) {
-      if (value !== undefined && value !== null && value !== '') {
-        if (!globalProps.has(key)) {
-          globalProps.set(key, { value, source_nord_id: nordId });
-        }
-      }
-    }
+  const requiredBindings = bindings.filter(b => b.required);
+  const totalBindings = bindings.length;
+  const filledCount = bindings.filter(b => filledVarIds.has(b.variable_id)).length;
+  const requiredFilledCount = requiredBindings.filter(b => filledVarIds.has(b.variable_id)).length;
+
+  const progress = {
+    filled: filledCount,
+    required: requiredBindings.length,
+    total: totalBindings,
+  };
+
+  if (requiredBindings.length === 0) {
+    // No required bindings — goal can't auto-complete
+    return { complete: false, data: {}, progress };
   }
 
-  for (const binding of bindings) {
-    // Check the bound nord first (direct match preferred)
-    const nordProps = sessionNordProps.get(binding.nord_id);
-    const localValue = nordProps?.[binding.property_name];
-    if (localValue !== undefined && localValue !== null && localValue !== '') {
-      completedData[`${binding.nord_id}.${binding.property_name}`] = localValue;
-      continue;
-    }
-
-    // Global fallback — any session nord with this property name
-    const globalMatch = globalProps.get(binding.property_name);
-    if (globalMatch) {
-      completedData[`${binding.nord_id}.${binding.property_name}`] = globalMatch.value;
-      completedData[`${binding.nord_id}.${binding.property_name}._global_source`] = globalMatch.source_nord_id;
-      continue;
-    }
-
-    // Not collected anywhere — goal is incomplete
-    return false;
+  if (requiredFilledCount < requiredBindings.length) {
+    return { complete: false, data: { filled: requiredFilledCount, required: requiredBindings.length }, progress };
   }
 
-  return true;
+  // All required variables filled
+  const data: Record<string, unknown> = {
+    filled: filledCount,
+    required: requiredBindings.length,
+    total: totalBindings,
+  };
+
+  return { complete: true, data, progress };
 }
 
 // ══════════════════════════════════════════════════════════
-// Session Goals Query (for AI tool)
+// Session Goals Query (for AI tool) — variable-based
 // ══════════════════════════════════════════════════════════
 
 export interface SessionGoalState {
@@ -568,19 +722,26 @@ export interface SessionGoalState {
   is_implicit: boolean;
   end_type: 'reset' | 'continue' | null;
   achieved_prompt: string | null;
-  properties: Array<{
-    nord_id: string;
-    nord_title: string;
-    property_name: string;
+  persona_weight: number | null;
+  variables: Array<{
+    variable_id: string;
+    variable_name: string;
+    variable_type: string;
+    required: boolean;
     collected: boolean;
     value: unknown;
+    tags: string[];
   }>;
 }
 
-/** Get all session goals with property completion status for the AI */
+/**
+ * Get all session goals with variable completion status for the AI.
+ * Optionally accepts personaId to sort by persona goal weight.
+ */
 export async function findSessionGoals(
   sessionId: string,
-  _projectId: string
+  _projectId: string,
+  personaId?: string | null
 ): Promise<SessionGoalState[]> {
   const rows = await query<{
     goal_id: string; goal_name: string; goal_icon: string;
@@ -596,21 +757,32 @@ export async function findSessionGoals(
   `, [sessionId]);
 
   const goalIds = rows.filter(r => !r.is_implicit).map(r => r.goal_id);
+
+  // Load variable bindings with variable metadata
   const bindings = goalIds.length > 0
-    ? await query<GoalProperty & { nord_title: string }>(`
-        SELECT gp.*, n.title AS nord_title
-        FROM goal_properties gp
-        JOIN nords n ON n.id = gp.nord_id
-        WHERE gp.goal_id = ANY($1)
-        ORDER BY gp.created_at
+    ? await query<GoalVariableBinding & { variable_name: string; variable_type: string; tags: string[] }>(`
+        SELECT gvb.*, pv.name AS variable_name, pv.type AS variable_type, pv.tags
+        FROM goal_variable_bindings gvb
+        JOIN project_variables pv ON pv.id = gvb.variable_id
+        WHERE gvb.goal_id = ANY($1)
+        ORDER BY gvb.created_at
       `, [goalIds])
     : [];
 
-  const sessionNords = await query<{ nord_id: string; properties: Record<string, unknown> }>(
-    'SELECT nord_id, properties FROM mcp_session_nords WHERE session_id = $1',
-    [sessionId]
-  );
-  const sessionNordProps = new Map(sessionNords.map(sn => [sn.nord_id, sn.properties]));
+  // Load session variables
+  const sessionVars = await query<{ variable_id: string; value: unknown }>(`
+    SELECT variable_id, value FROM mcp_session_variables WHERE session_id = $1
+  `, [sessionId]);
+  const sessionVarMap = new Map(sessionVars.map(sv => [sv.variable_id, sv.value]));
+
+  // Load persona weights if persona is active
+  const personaWeights = new Map<string, number>();
+  if (personaId) {
+    const weights = await findWeightsByPersona(personaId);
+    for (const w of weights) {
+      personaWeights.set(w.goal_id, w.weight);
+    }
+  }
 
   const bindingsByGoal = new Map<string, typeof bindings>();
   for (const b of bindings) {
@@ -619,31 +791,18 @@ export async function findSessionGoals(
     bindingsByGoal.set(b.goal_id, arr);
   }
 
-  // Build global property lookup (same logic as evaluateExplicitGoal)
-  const globalProps = new Map<string, unknown>();
-  for (const [, props] of sessionNordProps) {
-    for (const [key, value] of Object.entries(props)) {
-      if (value !== undefined && value !== null && value !== '') {
-        if (!globalProps.has(key)) globalProps.set(key, value);
-      }
-    }
-  }
-
-  return rows.map(row => {
+  const result = rows.map(row => {
     const goalBindings = bindingsByGoal.get(row.goal_id) || [];
-    const properties = goalBindings.slice(0, 5).map(b => {
-      // Check bound nord first, then global fallback
-      const nordProps = sessionNordProps.get(b.nord_id) || {};
-      const localValue = nordProps[b.property_name];
-      const value = (localValue !== undefined && localValue !== null && localValue !== '')
-        ? localValue
-        : globalProps.get(b.property_name) ?? null;
+    const variables = goalBindings.map(b => {
+      const value = sessionVarMap.get(b.variable_id) ?? null;
       return {
-        nord_id: b.nord_id,
-        nord_title: b.nord_title,
-        property_name: b.property_name,
+        variable_id: b.variable_id,
+        variable_name: b.variable_name,
+        variable_type: b.variable_type,
+        required: b.required,
         collected: value !== undefined && value !== null && value !== '',
         value,
+        tags: b.tags || [],
       };
     });
 
@@ -655,7 +814,15 @@ export async function findSessionGoals(
       is_implicit: row.is_implicit,
       end_type: (row.end_type as 'reset' | 'continue') || null,
       achieved_prompt: row.achieved_prompt,
-      properties,
+      persona_weight: personaWeights.get(row.goal_id) ?? null,
+      variables,
     };
   });
+
+  // Sort by persona weight (descending) if persona is active
+  if (personaId) {
+    result.sort((a, b) => (b.persona_weight ?? 0) - (a.persona_weight ?? 0));
+  }
+
+  return result;
 }

@@ -20,7 +20,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { X, Plus, Trash2, ChevronUp, ChevronDown, Pencil, ChevronRight, Bot } from 'lucide-react';
+import { X, Plus, Trash2, ChevronUp, ChevronDown, Pencil, ChevronRight } from 'lucide-react';
 import { useTypeMutations, type NordTypeData, type ConnectionTypeData, type PropertySchema } from '../../hooks/useTypeMutations';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { ColorIcon } from '../shared/ColorIcon';
@@ -31,7 +31,6 @@ import { hexToHSL } from '../../utils/color';
 import { UI_STRINGS } from '../../constants/uiStrings';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
-import { api } from '../../api/client';
 import './ManageTypes.css';
 
 interface ManageTypesProps {
@@ -116,17 +115,8 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [expandedPropIdx, setExpandedPropIdx] = useState<number | null>(null);
-  const [expandedMcpPropIdx, setExpandedMcpPropIdx] = useState<number | null>(null);
 
-  // ── Project MCP state ──
-  const [mcpCaptureEnabled, setMcpCaptureEnabled] = useState(false);
 
-  useEffect(() => {
-    if (!open || !projectId) return;
-    api.get<{ mcp_enabled: boolean; mcp_capture_data: boolean }>(`/api/projects/${projectId}`)
-      .then(p => setMcpCaptureEnabled(!!p.mcp_enabled && !!p.mcp_capture_data))
-      .catch(() => setMcpCaptureEnabled(false));
-  }, [open, projectId]);
 
   // ── Load types ──
   const loadTypes = useCallback(async () => {
@@ -293,57 +283,8 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
     if (expandedPropIdx === fromIdx) setExpandedPropIdx(toIdx);
   }, [selected, handleUpdateField, expandedPropIdx]);
 
-  // ── MCP Property mutations ──
-  // MCP properties live in the same properties_schema array but have source:'mcp'.
-  // We split them out for the UI but save them back together.
-  const mcpProps = useMemo(() => {
-    return ((selected as any)?.properties_schema || []).filter((p: PropertySchema) => p.source === 'mcp');
-  }, [selected]);
 
-  const addMcpProperty = useCallback(() => {
-    if (!selected) return;
-    const currentSchema = [...((selected as any).properties_schema || [])];
-    const mcpCount = currentSchema.filter((p: PropertySchema) => p.source === 'mcp').length;
-    if (mcpCount >= 6) {
-      alert('Maximum of 6 MCP properties per type.');
-      return;
-    }
-    const newProp: PropertySchema = { name: 'New MCP Property', type: 'string', source: 'mcp' };
-    handleUpdateField('properties_schema', [...currentSchema, newProp]);
-  }, [selected, handleUpdateField]);
 
-  const updateMcpProperty = useCallback((mcpIndex: number, updates: Partial<PropertySchema>) => {
-    if (!selected) return;
-    const fullSchema = [...((selected as any).properties_schema || [])];
-    // Find the Nth mcp property in the full array
-    let count = -1;
-    for (let i = 0; i < fullSchema.length; i++) {
-      if (fullSchema[i].source === 'mcp') {
-        count++;
-        if (count === mcpIndex) {
-          fullSchema[i] = { ...fullSchema[i], ...updates, source: 'mcp' };
-          break;
-        }
-      }
-    }
-    handleUpdateField('properties_schema', fullSchema);
-  }, [selected, handleUpdateField]);
-
-  const removeMcpProperty = useCallback((mcpIndex: number) => {
-    if (!selected) return;
-    const fullSchema = [...((selected as any).properties_schema || [])];
-    let count = -1;
-    for (let i = 0; i < fullSchema.length; i++) {
-      if (fullSchema[i].source === 'mcp') {
-        count++;
-        if (count === mcpIndex) {
-          fullSchema.splice(i, 1);
-          break;
-        }
-      }
-    }
-    handleUpdateField('properties_schema', fullSchema);
-  }, [selected, handleUpdateField]);
 
   if (!open) return null;
 
@@ -913,221 +854,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                   </p>
                 </div>
 
-                {/* ── MCP Properties Schema (Issue 9) ── */}
-                {mcpCaptureEnabled && (
-                  <div className="manage-types__field manage-types__field--mcp">
-                    <div className="manage-types__field-header">
-                      <label className="manage-types__field-label">
-                        <Bot size={14} strokeWidth={1.6} className="manage-types__mcp-icon" />
-                        MCP Properties
-                      </label>
-                      <button className="manage-types__add-prop-btn" onClick={addMcpProperty}>
-                        <Plus size={12} />
-                        <span>Add MCP Property</span>
-                      </button>
-                    </div>
 
-                    <div className="manage-types__props-table">
-                      <div className="manage-types__props-header">
-                        <span></span>
-                        <span>Name</span>
-                        <span>Type</span>
-                        <span>Req</span>
-                        <span></span>
-                        <span></span>
-                      </div>
-                      {mcpProps.map((prop: PropertySchema, i: number) => (
-                        <div key={i} className="manage-types__props-row-group">
-                          <div
-                            className={`manage-types__props-row manage-types__props-row--mcp ${expandedMcpPropIdx === i ? 'manage-types__props-row--expanded' : ''}`}
-                          >
-                            <div className="manage-types__prop-arrows">
-                              <span style={{ width: 12 }} />
-                              <span style={{ width: 12 }} />
-                            </div>
-                            <input
-                              type="text"
-                              className="manage-types__prop-input"
-                              value={prop.name}
-                              onChange={(e) => updateMcpProperty(i, { name: e.target.value })}
-                            />
-                            <select
-                              className="manage-types__prop-select"
-                              value={prop.type}
-                              onChange={(e) => updateMcpProperty(i, { type: e.target.value as PropertySchema['type'] })}
-                            >
-                              <option value="string">Text</option>
-                              <option value="number">Number</option>
-                              <option value="select">Dropdown</option>
-                              <option value="date">Date</option>
-                              <option value="markdown">Markdown</option>
-                              <option value="url">URL</option>
-                              <option value="tags">Tags</option>
-                            </select>
-                            <div className="manage-types__prop-req-cell">
-                              <input
-                                type="checkbox"
-                                className="manage-types__prop-req-check"
-                                checked={!!prop.required}
-                                onChange={(e) => updateMcpProperty(i, { required: e.target.checked })}
-                                title="Required"
-                              />
-                            </div>
-                            <div className="manage-types__prop-req-cell" />
-                            <div className="manage-types__prop-actions">
-                              <button
-                                className={`manage-types__prop-edit ${expandedMcpPropIdx === i ? 'is-active' : ''}`}
-                                onClick={() => setExpandedMcpPropIdx(expandedMcpPropIdx === i ? null : i)}
-                                title="Edit defaults & options"
-                              >
-                                <Pencil size={12} />
-                              </button>
-                              <button
-                                className="manage-types__prop-delete"
-                                onClick={() => removeMcpProperty(i)}
-                                title="Remove MCP property"
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                            </div>
-                          </div>
-                          {expandedMcpPropIdx === i && (
-                            <div className="manage-types__prop-detail">
-                              <div className="manage-types__prop-detail-row">
-                                <div className="manage-types__prop-detail-field" style={{ flex: 1 }}>
-                                  <span className="manage-types__prop-detail-label">Description (what to collect)</span>
-                                  <input
-                                    type="text"
-                                    className="manage-types__prop-default-input"
-                                    value={prop.description || ''}
-                                    onChange={(e) => updateMcpProperty(i, { description: e.target.value || undefined })}
-                                    placeholder="e.g., Annual project budget in USD"
-                                  />
-                                </div>
-                              </div>
-                              <div className="manage-types__prop-detail-row">
-                                <div className="manage-types__prop-detail-field" style={{ flex: 1 }}>
-                                  <span className="manage-types__prop-detail-label">Hint (how to ask)</span>
-                                  <input
-                                    type="text"
-                                    className="manage-types__prop-default-input"
-                                    value={prop.hint || ''}
-                                    onChange={(e) => updateMcpProperty(i, { hint: e.target.value || undefined })}
-                                    placeholder="e.g., What's the approximate annual budget?"
-                                  />
-                                </div>
-                              </div>
-                              <div className="manage-types__prop-detail-row">
-                                <div className="manage-types__prop-detail-field">
-                                  <span className="manage-types__prop-detail-label">Priority</span>
-                                  <select
-                                    className="manage-types__prop-default-select"
-                                    value={prop.priority ?? 0}
-                                    onChange={(e) => updateMcpProperty(i, { priority: parseInt(e.target.value) || 0 })}
-                                  >
-                                    <option value={0}>Default</option>
-                                    <option value={1}>1 — Low</option>
-                                    <option value={2}>2 — Medium</option>
-                                    <option value={3}>3 — High</option>
-                                    <option value={4}>4 — Critical</option>
-                                    <option value={5}>5 — Must Ask First</option>
-                                  </select>
-                                </div>
-                                <div className="manage-types__prop-detail-field">
-                                  <span className="manage-types__prop-detail-label">Default (Example)</span>
-                                  {prop.type === 'tags' ? (
-                                    <span className="manage-types__prop-detail-hint">Tags are added per instance</span>
-                                  ) : prop.type === 'select' ? (
-                                    <select
-                                      className="manage-types__prop-default-select"
-                                      value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
-                                      onChange={(e) => updateMcpProperty(i, { defaultValue: e.target.value || null })}
-                                    >
-                                      <option value="">— None —</option>
-                                      {(prop.options || []).map(opt => (
-                                        <option key={opt} value={opt}>{opt}</option>
-                                      ))}
-                                    </select>
-                                  ) : (
-                                    <input
-                                      type={prop.type === 'number' ? 'number' : prop.type === 'url' ? 'url' : 'text'}
-                                      className="manage-types__prop-default-input"
-                                      value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
-                                      onChange={(e) => updateMcpProperty(i, { defaultValue: e.target.value || null })}
-                                      placeholder={prop.type === 'url' ? 'https://…' : 'Example value…'}
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                              {prop.type === 'select' && (
-                                <OptionsEditor
-                                  options={prop.options || []}
-                                  onChange={(opts) => updateMcpProperty(i, { options: opts })}
-                                />
-                              )}
-                              {/* Depends On — conditional property logic */}
-                              <div className="manage-types__prop-detail-row">
-                                <div className="manage-types__prop-detail-field" style={{ flex: 1 }}>
-                                  <span className="manage-types__prop-detail-label">Depends On (optional)</span>
-                                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                    <select
-                                      className="manage-types__prop-default-select"
-                                      value={prop.depends_on?.property || ''}
-                                      onChange={(e) => {
-                                        if (!e.target.value) {
-                                          updateMcpProperty(i, { depends_on: undefined });
-                                        } else {
-                                          updateMcpProperty(i, {
-                                            depends_on: {
-                                              property: e.target.value,
-                                              values: prop.depends_on?.values || [],
-                                            },
-                                          });
-                                        }
-                                      }}
-                                    >
-                                      <option value="">— No dependency —</option>
-                                      {mcpProps
-                                        .filter((_: PropertySchema, j: number) => j !== i)
-                                        .map((other: PropertySchema) => (
-                                          <option key={other.name} value={other.name}>{other.name}</option>
-                                        ))}
-                                    </select>
-                                    {prop.depends_on?.property && (
-                                      <input
-                                        type="text"
-                                        className="manage-types__prop-default-input"
-                                        value={(prop.depends_on?.values || []).join(', ')}
-                                        onChange={(e) => updateMcpProperty(i, {
-                                          depends_on: {
-                                            property: prop.depends_on!.property,
-                                            values: e.target.value.split(',').map(v => v.trim()).filter(Boolean),
-                                          },
-                                        })}
-                                        placeholder="Matching values (comma-separated)"
-                                        style={{ flex: 1 }}
-                                      />
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-
-                      {mcpProps.length === 0 && (
-                        <div className="manage-types__props-empty">
-                          No MCP properties defined. These will be populated by the MCP server.
-                        </div>
-                      )}
-                    </div>
-
-                    <p className="manage-types__props-hint">
-                      MCP properties define data that an AI agent will capture. Default values serve as examples.
-                    </p>
-                  </div>
-                )}
               </>
             ) : (
               <div className="manage-types__empty">

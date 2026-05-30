@@ -1,5 +1,6 @@
 import { query, queryOne } from '../db.js';
 import type { Project } from '../types/entities.js';
+import { resolveUserId } from '../lib/resolveUser.js';
 
 export async function findById(id: string): Promise<Project | null> {
   return queryOne<Project>('SELECT * FROM projects WHERE id = $1 AND deleted_at IS NULL', [id]);
@@ -9,17 +10,16 @@ export async function findAll(): Promise<Project[]> {
   return query<Project>('SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY updated_at DESC');
 }
 
-export async function findByOrg(orgId: string): Promise<Project[]> {
-  return query<Project>('SELECT * FROM projects WHERE org_id = $1 AND deleted_at IS NULL', [orgId]);
+export async function findByUser(userId: string): Promise<Project[]> {
+  return query<Project>('SELECT * FROM projects WHERE created_by = $1 AND deleted_at IS NULL', [userId]);
 }
 
 export async function create(project: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>): Promise<Project> {
   return queryOne<Project>(`
-    INSERT INTO projects (org_id, name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_mutable, goals_enabled, mcp_system_prompt, mcp_welcome_message, project_mode, end_prompt_suggestion, default_persona_id, default_start_nord_id, default_end_nord_id, accent_color)
+    INSERT INTO projects (name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_mutable, goals_enabled, mcp_system_prompt, mcp_welcome_message, project_mode, end_prompt_suggestion, default_persona_id, default_start_nord_id, default_end_nord_id, accent_color, graph_only)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
     RETURNING *
   `, [
-    project.org_id,
     project.name,
     project.description,
     project.purpose,
@@ -37,10 +37,11 @@ export async function create(project: Omit<Project, 'id' | 'created_at' | 'updat
     project.default_start_nord_id ?? null,
     project.default_end_nord_id ?? null,
     project.accent_color ?? '#6b7aed',
+    project.graph_only ?? false,
   ]) as Promise<Project>;
 }
 
-type UpdatableProjectFields = Pick<Project, 'name' | 'description' | 'purpose' | 'icon' | 'accent_color' | 'mcp_enabled' | 'mcp_capture_data' | 'mcp_mutable' | 'goals_enabled' | 'mcp_system_prompt' | 'mcp_welcome_message' | 'project_mode' | 'end_prompt_suggestion' | 'default_persona_id' | 'default_start_nord_id' | 'default_end_nord_id' | 'is_demo'>;
+type UpdatableProjectFields = Pick<Project, 'name' | 'description' | 'purpose' | 'icon' | 'accent_color' | 'mcp_enabled' | 'mcp_capture_data' | 'mcp_mutable' | 'goals_enabled' | 'mcp_system_prompt' | 'mcp_welcome_message' | 'project_mode' | 'end_prompt_suggestion' | 'default_persona_id' | 'default_start_nord_id' | 'default_end_nord_id' | 'is_demo' | 'graph_only'>;
 
 export async function update(id: string, updates: Partial<UpdatableProjectFields>): Promise<Project | null> {
   const allowedKeys: (keyof UpdatableProjectFields)[] = [
@@ -48,7 +49,7 @@ export async function update(id: string, updates: Partial<UpdatableProjectFields
     'mcp_enabled', 'mcp_capture_data', 'mcp_mutable', 'goals_enabled', 'mcp_system_prompt', 'mcp_welcome_message',
     'project_mode', 'end_prompt_suggestion',
     'default_persona_id', 'default_start_nord_id', 'default_end_nord_id',
-    'is_demo',
+    'is_demo', 'graph_only',
   ];
 
   const setClauses: string[] = [];
@@ -86,34 +87,44 @@ export async function softDelete(id: string): Promise<boolean> {
 
 // ── Favorites ──
 
-const DEV_USER_ID = '00000000-0000-0000-0000-000000000001';
+/**
+ * Find all projects visible to a user, with star status.
+ * Resolves the user's DB id from their Firebase UID (with email fallback)
+ * and scopes results to projects they created.
+ */
+export async function findAllWithStars(firebaseUid?: string, email?: string): Promise<(Project & { is_starred: boolean })[]> {
+  const dbUserId = await resolveUserId(firebaseUid, email);
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!dbUserId) {
+    return []; // No authenticated user → no projects
+  }
 
-export async function findAllWithStars(userId?: string): Promise<(Project & { is_starred: boolean })[]> {
-  const uid = (userId && UUID_RE.test(userId)) ? userId : DEV_USER_ID;
   return query<Project & { is_starred: boolean }>(
     `SELECT p.*, (uf.user_id IS NOT NULL) AS is_starred
      FROM projects p
      LEFT JOIN user_favorites uf ON uf.project_id = p.id AND uf.user_id = $1
      WHERE p.deleted_at IS NULL
+       AND p.created_by = $1
      ORDER BY p.updated_at DESC`,
-    [uid]
+    [dbUserId]
   );
 }
 
-export async function toggleStar(projectId: string, userId?: string): Promise<boolean> {
-  const uid = (userId && UUID_RE.test(userId)) ? userId : DEV_USER_ID;
+export async function toggleStar(projectId: string, firebaseUid?: string, email?: string): Promise<boolean> {
+  const dbUserId = await resolveUserId(firebaseUid, email);
+  if (!dbUserId) throw new Error('User not found');
+
   // Try to delete first — if a row was deleted, it was starred → now unstarred
   const removed = await queryOne<{ project_id: string }>(
     'DELETE FROM user_favorites WHERE user_id = $1 AND project_id = $2 RETURNING project_id',
-    [uid, projectId]
+    [dbUserId, projectId]
   );
   if (removed) return false; // was starred → unstarred
   // Otherwise insert
   await queryOne(
     'INSERT INTO user_favorites (user_id, project_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-    [uid, projectId]
+    [dbUserId, projectId]
   );
   return true; // now starred
 }
+

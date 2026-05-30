@@ -35,16 +35,15 @@ export async function resolveAccount(req: Request, _res: Response, next: NextFun
   // If already set (e.g. by a future auth integration), skip
   if (req.accountId) return next();
 
-  // TODO: Production path — resolve from user.uid → org_members → organizations.account_id
+  // TODO: Production path — resolve from user.uid → accounts (when billing is implemented)
   // const userId = req.user?.uid;
   // if (userId) {
-  //   const row = await queryOne<{ account_id: string }>(
-  //     `SELECT o.account_id FROM org_members om
-  //      JOIN organizations o ON o.id = om.org_id
-  //      WHERE om.user_id = $1 AND o.account_id IS NOT NULL
+  //   const row = await queryOne<{ id: string }>(
+  //     `SELECT a.id FROM accounts a
+  //      WHERE a.owner_user_id = (SELECT id FROM users WHERE firebase_uid = $1)
   //      LIMIT 1`, [userId]
   //   );
-  //   if (row) { req.accountId = row.account_id; return next(); }
+  //   if (row) { req.accountId = row.id; return next(); }
   // }
 
   // Dev fallback

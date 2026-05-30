@@ -184,70 +184,53 @@ mcpSessionsRouter.get('/mcp-sessions/:id/visits', async (req: Request, res: Resp
   }
 });
 
-// ── Session-scoped Nord Completion (Instance Layer) ──
+// ── Session Variables (Collection Tracking) ──
 
 /**
  * @openapi
- * /api/mcp-sessions/{id}/nords:
- *   put:
+ * /api/mcp-sessions/{id}/variables:
+ *   get:
  *     tags: [MCP Sessions]
- *     summary: Upsert session-scoped completion state for a Nord
+ *     summary: Get all session variable values
  */
-mcpSessionsRouter.put('/mcp-sessions/:id/nords', async (req: Request, res: Response) => {
+mcpSessionsRouter.get('/mcp-sessions/:id/variables', async (req: Request, res: Response) => {
   try {
-    const { nord_id, properties, required_count, filled_count } = req.body;
-    if (!nord_id) {
-      res.status(400).json({ error: 'nord_id is required' });
-      return;
-    }
-    const sessionNord = await mcpRepo.upsertSessionNord(
-      req.params.id as string,
-      nord_id,
-      properties || {},
-      required_count ?? 0,
-      filled_count ?? 0
+    const { query: dbQuery } = await import('../db.js');
+    const variables = await dbQuery(
+      `SELECT sv.*, pv.name, pv.type, pv.prompt
+       FROM mcp_session_variables sv
+       JOIN project_variables pv ON pv.id = sv.variable_id
+       WHERE sv.session_id = $1`,
+      [req.params.id]
     );
-
-    // Auto-return updated horizon after property changes
-    const horizon = await mcpRepo.getSessionHorizon(req.params.id as string);
-    res.json({ sessionNord, horizon });
+    res.json(variables);
   } catch (err: any) {
-    logger.error('Failed to upsert session nord', { error: err.message, sessionId: req.params.id });
-    res.status(500).json({ error: 'Failed to upsert session nord' });
+    logger.error('Failed to get session variables', { error: err.message, sessionId: req.params.id });
+    res.status(500).json({ error: 'Failed to get session variables' });
   }
 });
 
 /**
  * @openapi
- * /api/mcp-sessions/{id}/nords:
+ * /api/mcp-sessions/{id}/variables/incomplete:
  *   get:
  *     tags: [MCP Sessions]
- *     summary: Get all session-scoped Nord completion states
+ *     summary: Get unfilled session variables
  */
-mcpSessionsRouter.get('/mcp-sessions/:id/nords', async (req: Request, res: Response) => {
+mcpSessionsRouter.get('/mcp-sessions/:id/variables/incomplete', async (req: Request, res: Response) => {
   try {
-    const sessionNords = await mcpRepo.findSessionNords(req.params.id as string);
-    res.json(sessionNords);
-  } catch (err: any) {
-    logger.error('Failed to get session nords', { error: err.message, sessionId: req.params.id });
-    res.status(500).json({ error: 'Failed to get session nords' });
-  }
-});
-
-/**
- * @openapi
- * /api/mcp-sessions/{id}/nords/incomplete:
- *   get:
- *     tags: [MCP Sessions]
- *     summary: Get incomplete Nords for gate-readiness check
- */
-mcpSessionsRouter.get('/mcp-sessions/:id/nords/incomplete', async (req: Request, res: Response) => {
-  try {
-    const incomplete = await mcpRepo.findIncompleteSessionNords(req.params.id as string);
+    const { query: dbQuery } = await import('../db.js');
+    const incomplete = await dbQuery(
+      `SELECT sv.*, pv.name, pv.type, pv.prompt
+       FROM mcp_session_variables sv
+       JOIN project_variables pv ON pv.id = sv.variable_id
+       WHERE sv.session_id = $1 AND sv.value IS NULL`,
+      [req.params.id]
+    );
     res.json(incomplete);
   } catch (err: any) {
-    logger.error('Failed to get incomplete nords', { error: err.message, sessionId: req.params.id });
-    res.status(500).json({ error: 'Failed to get incomplete nords' });
+    logger.error('Failed to get incomplete variables', { error: err.message, sessionId: req.params.id });
+    res.status(500).json({ error: 'Failed to get incomplete variables' });
   }
 });
 

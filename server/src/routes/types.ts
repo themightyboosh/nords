@@ -96,7 +96,7 @@ typesRouter.get('/projects/:id/types', async (req: Request, res: Response) => {
  */
 typesRouter.post('/projects/:id/nord-types', validate(CreateNordTypeSchema), async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.uid || 'dev-user-000';
+    const userId = req.user!.uid;
     const type = await nordTypesRepo.create({
       user_id: userId,
       project_id: req.params.id as string,
@@ -228,7 +228,7 @@ typesRouter.delete('/nord-types/:typeId', async (req: Request, res: Response) =>
  */
 typesRouter.post('/projects/:id/connection-types', validate(CreateConnectionTypeSchema), async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.uid || 'dev-user-000';
+    const userId = req.user!.uid;
     const type = await connectionTypesRepo.create({
       user_id: userId,
       project_id: req.params.id as string,

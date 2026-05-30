@@ -78,6 +78,7 @@ Cross-project intelligence, advanced AI authorship, and enterprise features.
 | Status | Feature | Description |
 |--------|---------|-------------|
 | 🔵 | **Wormholes** | Cross-project connections. See [Wormholes](#wormholes) below |
+| 🔵 | **Organizations & Team Workspaces** | Multi-user project sharing within an organization. See [Organizations & Team Workspaces](#organizations--team-workspaces) below |
 | 🔵 | **AI Author Mode** | AI spawns and suggests spatial setups natively, requiring human approval before committing |
 | 🔵 | **Gravity Well** | Optional physics mode for discovery-driven exploratory layouts — nords attract/repel based on connection weight |
 | 🔵 | **Sandbox Branching** | Fork a Snapshot to play out "what-if" scenarios without affecting the live state |
@@ -308,6 +309,36 @@ Cross-project Connections that establish typed, distance-aware relationships bet
 - Portfolio-level views connecting strategic goals to execution projects
 
 **Depends on:** Workspace Folders (organizational context for cross-project discovery)
+
+---
+
+### Organizations & Team Workspaces
+
+> **Phase 3** · 🔵 Planned
+
+Multi-user organizations that allow teams to share projects, collaborate on canvases, and manage access across a shared workspace.
+
+**Current State:** Projects are scoped per-user via `created_by`. Each user sees only their own projects. There is no concept of shared project visibility or team-based access.
+
+**Previous Implementation (removed):** An `organizations` table and `org_members` join table existed as scaffolding but added indirection without value — every user got their own org on registration, making org = user. This was removed in favor of direct user scoping until real multi-user requirements emerge.
+
+**Proposed Architecture:**
+
+| Component | Description |
+|-----------|-------------|
+| **Organizations** | Named workspaces with a slug, billing account, and member roster |
+| **Org Members** | User ↔ Org join with roles: `owner`, `admin`, `member`, `viewer` |
+| **Project Visibility** | Projects gain a `visibility` field: `private` (creator-only), `org` (all org members), `shared` (specific users via ACL) |
+| **Invitations** | Email-based invite flow with role assignment. Replaces current invite key system |
+| **Org Switcher** | UI for users belonging to multiple orgs to switch active workspace context |
+
+**Key Design Decisions:**
+- **Users can belong to multiple orgs** — a consultant working with several clients, or an employee with a personal workspace and a company workspace
+- **Projects default to `private`** — sharing is opt-in, not opt-out
+- **Org-level defaults** — org admins can set default NordType/ConnectionType templates, personas, and project modes that apply to new projects created within the org
+- **Billing is per-org** — Nord count limits, AI usage, and feature tiers are scoped to the organization, not individual users
+
+**Depends on:** Enterprise SSO & Audit Logs (Phase 3), Workspace Folders (Phase 3)
 
 ---
 

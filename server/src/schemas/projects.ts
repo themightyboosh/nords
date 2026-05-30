@@ -8,8 +8,6 @@
 import { z } from 'zod';
 
 export const CreateProjectSchema = z.object({
-  org_id: z.string().uuid().optional()
-    .describe('Organization ID. Defaults to the dev placeholder in single-user mode.'),
   name: z.string().min(1).max(200)
     .describe('Human-readable project name'),
   description: z.string().min(1).max(2000)

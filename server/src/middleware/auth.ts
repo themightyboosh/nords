@@ -33,13 +33,18 @@ declare global {
   }
 }
 
+// ── Dev passthrough defaults ──
+// When Firebase is not configured (SKIP_AUTH=true or no config),
+// default to the admin user. Override with x-user-id / x-user-email headers.
+const DEV_FALLBACK_UID  = process.env.DEV_USER_UID   || 'u0vGG2qokvMVkhy3OzYqRgW6SHo2';
+const DEV_FALLBACK_EMAIL = process.env.DEV_USER_EMAIL || 'daniel@monumental-i.com';
+
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   // ── Dev bypass (SKIP_AUTH=true) — used for demo recording ──
   if (process.env.SKIP_AUTH === 'true') {
-    const devUserId = req.headers['x-user-id'] as string;
     req.user = {
-      uid: devUserId || 'dev-user-000',
-      email: 'dev@nords.local',
+      uid: (req.headers['x-user-id'] as string) || DEV_FALLBACK_UID,
+      email: (req.headers['x-user-email'] as string) || DEV_FALLBACK_EMAIL,
       name: 'Dev User',
       email_verified: true,
     };
@@ -48,11 +53,9 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 
   // ── Passthrough mode (no Firebase config) ──
   if (!isFirebaseInitialized()) {
-    // In dev without Firebase, use x-user-id header or a placeholder
-    const devUserId = req.headers['x-user-id'] as string;
     req.user = {
-      uid: devUserId || 'dev-user-000',
-      email: 'dev@nords.local',
+      uid: (req.headers['x-user-id'] as string) || DEV_FALLBACK_UID,
+      email: (req.headers['x-user-email'] as string) || DEV_FALLBACK_EMAIL,
       name: 'Dev User',
       email_verified: true,
     };
@@ -104,7 +107,11 @@ export async function optionalAuth(req: Request, res: Response, next: NextFuncti
   if (!isFirebaseInitialized()) {
     const devUserId = req.headers['x-user-id'] as string;
     if (devUserId) {
-      req.user = { uid: devUserId, email: 'dev@nords.local', email_verified: true };
+      req.user = {
+        uid: devUserId,
+        email: (req.headers['x-user-email'] as string) || DEV_FALLBACK_EMAIL,
+        email_verified: true,
+      };
     }
     return next();
   }

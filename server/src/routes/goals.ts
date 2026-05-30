@@ -6,10 +6,10 @@ const log = logger.child({ route: 'goals' });
 
 export const goalsRouter = Router();
 
-// ── GET /api/projects/:id/goals — List all goals with properties ──
+// ── GET /api/projects/:id/goals — List all goals with variable bindings + relevant nords ──
 goalsRouter.get('/projects/:id/goals', async (req: Request, res: Response) => {
   try {
-    const goals = await goalsRepo.findByProjectWithProperties(req.params.id as string);
+    const goals = await goalsRepo.findByProjectWithBindings(req.params.id as string);
     res.json(goals);
   } catch (err: any) {
     log.error('Error fetching goals', { error: err.message, requestId: req.requestId, projectId: req.params.id });
@@ -55,47 +55,170 @@ goalsRouter.delete('/goals/:id', async (req: Request, res: Response) => {
   }
 });
 
-// ── POST /api/goals/:id/properties — Add a property binding ──
-goalsRouter.post('/goals/:id/properties', async (req: Request, res: Response) => {
+// ══════════════════════════════════════════════════════════
+// Variable Bindings (replaces property bindings)
+// ══════════════════════════════════════════════════════════
+
+// ── POST /api/goals/:id/variable-bindings — Add a variable binding ──
+goalsRouter.post('/goals/:id/variable-bindings', async (req: Request, res: Response) => {
   try {
-    const { nord_id, property_name } = req.body;
-    if (!nord_id || !property_name) {
-      return res.status(400).json({ error: 'nord_id and property_name are required' });
+    const { variable_id, required } = req.body;
+    if (!variable_id) {
+      return res.status(400).json({ error: 'variable_id is required' });
     }
-    const prop = await goalsRepo.addProperty(req.params.id as string, nord_id, property_name);
-    if (!prop) return res.status(409).json({ error: 'Property binding already exists' });
-    res.status(201).json(prop);
+    const binding = await goalsRepo.addVariableBinding(
+      req.params.id as string,
+      variable_id,
+      required !== undefined ? required : true
+    );
+    if (!binding) return res.status(409).json({ error: 'Variable binding already exists' });
+    res.status(201).json(binding);
   } catch (err: any) {
-    log.error('Error adding goal property', { error: err.message, requestId: req.requestId, goalId: req.params.id });
+    log.error('Error adding variable binding', { error: err.message, requestId: req.requestId, goalId: req.params.id });
     res.status(500).json({ error: err.message });
   }
 });
 
-// ── DELETE /api/goals/:id/properties/:propId — Remove a property binding ──
-goalsRouter.delete('/goals/:id/properties/:propId', async (req: Request, res: Response) => {
+// ── PUT /api/goals/:id/variable-bindings/:bindingId — Update binding (required toggle) ──
+goalsRouter.put('/goals/:id/variable-bindings/:bindingId', async (req: Request, res: Response) => {
   try {
-    const deleted = await goalsRepo.removeProperty(req.params.propId as string);
-    if (!deleted) return res.status(404).json({ error: 'Property binding not found' });
+    const { required } = req.body;
+    if (required === undefined) {
+      return res.status(400).json({ error: 'required is required' });
+    }
+    const binding = await goalsRepo.updateVariableBinding(req.params.bindingId as string, required);
+    if (!binding) return res.status(404).json({ error: 'Binding not found' });
+    res.json(binding);
+  } catch (err: any) {
+    log.error('Error updating variable binding', { error: err.message, requestId: req.requestId });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DELETE /api/goals/:id/variable-bindings/:bindingId — Remove a variable binding ──
+goalsRouter.delete('/goals/:id/variable-bindings/:bindingId', async (req: Request, res: Response) => {
+  try {
+    const deleted = await goalsRepo.removeVariableBinding(req.params.bindingId as string);
+    if (!deleted) return res.status(404).json({ error: 'Variable binding not found' });
     res.status(204).send();
   } catch (err: any) {
-    log.error('Error removing goal property', { error: err.message, requestId: req.requestId, propId: req.params.propId });
+    log.error('Error removing variable binding', { error: err.message, requestId: req.requestId });
     res.status(500).json({ error: err.message });
   }
 });
 
-// ── GET /api/goals/check-nord/:nordId — Check if nord is bound to goals (deletion guard) ──
-goalsRouter.get('/goals/check-nord/:nordId', async (req: Request, res: Response) => {
+// ══════════════════════════════════════════════════════════
+// Relevant Nords
+// ══════════════════════════════════════════════════════════
+
+// ── GET /api/goals/:id/relevant-nords ──
+goalsRouter.get('/goals/:id/relevant-nords', async (req: Request, res: Response) => {
   try {
-    const boundGoals = await goalsRepo.findGoalsByNord(req.params.nordId as string);
-    if (boundGoals.length > 0) {
-      return res.status(409).json({
-        error: `Cannot delete — this nord is bound to ${boundGoals.length} goal(s): ${boundGoals.map(g => g.goal_name).join(', ')}`,
-        goals: boundGoals,
-      });
-    }
-    res.json({ ok: true });
+    const nords = await goalsRepo.findRelevantNords(req.params.id as string);
+    res.json(nords);
   } catch (err: any) {
-    log.error('Error checking nord goals', { error: err.message, requestId: req.requestId, nordId: req.params.nordId });
+    log.error('Error fetching relevant nords', { error: err.message, requestId: req.requestId });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/goals/:id/relevant-nords ──
+goalsRouter.post('/goals/:id/relevant-nords', async (req: Request, res: Response) => {
+  try {
+    const { nord_id } = req.body;
+    if (!nord_id) return res.status(400).json({ error: 'nord_id is required' });
+    const result = await goalsRepo.addRelevantNord(req.params.id as string, nord_id);
+    if (!result) return res.status(409).json({ error: 'Already linked' });
+    res.status(201).json(result);
+  } catch (err: any) {
+    log.error('Error adding relevant nord', { error: err.message, requestId: req.requestId });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DELETE /api/goals/:id/relevant-nords/:nordId ──
+goalsRouter.delete('/goals/:id/relevant-nords/:nordId', async (req: Request, res: Response) => {
+  try {
+    const deleted = await goalsRepo.removeRelevantNord(req.params.id as string, req.params.nordId as string);
+    if (!deleted) return res.status(404).json({ error: 'Link not found' });
+    res.status(204).send();
+  } catch (err: any) {
+    log.error('Error removing relevant nord', { error: err.message, requestId: req.requestId });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /api/nords/:nordId/goals — Get goals linked to a nord (reverse lookup) ──
+goalsRouter.get('/nords/:nordId/goals', async (req: Request, res: Response) => {
+  try {
+    const goals = await goalsRepo.findGoalsByNord(req.params.nordId as string);
+    res.json(goals);
+  } catch (err: any) {
+    log.error('Error fetching goals for nord', { error: err.message, requestId: req.requestId });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// Relevant Nord Types
+// ══════════════════════════════════════════════════════════
+
+// ── POST /api/goals/:id/relevant-types ──
+goalsRouter.post('/goals/:id/relevant-types', async (req: Request, res: Response) => {
+  try {
+    const { nord_type_id } = req.body;
+    if (!nord_type_id) return res.status(400).json({ error: 'nord_type_id is required' });
+    const result = await goalsRepo.addRelevantNordType(req.params.id as string, nord_type_id);
+    if (!result) return res.status(409).json({ error: 'Already linked' });
+    res.status(201).json(result);
+  } catch (err: any) {
+    log.error('Error adding relevant nord type', { error: err.message, requestId: req.requestId });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DELETE /api/goals/:id/relevant-types/:typeId ──
+goalsRouter.delete('/goals/:id/relevant-types/:typeId', async (req: Request, res: Response) => {
+  try {
+    const deleted = await goalsRepo.removeRelevantNordType(req.params.id as string, req.params.typeId as string);
+    if (!deleted) return res.status(404).json({ error: 'Link not found' });
+    res.status(204).send();
+  } catch (err: any) {
+    log.error('Error removing relevant nord type', { error: err.message, requestId: req.requestId });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// Persona Weights
+// ══════════════════════════════════════════════════════════
+
+// ── GET /api/goals/:id/persona-weights — Get all persona weights for a goal ──
+goalsRouter.get('/goals/:id/persona-weights', async (req: Request, res: Response) => {
+  try {
+    const weights = await goalsRepo.findWeightsByGoal(req.params.id as string);
+    res.json(weights);
+  } catch (err: any) {
+    log.error('Error fetching persona weights', { error: err.message, requestId: req.requestId });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── PUT /api/goals/:id/persona-weights/:personaId — Set persona weight ──
+goalsRouter.put('/goals/:id/persona-weights/:personaId', async (req: Request, res: Response) => {
+  try {
+    const { weight } = req.body;
+    if (weight === undefined || weight < -100 || weight > 100) {
+      return res.status(400).json({ error: 'weight must be between -100 and 100' });
+    }
+    const result = await goalsRepo.upsertWeight(
+      req.params.personaId as string,
+      req.params.id as string,
+      weight
+    );
+    res.json(result);
+  } catch (err: any) {
+    log.error('Error setting persona weight', { error: err.message, requestId: req.requestId });
     res.status(500).json({ error: err.message });
   }
 });
@@ -142,6 +265,23 @@ goalsRouter.delete('/goal-edges/:id', async (req: Request, res: Response) => {
     res.status(204).send();
   } catch (err: any) {
     log.error('Error removing goal edge', { error: err.message, requestId: req.requestId, edgeId: req.params.id });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /api/goals/check-nord/:nordId — Check if nord is linked to goals (deletion guard) ──
+goalsRouter.get('/goals/check-nord/:nordId', async (req: Request, res: Response) => {
+  try {
+    const boundGoals = await goalsRepo.findGoalsByNord(req.params.nordId as string);
+    if (boundGoals.length > 0) {
+      return res.status(409).json({
+        error: `Cannot delete — this nord is linked to ${boundGoals.length} goal(s): ${boundGoals.map(g => g.goal_name).join(', ')}`,
+        goals: boundGoals,
+      });
+    }
+    res.json({ ok: true });
+  } catch (err: any) {
+    log.error('Error checking nord goals', { error: err.message, requestId: req.requestId, nordId: req.params.nordId });
     res.status(500).json({ error: err.message });
   }
 });

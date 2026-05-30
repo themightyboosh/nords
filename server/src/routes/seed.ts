@@ -21,8 +21,8 @@ seedRouter.post('/seed', async (req: Request, res: Response) => {
     res.status(400).json({ error: 'project_id required' });
     return;
   }
-  // Single-user mode: user_id is optional, defaults to dev placeholder
-  const user_id = rawUserId || 'dev-user-000';
+  // Use the authenticated user's UID or the body-supplied user_id
+  const user_id = rawUserId || req.user!.uid;
 
   const results: Record<string, unknown[]> = {
     nord_types: [],

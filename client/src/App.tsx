@@ -19,6 +19,7 @@ import ForgotPasswordScreen from './components/Auth/ForgotPasswordScreen';
 import { ManageTypes } from './components/ManageTypes/ManageTypes';
 import { ManagePersonas } from './components/ManagePersonas/ManagePersonas';
 import { ManageGoals } from './components/ManageGoals/ManageGoals';
+import { ManageVariables } from './components/ManageVariables/ManageVariables';
 import { PersonaLensDrawer } from './components/Drawer/PersonaLensDrawer';
 import { BoardSettingsProvider } from './context/BoardSettingsContext';
 import { usePersonas } from './hooks/usePersonas';
@@ -28,6 +29,7 @@ import { ProjectSettings } from './components/ProjectSettings/ProjectSettings';
 import { PreviewChat } from './components/PreviewChat/PreviewChat';
 import { GoalDetailDrawer } from './components/Drawer/GoalDetailDrawer';
 import { useGoals } from './hooks/useGoals';
+import { useVariables } from './hooks/useVariables';
 import { ShareChat } from './pages/ShareChat/ShareChat';
 import { TestRunner } from './components/TestRunner/TestRunner';
 
@@ -100,6 +102,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [manageTypesTab, setManageTypesTab] = useState<'nord' | 'connection' | null>(null);
   const [personasOpen, setPersonasOpen] = useState(false);
   const [goalsOpen, setGoalsOpen] = useState(false);
+  const [variablesOpen, setVariablesOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [testRunnerOpen, setTestRunnerOpen] = useState(false);
@@ -114,6 +117,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
 
   // Goals data for the Goals lens canvas
   const goalsData = useGoals(projectId || null);
+  const variablesData = useVariables(projectId || null);
 
   // Safe ReactFlow access — returns null in board view where ReactFlow isn't mounted
   const reactFlow = useOptionalReactFlow();
@@ -255,7 +259,8 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onOpenNordTypes={() => setManageTypesTab('nord')}
         onOpenCategoryTypes={() => setManageTypesTab('connection')}
         onOpenPersonas={() => setPersonasOpen(true)}
-        onOpenGoals={projectMode === 'guided' ? () => setGoalsOpen(true) : undefined}
+        onOpenVariables={() => setVariablesOpen(true)}
+        onOpenGoals={() => setGoalsOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenPreview={() => setPreviewOpen(p => !p)}
         onOpenTestRunner={() => setTestRunnerOpen(true)}
@@ -314,11 +319,14 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
             id: n.id,
             title: n.title,
             type_name: graph?.nord_types.find((t: any) => t.id === n.type_id)?.name || '',
-            properties_schema: graph?.nord_types.find((t: any) => t.id === n.type_id)?.properties_schema || [],
           }))}
+          variables={variablesData.variables}
           onUpdate={goalsData.updateGoal}
-          onAddProperty={goalsData.addProperty}
-          onRemoveProperty={goalsData.removeProperty}
+          onAddVariableBinding={goalsData.addVariableBinding}
+          onUpdateVariableBinding={goalsData.updateVariableBinding}
+          onRemoveVariableBinding={goalsData.removeVariableBinding}
+          onAddRelevantNord={goalsData.addRelevantNord}
+          onRemoveRelevantNord={goalsData.removeRelevantNord}
         />
       )}
       {/* Persona Lens Drawer — shown when viewing through a persona */}
@@ -343,6 +351,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onSelectNord={handleSelectNord}
         graph={graph}
         refetchGraph={refetch}
+        goals={goalsData.goals}
       />
       {manageTypesTab !== null && (
         <ManageTypes
@@ -363,6 +372,11 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         projectId={projectId || ''}
         open={goalsOpen}
         onClose={() => setGoalsOpen(false)}
+      />
+      <ManageVariables
+        projectId={projectId || ''}
+        open={variablesOpen}
+        onClose={() => setVariablesOpen(false)}
       />
       {projectId && (
         <PreviewChat

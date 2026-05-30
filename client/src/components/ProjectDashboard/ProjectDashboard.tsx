@@ -65,6 +65,7 @@ export default function ProjectDashboard() {
     icon: 'Folder',
     accent_color: '#6b7aed',
     mcp_enabled: false,
+    graph_only: false,
     project_mode: 'explore' as 'explore' | 'collect' | 'guided',
   });
   const [createErrors, setCreateErrors] = useState<string[]>([]);
@@ -123,11 +124,12 @@ export default function ProjectDashboard() {
         icon: createForm.icon || 'Folder',
         accent_color: createForm.accent_color || '#6b7aed',
         mcp_enabled: createForm.mcp_enabled,
+        graph_only: createForm.graph_only,
         project_mode: createForm.mcp_enabled ? createForm.project_mode : 'explore',
       });
       setShowCreateModal(false);
       setShowCreateIconPicker(false);
-      setCreateForm({ name: '', description: '', purpose: '', icon: 'Folder', accent_color: '#6b7aed', mcp_enabled: false, project_mode: 'explore' });
+      setCreateForm({ name: '', description: '', purpose: '', icon: 'Folder', accent_color: '#6b7aed', mcp_enabled: false, graph_only: false, project_mode: 'explore' });
       await loadProjects();
     } catch (err: any) {
       setCreateErrors([err.message || 'Failed to create project']);
@@ -327,17 +329,7 @@ export default function ProjectDashboard() {
                       >
                         <Star size={13} strokeWidth={1.5} />
                       </button>
-                      {project.mcp_enabled && (
-                        <span
-                          className={`nords-dashboard__mode-badge nords-dashboard__mode-badge--${project.project_mode}`}
-                          title={`Mode: ${project.project_mode}`}
-                        >
-                          {project.project_mode === 'explore' && <Compass size={10} />}
-                          {project.project_mode === 'collect' && <ClipboardList size={10} />}
-                          {project.project_mode === 'guided' && <Target size={10} />}
-                          {project.project_mode.charAt(0).toUpperCase() + project.project_mode.slice(1)}
-                        </span>
-                      )}
+
                       <button
                         className="nords-dashboard__card-menu"
                         onClick={(e) => {
@@ -399,17 +391,7 @@ export default function ProjectDashboard() {
                   >
                     <Star size={13} strokeWidth={1.5} />
                   </button>
-                  {project.mcp_enabled && (
-                    <span
-                      className={`nords-dashboard__mode-badge nords-dashboard__mode-badge--${project.project_mode}`}
-                      title={`Mode: ${project.project_mode}`}
-                    >
-                      {project.project_mode === 'explore' && <Compass size={10} />}
-                      {project.project_mode === 'collect' && <ClipboardList size={10} />}
-                      {project.project_mode === 'guided' && <Target size={10} />}
-                      {project.project_mode.charAt(0).toUpperCase() + project.project_mode.slice(1)}
-                    </span>
-                  )}
+
                   <button
                     className="nords-dashboard__card-menu"
                     onClick={(e) => {
@@ -573,6 +555,24 @@ export default function ProjectDashboard() {
                 />
                 <span>Enable Agent (MCP)</span>
               </label>
+
+              {createForm.mcp_enabled && (
+                <div style={{ marginLeft: 26, paddingLeft: 12, borderLeft: '2px solid var(--nords-color-border-subtle)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <label className="nords-modal__checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={createForm.graph_only}
+                      onChange={e => setCreateForm({ ...createForm, graph_only: e.target.checked })}
+                    />
+                    <span>Graph Only</span>
+                  </label>
+                  <span style={{ fontSize: '10px', color: 'var(--nords-color-text-disabled)', fontStyle: 'italic', marginTop: '-6px', marginLeft: '26px' }}>
+                    {createForm.graph_only
+                      ? 'No variables or goals — the agent explores the graph only.'
+                      : 'Mode is auto-detected: add variables for data collection, add goals for guided sessions.'}
+                  </span>
+                </div>
+              )}
 
               <div className="nords-modal__mode-selector">
                 <span className="nords-modal__mode-label">Project Mode</span>

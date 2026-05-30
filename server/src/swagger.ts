@@ -40,7 +40,6 @@ with physics-based spatial relationships.
           type: 'object',
           properties: {
             id: { type: 'string', format: 'uuid' },
-            org_id: { type: 'string', format: 'uuid' },
             name: { type: 'string', example: 'My Graph Project' },
             description: { type: 'string', nullable: true },
             icon: { type: 'string', nullable: true },
@@ -52,9 +51,8 @@ with physics-based spatial relationships.
         },
         CreateProjectRequest: {
           type: 'object',
-          required: ['org_id', 'name'],
+          required: ['name'],
           properties: {
-            org_id: { type: 'string', format: 'uuid' },
             name: { type: 'string', example: 'Sprint Planning' },
             description: { type: 'string', example: 'Q2 sprint planning graph' },
             icon: { type: 'string', example: '🎯' },

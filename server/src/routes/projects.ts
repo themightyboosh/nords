@@ -3,6 +3,8 @@ import logger from '../lib/logger.js';
 import * as projectsRepo from '../repositories/projects.js';
 import { validate } from '../middleware/validate.js';
 import { CreateProjectSchema, UpdateProjectSchema } from '../schemas/projects.js';
+import { resolveUserId, isAdmin } from '../lib/resolveUser.js';
+import { requireProjectOwner } from '../middleware/projectOwnership.js';
 
 export const projectsRouter = Router();
 
@@ -25,8 +27,9 @@ export const projectsRouter = Router();
  */
 projectsRouter.get('/projects', async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.uid;
-    const projects = await projectsRepo.findAllWithStars(userId);
+    const uid = req.user?.uid;
+    const email = req.user?.email;
+    const projects = await projectsRepo.findAllWithStars(uid, email);
     res.json(projects);
   } catch (err: any) {
     logger.error('Failed to load projects', { error: err.message });
@@ -53,8 +56,9 @@ projectsRouter.get('/projects', async (req: Request, res: Response) => {
  */
 projectsRouter.post('/projects/:id/star', async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.uid;
-    const isStarred = await projectsRepo.toggleStar(req.params.id as string, userId);
+    const uid = req.user?.uid;
+    const email = req.user?.email;
+    const isStarred = await projectsRepo.toggleStar(req.params.id as string, uid, email);
     res.json({ is_starred: isStarred });
   } catch (err: any) {
     logger.error('Failed to toggle star', { error: err.message, projectId: req.params.id });
@@ -90,23 +94,23 @@ projectsRouter.post('/projects/:id/star', async (req: Request, res: Response) =>
  */
 projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Request, res: Response) => {
   try {
-    const { org_id, name, description, purpose, icon, accent_color, mcp_enabled, mcp_mutable, mcp_system_prompt, default_persona_id, default_start_nord_id, default_end_nord_id } = req.body;
+    const { name, description, purpose, icon, accent_color, mcp_enabled, mcp_mutable, mcp_system_prompt, default_persona_id, default_start_nord_id, default_end_nord_id } = req.body;
     const project_mode = req.body.project_mode || 'explore';
 
     // Derive MCP flags from project mode
     const mcp_capture_data = project_mode === 'collect' || project_mode === 'guided';
     const goals_enabled = project_mode === 'guided';
 
-    // Single-user mode: org_id is optional, defaults to a static placeholder
-    const resolvedOrgId = org_id || '00000000-0000-0000-0000-000000000000';
+    // Resolve the authenticated user's DB id (with email fallback)
+    const createdBy = await resolveUserId(req.user?.uid, req.user?.email);
+
     const project = await projectsRepo.create({
-      org_id: resolvedOrgId,
       name,
       description,
       purpose,
       icon,
       accent_color: accent_color ?? '#6b7aed',
-      created_by: null,
+      created_by: createdBy,
       mcp_enabled: mcp_enabled ?? false,
       mcp_capture_data,
       mcp_mutable: mcp_mutable ?? false,
@@ -119,6 +123,7 @@ projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Requ
       default_start_nord_id: default_start_nord_id ?? null,
       default_end_nord_id: default_end_nord_id ?? null,
       is_demo: false,
+      graph_only: req.body.graph_only ?? false,
     });
     res.status(201).json(project);
   } catch (err: any) {
@@ -154,7 +159,7 @@ projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Requ
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-projectsRouter.get('/projects/:id', async (req: Request, res: Response) => {
+projectsRouter.get('/projects/:id', requireProjectOwner, async (req: Request, res: Response) => {
   try {
     const project = await projectsRepo.findById(req.params.id as string);
     if (!project) {
@@ -203,9 +208,18 @@ projectsRouter.get('/projects/:id', async (req: Request, res: Response) => {
  *       404:
  *         description: Project not found
  */
-projectsRouter.put('/projects/:id', async (req: Request, res: Response) => {
+projectsRouter.put('/projects/:id', requireProjectOwner, async (req: Request, res: Response) => {
   try {
     const body = { ...req.body };
+
+    // Admin guard: only admins can set is_demo
+    if (body.is_demo !== undefined) {
+      const admin = await isAdmin(req.user?.uid, req.user?.email);
+      if (!admin) {
+        res.status(403).json({ error: 'Admin access required to set demo flag' });
+        return;
+      }
+    }
 
     // If project_mode is being updated, auto-derive MCP flags
     if (body.project_mode) {
@@ -244,7 +258,7 @@ projectsRouter.put('/projects/:id', async (req: Request, res: Response) => {
  *       404:
  *         description: Project not found
  */
-projectsRouter.delete('/projects/:id', async (req: Request, res: Response) => {
+projectsRouter.delete('/projects/:id', requireProjectOwner, async (req: Request, res: Response) => {
   try {
     const deleted = await projectsRepo.softDelete(req.params.id as string);
     if (!deleted) {

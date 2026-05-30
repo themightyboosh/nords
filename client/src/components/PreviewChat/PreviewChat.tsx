@@ -152,16 +152,16 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   }, [rect]);
 
   // ResizeObserver to track user-resize via CSS resize
-  const resizeMountedRef = useRef(false);
+  // Delay observation to avoid the "shrink to size" animation on mount:
+  // The browser fires several resize events when the element first mounts,
+  // which thrashes between the default CSS size and the stored rect dimensions.
   useEffect(() => {
     const el = chatRef.current;
     if (!el) return;
-    resizeMountedRef.current = false;
+    let armed = false;
+    const armTimer = setTimeout(() => { armed = true; }, 150);
     const ro = new ResizeObserver((entries) => {
-      if (!resizeMountedRef.current) {
-        resizeMountedRef.current = true;
-        return; // Skip initial layout measurement to prevent shrink animation
-      }
+      if (!armed) return; // Ignore all events during initial layout
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
         if (width > 0 && height > 0) {
@@ -169,8 +169,8 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
         }
       }
     });
-    ro.observe(el);
-    return () => ro.disconnect();
+    requestAnimationFrame(() => ro.observe(el));
+    return () => { clearTimeout(armTimer); ro.disconnect(); };
   }, [isOpen]);
 
   // Drag handlers
@@ -359,7 +359,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
       }
 
       // Notify parent that data changed so canvas/goals can refetch
-      if (data.toolCalls?.some(tc => ['nords_update_session_nord', 'nords_update_nord', 'nords_create_nord', 'nords_create_connection', 'nords_update_connection', 'nords_delete_nord', 'nords_delete_connection'].includes(tc.name))) {
+      if (data.toolCalls?.some(tc => ['nords_update_session_nord', 'nords_update_session_variables', 'nords_update_nord', 'nords_create_nord', 'nords_create_connection', 'nords_update_connection', 'nords_delete_nord', 'nords_delete_connection'].includes(tc.name))) {
         onDataChanged?.();
       }
     } catch (err) {
@@ -733,6 +733,59 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
             <span>{h.completion?.filled ?? 0}/{h.completion?.required ?? 0} fields</span>
           </div>
         </div>
+
+        {/* Remaining Collections */}
+        {h.remaining_variables?.length > 0 && (
+          <div className="horizon-section">
+            <div className="horizon-section__title">
+              <Activity size={11} />
+              <span>Remaining Collections ({h.remaining_variables.length})</span>
+            </div>
+            {h.remaining_variables.map((v: any, i: number) => (
+              <div key={i} className="horizon-neighbor">
+                <span className="horizon-neighbor__title">{v.name}</span>
+                <span className="horizon-neighbor__type">{v.type}</span>
+                {v.required && <span className="horizon-gap__badge" style={{ fontSize: 8, padding: '1px 4px' }}>REQUIRED</span>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Suggested Persona */}
+        {h.suggested_persona && (
+          <div className="horizon-section">
+            <div className="horizon-section__title">
+              <User size={11} />
+              <span>Suggested Persona</span>
+            </div>
+            <div className="horizon-card">
+              <strong>{h.suggested_persona.name}</strong>
+              <span className="horizon-card__reason">{h.suggested_persona.reason}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Goals */}
+        {h.goals?.length > 0 && (
+          <div className="horizon-section">
+            <div className="horizon-section__title">
+              <Zap size={11} />
+              <span>Goals ({h.goals.length})</span>
+            </div>
+            {h.goals.map((g: any, i: number) => (
+              <div key={i} className="horizon-neighbor">
+                <span className="horizon-neighbor__title">{g.name}</span>
+                <span className={`horizon-gap__badge ${g.status === 'completed' ? 'horizon-gap__badge--orphan' : ''}`}
+                      style={{ fontSize: 8, padding: '1px 4px' }}>
+                  {g.status?.toUpperCase() || 'PENDING'}
+                </span>
+                {g.persona_weight != null && (
+                  <span className="horizon-neighbor__bias">{(g.persona_weight * 100).toFixed(0)}%</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Neighbors */}
         {h.neighbors?.length > 0 && (

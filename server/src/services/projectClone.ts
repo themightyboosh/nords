@@ -18,7 +18,7 @@ import { pool } from '../db.js';
 import { randomUUID } from 'crypto';
 import logger from '../lib/logger.js';
 
-export async function cloneProject(sourceProjectId: string, targetOrgId: string, createdBy: string | null): Promise<string> {
+export async function cloneProject(sourceProjectId: string, createdBy: string | null): Promise<string> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -32,12 +32,12 @@ export async function cloneProject(sourceProjectId: string, targetOrgId: string,
 
     const newProjectId = randomUUID();
     await client.query(`
-      INSERT INTO projects (id, org_id, name, description, purpose, icon, accent_color, created_by,
+      INSERT INTO projects (id, name, description, purpose, icon, accent_color, created_by,
         mcp_enabled, mcp_capture_data, mcp_mutable, goals_enabled, mcp_system_prompt, mcp_welcome_message,
         project_mode, end_prompt_suggestion, is_demo)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, false)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, false)
     `, [
-      newProjectId, targetOrgId, `Demo: ${srcProject.name}`, srcProject.description, srcProject.purpose,
+      newProjectId, `Demo: ${srcProject.name}`, srcProject.description, srcProject.purpose,
       srcProject.icon, srcProject.accent_color, createdBy,
       srcProject.mcp_enabled, srcProject.mcp_capture_data, srcProject.mcp_mutable, srcProject.goals_enabled,
       srcProject.mcp_system_prompt, srcProject.mcp_welcome_message,

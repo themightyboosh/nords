@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, AlertTriangle, Save, Copy, Trash2, Plus, Key, Compass, ClipboardList, Target, Link, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, AlertTriangle, Save, Copy, Trash2, Plus, Key, Link, ExternalLink, ChevronDown, ChevronUp, Compass, ClipboardList, Target } from 'lucide-react';
 import { api } from '../../api/client';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { IconPicker } from '../shared/IconPicker';
@@ -41,6 +41,7 @@ interface ProjectData {
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
   goals_enabled: boolean;
+  graph_only: boolean;
   project_mode: 'explore' | 'collect' | 'guided';
   mcp_system_prompt: string | null;
   default_persona_id: string | null;
@@ -125,6 +126,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           mcp_capture_data: data.mcp_capture_data,
           mcp_mutable: data.mcp_mutable,
           goals_enabled: (data as any).goals_enabled ?? false,
+          graph_only: data.graph_only ?? false,
           project_mode: data.project_mode || 'explore',
           mcp_system_prompt: data.mcp_system_prompt || '',
           default_persona_id: data.default_persona_id,
@@ -208,6 +210,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
         accent_color: form.accent_color,
         mcp_enabled: form.mcp_enabled,
         mcp_mutable: form.mcp_mutable,
+        graph_only: form.graph_only,
         project_mode: form.mcp_enabled ? form.project_mode : 'explore',
         mcp_system_prompt: form.mcp_system_prompt?.trim() || null,
         default_persona_id: form.default_persona_id || null,
@@ -747,9 +750,9 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
 
           {form.mcp_enabled && (
             <div className="nords-form__indent">
-              {/* Mode Selector */}
-              <div className="nords-modal__mode-selector">
-                <span className="nords-modal__mode-label">Project Mode</span>
+              {/* ── Project Mode Selector ── */}
+              <div className="nords-modal__mode-selector" style={{ marginBottom: '16px' }}>
+                <span className="nords-form__label">Project Mode</span>
                 <div className="nords-modal__mode-cards">
                   {[
                     { key: 'explore' as const, icon: <Compass size={20} strokeWidth={1.4} />, name: 'Explore', desc: 'Open-ended discovery. No data collection or session goals.' },
@@ -769,6 +772,21 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
                   ))}
                 </div>
               </div>
+
+              {/* Graph Only Toggle */}
+              <label className="nords-form__checkbox">
+                <input
+                  type="checkbox"
+                  checked={form.graph_only || false}
+                  onChange={e => setForm({ ...form, graph_only: e.target.checked })}
+                />
+                <span>Graph Only</span>
+              </label>
+              <span className="nords-form__hint" style={{ marginLeft: '24px', marginTop: '-4px', display: 'block', marginBottom: '12px' }}>
+                {form.graph_only
+                  ? 'No variables or goals — the agent explores the graph only.'
+                  : 'Mode is auto-detected: add variables for data collection, add goals for guided sessions.'}
+              </span>
 
               <div className="nords-form__field" style={{ marginTop: '12px' }}>
                 <label className="nords-form__label">

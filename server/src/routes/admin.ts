@@ -11,10 +11,6 @@ import logger from '../lib/logger.js';
 
 export const adminRouter = Router();
 
-// ── Admin guard middleware ──
-
-const DEV_USER_ID = 'dev-user-000';
-
 async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const uid = req.user?.uid;
   if (!uid) {
@@ -22,11 +18,7 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction) {
     return;
   }
 
-  // Dev bypass: allow dev-user-000 to act as admin
-  if (uid === DEV_USER_ID) {
-    return next();
-  }
-
+  // Check role in DB — no dev bypasses
   const user = await queryOne<{ role: string }>(
     'SELECT role FROM users WHERE firebase_uid = $1 AND deleted_at IS NULL',
     [uid]

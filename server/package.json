@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "db:proxy": "cloud-sql-proxy nords-spatial-1776012153:us-central1:nords-db-main --port=5433",
-    "db:migrate": "node --loader ts-node/esm src/migrate.ts"
+    "db:migrate": "node --loader ts-node/esm src/migrate.ts",
+    "test": "node --env-file=.env ./node_modules/.bin/vitest run",
+    "test:watch": "node --env-file=.env ./node_modules/.bin/vitest"
   },
   "dependencies": {
     "@google/genai": "^2.2.0",
@@ -35,6 +37,7 @@
     "@types/swagger-ui-express": "^4.1.8",
     "node-pg-migrate": "^7.1.0",
     "ts-node": "^10.9.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "vitest": "^4.1.7"
   }
 }

@@ -7,6 +7,7 @@ import { initFirebaseAdmin } from './lib/firebaseAdmin.js';
 import { requireAuth } from './middleware/auth.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { resolveAccount, meteringMiddleware } from './middleware/metering.js';
+import { requireProjectOwner } from './middleware/projectOwnership.js';
 import { swaggerSpec } from './swagger.js';
 import { projectsRouter } from './routes/projects.js';
 import { graphRouter } from './routes/graph.js';
@@ -27,6 +28,7 @@ import { registerRouter } from './routes/register.js';
 import { meRouter } from './routes/me.js';
 import { shareChatRouter } from './routes/shareChat.js';
 import shareLinksRoutes from './routes/shareLinksRoutes.js';
+import { variablesRouter } from './routes/variables.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -78,6 +80,10 @@ app.use('/api', requireAuth);
 app.use('/api', resolveAccount);
 app.use('/api', meteringMiddleware);
 app.use('/api', projectsRouter);
+
+// ── Project-scoped routes (ownership verified) ──
+// All child resource routes under /projects/:id require the user to own the project.
+app.use('/api/projects/:id', requireProjectOwner);
 app.use('/api', graphRouter);
 app.use('/api', snapshotsRouter);
 app.use('/api', commentsRouter);
@@ -94,6 +100,7 @@ app.use('/api', testRunnerRouter);
 app.use('/api', adminRouter);
 app.use('/api', meRouter);
 app.use('/api', shareLinksRoutes);
+app.use('/api', variablesRouter);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

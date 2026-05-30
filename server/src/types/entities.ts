@@ -30,7 +30,6 @@ export interface Organization {
 
 export interface Project {
   id: string;
-  org_id: string;
   name: string;
   description: string | null;
   purpose: string | null;
@@ -49,6 +48,7 @@ export interface Project {
   default_start_nord_id: string | null;
   default_end_nord_id: string | null;
   is_demo: boolean;
+  graph_only: boolean;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
@@ -61,8 +61,6 @@ export interface PropertySchema {
   defaultValue?: string | number | boolean | null;
   options?: string[];
   card_row?: number;
-  /** 'user' = admin-set context (node identity), 'mcp' = AI-collected knowledge (session data). Default: 'user'. */
-  source?: 'user' | 'mcp';
   config?: Record<string, unknown>;
 }
 
@@ -131,18 +129,6 @@ export interface McpNordVisit {
   visited_at: Date;
 }
 
-/** Per-session, per-nord completion state — the INSTANCE layer */
-export interface McpSessionNord {
-  id: string;
-  session_id: string;
-  nord_id: string;
-  properties: Record<string, unknown>;
-  complete: boolean;
-  filled_count: number;
-  required_count: number;
-  first_visited: Date;
-  last_visited: Date;
-}
 
 export interface StageLabel {
   label: string;
@@ -283,6 +269,7 @@ export interface GoalEdge {
   created_at: Date;
 }
 
+/** @deprecated — replaced by GoalVariableBinding. Kept only for migration tooling. */
 export interface GoalProperty {
   id: string;
   goal_id: string;
@@ -308,4 +295,70 @@ export interface PersonaGoalWeight {
   persona_id: string;
   goal_id: string;
   weight: number;
+}
+
+// ── Project Variables (global registry) ──
+
+export type VariableType =
+  | 'string' | 'number' | 'boolean' | 'date' | 'select'
+  | 'multi_select' | 'date_range' | 'email' | 'url' | 'phone';
+
+export interface ProjectVariable {
+  id: string;
+  project_id: string;
+  name: string;
+  description: string;
+  type: VariableType;
+  options: unknown[] | null;
+  required: boolean;
+  tags: string[];
+  hint: string;
+  priority: number;
+  depends_on: string | null;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface GoalVariableBinding {
+  id: string;
+  goal_id: string;
+  variable_id: string;
+  required: boolean;
+  created_at: Date;
+}
+
+export interface GoalRelevantNord {
+  id: string;
+  goal_id: string;
+  nord_id: string;
+}
+
+export interface GoalRelevantNordType {
+  id: string;
+  goal_id: string;
+  nord_type_id: string;
+}
+
+export interface McpSessionVariable {
+  id: string;
+  session_id: string;
+  variable_id: string;
+  value: unknown;
+  nord_id: string | null;
+  persona_id: string | null;
+  sequence: number;
+  collected_at: Date;
+}
+
+export interface McpSessionGoalEvent {
+  id: string;
+  session_id: string;
+  goal_id: string;
+  event_type: 'goal_completed' | 'goal_activated' | 'goal_cancelled' | 'session_terminating';
+  persona_id: string | null;
+  nord_id: string | null;
+  sequence: number;
+  event_data: Record<string, unknown>;
+  created_at: Date;
 }

@@ -534,28 +534,25 @@ The briefing contains all the instructions you need. Follow the protocol it prov
     const finalHorizon = await mcpRepo.getSessionHorizon(sessionId);
     const completionPct = finalHorizon.completion.percentage;
 
-    // Compute coverage gaps
-    const sessionNords = await query<{
-      nord_id: string; properties: string; required_count: number; filled_count: number;
+    // Compute coverage gaps from session variables
+    const sessionVars = await query<{
+      variable_id: string; variable_name: string; value: string | null;
     }>(
-      'SELECT nord_id, properties::text, required_count, filled_count FROM mcp_session_nords WHERE session_id = $1',
+      `SELECT sv.variable_id, pv.name AS variable_name, sv.value
+       FROM mcp_session_variables sv
+       JOIN project_variables pv ON pv.id = sv.variable_id
+       WHERE sv.session_id = $1`,
       [sessionId]
     );
 
     const propertiesCollected: Record<string, unknown> = {};
-    const coverageGaps: Array<{ nord_id: string; field: string }> = [];
+    const coverageGaps: Array<{ variable_id: string; name: string }> = [];
 
-    for (const sn of sessionNords) {
-      const props = typeof sn.properties === 'string' ? JSON.parse(sn.properties) : sn.properties;
-      for (const [key, value] of Object.entries(props || {})) {
-        if (value != null && value !== '') {
-          propertiesCollected[`${sn.nord_id}:${key}`] = value;
-        }
-      }
-      // Find unfilled required fields
-      // (we'd need the schema to know which are required — simplified for now)
-      if (sn.filled_count < sn.required_count) {
-        coverageGaps.push({ nord_id: sn.nord_id, field: `${sn.required_count - sn.filled_count} unfilled` });
+    for (const sv of sessionVars) {
+      if (sv.value != null && sv.value !== '') {
+        propertiesCollected[sv.variable_name] = sv.value;
+      } else {
+        coverageGaps.push({ variable_id: sv.variable_id, name: sv.variable_name });
       }
     }
 

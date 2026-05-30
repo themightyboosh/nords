@@ -158,6 +158,28 @@ export function buildToolDeclarations(
       },
     },
     {
+      name: 'nords_update_session_variables',
+      description: 'Save collected project variable values. Variables are project-level data points (not tied to a specific nord). Pass the variable_id from remaining_variables in the horizon. Automatically evaluates goal completion and returns goal events + updated horizon. Use this whenever you learn a piece of information that maps to a project variable.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          variables: {
+            type: 'ARRAY' as Type,
+            description: 'Array of {variable_id, value} objects to save',
+            items: {
+              type: 'OBJECT' as Type,
+              properties: {
+                variable_id: { type: 'STRING' as Type, description: 'UUID of the project variable' },
+                value: { type: 'STRING' as Type, description: 'The collected value (will be JSON-parsed if object)' },
+              },
+              required: ['variable_id', 'value'],
+            },
+          },
+        },
+        required: ['variables'],
+      },
+    },
+    {
       name: 'nords_visit_nord',
       description: 'Log a visit to a nord with optional before/after property snapshots.',
       parameters: {
