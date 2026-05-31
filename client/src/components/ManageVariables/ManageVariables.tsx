@@ -197,7 +197,7 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
               onClick={handleCreateGroup}
             >
               <Plus size={14} />
-              <span>{UI_STRINGS.collections.newGroup}</span>
+              <span>New Collection</span>
             </button>
           </div>
 
@@ -260,6 +260,9 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
 
                 {/* Description */}
                 <div className="manage-variables__group-desc">
+                  <label className="manage-variables__desc-label">
+                    Description <span className="required-dot">*</span>
+                  </label>
                   <textarea
                     className="manage-variables__group-desc-textarea"
                     value={selectedGroup.description || ''}
@@ -287,7 +290,6 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
                   onReorder={handleReorder}
                   onDelete={handleDeleteVariable}
                   onAdd={handleCreateVariable}
-                  label="Properties"
                   renderDetail={(item) => (
                     <VariableDetail
                       variable={item.data as ProjectVariable}

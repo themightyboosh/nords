@@ -94,3 +94,10 @@ body {
 .nords-spin {
   animation: nords-spin 1s linear infinite;
 }
+
+/* ── Required field indicator (gold asterisk) ── */
+.required-dot {
+  color: hsl(45, 90%, 55%);
+  font-weight: 700;
+  margin-left: 2px;
+}

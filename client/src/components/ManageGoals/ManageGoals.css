@@ -15,36 +15,40 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 18px 22px 12px;
-  border-bottom: 1px solid var(--nords-color-border);
+  padding: var(--nords-space-xl) var(--nords-space-xl) var(--nords-space-lg);
+  border-bottom: 1px solid var(--nords-color-border-subtle);
 }
 
 .manage-goals__title {
   margin: 0;
-  font-size: 17px;
-  font-weight: 600;
+  font-size: var(--nords-font-size-xl);
+  font-weight: var(--nords-font-weight-bold);
   color: var(--nords-color-text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--nords-letter-spacing-tight);
 }
 
 .manage-goals__subtitle {
   margin: 4px 0 0;
-  font-size: 12px;
+  font-size: var(--nords-font-size-sm);
   color: var(--nords-color-text-tertiary);
 }
 
 .manage-goals__close {
-  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border: none;
-  color: var(--nords-color-text-tertiary);
+  border-radius: var(--nords-radius-md);
+  background: transparent;
+  color: var(--nords-color-text-secondary);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  transition: color 0.15s, background 0.15s;
+  transition: all 0.12s ease;
 }
 .manage-goals__close:hover {
+  background: var(--nords-color-bg-hover);
   color: var(--nords-color-text-primary);
-  background: var(--nords-color-surface);
 }
 
 /* ── Body: Sidebar + Editor ── */

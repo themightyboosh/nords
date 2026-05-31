@@ -315,10 +315,7 @@
   justify-content: space-between;
 }
 
-.manage-personas__section-title .required-dot {
-  color: hsl(0, 70%, 60%);
-  margin-left: 2px;
-}
+
 
 /* ── Textarea fields ── */
 .manage-personas__textarea {

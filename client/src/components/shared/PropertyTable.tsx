@@ -78,7 +78,7 @@ export function PropertyTable({
   onDelete,
   onAdd,
   renderDetail,
-  label = 'Instance Properties',
+  label = 'Properties',
   hint,
   maxCount,
 }: PropertyTableProps) {
@@ -223,7 +223,7 @@ export function PropertyTable({
         )}
       </div>
 
-      {hint && <p className="manage-types__props-hint">{hint}</p>}
+
     </div>
   );
 }

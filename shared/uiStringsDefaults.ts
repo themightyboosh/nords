@@ -47,7 +47,6 @@ export const UI_STRINGS_DEFAULTS = {
   collections: {
     title: 'Collections',
     subtitle: 'Global data points collected by the AI during sessions.',
-    newGroup: 'New Group',
     emptyGroups: 'Create a group to start adding collection properties.',
     emptyEditor: 'Select a group from the sidebar.',
   },

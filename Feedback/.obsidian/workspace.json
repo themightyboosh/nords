@@ -1,20 +1,24 @@
 {
   "main": {
-    "id": "8d59d495a8d78a8b",
+    "id": "5732ece6f28d8815",
     "type": "split",
     "children": [
       {
-        "id": "1a82bbbef19df8ea",
+        "id": "652644dd8b1db3b9",
         "type": "tabs",
         "children": [
           {
-            "id": "8956f02c52f4c68a",
+            "id": "a1e3561bfab7d147",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Various Editing Panes - Consistency.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Various Editing Panes - Consistency"
             }
           }
         ]
@@ -23,15 +27,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "f795ae1ad14fb306",
+    "id": "c765d433830c3cec",
     "type": "split",
     "children": [
       {
-        "id": "ed3d1d31f93b3bf7",
+        "id": "6061bd49c500c086",
         "type": "tabs",
         "children": [
           {
-            "id": "de1f6776f8c07e0a",
+            "id": "3f24a54ec0e36f36",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -44,7 +48,7 @@
             }
           },
           {
-            "id": "905ca80aefca8e93",
+            "id": "9927db24a4b96bb5",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -61,7 +65,7 @@
             }
           },
           {
-            "id": "1acc52ba929c0ef8",
+            "id": "232773a543bc025a",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -77,20 +81,20 @@
     "width": 300
   },
   "right": {
-    "id": "671ef6259c9ab36a",
+    "id": "35defb81bd77f461",
     "type": "split",
     "children": [
       {
-        "id": "03cc4ac871fb9699",
+        "id": "9e88041a4d15106b",
         "type": "tabs",
         "children": [
           {
-            "id": "49196e401a83cb8e",
+            "id": "5c17186a76794728",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Untitled 1.md",
+                "file": "Various Editing Panes - Consistency.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -100,25 +104,25 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Untitled 1"
+              "title": "Backlinks for Various Editing Panes - Consistency"
             }
           },
           {
-            "id": "9c0e83b007b6ed1f",
+            "id": "0f0a601d2c96339c",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Untitled 1.md",
+                "file": "Various Editing Panes - Consistency.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Untitled 1"
+              "title": "Outgoing links from Various Editing Panes - Consistency"
             }
           },
           {
-            "id": "817704a98e554922",
+            "id": "cca07bea640ac944",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -133,7 +137,7 @@
             }
           },
           {
-            "id": "246bed0cafc8ce13",
+            "id": "a93a6d5494e19c7d",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -147,18 +151,18 @@
             }
           },
           {
-            "id": "190c1767814b48e2",
+            "id": "b2281059ca417edd",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "Untitled 1.md",
+                "file": "Various Editing Panes - Consistency.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Untitled 1"
+              "title": "Outline of Various Editing Panes - Consistency"
             }
           }
         ]
@@ -179,35 +183,15 @@
       "bases:Create new base": false
     }
   },
-  "active": "8956f02c52f4c68a",
+  "active": "a1e3561bfab7d147",
   "lastOpenFiles": [
-    "stories/01_sprint_zero.md",
-    "Untitled.md",
-    "Untitled 1.md",
-    "architecture/12_matrix_view_design.md",
-    "stories/00_master_index.md",
-    "stories/15_mcp_ai_integration.md",
-    "stories/14_admin_templates_onboarding.md",
-    "stories/13_animations_and_perf.md",
-    "stories/11_snapshots_and_history.md",
-    "stories/07_connections_and_edges.md",
-    "stories/06_nords_and_types.md",
-    "stories/05_canvas_engine.md",
-    "stories/04_app_shell.md",
-    "stories/03_data_model_and_database.md",
-    "stories/10_multiplayer_crdt.md",
-    "stories/09_spatial_lenses.md",
-    "stories/12_comments_search_polish.md",
-    "stories/08_detail_drawer.md",
-    "stories/02_auth_and_identity.md",
-    "architecture/09_edge_rendering_study.md",
-    "stories/07_mcp_ai_integration.md",
-    "stories/06_polish_and_auth.md",
-    "stories/05_matrix_lenses.md",
-    "stories/04_data_persistence.md",
-    "stories/03_crdt_multiplayer.md",
-    "stories/02_spatial_engine.md",
-    "stories",
-    "Pasted image 20260412004520.png"
+    "Pasted image 20260531170942.png",
+    "Pasted image 20260531170347.png",
+    "Pasted image 20260531170226.png",
+    "Pasted image 20260531170125.png",
+    "Pasted image 20260531170041.png",
+    "Pasted image 20260531165958.png",
+    "Pasted image 20260531165919.png",
+    "Various Editing Panes - Consistency.md"
   ]
 }

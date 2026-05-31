@@ -94,7 +94,7 @@ export function ManagePersonas({ projectId, open, onClose, connectionTypes }: Ma
         {/* Header */}
         <div className="manage-personas__header">
           <div>
-            <h2 className="manage-personas__title">Personas</h2>
+            <h2 className="manage-personas__title">{UI_STRINGS.personas.title}</h2>
             <p className="manage-personas__subtitle">{UI_STRINGS.personas.subtitle}</p>
           </div>
           <button className="manage-personas__close" onClick={onClose} title="Close">
