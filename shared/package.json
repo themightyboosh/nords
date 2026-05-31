@@ -1,0 +1,12 @@
+{
+  "name": "@nords/shared",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "propertyTypes.ts",
+  "types": "propertyTypes.ts",
+  "exports": {
+    "./propertyTypes.js": "./propertyTypes.ts",
+    "./propertyTypes": "./propertyTypes.ts",
+    "./*": "./*"
+  }
+}

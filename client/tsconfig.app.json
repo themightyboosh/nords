@@ -25,9 +25,10 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@nords/shared/*": ["../shared/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "../shared"],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/__tests__/**"]
 }

@@ -23,26 +23,19 @@
 
 import React, { useState, useCallback } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
-import { useVariables, type ProjectVariable, type VariableType } from '../../hooks/useVariables';
+import { useVariables, type ProjectVariable } from '../../hooks/useVariables';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
+import {
+  UI_PROPERTY_TYPES, PROPERTY_TYPE_META,
+  needsOptions as checkNeedsOptions,
+  normalizePropertyType, type PropertyType,
+} from '@nords/shared/propertyTypes';
 import './ManageVariables.css';
 
 // ── Constants ──
 
-const VARIABLE_TYPES: { value: VariableType; label: string }[] = [
-  { value: 'string', label: 'Text' },
-  { value: 'number', label: 'Number' },
-  { value: 'boolean', label: 'Yes / No' },
-  { value: 'date', label: 'Date' },
-  { value: 'select', label: 'Select (single)' },
-  { value: 'multi_select', label: 'Multi-Select' },
-  { value: 'date_range', label: 'Date Range' },
-  { value: 'email', label: 'Email' },
-  { value: 'url', label: 'URL' },
-  { value: 'phone', label: 'Phone' },
-];
-
-const NEEDS_OPTIONS: VariableType[] = ['select', 'multi_select'];
+// Type list and helpers now come from the shared registry:
+const VARIABLE_TYPES = UI_PROPERTY_TYPES.map(t => ({ value: t, label: PROPERTY_TYPE_META[t].label }));
 
 // ── Types ──
 
@@ -68,7 +61,7 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
   }, [variables, selectedId]);
 
   const handleCreate = async () => {
-    const v = await createVariable({ name: 'New Collection', type: 'string' });
+    const v = await createVariable({ name: 'New Collection', type: 'short_text' });
     if (v) setSelectedId(v.id);
   };
 
@@ -105,7 +98,7 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
                 >
                   {v.required && <span className="manage-variables__list-required" />}
                   <span className="manage-variables__list-name">{v.name || 'Untitled'}</span>
-                  <span className="manage-variables__list-type-badge">{v.type}</span>
+                  <span className="manage-variables__list-type-badge">{PROPERTY_TYPE_META[normalizePropertyType(v.type)]?.label || v.type}</span>
                 </button>
               ))}
             </div>
@@ -155,7 +148,7 @@ function VariableEditor({ variable, onUpdate, onDelete }: VariableEditorProps) {
     onUpdate(variable.id, { [field]: value });
   }, [variable.id, onUpdate]);
 
-  const showOptions = NEEDS_OPTIONS.includes(variable.type);
+  const showOptions = checkNeedsOptions(normalizePropertyType(variable.type));
 
   return (
     <>
@@ -181,7 +174,7 @@ function VariableEditor({ variable, onUpdate, onDelete }: VariableEditorProps) {
           <label className="manage-variables__section-title">Type</label>
           <select
             className="manage-variables__select"
-            value={variable.type}
+            value={normalizePropertyType(variable.type)}
             onChange={e => onUpdate(variable.id, { type: e.target.value })}
           >
             {VARIABLE_TYPES.map(t => (

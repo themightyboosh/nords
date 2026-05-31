@@ -193,101 +193,95 @@ async function run() {
     { id: NT.requirement, name: 'Requirement', icon: 'ClipboardCheck', color: '#3B82F6',
       desc: 'User needs, design inputs, and design outputs that define the device requirements.',
       schema: [
-        { key: 'req_id', label: 'Requirement ID', type: 'text', required: true, mcp_visible: true },
-        { key: 'category', label: 'Category', type: 'select', options: ['User Need', 'Design Input', 'Design Output'], required: true, mcp_visible: true },
-        { key: 'priority', label: 'Priority', type: 'select', options: ['Must Have', 'Should Have', 'Could Have'], required: true, mcp_visible: true },
-        { key: 'verification_method', label: 'Verification Method', type: 'select', options: ['Test', 'Inspection', 'Analysis', 'Demonstration'], required: true, mcp_visible: true },
-        { key: 'trace_status', label: 'Trace Status', type: 'select', options: ['Untraced', 'Partially Traced', 'Traced'], required: true, mcp_visible: true },
+        { name: 'Requirement ID', type: 'short_text', required: true, card_row: 1 },
+        { name: 'Category', type: 'select', options: ['User Need', 'Design Input', 'Design Output'], required: true, card_row: 2 },
+        { name: 'Priority', type: 'select', options: ['Must Have', 'Should Have', 'Could Have'], required: true, card_row: 3 },
+        { name: 'Verification Method', type: 'select', options: ['Test', 'Inspection', 'Analysis', 'Demonstration'], required: true, card_row: 4 },
+        { name: 'Trace Status', type: 'select', options: ['Untraced', 'Partially Traced', 'Traced'], required: true, card_row: 5 },
       ]},
     { id: NT.subsystem, name: 'Subsystem', icon: 'Cpu', color: '#8B5CF6',
       desc: 'Major system components and technology modules.',
       schema: [
-        { key: 'technology_stack', label: 'Technology Stack', type: 'text', mcp_visible: true },
-        { key: 'supplier', label: 'Supplier', type: 'text', mcp_visible: true },
-        { key: 'risk_class', label: 'Risk Class', type: 'select', options: ['Class I', 'Class II', 'Class III'], required: true, mcp_visible: true },
-        { key: 'interface_spec', label: 'Interface Specification', type: 'text', mcp_visible: true },
+        { name: 'Technology Stack', type: 'short_text', card_row: 1 },
+        { name: 'Supplier', type: 'short_text', card_row: 2 },
+        { name: 'Risk Class', type: 'select', options: ['Class I', 'Class II', 'Class III'], required: true, card_row: 3 },
+        { name: 'Interface Specification', type: 'short_text', card_row: 4 },
       ]},
     { id: NT.risk, name: 'Risk', icon: 'AlertTriangle', color: '#EF4444',
       desc: 'Identified hazards and failure modes per ISO 14971.',
       schema: [
-        { key: 'hazard_id', label: 'Hazard ID', type: 'text', required: true, mcp_visible: true },
-        { key: 'hazard', label: 'Hazard', type: 'text', required: true, mcp_visible: true },
-        { key: 'harm', label: 'Harm', type: 'text', required: true, mcp_visible: true },
-        { key: 'severity', label: 'Severity (1-5)', type: 'number', required: true, mcp_visible: true },
-        { key: 'probability', label: 'Probability (1-5)', type: 'number', required: true, mcp_visible: true },
-        { key: 'risk_score', label: 'Risk Score', type: 'number', mcp_visible: true },
-        { key: 'mitigation', label: 'Mitigation', type: 'text', required: true, mcp_visible: true },
-        { key: 'residual_risk', label: 'Residual Risk', type: 'number', required: true, mcp_visible: true },
-        { key: 'iso_14971_ref', label: 'ISO 14971 Reference', type: 'text', mcp_visible: true },
+        { name: 'Hazard ID', type: 'short_text', required: true, card_row: 1 },
+        { name: 'Hazard', type: 'short_text', required: true, card_row: 2 },
+        { name: 'Harm', type: 'short_text', required: true, card_row: 3 },
+        { name: 'Severity', type: 'number', required: true, card_row: 4 },
+        { name: 'Probability', type: 'number', required: true, card_row: 5 },
+        { name: 'Risk Score', type: 'computed', card_row: 6, config: { formula: 'Severity * Probability', output_type: 'number' } },
       ]},
     { id: NT.testCase, name: 'Test Case', icon: 'FlaskConical', color: '#10B981',
       desc: 'Verification and validation test protocols.',
       schema: [
-        { key: 'test_id', label: 'Test ID', type: 'text', required: true, mcp_visible: true },
-        { key: 'protocol', label: 'Test Protocol', type: 'text', required: true, mcp_visible: true },
-        { key: 'expected_result', label: 'Expected Result', type: 'text', required: true, mcp_visible: true },
-        { key: 'actual_result', label: 'Actual Result', type: 'text', required: true, mcp_visible: true },
-        { key: 'pass_fail', label: 'Pass/Fail', type: 'select', options: ['Pass', 'Fail', 'Conditional', 'Not Run'], required: true, mcp_visible: true },
-        { key: 'test_date', label: 'Test Date', type: 'text', mcp_visible: true },
-        { key: 'tester', label: 'Tester', type: 'text', mcp_visible: true },
+        { name: 'Test ID', type: 'short_text', required: true, card_row: 1 },
+        { name: 'Test Protocol', type: 'long_text', required: true, card_row: 2 },
+        { name: 'Expected Result', type: 'short_text', required: true, card_row: 3 },
+        { name: 'Actual Result', type: 'short_text', required: true, card_row: 4 },
+        { name: 'Pass/Fail', type: 'select', options: ['Pass', 'Fail', 'Conditional', 'Not Run'], required: true, card_row: 5 },
+        { name: 'Test Date', type: 'date', card_row: 6 },
       ]},
     { id: NT.bug, name: 'Bug / Nonconformance', icon: 'Bug', color: '#F59E0B',
       desc: 'Quality issues, defects, and nonconformance reports.',
       schema: [
-        { key: 'nc_id', label: 'NC ID', type: 'text', required: true, mcp_visible: true },
-        { key: 'severity', label: 'Severity', type: 'select', options: ['Critical', 'Major', 'Minor'], required: true, mcp_visible: true },
-        { key: 'root_cause', label: 'Root Cause', type: 'text', required: true, mcp_visible: true },
-        { key: 'capa_required', label: 'CAPA Required', type: 'boolean', required: true, mcp_visible: true },
-        { key: 'disposition', label: 'Disposition', type: 'select', options: ['Use As Is', 'Rework', 'Scrap', 'Return to Supplier'], required: true, mcp_visible: true },
-        { key: 'closed_date', label: 'Closed Date', type: 'text', mcp_visible: true },
+        { name: 'NC ID', type: 'short_text', required: true, card_row: 1 },
+        { name: 'Severity', type: 'select', options: ['Critical', 'Major', 'Minor'], required: true, card_row: 2 },
+        { name: 'Root Cause', type: 'long_text', required: true, card_row: 3 },
+        { name: 'CAPA Required', type: 'boolean', required: true, card_row: 4 },
+        { name: 'Disposition', type: 'select', options: ['Use As Is', 'Rework', 'Scrap', 'Return to Supplier'], required: true, card_row: 5 },
+        { name: 'Closed Date', type: 'date', card_row: null },
       ]},
     { id: NT.teamMember, name: 'Team Member', icon: 'User', color: '#6366F1',
       desc: 'Meridian Medical team members working on the device.',
       schema: [
-        { key: 'role', label: 'Role', type: 'text', required: true, mcp_visible: true },
-        { key: 'department', label: 'Department', type: 'select', options: ['Engineering', 'Regulatory', 'Clinical', 'Quality', 'Product', 'Operations'], required: true, mcp_visible: true },
-        { key: 'credentials', label: 'Credentials', type: 'text', mcp_visible: true },
-        { key: 'signing_authority', label: 'Signing Authority', type: 'boolean', mcp_visible: true },
+        { name: 'Role', type: 'short_text', required: true, card_row: 1 },
+        { name: 'Department', type: 'select', options: ['Engineering', 'Regulatory', 'Clinical', 'Quality', 'Product', 'Operations'], required: true, card_row: 2 },
+        { name: 'Credentials', type: 'short_text', card_row: 3 },
+        { name: 'Signing Authority', type: 'boolean', card_row: 4 },
       ]},
     { id: NT.regSub, name: 'Regulatory Submission', icon: 'FileCheck', color: '#DC2626',
       desc: 'FDA and international regulatory submissions.',
       schema: [
-        { key: 'submission_type', label: 'Submission Type', type: 'select', options: ['510(k)', 'PMA', 'De Novo', 'CE Mark'], required: true, mcp_visible: true },
-        { key: 'target_date', label: 'Target Date', type: 'text', required: true, mcp_visible: true },
-        { key: 'predicate_device', label: 'Predicate Device', type: 'text', required: true, mcp_visible: true },
-        { key: 'substantial_equivalence', label: 'Substantial Equivalence', type: 'text', required: true, mcp_visible: true },
-        { key: 'status', label: 'Status', type: 'select', options: ['Drafting', 'Internal Review', 'Submitted', 'FDA Review', 'Cleared', 'Rejected'], required: true, mcp_visible: true },
-        { key: 'fda_tracking_number', label: 'FDA Tracking Number', type: 'text', mcp_visible: true },
+        { name: 'Submission Type', type: 'select', options: ['510(k)', 'PMA', 'De Novo', 'CE Mark'], required: true, card_row: 1 },
+        { name: 'Target Date', type: 'date', required: true, card_row: 2 },
+        { name: 'Predicate Device', type: 'short_text', required: true, card_row: 3 },
+        { name: 'Substantial Equivalence', type: 'long_text', required: true, card_row: 4 },
+        { name: 'Status', type: 'select', options: ['Drafting', 'Internal Review', 'Submitted', 'FDA Review', 'Cleared', 'Rejected'], required: true, card_row: 5 },
+        { name: 'FDA Tracking Number', type: 'short_text', card_row: null },
       ]},
     { id: NT.clinicalProto, name: 'Clinical Protocol', icon: 'Stethoscope', color: '#0EA5E9',
       desc: 'Clinical study protocols and trial management.',
       schema: [
-        { key: 'protocol_id', label: 'Protocol ID', type: 'text', required: true, mcp_visible: true },
-        { key: 'study_type', label: 'Study Type', type: 'select', options: ['Feasibility', 'Pivotal', 'Post-Market'], required: true, mcp_visible: true },
-        { key: 'sample_size', label: 'Sample Size', type: 'number', required: true, mcp_visible: true },
-        { key: 'irb_approval_date', label: 'IRB Approval Date', type: 'text', required: true, mcp_visible: true },
-        { key: 'primary_endpoint', label: 'Primary Endpoint', type: 'text', required: true, mcp_visible: true },
-        { key: 'status', label: 'Status', type: 'select', options: ['Draft', 'IRB Review', 'Active', 'Enrollment Complete', 'Closed'], required: true, mcp_visible: true },
-        { key: 'site_count', label: 'Site Count', type: 'number', mcp_visible: true },
+        { name: 'Protocol ID', type: 'short_text', required: true, card_row: 1 },
+        { name: 'Study Type', type: 'select', options: ['Feasibility', 'Pivotal', 'Post-Market'], required: true, card_row: 2 },
+        { name: 'Sample Size', type: 'number', required: true, card_row: 3 },
+        { name: 'IRB Approval Date', type: 'date', required: true, card_row: 4 },
+        { name: 'Primary Endpoint', type: 'short_text', required: true, card_row: 5 },
+        { name: 'Status', type: 'select', options: ['Draft', 'IRB Review', 'Active', 'Enrollment Complete', 'Closed'], required: true, card_row: 6 },
       ]},
     { id: NT.adr, name: 'Architecture Decision Record', icon: 'GitBranch', color: '#14B8A6',
       desc: 'Technical architecture decisions with rationale.',
       schema: [
-        { key: 'adr_id', label: 'ADR ID', type: 'text', required: true, mcp_visible: true },
-        { key: 'context', label: 'Context', type: 'text', required: true, mcp_visible: true },
-        { key: 'decision', label: 'Decision', type: 'text', required: true, mcp_visible: true },
-        { key: 'alternatives', label: 'Alternatives Considered', type: 'text', mcp_visible: true },
-        { key: 'status', label: 'Status', type: 'select', options: ['Proposed', 'Accepted', 'Superseded', 'Deprecated'], required: true, mcp_visible: true },
-        { key: 'decided_by', label: 'Decided By', type: 'text', mcp_visible: true },
-        { key: 'date', label: 'Decision Date', type: 'text', mcp_visible: true },
+        { name: 'ADR ID', type: 'short_text', required: true, card_row: 1 },
+        { name: 'Context', type: 'long_text', required: true, card_row: 2 },
+        { name: 'Decision', type: 'long_text', required: true, card_row: 3 },
+        { name: 'Alternatives Considered', type: 'long_text', card_row: 4 },
+        { name: 'Status', type: 'select', options: ['Proposed', 'Accepted', 'Superseded', 'Deprecated'], required: true, card_row: 5 },
+        { name: 'Decided By', type: 'short_text', card_row: null },
       ]},
     { id: NT.milestone, name: 'Milestone', icon: 'Flag', color: '#F97316',
       desc: 'Design review gates and regulatory decision points.',
       schema: [
-        { key: 'target_date', label: 'Target Date', type: 'text', required: true, mcp_visible: true },
-        { key: 'gate_type', label: 'Gate Type', type: 'select', options: ['Design Review', 'Phase Gate', 'Submission', 'Regulatory Decision'], required: true, mcp_visible: true },
-        { key: 'exit_criteria', label: 'Exit Criteria', type: 'text', required: true, mcp_visible: true },
-        { key: 'approved_by', label: 'Approved By', type: 'text', mcp_visible: true },
+        { name: 'Target Date', type: 'date', required: true, card_row: 1 },
+        { name: 'Gate Type', type: 'select', options: ['Design Review', 'Phase Gate', 'Submission', 'Regulatory Decision'], required: true, card_row: 2 },
+        { name: 'Exit Criteria', type: 'long_text', required: true, card_row: 3 },
+        { name: 'Approved By', type: 'short_text', card_row: null },
       ]},
   ];
 
@@ -362,83 +356,83 @@ async function run() {
   }
 
   // ── Requirements (8) ──
-  await insertNord(REQ.r001, NT.requirement, 'Continuous glucose measurement for 14 days', 'Patient needs continuous glucose data without finger pricks over a 14-day wear period.', { req_id: 'REQ-001', category: 'User Need', priority: 'Must Have', verification_method: 'Test', trace_status: 'Traced' }, 0.1, 0.15);
-  await insertNord(REQ.r002, NT.requirement, 'MARD ≤ 10% vs. laboratory reference', 'Sensor accuracy requirement: Mean Absolute Relative Difference must not exceed 10% compared to YSI laboratory reference.', { req_id: 'REQ-002', category: 'Design Input', priority: 'Must Have', verification_method: 'Test', trace_status: 'Traced' }, 0.3, 0.15);
-  await insertNord(REQ.r003, NT.requirement, 'Wireless data transmission to mobile app', 'Real-time BLE data streaming from transmitter to companion mobile application.', { req_id: 'REQ-003', category: 'Design Input', priority: 'Must Have', verification_method: 'Demonstration', trace_status: '' }, 0.5, 0.15); // intentional gap: trace_status empty
-  await insertNord(REQ.r004, NT.requirement, 'Waterproof to IP67 rating', 'Device enclosure must withstand submersion in 1m water for 30 minutes.', { req_id: 'REQ-004', category: 'Design Output', priority: 'Must Have', verification_method: 'Test', trace_status: 'Traced' }, 0.7, 0.15);
-  await insertNord(REQ.r005, NT.requirement, 'Painless sensor insertion by patient', 'Self-insertion by patient with no medical training required. Pain score ≤ 2/10.', { req_id: 'REQ-005', category: 'User Need', priority: 'Must Have', verification_method: '', trace_status: '' }, 0.1, 0.3); // gap: verification_method + trace_status empty
-  await insertNord(REQ.r006, NT.requirement, 'Alert on hypoglycemia (< 70 mg/dL)', 'Audible and visual alert when glucose reading drops below 70 mg/dL threshold.', { req_id: 'REQ-006', category: 'Design Input', priority: 'Must Have', verification_method: 'Test', trace_status: 'Traced' }, 0.3, 0.3);
-  await insertNord(REQ.r007, NT.requirement, 'Battery life ≥ 14 days continuous operation', 'Transmitter battery must last the full 14-day sensor wear period.', { req_id: 'REQ-007', category: 'Design Output', priority: 'Should Have', verification_method: 'Test', trace_status: 'Traced' }, 0.5, 0.3);
-  await insertNord(REQ.r008, NT.requirement, 'Single-use applicator for sterile deployment', 'Pre-loaded applicator for aseptic sensor insertion. EO sterilization.', { req_id: 'REQ-008', category: 'Design Output', priority: 'Must Have', verification_method: 'Inspection', trace_status: 'Traced' }, 0.7, 0.3);
+  await insertNord(REQ.r001, NT.requirement, 'Continuous glucose measurement for 14 days', 'Patient needs continuous glucose data without finger pricks over a 14-day wear period.', { 'Requirement ID': 'REQ-001', 'Category': 'User Need', 'Priority': 'Must Have', 'Verification Method': 'Test', 'Trace Status': 'Traced' }, 0.1, 0.15);
+  await insertNord(REQ.r002, NT.requirement, 'MARD ≤ 10% vs. laboratory reference', 'Sensor accuracy requirement: Mean Absolute Relative Difference must not exceed 10% compared to YSI laboratory reference.', { 'Requirement ID': 'REQ-002', 'Category': 'Design Input', 'Priority': 'Must Have', 'Verification Method': 'Test', 'Trace Status': 'Traced' }, 0.3, 0.15);
+  await insertNord(REQ.r003, NT.requirement, 'Wireless data transmission to mobile app', 'Real-time BLE data streaming from transmitter to companion mobile application.', { 'Requirement ID': 'REQ-003', 'Category': 'Design Input', 'Priority': 'Must Have', 'Verification Method': 'Demonstration', 'Trace Status': '' }, 0.5, 0.15); // intentional gap: trace_status empty
+  await insertNord(REQ.r004, NT.requirement, 'Waterproof to IP67 rating', 'Device enclosure must withstand submersion in 1m water for 30 minutes.', { 'Requirement ID': 'REQ-004', 'Category': 'Design Output', 'Priority': 'Must Have', 'Verification Method': 'Test', 'Trace Status': 'Traced' }, 0.7, 0.15);
+  await insertNord(REQ.r005, NT.requirement, 'Painless sensor insertion by patient', 'Self-insertion by patient with no medical training required. Pain score ≤ 2/10.', { 'Requirement ID': 'REQ-005', 'Category': 'User Need', 'Priority': 'Must Have', 'Verification Method': '', 'Trace Status': '' }, 0.1, 0.3); // gap: verification_method + trace_status empty
+  await insertNord(REQ.r006, NT.requirement, 'Alert on hypoglycemia (< 70 mg/dL)', 'Audible and visual alert when glucose reading drops below 70 mg/dL threshold.', { 'Requirement ID': 'REQ-006', 'Category': 'Design Input', 'Priority': 'Must Have', 'Verification Method': 'Test', 'Trace Status': 'Traced' }, 0.3, 0.3);
+  await insertNord(REQ.r007, NT.requirement, 'Battery life ≥ 14 days continuous operation', 'Transmitter battery must last the full 14-day sensor wear period.', { 'Requirement ID': 'REQ-007', 'Category': 'Design Output', 'Priority': 'Should Have', 'Verification Method': 'Test', 'Trace Status': 'Traced' }, 0.5, 0.3);
+  await insertNord(REQ.r008, NT.requirement, 'Single-use applicator for sterile deployment', 'Pre-loaded applicator for aseptic sensor insertion. EO sterilization.', { 'Requirement ID': 'REQ-008', 'Category': 'Design Output', 'Priority': 'Must Have', 'Verification Method': 'Inspection', 'Trace Status': 'Traced' }, 0.7, 0.3);
 
   // ── Subsystems (5) ──
-  await insertNord(SUB.sensor, NT.subsystem, 'Sensor Module', 'Electrochemical enzyme electrode with glucose oxidase. Pt/AgCl reference electrode.', { technology_stack: 'Electrochemical enzyme electrode, Pt/AgCl reference', risk_class: 'Class II' }, 0.2, 0.5);
-  await insertNord(SUB.wireless, NT.subsystem, 'Wireless Transmitter', 'BLE 5.3 SoC for continuous glucose data streaming.', { technology_stack: 'BLE 5.3 SoC (Nordic nRF5340)', risk_class: 'Class II' }, 0.4, 0.5);
-  await insertNord(SUB.mobileApp, NT.subsystem, 'Mobile Application', 'Companion app for glucose display, alerts, and trend analysis.', { technology_stack: 'React Native, HealthKit/Health Connect integration', risk_class: 'Class II' }, 0.6, 0.5);
-  await insertNord(SUB.cloud, NT.subsystem, 'Cloud Analytics Platform', 'Backend data pipeline for historical analysis and physician dashboards.', { technology_stack: 'GCP, HIPAA-compliant data pipeline', risk_class: 'Class I' }, 0.8, 0.5);
-  await insertNord(SUB.applicator, NT.subsystem, 'Applicator Assembly', 'Spring-loaded insertion mechanism for sensor deployment.', { technology_stack: 'Spring-loaded insertion mechanism, EO sterilization', risk_class: 'Class II' }, 0.2, 0.65);
+  await insertNord(SUB.sensor, NT.subsystem, 'Sensor Module', 'Electrochemical enzyme electrode with glucose oxidase. Pt/AgCl reference electrode.', { 'Technology Stack': 'Electrochemical enzyme electrode, Pt/AgCl reference', 'Risk Class': 'Class II' }, 0.2, 0.5);
+  await insertNord(SUB.wireless, NT.subsystem, 'Wireless Transmitter', 'BLE 5.3 SoC for continuous glucose data streaming.', { 'Technology Stack': 'BLE 5.3 SoC (Nordic nRF5340)', 'Risk Class': 'Class II' }, 0.4, 0.5);
+  await insertNord(SUB.mobileApp, NT.subsystem, 'Mobile Application', 'Companion app for glucose display, alerts, and trend analysis.', { 'Technology Stack': 'React Native, HealthKit/Health Connect integration', 'Risk Class': 'Class II' }, 0.6, 0.5);
+  await insertNord(SUB.cloud, NT.subsystem, 'Cloud Analytics Platform', 'Backend data pipeline for historical analysis and physician dashboards.', { 'Technology Stack': 'GCP, HIPAA-compliant data pipeline', 'Risk Class': 'Class I' }, 0.8, 0.5);
+  await insertNord(SUB.applicator, NT.subsystem, 'Applicator Assembly', 'Spring-loaded insertion mechanism for sensor deployment.', { 'Technology Stack': 'Spring-loaded insertion mechanism, EO sterilization', 'Risk Class': 'Class II' }, 0.2, 0.65);
 
-  // ── Risks (8) ──
-  await insertNord(RISK.h001, NT.risk, 'Inaccurate glucose reading', 'Sensor provides readings outside acceptable accuracy range.', { hazard_id: 'HAZ-001', hazard: 'Inaccurate glucose reading', harm: 'Incorrect insulin dosing → hypoglycemia', severity: 5, probability: 2, risk_score: 10, mitigation: 'Factory calibration with lot-specific calibration codes', residual_risk: 2, iso_14971_ref: 'ISO 14971:2019 §7.4' }, 0.15, 0.75);
-  await insertNord(RISK.h002, NT.risk, 'Battery thermal runaway', 'Lithium battery exceeds safe temperature during charging or operation.', { hazard_id: 'HAZ-002', hazard: 'Battery thermal runaway', harm: 'Skin burn at application site', severity: 4, probability: 1, risk_score: 4, mitigation: 'Thermal cutoff circuit, biocompatible encapsulation', residual_risk: 1 }, 0.35, 0.75);
-  await insertNord(RISK.h003, NT.risk, 'BLE signal interference', 'Wireless signal interrupted by environmental RF noise.', { hazard_id: 'HAZ-003', hazard: 'BLE signal interference', harm: 'Delayed glucose alert', severity: 3, probability: 3, risk_score: 9, mitigation: 'Redundant local alarm on transmitter, store-and-forward', residual_risk: 2 }, 0.55, 0.75);
-  await insertNord(RISK.h004, NT.risk, 'Sensor wire fracture during removal', 'Thin sensor wire breaks and remains subcutaneously.', { hazard_id: 'HAZ-004', hazard: 'Sensor wire fracture during removal', harm: 'Retained foreign body', severity: 4, probability: 2, risk_score: 8, mitigation: 'Reinforced sensor wire (316L stainless), pull-force testing', residual_risk: 1 }, 0.75, 0.75);
-  await insertNord(RISK.h005, NT.risk, 'Adhesive contact dermatitis', 'Skin reaction to adhesive patch material.', { hazard_id: 'HAZ-005', hazard: 'Adhesive contact dermatitis', harm: 'Skin irritation / allergic reaction', severity: 3, probability: 4, risk_score: 12 }, 0.15, 0.88); // ⚠️ intentional gap: no mitigation, no residual_risk
-  await insertNord(RISK.h006, NT.risk, 'Data breach of glucose data', 'Unauthorized access to patient health information.', { hazard_id: 'HAZ-006', hazard: 'Data breach of glucose data', harm: 'Patient privacy violation', severity: 4, probability: 2, risk_score: 8, mitigation: 'AES-256 encryption, HIPAA-compliant cloud', residual_risk: 1 }, 0.35, 0.88);
-  await insertNord(RISK.h007, NT.risk, 'App crash during hypoglycemia alert', 'Mobile application becomes unresponsive during critical alert.', { hazard_id: 'HAZ-007', hazard: 'App crash during hypoglycemia alert', harm: 'Missed critical alert', severity: 5, probability: 2, risk_score: 10, mitigation: 'Independent hardware alarm on transmitter', residual_risk: 1 }, 0.55, 0.88);
-  await insertNord(RISK.h008, NT.risk, 'Applicator misfire — incomplete insertion', 'Spring mechanism fails to fully deploy sensor.', { hazard_id: 'HAZ-008', hazard: 'Applicator misfire — incomplete insertion', harm: 'Inaccurate readings, patient frustration', severity: 3, probability: 3, risk_score: 9 }, 0.75, 0.88); // ⚠️ gap: no mitigation, no residual_risk
+  // ── Risks (8) — Risk Score is now computed client-side from Severity × Probability ──
+  await insertNord(RISK.h001, NT.risk, 'Inaccurate glucose reading', 'Sensor provides readings outside acceptable accuracy range.', { 'Hazard ID': 'HAZ-001', 'Hazard': 'Inaccurate glucose reading', 'Harm': 'Incorrect insulin dosing → hypoglycemia', 'Severity': 5, 'Probability': 2 }, 0.15, 0.75);
+  await insertNord(RISK.h002, NT.risk, 'Battery thermal runaway', 'Lithium battery exceeds safe temperature during charging or operation.', { 'Hazard ID': 'HAZ-002', 'Hazard': 'Battery thermal runaway', 'Harm': 'Skin burn at application site', 'Severity': 4, 'Probability': 1 }, 0.35, 0.75);
+  await insertNord(RISK.h003, NT.risk, 'BLE signal interference', 'Wireless signal interrupted by environmental RF noise.', { 'Hazard ID': 'HAZ-003', 'Hazard': 'BLE signal interference', 'Harm': 'Delayed glucose alert', 'Severity': 3, 'Probability': 3 }, 0.55, 0.75);
+  await insertNord(RISK.h004, NT.risk, 'Sensor wire fracture during removal', 'Thin sensor wire breaks and remains subcutaneously.', { 'Hazard ID': 'HAZ-004', 'Hazard': 'Sensor wire fracture during removal', 'Harm': 'Retained foreign body', 'Severity': 4, 'Probability': 2 }, 0.75, 0.75);
+  await insertNord(RISK.h005, NT.risk, 'Adhesive contact dermatitis', 'Skin reaction to adhesive patch material.', { 'Hazard ID': 'HAZ-005', 'Hazard': 'Adhesive contact dermatitis', 'Harm': 'Skin irritation / allergic reaction', 'Severity': 3, 'Probability': 4 }, 0.15, 0.88); // ⚠️ intentional gap
+  await insertNord(RISK.h006, NT.risk, 'Data breach of glucose data', 'Unauthorized access to patient health information.', { 'Hazard ID': 'HAZ-006', 'Hazard': 'Data breach of glucose data', 'Harm': 'Patient privacy violation', 'Severity': 4, 'Probability': 2 }, 0.35, 0.88);
+  await insertNord(RISK.h007, NT.risk, 'App crash during hypoglycemia alert', 'Mobile application becomes unresponsive during critical alert.', { 'Hazard ID': 'HAZ-007', 'Hazard': 'App crash during hypoglycemia alert', 'Harm': 'Missed critical alert', 'Severity': 5, 'Probability': 2 }, 0.55, 0.88);
+  await insertNord(RISK.h008, NT.risk, 'Applicator misfire — incomplete insertion', 'Spring mechanism fails to fully deploy sensor.', { 'Hazard ID': 'HAZ-008', 'Hazard': 'Applicator misfire — incomplete insertion', 'Harm': 'Inaccurate readings, patient frustration', 'Severity': 3, 'Probability': 3 }, 0.75, 0.88); // ⚠️ gap
 
   // ── Test Cases (10) ──
-  await insertNord(TC.t001, NT.testCase, 'Sensor accuracy (MARD) vs YSI reference', 'Compare CGM readings against YSI laboratory glucose analyzer across the operating range.', { test_id: 'TC-001', protocol: 'YSI comparison per CLSI POCT05', expected_result: 'MARD ≤ 10%', actual_result: 'MARD 8.7% across 40 subjects', pass_fail: 'Pass', test_date: '2025-11-15', tester: 'Dr. Aisha Patel' }, 0.15, 0.42);
-  await insertNord(TC.t002, NT.testCase, '14-day continuous wear duration', 'Validate sensor survival rate across 14-day wear period.', { test_id: 'TC-002', protocol: 'N=50 subjects, daily sensor checks', expected_result: '≥ 95% sensor survival at day 14', actual_result: '98% sensor survival at day 14', pass_fail: 'Pass', test_date: '2025-12-01', tester: 'Dr. Aisha Patel' }, 0.3, 0.42);
-  await insertNord(TC.t003, NT.testCase, 'IP67 waterproof immersion test', 'Submerse device at 1m depth for 30 minutes per IEC 60529.', { test_id: 'TC-003', protocol: 'IEC 60529 IP67 immersion', expected_result: 'No moisture ingress', actual_result: 'No moisture ingress after 30 min at 1m', pass_fail: 'Pass' }, 0.45, 0.42);
-  await insertNord(TC.t004, NT.testCase, 'BLE range and reliability test', 'Validate BLE connection stability at 10m range with common interference sources.', { test_id: 'TC-004', protocol: 'BLE 5.3 range test per RF engineering SOP', expected_result: '≥ 99% packet delivery at 10m' }, 0.6, 0.42); // ⚠️ gap: no actual_result, no pass_fail
-  await insertNord(TC.t005, NT.testCase, 'Hypoglycemia alert latency', 'Measure time from glucose threshold crossing to alert delivery.', { test_id: 'TC-005', protocol: 'Simulated glucose ramp with threshold at 70 mg/dL', expected_result: '95th percentile < 5 min', actual_result: 'Mean alert time 4.2 min from threshold', pass_fail: 'Pass' }, 0.75, 0.42);
-  await insertNord(TC.t006, NT.testCase, 'Battery life under continuous operation', 'Continuous BLE transmission for 14 days with hourly alert simulations.', { test_id: 'TC-006', protocol: 'Continuous discharge test per IEC 60086', expected_result: '≥ 336 hours (14 days)' }, 0.15, 0.55); // ⚠️ gap: no actual_result, no pass_fail
-  await insertNord(TC.t007, NT.testCase, 'Thermal safety — battery stress test', 'Battery temperature monitoring under charge/discharge cycling.', { test_id: 'TC-007', protocol: 'IEC 62133 thermal abuse test', expected_result: 'Max surface temp ≤ 43°C', actual_result: 'Max surface temp 38.2°C under load', pass_fail: 'Pass' }, 0.3, 0.55);
-  await insertNord(TC.t008, NT.testCase, 'Sensor wire pull-force test', 'Measure force required to extract sensor wire from tissue simulant.', { test_id: 'TC-008', protocol: 'Pull-force test per internal SOP-MFG-023', expected_result: 'Mean ≥ 2.0N, Min ≥ 1.5N', actual_result: 'Mean pull force 2.8N, min 2.1N', pass_fail: 'Pass' }, 0.45, 0.55);
-  await insertNord(TC.t009, NT.testCase, 'Applicator insertion force consistency', 'Validate spring-loaded applicator delivers consistent insertion force across lot.', { test_id: 'TC-009', protocol: 'N=100 applicators, force measurement per SOP-MFG-024', expected_result: 'CV ≤ 10%, all within 2.5-4.0N' }, 0.6, 0.55); // ⚠️ gap: no actual_result, no pass_fail
-  await insertNord(TC.t010, NT.testCase, 'Data encryption end-to-end verification', 'Verify AES-256-GCM encryption from transmitter through cloud pipeline.', { test_id: 'TC-010', protocol: 'Packet capture analysis, TLS inspection', expected_result: 'No plaintext PHI in transit', actual_result: 'AES-256-GCM verified, no plaintext in transit', pass_fail: 'Pass' }, 0.75, 0.55);
+  await insertNord(TC.t001, NT.testCase, 'Sensor accuracy (MARD) vs YSI reference', 'Compare CGM readings against YSI laboratory glucose analyzer across the operating range.', { 'Test ID': 'TC-001', 'Test Protocol': 'YSI comparison per CLSI POCT05', 'Expected Result': 'MARD ≤ 10%', 'Actual Result': 'MARD 8.7% across 40 subjects', 'Pass/Fail': 'Pass', 'Test Date': '2025-11-15' }, 0.15, 0.42);
+  await insertNord(TC.t002, NT.testCase, '14-day continuous wear duration', 'Validate sensor survival rate across 14-day wear period.', { 'Test ID': 'TC-002', 'Test Protocol': 'N=50 subjects, daily sensor checks', 'Expected Result': '≥ 95% sensor survival at day 14', 'Actual Result': '98% sensor survival at day 14', 'Pass/Fail': 'Pass', 'Test Date': '2025-12-01' }, 0.3, 0.42);
+  await insertNord(TC.t003, NT.testCase, 'IP67 waterproof immersion test', 'Submerse device at 1m depth for 30 minutes per IEC 60529.', { 'Test ID': 'TC-003', 'Test Protocol': 'IEC 60529 IP67 immersion', 'Expected Result': 'No moisture ingress', 'Actual Result': 'No moisture ingress after 30 min at 1m', 'Pass/Fail': 'Pass' }, 0.45, 0.42);
+  await insertNord(TC.t004, NT.testCase, 'BLE range and reliability test', 'Validate BLE connection stability at 10m range with common interference sources.', { 'Test ID': 'TC-004', 'Test Protocol': 'BLE 5.3 range test per RF engineering SOP', 'Expected Result': '≥ 99% packet delivery at 10m' }, 0.6, 0.42); // ⚠️ gap: no actual_result, no pass_fail
+  await insertNord(TC.t005, NT.testCase, 'Hypoglycemia alert latency', 'Measure time from glucose threshold crossing to alert delivery.', { 'Test ID': 'TC-005', 'Test Protocol': 'Simulated glucose ramp with threshold at 70 mg/dL', 'Expected Result': '95th percentile < 5 min', 'Actual Result': 'Mean alert time 4.2 min from threshold', 'Pass/Fail': 'Pass' }, 0.75, 0.42);
+  await insertNord(TC.t006, NT.testCase, 'Battery life under continuous operation', 'Continuous BLE transmission for 14 days with hourly alert simulations.', { 'Test ID': 'TC-006', 'Test Protocol': 'Continuous discharge test per IEC 60086', 'Expected Result': '≥ 336 hours (14 days)' }, 0.15, 0.55); // ⚠️ gap: no actual_result, no pass_fail
+  await insertNord(TC.t007, NT.testCase, 'Thermal safety — battery stress test', 'Battery temperature monitoring under charge/discharge cycling.', { 'Test ID': 'TC-007', 'Test Protocol': 'IEC 62133 thermal abuse test', 'Expected Result': 'Max surface temp ≤ 43°C', 'Actual Result': 'Max surface temp 38.2°C under load', 'Pass/Fail': 'Pass' }, 0.3, 0.55);
+  await insertNord(TC.t008, NT.testCase, 'Sensor wire pull-force test', 'Measure force required to extract sensor wire from tissue simulant.', { 'Test ID': 'TC-008', 'Test Protocol': 'Pull-force test per internal SOP-MFG-023', 'Expected Result': 'Mean ≥ 2.0N, Min ≥ 1.5N', 'Actual Result': 'Mean pull force 2.8N, min 2.1N', 'Pass/Fail': 'Pass' }, 0.45, 0.55);
+  await insertNord(TC.t009, NT.testCase, 'Applicator insertion force consistency', 'Validate spring-loaded applicator delivers consistent insertion force across lot.', { 'Test ID': 'TC-009', 'Test Protocol': 'N=100 applicators, force measurement per SOP-MFG-024', 'Expected Result': 'CV ≤ 10%, all within 2.5-4.0N' }, 0.6, 0.55); // ⚠️ gap: no actual_result, no pass_fail
+  await insertNord(TC.t010, NT.testCase, 'Data encryption end-to-end verification', 'Verify AES-256-GCM encryption from transmitter through cloud pipeline.', { 'Test ID': 'TC-010', 'Test Protocol': 'Packet capture analysis, TLS inspection', 'Expected Result': 'No plaintext PHI in transit', 'Actual Result': 'AES-256-GCM verified, no plaintext in transit', 'Pass/Fail': 'Pass' }, 0.75, 0.55);
 
   // ── Bugs / Nonconformances (6) ──
-  await insertNord(NC.nc001, NT.bug, 'Sensor drift >15% after day 10', 'Accuracy degrades significantly in final days of wear period.', { nc_id: 'NC-001', severity: 'Critical', root_cause: 'Enzyme degradation in high-humidity storage', capa_required: true, disposition: 'Rework' }, 0.2, 0.18);
-  await insertNord(NC.nc002, NT.bug, 'BLE disconnection on iOS 17.4', 'Intermittent BLE drops specific to iOS 17.4 background execution limits.', { nc_id: 'NC-002', severity: 'Major', root_cause: 'Apple BLE stack regression', capa_required: true }, 0.4, 0.18); // gap: no disposition
-  await insertNord(NC.nc003, NT.bug, 'Adhesive residue on removal', 'Excessive adhesive remains on skin after sensor removal.', { nc_id: 'NC-003', severity: 'Minor', root_cause: 'Excess adhesive application in production', capa_required: false, disposition: 'Use As Is' }, 0.6, 0.18);
-  await insertNord(NC.nc004, NT.bug, 'App crash on Samsung Galaxy S24', 'React Native memory leak causes crash during extended glucose display.', { nc_id: 'NC-004', severity: 'Major', root_cause: 'Memory leak in React Native bridge', capa_required: true, disposition: 'Rework' }, 0.8, 0.18);
-  await insertNord(NC.nc005, NT.bug, 'Applicator spring inconsistency — lot 2024-07', 'Spring force outside specification in single production lot.', { nc_id: 'NC-005', severity: 'Critical', root_cause: 'Supplier heat treatment deviation', capa_required: true, disposition: 'Scrap' }, 0.2, 0.08);
-  await insertNord(NC.nc006, NT.bug, 'Cloud dashboard latency >30s', 'Web dashboard takes over 30 seconds to load historical glucose data.', { nc_id: 'NC-006', severity: 'Minor' }, 0.4, 0.08); // ⚠️ gap: no root_cause, no capa_required, no disposition
+  await insertNord(NC.nc001, NT.bug, 'Sensor drift >15% after day 10', 'Accuracy degrades significantly in final days of wear period.', { 'NC ID': 'NC-001', 'Severity': 'Critical', 'Root Cause': 'Enzyme degradation in high-humidity storage', 'CAPA Required': true, 'Disposition': 'Rework' }, 0.2, 0.18);
+  await insertNord(NC.nc002, NT.bug, 'BLE disconnection on iOS 17.4', 'Intermittent BLE drops specific to iOS 17.4 background execution limits.', { 'NC ID': 'NC-002', 'Severity': 'Major', 'Root Cause': 'Apple BLE stack regression', 'CAPA Required': true }, 0.4, 0.18); // gap: no disposition
+  await insertNord(NC.nc003, NT.bug, 'Adhesive residue on removal', 'Excessive adhesive remains on skin after sensor removal.', { 'NC ID': 'NC-003', 'Severity': 'Minor', 'Root Cause': 'Excess adhesive application in production', 'CAPA Required': false, 'Disposition': 'Use As Is' }, 0.6, 0.18);
+  await insertNord(NC.nc004, NT.bug, 'App crash on Samsung Galaxy S24', 'React Native memory leak causes crash during extended glucose display.', { 'NC ID': 'NC-004', 'Severity': 'Major', 'Root Cause': 'Memory leak in React Native bridge', 'CAPA Required': true, 'Disposition': 'Rework' }, 0.8, 0.18);
+  await insertNord(NC.nc005, NT.bug, 'Applicator spring inconsistency — lot 2024-07', 'Spring force outside specification in single production lot.', { 'NC ID': 'NC-005', 'Severity': 'Critical', 'Root Cause': 'Supplier heat treatment deviation', 'CAPA Required': true, 'Disposition': 'Scrap' }, 0.2, 0.08);
+  await insertNord(NC.nc006, NT.bug, 'Cloud dashboard latency >30s', 'Web dashboard takes over 30 seconds to load historical glucose data.', { 'NC ID': 'NC-006', 'Severity': 'Minor' }, 0.4, 0.08); // ⚠️ gap: no root_cause, no capa_required, no disposition
 
   // ── Team Members (7) ──
-  await insertNord(TEAM.priya, NT.teamMember, 'Dr. Priya Sharma', 'VP Regulatory Affairs. 15 years in regulatory strategy.', { role: 'VP Regulatory Affairs', department: 'Regulatory', credentials: 'RAC, former FDA reviewer', signing_authority: true }, 0.85, 0.1);
-  await insertNord(TEAM.marcus, NT.teamMember, 'Marcus Cole', 'Lead Systems Engineer. 10 years in embedded medical devices.', { role: 'Lead Systems Engineer', department: 'Engineering', credentials: 'BSEE, 10yr embedded medical', signing_authority: true }, 0.85, 0.22);
-  await insertNord(TEAM.sarah, NT.teamMember, 'Sarah Kim', 'Clinical Affairs Director. PhD in Biomedical Engineering.', { role: 'Clinical Affairs Director', department: 'Clinical', credentials: 'PhD Biomedical Engineering', signing_authority: true }, 0.85, 0.34);
-  await insertNord(TEAM.james, NT.teamMember, 'James Okonkwo', 'Quality Assurance Manager. ISO 13485 Lead Auditor.', { role: 'Quality Assurance Manager', department: 'Quality', credentials: 'ISO 13485 Lead Auditor', signing_authority: true }, 0.85, 0.46);
-  await insertNord(TEAM.elena, NT.teamMember, 'Elena Vasquez', 'Product Director. 9 years in medtech product management.', { role: 'Product Director', department: 'Product', credentials: 'MBA, 9yr medtech product', signing_authority: false }, 0.85, 0.58);
-  await insertNord(TEAM.aisha, NT.teamMember, 'Dr. Aisha Patel', 'Sensor Design Engineer. PhD Electrochemistry.', { role: 'Sensor Design Engineer', department: 'Engineering', credentials: 'PhD Electrochemistry', signing_authority: false }, 0.85, 0.7);
-  await insertNord(TEAM.tom, NT.teamMember, 'Tom Nguyen', 'Software Engineer. IEC 62304 certified.', { role: 'Software Engineer', department: 'Engineering', credentials: 'BSCS, IEC 62304 certified', signing_authority: false }, 0.85, 0.82);
+  await insertNord(TEAM.priya, NT.teamMember, 'Dr. Priya Sharma', 'VP Regulatory Affairs. 15 years in regulatory strategy.', { 'Role': 'VP Regulatory Affairs', 'Department': 'Regulatory', 'Credentials': 'RAC, former FDA reviewer', 'Signing Authority': true }, 0.85, 0.1);
+  await insertNord(TEAM.marcus, NT.teamMember, 'Marcus Cole', 'Lead Systems Engineer. 10 years in embedded medical devices.', { 'Role': 'Lead Systems Engineer', 'Department': 'Engineering', 'Credentials': 'BSEE, 10yr embedded medical', 'Signing Authority': true }, 0.85, 0.22);
+  await insertNord(TEAM.sarah, NT.teamMember, 'Sarah Kim', 'Clinical Affairs Director. PhD in Biomedical Engineering.', { 'Role': 'Clinical Affairs Director', 'Department': 'Clinical', 'Credentials': 'PhD Biomedical Engineering', 'Signing Authority': true }, 0.85, 0.34);
+  await insertNord(TEAM.james, NT.teamMember, 'James Okonkwo', 'Quality Assurance Manager. ISO 13485 Lead Auditor.', { 'Role': 'Quality Assurance Manager', 'Department': 'Quality', 'Credentials': 'ISO 13485 Lead Auditor', 'Signing Authority': true }, 0.85, 0.46);
+  await insertNord(TEAM.elena, NT.teamMember, 'Elena Vasquez', 'Product Director. 9 years in medtech product management.', { 'Role': 'Product Director', 'Department': 'Product', 'Credentials': 'MBA, 9yr medtech product', 'Signing Authority': false }, 0.85, 0.58);
+  await insertNord(TEAM.aisha, NT.teamMember, 'Dr. Aisha Patel', 'Sensor Design Engineer. PhD Electrochemistry.', { 'Role': 'Sensor Design Engineer', 'Department': 'Engineering', 'Credentials': 'PhD Electrochemistry', 'Signing Authority': false }, 0.85, 0.7);
+  await insertNord(TEAM.tom, NT.teamMember, 'Tom Nguyen', 'Software Engineer. IEC 62304 certified.', { 'Role': 'Software Engineer', 'Department': 'Engineering', 'Credentials': 'BSCS, IEC 62304 certified', 'Signing Authority': false }, 0.85, 0.82);
 
   // ── Regulatory Submissions (2) ──
-  await insertNord(REGSUB.fivetenk, NT.regSub, '510(k) Submission', 'FDA 510(k) submission for Pulse Sense CGM — Class II medical device.', { submission_type: '510(k)', predicate_device: 'Dexcom G7 (K221803)', status: 'Drafting' }, 0.5, 0.92); // gap: no target_date, no substantial_equivalence
-  await insertNord(REGSUB.ceMark, NT.regSub, 'CE Mark Submission', 'European conformity assessment for Pulse Sense CGM.', { submission_type: 'CE Mark', status: 'Drafting' }, 0.65, 0.92); // gap: no target_date, no predicate_device, no substantial_equivalence
+  await insertNord(REGSUB.fivetenk, NT.regSub, '510(k) Submission', 'FDA 510(k) submission for Pulse Sense CGM — Class II medical device.', { 'Submission Type': '510(k)', 'Predicate Device': 'Dexcom G7 (K221803)', 'Status': 'Drafting' }, 0.5, 0.92); // gap: no target_date, no substantial_equivalence
+  await insertNord(REGSUB.ceMark, NT.regSub, 'CE Mark Submission', 'European conformity assessment for Pulse Sense CGM.', { 'Submission Type': 'CE Mark', 'Status': 'Drafting' }, 0.65, 0.92); // gap: no target_date, no predicate_device, no substantial_equivalence
 
   // ── Clinical Protocols (3) ──
-  await insertNord(CP.cp001, NT.clinicalProto, 'Sensor accuracy pivotal study', 'Multi-site pivotal study comparing CGM accuracy against YSI reference.', { protocol_id: 'CP-001', study_type: 'Pivotal', sample_size: 350, irb_approval_date: '2026-03-15', primary_endpoint: 'MARD vs. YSI reference ≤ 10%', status: 'Active' }, 0.2, 0.92);
-  await insertNord(CP.cp002, NT.clinicalProto, '14-day wear feasibility study', 'Single-site feasibility study validating sensor survival over wear period.', { protocol_id: 'CP-002', study_type: 'Feasibility', sample_size: 30, primary_endpoint: 'Sensor survival rate at day 14', status: 'IRB Review' }, 0.35, 0.92); // gap: no irb_approval_date
-  await insertNord(CP.cp003, NT.clinicalProto, 'Real-world usability study', 'Post-market usability evaluation with Type 2 diabetes patients.', { protocol_id: 'CP-003', study_type: 'Post-Market', sample_size: 100, primary_endpoint: 'System Usability Scale (SUS) ≥ 75', status: 'Draft' }, 0.5, 0.05); // gap: no irb_approval_date
+  await insertNord(CP.cp001, NT.clinicalProto, 'Sensor accuracy pivotal study', 'Multi-site pivotal study comparing CGM accuracy against YSI reference.', { 'Protocol ID': 'CP-001', 'Study Type': 'Pivotal', 'Sample Size': 350, 'IRB Approval Date': '2026-03-15', 'Primary Endpoint': 'MARD vs. YSI reference ≤ 10%', 'Status': 'Active' }, 0.2, 0.92);
+  await insertNord(CP.cp002, NT.clinicalProto, '14-day wear feasibility study', 'Single-site feasibility study validating sensor survival over wear period.', { 'Protocol ID': 'CP-002', 'Study Type': 'Feasibility', 'Sample Size': 30, 'Primary Endpoint': 'Sensor survival rate at day 14', 'Status': 'IRB Review' }, 0.35, 0.92); // gap: no irb_approval_date
+  await insertNord(CP.cp003, NT.clinicalProto, 'Real-world usability study', 'Post-market usability evaluation with Type 2 diabetes patients.', { 'Protocol ID': 'CP-003', 'Study Type': 'Post-Market', 'Sample Size': 100, 'Primary Endpoint': 'System Usability Scale (SUS) ≥ 75', 'Status': 'Draft' }, 0.5, 0.05); // gap: no irb_approval_date
 
   // ── Architecture Decision Records (5) ──
-  await insertNord(ADR.adr001, NT.adr, 'BLE vs. NFC for data transfer', 'Evaluated wireless data transfer protocol options.', { adr_id: 'ADR-001', context: 'Need real-time glucose streaming to mobile device. NFC requires proximity; BLE allows continuous connection.', decision: 'BLE 5.3 — continuous streaming required for real-time alerts', alternatives: 'NFC, WiFi Direct, proprietary RF', status: 'Accepted', decided_by: 'Marcus Cole', date: '2025-06-15' }, 0.1, 0.6);
-  await insertNord(ADR.adr002, NT.adr, 'React Native vs. native iOS/Android', 'Evaluated mobile development framework.', { adr_id: 'ADR-002', context: 'Need to support both iOS and Android with limited development resources.', decision: 'React Native — faster iteration, acceptable performance for CGM use case', alternatives: 'Native Swift + Kotlin, Flutter, Xamarin', status: 'Accepted', decided_by: 'Tom Nguyen', date: '2025-07-01' }, 0.3, 0.6);
-  await insertNord(ADR.adr003, NT.adr, 'Factory calibration vs. finger-prick calibration', 'Evaluated calibration approach for production CGM.', { adr_id: 'ADR-003', context: 'Traditional CGMs require finger-prick calibration. Factory calibration eliminates this but requires tighter manufacturing controls.', decision: 'Factory calibration — critical for user experience, requires tighter manufacturing controls', alternatives: 'Daily finger-prick calibration, hybrid approach', status: 'Accepted', decided_by: 'Dr. Aisha Patel', date: '2025-08-20' }, 0.5, 0.6);
-  await insertNord(ADR.adr004, NT.adr, 'Cloud platform: GCP vs. AWS for HIPAA workloads', 'Evaluated cloud provider for healthcare data.', { adr_id: 'ADR-004', context: 'Patient glucose data requires HIPAA-compliant cloud infrastructure with BAA.', decision: 'GCP — team expertise, Assured Workloads for HIPAA, competitive pricing', alternatives: 'AWS (GovCloud), Azure (Healthcare API)', status: 'Accepted', decided_by: 'Tom Nguyen', date: '2025-09-10' }, 0.7, 0.6);
-  await insertNord(ADR.adr005, NT.adr, 'Sensor wire material: Platinum vs. gold', 'Evaluate sensing electrode material for accuracy and biocompatibility.', { adr_id: 'ADR-005', context: 'Platinum offers better enzymatic response but higher cost. Gold is cheaper with adequate performance for 14-day wear.', status: 'Proposed' }, 0.9, 0.6); // ⚠️ gap: no decision, no alternatives
+  await insertNord(ADR.adr001, NT.adr, 'BLE vs. NFC for data transfer', 'Evaluated wireless data transfer protocol options.', { 'ADR ID': 'ADR-001', 'Context': 'Need real-time glucose streaming to mobile device. NFC requires proximity; BLE allows continuous connection.', 'Decision': 'BLE 5.3 — continuous streaming required for real-time alerts', 'Alternatives Considered': 'NFC, WiFi Direct, proprietary RF', 'Status': 'Accepted', 'Decided By': 'Marcus Cole' }, 0.1, 0.6);
+  await insertNord(ADR.adr002, NT.adr, 'React Native vs. native iOS/Android', 'Evaluated mobile development framework.', { 'ADR ID': 'ADR-002', 'Context': 'Need to support both iOS and Android with limited development resources.', 'Decision': 'React Native — faster iteration, acceptable performance for CGM use case', 'Alternatives Considered': 'Native Swift + Kotlin, Flutter, Xamarin', 'Status': 'Accepted', 'Decided By': 'Tom Nguyen' }, 0.3, 0.6);
+  await insertNord(ADR.adr003, NT.adr, 'Factory calibration vs. finger-prick calibration', 'Evaluated calibration approach for production CGM.', { 'ADR ID': 'ADR-003', 'Context': 'Traditional CGMs require finger-prick calibration. Factory calibration eliminates this but requires tighter manufacturing controls.', 'Decision': 'Factory calibration — critical for user experience, requires tighter manufacturing controls', 'Alternatives Considered': 'Daily finger-prick calibration, hybrid approach', 'Status': 'Accepted', 'Decided By': 'Dr. Aisha Patel' }, 0.5, 0.6);
+  await insertNord(ADR.adr004, NT.adr, 'Cloud platform: GCP vs. AWS for HIPAA workloads', 'Evaluated cloud provider for healthcare data.', { 'ADR ID': 'ADR-004', 'Context': 'Patient glucose data requires HIPAA-compliant cloud infrastructure with BAA.', 'Decision': 'GCP — team expertise, Assured Workloads for HIPAA, competitive pricing', 'Alternatives Considered': 'AWS (GovCloud), Azure (Healthcare API)', 'Status': 'Accepted', 'Decided By': 'Tom Nguyen' }, 0.7, 0.6);
+  await insertNord(ADR.adr005, NT.adr, 'Sensor wire material: Platinum vs. gold', 'Evaluate sensing electrode material for accuracy and biocompatibility.', { 'ADR ID': 'ADR-005', 'Context': 'Platinum offers better enzymatic response but higher cost. Gold is cheaper with adequate performance for 14-day wear.', 'Status': 'Proposed' }, 0.9, 0.6); // ⚠️ gap: no decision, no alternatives
 
   // ── Milestones (5) ──
-  await insertNord(MS.ms1, NT.milestone, 'Design Input Review', 'Formal design review gate for requirements documentation.', { target_date: '2026-02-01', gate_type: 'Design Review', exit_criteria: 'All user needs documented, design inputs derived, traceability matrix complete' }, 0.15, 0.05);
-  await insertNord(MS.ms2, NT.milestone, 'Risk Management Review', 'Phase gate for ISO 14971 risk analysis completion.', { target_date: '2026-04-15', gate_type: 'Phase Gate', exit_criteria: 'ISO 14971 risk analysis complete, all residual risks acceptable' }, 0.35, 0.05);
-  await insertNord(MS.ms3, NT.milestone, 'Design Verification Complete', 'Phase gate for all verification protocols executed.', { target_date: '2026-07-01', gate_type: 'Phase Gate', exit_criteria: 'All test protocols executed, results documented, no open Critical NCs' }, 0.55, 0.05);
-  await insertNord(MS.ms4, NT.milestone, 'Clinical Study Completion', 'Phase gate for pivotal study enrollment and results.', { target_date: '2026-11-01', gate_type: 'Phase Gate', exit_criteria: 'Pivotal study enrollment complete, primary endpoint met' }, 0.75, 0.05);
-  await insertNord(MS.ms5, NT.milestone, '510(k) Submission', 'FDA submission gate.', { gate_type: 'Submission' }, 0.9, 0.05); // ⚠️ gap: no target_date, no exit_criteria
+  await insertNord(MS.ms1, NT.milestone, 'Design Input Review', 'Formal design review gate for requirements documentation.', { 'Target Date': '2026-02-01', 'Gate Type': 'Design Review', 'Exit Criteria': 'All user needs documented, design inputs derived, traceability matrix complete' }, 0.15, 0.05);
+  await insertNord(MS.ms2, NT.milestone, 'Risk Management Review', 'Phase gate for ISO 14971 risk analysis completion.', { 'Target Date': '2026-04-15', 'Gate Type': 'Phase Gate', 'Exit Criteria': 'ISO 14971 risk analysis complete, all residual risks acceptable' }, 0.35, 0.05);
+  await insertNord(MS.ms3, NT.milestone, 'Design Verification Complete', 'Phase gate for all verification protocols executed.', { 'Target Date': '2026-07-01', 'Gate Type': 'Phase Gate', 'Exit Criteria': 'All test protocols executed, results documented, no open Critical NCs' }, 0.55, 0.05);
+  await insertNord(MS.ms4, NT.milestone, 'Clinical Study Completion', 'Phase gate for pivotal study enrollment and results.', { 'Target Date': '2026-11-01', 'Gate Type': 'Phase Gate', 'Exit Criteria': 'Pivotal study enrollment complete, primary endpoint met' }, 0.75, 0.05);
+  await insertNord(MS.ms5, NT.milestone, '510(k) Submission', 'FDA submission gate.', { 'Gate Type': 'Submission' }, 0.9, 0.05); // ⚠️ gap: no target_date, no exit_criteria
 
   console.log('  ✅ 59 Nords');
 
@@ -599,29 +593,29 @@ async function run() {
 
   // Goal property bindings
   for (const reqId of Object.values(REQ)) {
-    for (const prop of ['priority', 'verification_method', 'trace_status']) {
+    for (const prop of ['Priority', 'Verification Method', 'Trace Status']) {
       await pool.query(`INSERT INTO goal_properties (id, goal_id, nord_id, property_name) VALUES ($1, $2, $3, $4)`, [id(), GOAL.reqLocked, reqId, prop]);
     }
   }
   for (const riskId of Object.values(RISK)) {
-    for (const prop of ['severity', 'probability', 'mitigation', 'residual_risk']) {
+    for (const prop of ['Severity', 'Probability', 'Hazard', 'Harm']) {
       await pool.query(`INSERT INTO goal_properties (id, goal_id, nord_id, property_name) VALUES ($1, $2, $3, $4)`, [id(), GOAL.riskComplete, riskId, prop]);
     }
   }
   for (const tcId of Object.values(TC)) {
-    for (const prop of ['pass_fail', 'actual_result']) {
+    for (const prop of ['Pass/Fail', 'Actual Result']) {
       await pool.query(`INSERT INTO goal_properties (id, goal_id, nord_id, property_name) VALUES ($1, $2, $3, $4)`, [id(), GOAL.verifComplete, tcId, prop]);
     }
   }
   for (const cpId of Object.values(CP)) {
-    for (const prop of ['irb_approval_date', 'status']) {
+    for (const prop of ['IRB Approval Date', 'Status']) {
       await pool.query(`INSERT INTO goal_properties (id, goal_id, nord_id, property_name) VALUES ($1, $2, $3, $4)`, [id(), GOAL.clinApproved, cpId, prop]);
     }
   }
-  for (const prop of ['predicate_device', 'substantial_equivalence']) {
+  for (const prop of ['Predicate Device', 'Substantial Equivalence']) {
     await pool.query(`INSERT INTO goal_properties (id, goal_id, nord_id, property_name) VALUES ($1, $2, $3, $4)`, [id(), GOAL.fivetenReady, REGSUB.fivetenk, prop]);
   }
-  for (const prop of ['status', 'target_date']) {
+  for (const prop of ['Status', 'Target Date']) {
     await pool.query(`INSERT INTO goal_properties (id, goal_id, nord_id, property_name) VALUES ($1, $2, $3, $4)`, [id(), GOAL.fdaSubmission, REGSUB.fivetenk, prop]);
   }
 

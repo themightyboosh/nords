@@ -60,7 +60,7 @@ export interface PropertySchema {
   required?: boolean;
   defaultValue?: string | number | boolean | null;
   options?: string[];
-  card_row?: number;
+  card_row?: number | null;
   config?: Record<string, unknown>;
 }
 
@@ -299,16 +299,17 @@ export interface PersonaGoalWeight {
 
 // ── Project Variables (global registry) ──
 
-export type VariableType =
-  | 'string' | 'number' | 'boolean' | 'date' | 'select'
-  | 'multi_select' | 'date_range' | 'email' | 'url' | 'phone';
+import { type PropertyType } from '@nords/shared/propertyTypes.js';
+
+/** @deprecated Use PropertyType from @nords/shared instead */
+export type VariableType = PropertyType;
 
 export interface ProjectVariable {
   id: string;
   project_id: string;
   name: string;
   description: string;
-  type: VariableType;
+  type: PropertyType;
   options: unknown[] | null;
   required: boolean;
   tags: string[];

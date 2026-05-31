@@ -7,13 +7,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
+import type { PropertyType } from '@nords/shared/propertyTypes';
 
 // ── Types ──
 
-export type VariableType =
-  | 'string' | 'number' | 'boolean' | 'date'
-  | 'select' | 'multi_select' | 'date_range'
-  | 'email' | 'url' | 'phone';
+/** @deprecated Use PropertyType from @nords/shared instead */
+export type VariableType = PropertyType;
 
 export interface ProjectVariable {
   id: string;

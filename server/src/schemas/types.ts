@@ -6,28 +6,47 @@
  */
 
 import { z } from 'zod';
+import {
+  PROPERTY_TYPES,
+  LEGACY_TYPE_MAP,
+  type PropertyType,
+} from '@nords/shared/propertyTypes.js';
 
 // ── Shared: Property Schema (column definition for JSONB properties) ──
 
-export const PropertySchemaItem = z.object({
-  name: z.string().min(1)
-    .describe('Property name (column heading) — must be unique within the type'),
-  type: z.enum([
-    'short_text', 'long_text', 'url', 'number', 'currency', 'percentage',
-    'stage', 'select', 'multi_select', 'boolean', 'date', 'date_range',
-    'user', 'nord_reference', 'file', 'computed',
-  ]).describe('Data type of the property — determines the UI control and validation'),
-  required: z.boolean().optional().default(false)
-    .describe('Whether this property must have a value'),
-  defaultValue: z.union([z.string(), z.number(), z.boolean(), z.null()]).optional()
-    .describe('Default value when a new nord/connection is created'),
-  options: z.array(z.string()).optional()
-    .describe('Valid options for select/multi_select types'),
-  card_row: z.number().int().min(0).max(5).optional()
-    .describe('Which row of the card UI displays this property (0 = hidden)'),
-  config: z.record(z.unknown()).optional()
-    .describe('Type-specific configuration (e.g., currency symbol, date format)'),
-});
+// Accept canonical types directly, plus legacy names via transform
+const PropertyTypeField = z.string()
+  .transform((val): PropertyType => {
+    if (LEGACY_TYPE_MAP[val]) return LEGACY_TYPE_MAP[val];
+    if ((PROPERTY_TYPES as readonly string[]).includes(val)) return val as PropertyType;
+    return 'short_text'; // safe fallback
+  })
+  .describe('Data type of the property — determines the UI control and validation');
+
+export const PropertySchemaItem = z.preprocess(
+  // Normalize legacy { key, label } format → canonical { name }
+  (val: any) => {
+    if (val && typeof val === 'object' && !val.name && (val.label || val.key)) {
+      return { ...val, name: val.label || val.key };
+    }
+    return val;
+  },
+  z.object({
+    name: z.string().min(1)
+      .describe('Property name (column heading) — must be unique within the type'),
+    type: PropertyTypeField,
+    required: z.boolean().optional().default(false)
+      .describe('Whether this property must have a value'),
+    defaultValue: z.union([z.string(), z.number(), z.boolean(), z.null()]).optional()
+      .describe('Default value when a new nord/connection is created'),
+    options: z.array(z.string()).optional()
+      .describe('Valid options for select/multi_select types'),
+    card_row: z.number().int().min(0).max(6).optional().nullable()
+      .describe('Which row of the card UI displays this property (0/null = hidden)'),
+    config: z.record(z.unknown()).optional()
+      .describe('Type-specific configuration (e.g., currency symbol, date format)'),
+  }).passthrough()  // Allow extra fields (key, label, mcp_visible) without failing
+);
 
 // ── Stage Labels (spectrum/board column definitions) ──
 
@@ -108,6 +127,16 @@ export const UpdateConnectionTypeSchema = z.object({
     .describe('Hex color for the edge'),
   stroke_style: z.enum(['solid', 'dashed', 'dotted']).optional()
     .describe('Visual line style'),
+  default_direction: z.enum(['forward', 'reverse', 'both', 'none']).optional()
+    .describe('Default arrow direction for new connections'),
+  direction_filter: z.enum(['all', 'forward', 'reverse', 'both', 'none']).optional()
+    .describe('Which direction options are available in the UI'),
+  direction_prepositions: z.object({
+    forward: z.string(),
+    reverse: z.string(),
+    both: z.string(),
+  }).optional().nullable()
+    .describe('Preposition labels for each direction'),
   measurement_mode: z.enum(['spectrum', 'none']).optional()
     .describe('How connections of this type use the distance axes'),
   verb: z.string().max(50).optional().nullable()

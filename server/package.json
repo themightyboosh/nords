@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npx tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/server/src/index.js",
     "db:proxy": "cloud-sql-proxy nords-spatial-1776012153:us-central1:nords-db-main --port=5433",
     "db:migrate": "node --loader ts-node/esm src/migrate.ts",
     "test": "node --env-file=.env ./node_modules/.bin/vitest run",
@@ -24,7 +24,8 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.19.0",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "@nords/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

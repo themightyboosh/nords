@@ -31,6 +31,10 @@ import { hexToHSL } from '../../utils/color';
 import { UI_STRINGS } from '../../constants/uiStrings';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
+import {
+  UI_PROPERTY_TYPES, PROPERTY_TYPE_META, getCompatGroup, needsOptions,
+  normalizePropertyType, type PropertyType,
+} from '@nords/shared/propertyTypes';
 import './ManageTypes.css';
 
 interface ManageTypesProps {
@@ -90,14 +94,8 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (op
   );
 }
 
-// Type compatibility groups — defaults carry over within the same group
-const TYPE_COMPAT_GROUPS: Record<string, string> = {
-  string: 'text', url: 'text', markdown: 'text',
-  number: 'number',
-  date: 'date',
-  select: 'select',
-  tags: 'tags',
-};
+// Type compatibility groups now come from the shared registry:
+// getCompatGroup(type) returns the group string.
 
 
 export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialTab, lockedTab }: ManageTypesProps) {
@@ -220,7 +218,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
       alert('Maximum of 6 properties per type. Remove an existing property to add a new one.');
       return;
     }
-    const newProp: PropertySchema = { name: 'New Property', type: 'string' };
+    const newProp: PropertySchema = { name: 'New Property', type: 'short_text' };
     handleUpdateField('properties_schema', [...currentSchema, newProp]);
   }, [selected, handleUpdateField]);
 
@@ -235,8 +233,8 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
     if (!selected) return;
     const currentSchema = [...((selected as any).properties_schema || [])];
     const oldProp = currentSchema[index];
-    const oldGroup = TYPE_COMPAT_GROUPS[oldProp.type] || oldProp.type;
-    const newGroup = TYPE_COMPAT_GROUPS[newType] || newType;
+    const oldGroup = getCompatGroup(normalizePropertyType(oldProp.type));
+    const newGroup = getCompatGroup(newType as PropertyType);
 
     const patch: Partial<PropertySchema> = { type: newType };
 
@@ -245,7 +243,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
       patch.defaultValue = null;
     }
     // Clear options if leaving select type
-    if (oldProp.type === 'select' && newType !== 'select') {
+    if (needsOptions(normalizePropertyType(oldProp.type)) && !needsOptions(newType as PropertyType)) {
       patch.options = undefined;
     }
 
@@ -289,7 +287,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
   if (!open) return null;
 
   const currentColor = (selected as any)?.accent_color || '#888888';
-  const Icon = selected && isNordType ? resolveIcon((selected as NordTypeData).icon) : null;
+  const Icon = selected ? resolveIcon((selected as any).icon) : null;
 
   const sidebarList = activeTab === 'nord' ? nordTypes : connectionTypes;
 
@@ -348,7 +346,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                     onClick={() => setSelectedId(t.id)}
                   >
                     <ColorIcon
-                      icon={isNordType ? (t as NordTypeData).icon : null}
+                      icon={(t as any).icon || null}
                       color={(t as any).accent_color || '#888'}
                       size={14}
                     />
@@ -382,7 +380,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                     title="Change icon & color"
                   >
                     <ColorIcon
-                      icon={Icon ? (selected as NordTypeData).icon : null}
+                      icon={(selected as any).icon || null}
                       color={currentColor}
                       size={24}
                       strokeWidth={1.8}
@@ -672,20 +670,15 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                           />
                           <select
                             className="manage-types__prop-select"
-                            value={prop.type}
-                            onChange={(e) => handleTypeChange(i, e.target.value as PropertySchema['type'])}
+                            value={normalizePropertyType(prop.type)}
+                            onChange={(e) => handleTypeChange(i, e.target.value as PropertyType)}
                           >
-                            <option value="string">Text</option>
-                            <option value="number">Number</option>
-                            <option value="select">Dropdown</option>
-                            <option value="date">Date</option>
-                            <option value="markdown">Markdown</option>
-                            <option value="url">URL</option>
-                            <option value="tags">Tags</option>
-                            <option value="computed">Computed ƒ</option>
+                            {UI_PROPERTY_TYPES.map(pt => (
+                              <option key={pt} value={pt}>{PROPERTY_TYPE_META[pt].label}</option>
+                            ))}
                           </select>
                           <div className="manage-types__prop-req-cell">
-                            {prop.type === 'computed' ? (
+                            {normalizePropertyType(prop.type) === 'computed' ? (
                               <span className="manage-types__prop-req-na" title="Computed fields cannot be required">—</span>
                             ) : prop.card_row ? (
                               <input
@@ -708,7 +701,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                               onChange={(e) => {
                                 if (e.target.checked) {
                                   // Hide: clear card_row and required
-                                  updateProperty(i, { card_row: undefined, required: false });
+                                  updateProperty(i, { card_row: null, required: false });
                                 } else {
                                   // Show: assign next card_row
                                   const schema = (selected as any).properties_schema || [];
@@ -743,9 +736,9 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                             <div className="manage-types__prop-detail-row">
                               <div className="manage-types__prop-detail-field">
                                 <span className="manage-types__prop-detail-label">Default</span>
-                                {prop.type === 'tags' ? (
+                                {normalizePropertyType(prop.type) === 'tags' ? (
                                   <span className="manage-types__prop-detail-hint">Tags are added per instance</span>
-                                ) : prop.type === 'select' ? (
+                                ) : normalizePropertyType(prop.type) === 'select' ? (
                                   <select
                                     className="manage-types__prop-default-select"
                                     value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
@@ -756,14 +749,14 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                                       <option key={opt} value={opt}>{opt}</option>
                                     ))}
                                   </select>
-                                ) : prop.type === 'date' ? (
+                                ) : normalizePropertyType(prop.type) === 'date' ? (
                                   <input
                                     type="date"
                                     className="manage-types__prop-default-input manage-types__prop-default-input--date"
                                     value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
                                     onChange={(e) => updateProperty(i, { defaultValue: e.target.value || null })}
                                   />
-                                ) : prop.type === 'markdown' ? (
+                                ) : normalizePropertyType(prop.type) === 'long_text' ? (
                                   <textarea
                                     className="manage-types__prop-default-textarea"
                                     value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
@@ -782,13 +775,13 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                                 )}
                               </div>
                             </div>
-                            {prop.type === 'select' && (
+                            {needsOptions(normalizePropertyType(prop.type)) && (
                               <OptionsEditor
                                 options={prop.options || []}
                                 onChange={(opts) => updateProperty(i, { options: opts })}
                               />
                             )}
-                            {prop.type === 'computed' && (
+                            {normalizePropertyType(prop.type) === 'computed' && (
                               <div className="manage-types__prop-detail-row manage-types__prop-formula-section">
                                 <div className="manage-types__prop-detail-field">
                                   <span className="manage-types__prop-detail-label">

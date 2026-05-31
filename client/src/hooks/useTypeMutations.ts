@@ -9,6 +9,7 @@
 import { useCallback } from 'react';
 import { api } from '../api/client';
 import type { StageLabel } from './useProjectGraph';
+import type { PropertyType } from '@nords/shared/propertyTypes';
 
 // ── Types ──
 
@@ -43,11 +44,11 @@ export interface ConnectionTypeData {
 
 export interface PropertySchema {
   name: string;
-  type: 'string' | 'number' | 'select' | 'date' | 'markdown' | 'url' | 'tags' | 'computed';
+  type: PropertyType;
   required?: boolean;
   defaultValue?: string | number | boolean | null;
   options?: string[];
-  card_row?: number; // 1 or 2 — which row on the collapsed card
+  card_row?: number | null; // 1 or 2 — which row on the collapsed card (null = hidden)
   config?: Record<string, unknown>;
 }
 

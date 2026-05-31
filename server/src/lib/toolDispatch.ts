@@ -12,6 +12,7 @@ import * as goalsRepo from '../repositories/goals.js';
 import { nordTypesRepo, connectionTypesRepo } from '../repositories/types.js';
 import { queryOne, query } from '../db.js';
 import logger from './logger.js';
+import { normalizePropertyType } from '@nords/shared/propertyTypes.js';
 
 export interface ToolContext {
   sessionId: string;
@@ -505,13 +506,16 @@ async function validateProperties(
 
   for (const field of schema) {
     const value = properties[field.name];
+    const fieldType = normalizePropertyType(field.type);
 
     // Type checking
     if (value !== undefined && value !== null) {
-      switch (field.type) {
+      switch (fieldType) {
         case 'short_text':
         case 'long_text':
         case 'url':
+        case 'email':
+        case 'phone':
           if (typeof value !== 'string') return `Property "${field.name}" must be a string, got ${typeof value}`;
           break;
         case 'number':
