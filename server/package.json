@@ -9,8 +9,8 @@
     "start": "node dist/server/src/index.js",
     "db:proxy": "cloud-sql-proxy nords-spatial-1776012153:us-central1:nords-db-main --port=5433",
     "db:migrate": "node --loader ts-node/esm src/migrate.ts",
-    "test": "node --env-file=.env ./node_modules/.bin/vitest run",
-    "test:watch": "node --env-file=.env ./node_modules/.bin/vitest"
+    "test": "set -a && source .env && npx vitest run",
+    "test:watch": "set -a && source .env && npx vitest"
   },
   "dependencies": {
     "@google/genai": "^2.2.0",

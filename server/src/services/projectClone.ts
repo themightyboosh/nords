@@ -54,10 +54,10 @@ export async function cloneProject(sourceProjectId: string, createdBy: string | 
       const newId = randomUUID();
       nordTypeMap.set(nt.id, newId);
       await client.query(`
-        INSERT INTO nord_types (id, project_id, user_id, name, description, icon, accent_color,
+        INSERT INTO nord_types (id, project_id, name, description, icon, accent_color,
           properties_schema, scale_property, sort_order)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      `, [newId, newProjectId, nt.user_id, nt.name, nt.description, nt.icon, nt.accent_color,
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `, [newId, newProjectId, nt.name, nt.description, nt.icon, nt.accent_color,
           JSON.stringify(nt.properties_schema), nt.scale_property, nt.sort_order]);
     }
 
@@ -71,14 +71,14 @@ export async function cloneProject(sourceProjectId: string, createdBy: string | 
       const newId = randomUUID();
       connTypeMap.set(ct.id, newId);
       await client.query(`
-        INSERT INTO connection_types (id, project_id, user_id, name, description, accent_color,
+        INSERT INTO connection_types (id, project_id, name, description, accent_color,
           stroke_style, measurement_mode, x_stage_labels, y_stage_labels,
-          properties_schema, verb, is_system, sort_order, default_direction, direction_filter, icon)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-      `, [newId, newProjectId, ct.user_id, ct.name, ct.description, ct.accent_color,
+          properties_schema, verb, sort_order, default_direction, direction_filter, icon)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      `, [newId, newProjectId, ct.name, ct.description, ct.accent_color,
           ct.stroke_style, ct.measurement_mode,
           JSON.stringify(ct.x_stage_labels), JSON.stringify(ct.y_stage_labels),
-          JSON.stringify(ct.properties_schema), ct.verb, ct.is_system, ct.sort_order,
+          JSON.stringify(ct.properties_schema), ct.verb, ct.sort_order,
           ct.default_direction, ct.direction_filter, ct.icon]);
     }
 

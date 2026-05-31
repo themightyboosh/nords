@@ -14,7 +14,8 @@
  */
 
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Plus, XCircle } from 'lucide-react';
+import { resolveIcon } from '../../utils/iconRegistry';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { useDrawerEntity } from '../../hooks/useDrawerEntity';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
@@ -49,6 +50,10 @@ interface DetailDrawerProps {
   refetchGraph?: () => Promise<void>;
   /** All goals (to show 'Goals' tab linking nords to goals) */
   goals?: Goal[];
+  /** Add a nord to a goal's relevant_nords list */
+  onAddGoalNord?: (goalId: string, nordId: string) => Promise<unknown>;
+  /** Remove a nord from a goal's relevant_nords list */
+  onRemoveGoalNord?: (goalId: string, nordId: string) => Promise<void>;
 }
 
 // ── Direction Toggle Button Group ──
@@ -232,52 +237,49 @@ function CategoryList({
 
               return (
                 <div key={conn.id} className="nords-category-row">
-                  <div className="nords-category-row__info">
-                    <div className="nords-category-row__top">
-                      <span className="nords-category-row__dir-icon">
-                        {conn.direction === 'to' ? '→'
-                          : conn.direction === 'from' ? '←'
-                          : conn.direction === 'both' ? '↔'
-                          : conn.direction === 'neither' ? '—'
-                          : '·'}
-                      </span>
-                      <button
-                        className="nords-category-row__name-link"
-                        onClick={() => onSelectNord?.(conn.otherNordId)}
-                        title={`Open ${conn.otherNordTitle}`}
-                      >
-                        {conn.otherNordTitle}
-                      </button>
-                    </div>
-                    {(verbPrep || conn.spectrumLabel) && (
-                      <button
-                        className="nords-category-row__meta"
-                        onClick={() => {
-                          onSetActiveLens?.(cat.typeId);
-                          onSelectConnection?.(conn.id);
-                        }}
-                        title="Open connection detail"
-                        style={{ color: cat.typeColor }}
-                      >
-                        {verbPrep && <span className="nords-category-row__verb">{verbPrep}</span>}
-                        {conn.spectrumLabel && (
-                          <span className="nords-category-row__spectrum" style={{ borderColor: cat.typeColor }}>
-                            {conn.spectrumLabel}
-                          </span>
-                        )}
-                      </button>
-                    )}
+                  {/* Line 1: Full nord name + delete */}
+                  <div className="nords-category-row__name-row">
+                    <button
+                      className="nords-category-row__name-link"
+                      onClick={() => onSelectNord?.(conn.otherNordId)}
+                      title={`Open ${conn.otherNordTitle}`}
+                    >
+                      {conn.otherNordTitle}
+                    </button>
+                    <button
+                      className="nords-category-row__delete"
+                      onClick={() => onDeleteConnection?.(conn.id)}
+                      title="Remove this connection"
+                    >×</button>
                   </div>
+
+                  {/* Line 2: Verb/preposition | spectrum label (pipe separated) */}
+                  {(verbPrep || conn.spectrumLabel) && (
+                    <button
+                      className="nords-category-row__meta"
+                      onClick={() => {
+                        onSetActiveLens?.(cat.typeId);
+                        onSelectConnection?.(conn.id);
+                      }}
+                      title="Open connection detail"
+                      style={{ color: cat.typeColor }}
+                    >
+                      {verbPrep && <span className="nords-category-row__verb">{verbPrep}</span>}
+                      {verbPrep && conn.spectrumLabel && (
+                        <span className="nords-category-row__pipe">|</span>
+                      )}
+                      {conn.spectrumLabel && (
+                        <span className="nords-category-row__spectrum-text">{conn.spectrumLabel}</span>
+                      )}
+                    </button>
+                  )}
+
+                  {/* Line 3: Direction controls */}
                   <DirectionToggle
                     value={conn.direction}
                     color={cat.typeColor}
                     onChange={(dir) => onDirectionChange?.(conn.id, dir)}
                   />
-                  <button
-                    className="nords-category-row__delete"
-                    onClick={() => onDeleteConnection?.(conn.id)}
-                    title="Remove this connection"
-                  >×</button>
                 </div>
               );
             })}
@@ -314,6 +316,8 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
   graph,
   refetchGraph,
   goals,
+  onAddGoalNord,
+  onRemoveGoalNord,
 }) => {
   const { entity, mutations } = useDrawerEntity(entityId, entityType, graph || null, refetchGraph);
   const { setActiveConnectionTypeId } = useLens();
@@ -465,18 +469,22 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
               onClick={() => setActiveTab('properties')}
             >
               Properties
+              {/* Count badge hidden — see issue #61
               {schemaProperties.length > 0 && (
                 <span className="nords-drawer-tab__count">{schemaProperties.length}</span>
               )}
+              */}
             </button>
             <button
               className={`nords-drawer-tab ${activeTab === 'connections' ? 'is-active' : ''}`}
               onClick={() => setActiveTab('connections')}
             >
               Categories
+              {/* Count badge hidden — see issue #61
               {categoryConnectionCount > 0 && (
                 <span className="nords-drawer-tab__count">{categoryConnectionCount}</span>
               )}
+              */}
             </button>
             {goals && goals.length > 0 && (() => {
               const linkedGoals = goals.filter(g =>
@@ -489,9 +497,11 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
                   onClick={() => setActiveTab('goals')}
                 >
                   Goals
+                  {/* Count badge hidden — see issue #61
                   {linkedGoals.length > 0 && (
                     <span className="nords-drawer-tab__count">{linkedGoals.length}</span>
                   )}
+                  */}
                 </button>
               );
             })()}
@@ -546,37 +556,90 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
             </div>
           )}
 
-          {/* Goals Tab — Shows goals that reference this nord */}
+          {/* Goals Tab — Shows goals linked to this nord + add/remove controls */}
           {activeTab === 'goals' && (() => {
-            const linkedGoals = (goals || []).filter(g =>
-              g.relevant_nords?.some(rn => rn.nord_id === entity.id) ||
+            const allGoals = goals || [];
+            // Goals linked directly to this specific nord
+            const directlyLinked = allGoals.filter(g =>
+              g.relevant_nords?.some(rn => rn.nord_id === entity.id)
+            );
+            // Goals linked via nord type (inherited)
+            const typeLinked = allGoals.filter(g =>
+              !g.relevant_nords?.some(rn => rn.nord_id === entity.id) &&
               g.relevant_nord_types?.some(rt => rt.nord_type_id === entity.typeId)
             );
-            if (linkedGoals.length === 0) {
-              return (
-                <div className="nords-drawer-empty">
-                  No goals reference this nord.
-                  <span className="nords-drawer-empty__hint">
-                    Link goals to nords in the Goal detail drawer.
-                  </span>
-                </div>
-              );
-            }
+            // Goals NOT linked to this nord at all (available to add)
+            const unlinkedGoals = allGoals.filter(g =>
+              !g.relevant_nords?.some(rn => rn.nord_id === entity.id) &&
+              !g.relevant_nord_types?.some(rt => rt.nord_type_id === entity.typeId)
+            );
+
             return (
               <div className="nords-properties-list">
-                {linkedGoals.map(g => (
-                  <div key={g.id} className="nords-drawer-goal-row">
-                    <span className="nords-drawer-goal-row__icon" style={{ color: g.accent_color }}>
-                      🎯
-                    </span>
-                    <span className="nords-drawer-goal-row__name">{g.name}</span>
-                    {g.variable_bindings?.length > 0 && (
-                      <span className="nords-drawer-tab__count">
-                        {g.variable_bindings.filter(vb => vb.required).length} req
+                {/* Directly linked goals — removable */}
+                {directlyLinked.map(g => {
+                  const GoalIcon = resolveIcon(g.icon);
+                  return (
+                    <div key={g.id} className="nords-drawer-goal-row">
+                      <span className="nords-drawer-goal-row__icon" style={{ color: g.accent_color }}>
+                        <GoalIcon size={20} strokeWidth={2} />
                       </span>
-                    )}
+                      <span className="nords-drawer-goal-row__name">{g.name}</span>
+                      {onRemoveGoalNord && (
+                        <button
+                          className="nords-drawer-goal-row__remove"
+                          onClick={() => onRemoveGoalNord(g.id, entity.id)}
+                          title="Unlink goal from this nord"
+                        >
+                          <XCircle size={14} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Type-inherited goals — shown dimmer, not removable from here */}
+                {typeLinked.map(g => {
+                  const GoalIcon = resolveIcon(g.icon);
+                  return (
+                    <div key={g.id} className="nords-drawer-goal-row nords-drawer-goal-row--inherited">
+                      <span className="nords-drawer-goal-row__icon" style={{ color: g.accent_color, opacity: 0.5 }}>
+                        <GoalIcon size={20} strokeWidth={2} />
+                      </span>
+                      <span className="nords-drawer-goal-row__name">{g.name}</span>
+                      <span className="nords-drawer-goal-row__inherited-label">via type</span>
+                    </div>
+                  );
+                })}
+
+                {/* Empty state */}
+                {directlyLinked.length === 0 && typeLinked.length === 0 && (
+                  <div className="nords-drawer-empty">
+                    No goals linked to this nord.
                   </div>
-                ))}
+                )}
+
+                {/* Add Goal control */}
+                {onAddGoalNord && unlinkedGoals.length > 0 && (
+                  <div className="nords-drawer-goal-add">
+                    <Plus size={14} className="nords-drawer-goal-add__icon" />
+                    <select
+                      className="nords-drawer-goal-add__select"
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          onAddGoalNord(e.target.value, entity.id);
+                          e.target.value = '';
+                        }
+                      }}
+                    >
+                      <option value="" disabled>Link a goal…</option>
+                      {unlinkedGoals.map(g => (
+                        <option key={g.id} value={g.id}>{g.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             );
           })()}

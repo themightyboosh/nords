@@ -563,8 +563,39 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
   };
 
   // 5b. Remaining variables — uncollected project variables
+  // In guided mode, filter out variables exclusively bound to pending/cancelled goals
+  // so the AI doesn't try to collect them before prerequisites are met.
+  const activeGoalIds = await query<{ goal_id: string }>(`
+    SELECT goal_id FROM mcp_session_goals
+    WHERE session_id = $1 AND status = 'active'
+  `, [sessionId]);
+  const activeGoalIdSet = new Set(activeGoalIds.map(r => r.goal_id));
+  const hasAnySessionGoals = activeGoalIdSet.size > 0 || (await query<{ id: string }>(
+    'SELECT id FROM mcp_session_goals WHERE session_id = $1 LIMIT 1', [sessionId]
+  )).length > 0;
+
+  // Load all variable→goal bindings to know which variables are gated
+  const allVarBindings = hasAnySessionGoals
+    ? await query<{ variable_id: string; goal_id: string }>(`
+        SELECT variable_id, goal_id FROM goal_variable_bindings
+        WHERE goal_id IN (SELECT goal_id FROM mcp_session_goals WHERE session_id = $1)
+      `, [sessionId])
+    : [];
+  const varToGoals = new Map<string, string[]>();
+  for (const b of allVarBindings) {
+    const arr = varToGoals.get(b.variable_id) || [];
+    arr.push(b.goal_id);
+    varToGoals.set(b.variable_id, arr);
+  }
+
   const remaining_variables = projectVars
     .filter(v => !filledVarIds.has(v.id))
+    .filter(v => {
+      const boundGoals = varToGoals.get(v.id);
+      if (!boundGoals || boundGoals.length === 0) return true; // unbound = always show
+      // Show if at least one bound goal is active
+      return boundGoals.some(gid => activeGoalIdSet.has(gid));
+    })
     .map(v => ({
       id: v.id, name: v.name, type: v.type, required: v.required,
       description: v.description, tags: v.tags, hint: v.hint,

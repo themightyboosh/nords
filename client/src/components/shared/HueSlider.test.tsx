@@ -4,6 +4,7 @@
  * Tests rendering, local tracking without API calls, and commit-on-release behavior.
  */
 
+import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { HueSlider } from './HueSlider';

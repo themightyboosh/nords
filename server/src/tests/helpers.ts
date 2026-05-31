@@ -243,7 +243,13 @@ export async function setSessionCurrentNord(sessionId: string, nordId: string | 
 
 // ── Cleanup: Delete a test project (cascades to everything) ──
 export async function deleteTestProject(projectId: string): Promise<void> {
-  // Cascade: goals, edges, bindings, variables, sessions, session_goals, nords, etc.
+  // Delete entities that may not have ON DELETE CASCADE FK constraints
+  await query('DELETE FROM goal_properties WHERE goal_id IN (SELECT id FROM goals WHERE project_id = $1)', [projectId]);
+  await query('DELETE FROM goal_edges WHERE project_id = $1', [projectId]);
+  await query('DELETE FROM goals WHERE project_id = $1', [projectId]);
+  await query('DELETE FROM connections WHERE project_id = $1', [projectId]);
+  await query('DELETE FROM nords WHERE project_id = $1', [projectId]);
+  // Now safe to delete the project itself
   await query('DELETE FROM projects WHERE id = $1', [projectId]);
 }
 

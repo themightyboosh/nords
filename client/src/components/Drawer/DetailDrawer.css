@@ -520,17 +520,17 @@
 .nords-category-group__rows {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  padding: 2px 0 4px 11px;
+  gap: 2px;
+  padding: 4px 0 6px 11px;
   border-left: 3px solid var(--nords-color-border-subtle);
   margin-left: 0;
 }
 
 .nords-category-row {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 6px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
   border-radius: var(--nords-radius-sm);
   transition: background 0.12s ease;
 }
@@ -539,26 +539,11 @@
   background: var(--nords-color-bg-hover);
 }
 
-.nords-category-row__info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.nords-category-row__top {
+/* Line 1: Name + delete button */
+.nords-category-row__name-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-.nords-category-row__dir-icon {
-  font-size: 0.85rem;
-  color: var(--nords-color-text-tertiary);
-  flex-shrink: 0;
-  width: 16px;
-  text-align: center;
+  gap: 4px;
 }
 
 .nords-category-row__name-link {
@@ -585,51 +570,7 @@
   border-bottom-color: var(--nords-color-accent);
 }
 
-/* Verb + Spectrum meta line — clickable, opens connection detail */
-.nords-category-row__meta {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 0 0 22px; /* indent past dir-icon */
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-}
-
-.nords-category-row__meta:hover {
-  opacity: 0.8;
-}
-
-.nords-category-row__verb {
-  font-size: 0.68rem;
-  font-style: italic;
-  font-weight: 500;
-  opacity: 0.7;
-}
-
-.nords-category-row__spectrum {
-  font-size: 0.62rem;
-  font-weight: 600;
-  font-style: normal;
-  padding: 0 5px;
-  border: 1px solid;
-  border-radius: 8px;
-  opacity: 0.75;
-}
-
-/* Compact direction toggle within category rows */
-.nords-category-row .nords-direction-toggle {
-  flex-shrink: 0;
-  border-radius: var(--nords-radius-sm);
-}
-
-.nords-category-row .nords-direction-toggle__btn {
-  padding: 4px 6px;
-  font-size: 0.8rem;
-}
-
-/* Delete button — always visible, subtle gray */
+/* Delete button — appears on hover */
 .nords-category-row__delete {
   flex-shrink: 0;
   width: 22px;
@@ -645,11 +586,63 @@
   cursor: pointer;
   border-radius: var(--nords-radius-sm);
   transition: all 0.15s ease;
+  opacity: 0;
+}
+
+.nords-category-row:hover .nords-category-row__delete {
+  opacity: 1;
 }
 
 .nords-category-row__delete:hover {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
+}
+
+/* Line 2: Verb + spectrum meta — pipe separated, same style */
+.nords-category-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  font-family: var(--nords-font-primary);
+}
+
+.nords-category-row__meta:hover {
+  opacity: 0.8;
+}
+
+.nords-category-row__verb {
+  font-size: 0.72rem;
+  font-style: italic;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.nords-category-row__pipe {
+  font-size: 0.72rem;
+  font-weight: 300;
+  opacity: 0.85;
+}
+
+.nords-category-row__spectrum-text {
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-style: normal;
+  opacity: 0.85;
+}
+
+/* Line 3: Direction toggle — full width within row */
+.nords-category-row .nords-direction-toggle {
+  border-radius: var(--nords-radius-sm);
+}
+
+.nords-category-row .nords-direction-toggle__btn {
+  padding: 4px 6px;
+  font-size: 0.8rem;
 }
 
 /* Role badge (source / target) in connection detail */
@@ -811,8 +804,12 @@
 }
 
 .nords-drawer-goal-row__icon {
-  font-size: 14px;
+  font-size: 18px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
 }
 
 .nords-drawer-goal-row__name {
@@ -824,3 +821,80 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Remove goal button — subtle gray, turns red on hover */
+.nords-drawer-goal-row__remove {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--nords-color-text-disabled);
+  cursor: pointer;
+  border-radius: var(--nords-radius-sm);
+  transition: all 0.15s ease;
+  opacity: 0;
+}
+
+.nords-drawer-goal-row:hover .nords-drawer-goal-row__remove {
+  opacity: 1;
+}
+
+.nords-drawer-goal-row__remove:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Inherited goal row — dimmed */
+.nords-drawer-goal-row--inherited {
+  opacity: 0.6;
+}
+
+.nords-drawer-goal-row__inherited-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--nords-color-text-disabled);
+  text-transform: lowercase;
+  letter-spacing: normal;
+  padding: 1px 6px;
+  border-radius: var(--nords-radius-sm);
+  background: var(--nords-color-bg-hover);
+  flex-shrink: 0;
+}
+
+/* Add goal dropdown */
+.nords-drawer-goal-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin-top: 4px;
+  border-top: 1px solid var(--nords-color-border-subtle);
+}
+
+.nords-drawer-goal-add__icon {
+  flex-shrink: 0;
+  color: var(--nords-color-text-disabled);
+}
+
+.nords-drawer-goal-add__select {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-sm);
+  background: var(--nords-color-bg-surface);
+  color: var(--nords-color-text-secondary);
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-xs);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.nords-drawer-goal-add__select:focus {
+  border-color: var(--nords-color-accent);
+}
+

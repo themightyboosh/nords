@@ -20,7 +20,8 @@ import './PropertyField.css';
 
 export interface PropertyFieldProps {
   name: string;
-  type: 'string' | 'number' | 'select' | 'date' | 'markdown' | 'url' | 'spectrum_1d' | 'tags' | 'computed';
+  /** Accepts both legacy names (string, markdown) and canonical names (short_text, long_text, etc.) */
+  type: string;
   value: unknown;
   options?: string[];
   color?: string;
@@ -54,16 +55,33 @@ export const PropertyField: React.FC<PropertyFieldProps> = ({
   const missing = !!required && isEmpty(value);
 
   switch (type) {
+    // Text types
     case 'string':
+    case 'short_text':
+    case 'email':
+    case 'phone':
       return <StringField name={label} value={value as string} onChange={onChange} missing={missing} />;
-    case 'number':
-      return <NumberField name={label} value={value as number} onChange={onChange} missing={missing} />;
-    case 'select':
-      return <SelectField name={label} value={value as string} options={options} color={color} onChange={onChange} missing={missing} />;
-    case 'date':
-      return <DateField name={label} value={value as string} onChange={onChange} missing={missing} />;
+    case 'long_text':
     case 'markdown':
       return <MarkdownField name={label} value={value as string} onChange={onChange} missing={missing} />;
+    // Numeric types
+    case 'number':
+    case 'currency':
+    case 'percentage':
+      return <NumberField name={label} value={value as number} onChange={onChange} missing={missing} />;
+    // Selection types
+    case 'select':
+    case 'multi_select':
+      return <SelectField name={label} value={value as string} options={options} color={color} onChange={onChange} missing={missing} />;
+    // Boolean
+    case 'boolean':
+      return <SelectField name={label} value={value as string} options={['Yes', 'No']} color={color} onChange={onChange} missing={missing} />;
+    // Date types
+    case 'date':
+      return <DateField name={label} value={value as string} onChange={onChange} missing={missing} />;
+    case 'date_range':
+      return <DateRangeField name={label} value={value} onChange={onChange} missing={missing} />;
+    // Rich types
     case 'url':
       return <UrlField name={label} value={value as string} onChange={onChange} missing={missing} />;
     case 'spectrum_1d':
@@ -142,6 +160,40 @@ function DateField({ name, value, onChange, missing }: { name: string; value: st
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
       />
+    </div>
+  );
+}
+
+function DateRangeField({ name, value, onChange, missing }: { name: string; value: unknown; onChange: (v: unknown) => void; missing?: boolean }) {
+  // Parse value — expect { start?: string, end?: string } or fallback
+  const parsed: { start: string; end: string } = (() => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const v = value as Record<string, unknown>;
+      return { start: (v.start as string) || '', end: (v.end as string) || '' };
+    }
+    // If it's a plain string (legacy single-date), treat as start
+    if (typeof value === 'string') return { start: value, end: '' };
+    return { start: '', end: '' };
+  })();
+
+  return (
+    <div className={`nords-pf nords-pf--date-range${missing ? ' nords-pf--missing' : ''}`}>
+      <label className="nords-pf__label">{name}</label>
+      <div className="nords-pf__date-range-row">
+        <input
+          className="nords-pf__input nords-pf__input--date"
+          type="date"
+          value={parsed.start}
+          onChange={(e) => onChange({ ...parsed, start: e.target.value })}
+        />
+        <span className="nords-pf__date-range-sep">→</span>
+        <input
+          className="nords-pf__input nords-pf__input--date"
+          type="date"
+          value={parsed.end}
+          onChange={(e) => onChange({ ...parsed, end: e.target.value })}
+        />
+      </div>
     </div>
   );
 }

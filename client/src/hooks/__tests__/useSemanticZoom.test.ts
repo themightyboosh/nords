@@ -13,19 +13,19 @@ describe('useSemanticZoom', () => {
   });
 
   describe('sets data-zoom-tier to micro/macro/meso based on zoom', () => {
-    it('sets micro tier for zoom > 0.6', () => {
+    it('sets micro tier for zoom >= 0.50', () => {
       vi.mocked(xyflow.useStore).mockImplementation((selector: any) => selector({ transform: [0, 0, 1.0] }));
       renderHook(() => useSemanticZoom());
       expect(document.documentElement.getAttribute('data-zoom-tier')).toBe('micro');
     });
 
-    it('sets meso tier for zoom > 0.3 && <= 0.6', () => {
-      vi.mocked(xyflow.useStore).mockImplementation((selector: any) => selector({ transform: [0, 0, 0.5] }));
+    it('sets meso tier for zoom >= 0.25 && < 0.50', () => {
+      vi.mocked(xyflow.useStore).mockImplementation((selector: any) => selector({ transform: [0, 0, 0.35] }));
       renderHook(() => useSemanticZoom());
       expect(document.documentElement.getAttribute('data-zoom-tier')).toBe('meso');
     });
 
-    it('sets macro tier for zoom <= 0.3', () => {
+    it('sets macro tier for zoom < 0.25', () => {
       vi.mocked(xyflow.useStore).mockImplementation((selector: any) => selector({ transform: [0, 0, 0.2] }));
       renderHook(() => useSemanticZoom());
       expect(document.documentElement.getAttribute('data-zoom-tier')).toBe('macro');

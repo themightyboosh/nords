@@ -1,20 +1,20 @@
 /**
- * GoalNode — Circle node for the Goal Canvas.
+ * GoalNode — ReactFlow node wrapper using the shared NordCard.
  *
- * Goals are circles (Nords are rectangles). This is the visual distinction
- * between the Goal Canvas and the Nord Canvas.
+ * Mirrors the NordNode pattern exactly: wraps NordCard with
+ * ReactFlow Handles for edge drawing. The card renders identically
+ * to nord cards — same CSS, same visual language.
  *
- * Shows: Lucide icon + name + accent color ring.
- * Badges: 🔴 RESET (end_type=reset), 🟡 CONTINUE (end_type=continue), ⚡ ROOT (no incoming edges).
- *
- * Handles: source (right) and target (left) for edge drawing.
+ * Goal name goes in the header (type label slot).
+ * Card body shows collected variables if any.
  */
 
 import React, { memo } from 'react';
 import type { NodeProps, Node } from '@xyflow/react';
 import { Handle, Position } from '@xyflow/react';
 import { resolveIcon } from '../../utils/iconRegistry';
-import { StopCircle, RefreshCw } from 'lucide-react';
+import { NordCard } from '../shared/NordCard';
+import './GoalNode.css';
 
 export interface GoalNodeData {
   goalId: string;
@@ -22,49 +22,66 @@ export interface GoalNodeData {
   icon: string;
   accentColor: string;
   endType: 'reset' | 'continue' | null;
+  prerequisiteGate: 'all' | 'any';
+  forkType: 'parallel' | 'exclusive';
   isRoot: boolean;
   isSelected: boolean;
+  /** Variable binding names from collections */
+  collectionItems: string[];
   [key: string]: unknown;
 }
 
 export type GoalNodeType = Node<GoalNodeData, 'goalNode'>;
 
-export const GoalNode = memo(({ data }: NodeProps<GoalNodeType>) => {
-  const GoalIcon = resolveIcon(data.icon);
+const CARD_WIDTH = 240;
 
-  const classList = [
-    'goal-node',
-    data.isSelected && 'goal-node--selected',
-    data.endType && 'goal-node--end',
-    data.isRoot && 'goal-node--root',
-  ].filter(Boolean).join(' ');
+export const GoalNode = memo(({ id, data, selected, isConnectable }: NodeProps<GoalNodeType>) => {
+  const GoalIcon = resolveIcon(data.icon);
+  const accentColor = data.accentColor || '#6366f1';
+
+  // Build properties from collection bindings
+  const properties: { key: string; value: string; color?: string }[] = [];
+
+  // Gate/fork badges
+  if (data.prerequisiteGate === 'any') {
+    properties.push({ key: 'Gate', value: 'OR (any prereq)', color: '#818cf8' });
+  }
+  if (data.forkType === 'exclusive') {
+    properties.push({ key: 'Fork', value: '◇ Exclusive', color: '#f59e0b' });
+  }
+
+  // Collection bindings
+  const bindings = (data.collectionItems || []).slice(0, 3);
+  for (const name of bindings) {
+    properties.push({ key: 'Collects', value: name });
+  }
+
+  // End-type as a subtle indicator
+  let endLabel = '';
+  if (data.endType === 'reset') endLabel = '⏹ Ends → Reset';
+  else if (data.endType === 'continue') endLabel = '↻ Ends → Continue';
 
   return (
-    <div
-      className={classList}
-      style={{
-        '--goal-accent': data.accentColor || '#6366f1',
-      } as React.CSSProperties}
-    >
-      <Handle type="target" position={Position.Left} className="goal-node__handle" />
-      <Handle type="source" position={Position.Right} className="goal-node__handle" />
+    <div style={{ width: `${CARD_WIDTH}px`, position: 'relative' }}>
+      {/* DROP TARGET — covers entire card so releasing anywhere connects */}
+      <Handle type="target" position={Position.Left} id="target" className="nords-node__handle--full" isConnectable={isConnectable} />
 
-      <div className="goal-node__circle">
-        <GoalIcon size={22} strokeWidth={1.6} />
-      </div>
-      <span className="goal-node__label">{data.name || 'Untitled'}</span>
+      {/* DRAG SOURCES — border strips so dragging starts from card edge */}
+      <Handle type="source" position={Position.Right} id="s-right" className="nords-node__handle--border" isConnectable={isConnectable} />
+      <Handle type="source" position={Position.Top} id="s-top" className="nords-node__handle--border" isConnectable={isConnectable} />
+      <Handle type="source" position={Position.Bottom} id="s-bottom" className="nords-node__handle--border" isConnectable={isConnectable} />
+      <Handle type="source" position={Position.Left} id="s-left" className="nords-node__handle--border" isConnectable={isConnectable} />
 
-      {/* End-type badges */}
-      {data.endType === 'reset' && (
-        <span className="goal-node__badge goal-node__badge--reset">
-          <StopCircle size={8} /> RESET
-        </span>
-      )}
-      {data.endType === 'continue' && (
-        <span className="goal-node__badge goal-node__badge--continue">
-          <RefreshCw size={8} /> CONTINUE
-        </span>
-      )}
+      <NordCard
+        title={endLabel || (properties.length > 0 ? '' : '')}
+        typeName={data.name || 'Untitled Goal'}
+        typeColor={accentColor}
+        typeIcon={GoalIcon}
+        properties={properties}
+        isSelected={selected || data.isSelected}
+        style={{ width: `${CARD_WIDTH}px` }}
+        data-testid={`goal-node-${id}`}
+      />
     </div>
   );
 });

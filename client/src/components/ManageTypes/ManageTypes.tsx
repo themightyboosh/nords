@@ -114,6 +114,10 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
   const [saving, setSaving] = useState(false);
   const [expandedPropIdx, setExpandedPropIdx] = useState<number | null>(null);
 
+  // Local draft for the name field — prevents API response from resetting cursor
+  const [draftName, setDraftName] = useState('');
+  const nameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
 
 
   // ── Load types ──
@@ -147,6 +151,11 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
   );
   const selected = selectedNordType || selectedConnType;
   const isNordType = !!selectedNordType;
+
+  // Sync draft name when selected type changes
+  useEffect(() => {
+    setDraftName(selected?.name ?? '');
+  }, [selected?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Type mutations ──
   const handleCreateType = useCallback(async () => {
@@ -203,7 +212,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
       setSelectedId(null);
       onTypesChanged?.();
     } catch (err: any) {
-      const msg = err?.response?.data?.error || err.message || 'Cannot delete type — instances still exist.';
+      const msg = err.message || 'Cannot delete type — instances still exist.';
       alert(msg);
     } finally {
       setSaving(false);
@@ -389,8 +398,21 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                   <input
                     type="text"
                     className="manage-types__name-input"
-                    value={selected.name}
-                    onChange={(e) => handleUpdateField('name', e.target.value)}
+                    value={draftName}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setDraftName(val);
+                      // Debounce API save — allows deleting all chars freely
+                      if (nameTimerRef.current) clearTimeout(nameTimerRef.current);
+                      nameTimerRef.current = setTimeout(() => {
+                        if (val.trim()) handleUpdateField('name', val);
+                      }, 400);
+                    }}
+                    onBlur={() => {
+                      // Flush pending save on blur
+                      if (nameTimerRef.current) clearTimeout(nameTimerRef.current);
+                      if (draftName.trim()) handleUpdateField('name', draftName);
+                    }}
                     placeholder={activeTab === 'nord' ? 'Type name…' : 'Category name…'}
                   />
                   <button className="manage-types__delete-btn" onClick={handleDeleteType} title="Delete type" disabled={saving}>

@@ -1,96 +1,47 @@
-/* GoalNode.css — Circle goal nodes for the Goal Canvas */
+/* GoalNode.css — Goal-canvas-specific styles.
+ *
+ * Card rendering is handled by the shared NordCard component
+ * using .nords-node styles from CanvasEngine.css.
+ * This file only contains goal-canvas chrome (layout toggle, etc).
+ */
 
-.goal-node {
-  display: flex;
-  flex-direction: column;
+/* ── Auto-Layout Toggle ── */
+.goal-canvas__layout-toggle {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 10;
+}
+
+.goal-canvas__layout-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid var(--nords-color-border, rgba(255, 255, 255, 0.1));
+  border-radius: 6px;
+  background: var(--nords-color-bg-deep, #0d1117);
+  color: var(--nords-color-text-secondary, #8b949e);
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.15s;
   user-select: none;
 }
 
-/* ── Circle ── */
-.goal-node__circle {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--nords-color-bg-deep);
-  border: 2.5px solid var(--goal-accent, #6366f1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--goal-accent, #6366f1);
-  transition: transform 0.15s, box-shadow 0.2s, border-color 0.15s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+.goal-canvas__layout-btn:hover {
+  background: var(--nords-color-bg-card, #161b22);
+  color: var(--nords-color-text-primary, #e6edf3);
+  border-color: var(--nords-color-border-hover, rgba(255, 255, 255, 0.2));
 }
 
-.goal-node:hover .goal-node__circle {
-  transform: scale(1.06);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--goal-accent) 30%, transparent);
+.goal-canvas__layout-btn--active {
+  background: rgba(99, 102, 241, 0.12);
+  color: #818cf8;
+  border-color: rgba(99, 102, 241, 0.3);
 }
 
-.goal-node--selected .goal-node__circle {
-  border-width: 3px;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--goal-accent) 20%, transparent),
-              0 4px 16px rgba(0, 0, 0, 0.2);
-  transform: scale(1.08);
-}
-
-/* Root node: subtle inner glow */
-.goal-node--root .goal-node__circle {
-  background: color-mix(in srgb, var(--goal-accent) 8%, var(--nords-color-bg-deep));
-}
-
-/* ── Label ── */
-.goal-node__label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--nords-color-text-primary);
-  text-align: center;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ── Badges ── */
-.goal-node__badge {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 1px 5px;
-  border-radius: 3px;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  line-height: 1.4;
-}
-
-.goal-node__badge--reset {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-}
-
-.goal-node__badge--continue {
-  background: rgba(245, 158, 11, 0.12);
-  color: #fbbf24;
-}
-
-/* ── Handles (visible on hover for edge drawing) ── */
-.goal-node__handle {
-  width: 8px;
-  height: 8px;
-  background: var(--goal-accent, #6366f1);
-  border: 2px solid var(--nords-color-bg-deep);
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.goal-node:hover .goal-node__handle {
-  opacity: 0.8;
-}
-
-/* Show handles when connecting */
-.goal-node.connecting .goal-node__handle {
-  opacity: 1;
+.goal-canvas__layout-btn--active:hover {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.4);
 }

@@ -49,11 +49,11 @@ export async function create(goal: {
 
 export async function update(id: string, updates: Partial<Pick<Goal,
   'name' | 'description' | 'icon' | 'accent_color' | 'sort_order' |
-  'end_type' | 'achieved_prompt'
+  'end_type' | 'achieved_prompt' | 'prerequisite_gate' | 'fork_type'
 >>): Promise<Goal | null> {
   const allowedKeys = [
     'name', 'description', 'icon', 'accent_color', 'sort_order',
-    'end_type', 'achieved_prompt',
+    'end_type', 'achieved_prompt', 'prerequisite_gate', 'fork_type',
   ];
 
   const setClauses: string[] = [];
@@ -97,11 +97,48 @@ export async function findEdgesByProject(projectId: string): Promise<GoalEdge[]>
   );
 }
 
+/**
+ * Check if adding an edge source→target would create a cycle.
+ * A cycle exists if target can already reach source via existing forward edges.
+ */
+export function wouldCreateCycle(
+  sourceId: string,
+  targetId: string,
+  edges: GoalEdge[]
+): boolean {
+  if (sourceId === targetId) return true;
+  const visited = new Set<string>();
+  const queue = [targetId];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (visited.has(current)) continue;
+    visited.add(current);
+    for (const edge of edges) {
+      if (edge.source_goal_id === current) {
+        if (edge.target_goal_id === sourceId) return true;
+        queue.push(edge.target_goal_id);
+      }
+    }
+  }
+  return false;
+}
+
 export async function createEdge(
   projectId: string,
   sourceGoalId: string,
   targetGoalId: string
 ): Promise<GoalEdge> {
+  // Guard: self-loop
+  if (sourceGoalId === targetGoalId) {
+    throw new Error('A goal cannot be its own prerequisite');
+  }
+
+  // Guard: cycle detection
+  const existingEdges = await findEdgesByProject(projectId);
+  if (wouldCreateCycle(sourceGoalId, targetGoalId, existingEdges)) {
+    throw new Error('This edge would create a circular dependency');
+  }
+
   return queryOne<GoalEdge>(`
     INSERT INTO goal_edges (project_id, source_goal_id, target_goal_id)
     VALUES ($1, $2, $3)
@@ -450,10 +487,10 @@ export async function evaluateGoals(
 
   if (sessionGoals.length === 0) return events;
 
-  // Load goal definitions
-  const goalIds = sessionGoals.map(sg => sg.goal_id);
+  // Load goal definitions — include ALL goals (even completed parents) so we can
+  // check fork_type on parents and prerequisite_gate on children
   const goals = await query<Goal>(
-    'SELECT * FROM goals WHERE id = ANY($1)', [goalIds]
+    'SELECT * FROM goals WHERE project_id = $1', [projectId]
   );
   const goalMap = new Map(goals.map(g => [g.id, g]));
 
@@ -510,12 +547,18 @@ export async function evaluateGoals(
       progress,
     });
 
-    // ── Structural exclusion: cancel sibling branches ──
+    // ── Structural exclusion: cancel sibling branches (opt-in per parent) ──
+    // Only cancel siblings if the parent's fork_type is 'exclusive'.
+    // Default (parallel) means all children coexist.
     const parentsOfCompleted = edges
       .filter(e => e.target_goal_id === goal.id)
       .map(e => e.source_goal_id);
 
     for (const parentId of parentsOfCompleted) {
+      const parentGoal = goalMap.get(parentId);
+      // Skip if parent uses parallel fork (the default)
+      if (parentGoal?.fork_type !== 'exclusive') continue;
+
       const siblingTargets = edges
         .filter(e => e.source_goal_id === parentId && e.target_goal_id !== goal.id)
         .map(e => e.target_goal_id);
@@ -562,7 +605,7 @@ export async function evaluateGoals(
       .map(e => e.target_goal_id);
 
     if (childTargets.length > 0) {
-      // For join nodes: only activate if ALL parents are complete
+      // For join nodes: check gate type (AND/OR) to determine activation
       for (const childId of childTargets) {
         const allParents = edges
           .filter(e => e.target_goal_id === childId)
@@ -573,11 +616,19 @@ export async function evaluateGoals(
           WHERE session_id = $1 AND goal_id = ANY($2)
         `, [sessionId, allParents]);
 
-        const allParentsComplete = allParents.every(pid =>
-          parentStates.some(ps => ps.goal_id === pid && ps.status === 'complete')
-        );
+        // Check gate type: 'any' (OR) = first parent, 'all' (AND) = every parent
+        const childGoal = goalMap.get(childId);
+        const gateType = childGoal?.prerequisite_gate || 'all';
 
-        if (allParentsComplete) {
+        const shouldActivate = gateType === 'any'
+          ? allParents.some(pid =>
+              parentStates.some(ps => ps.goal_id === pid && ps.status === 'complete')
+            )
+          : allParents.every(pid =>
+              parentStates.some(ps => ps.goal_id === pid && ps.status === 'complete')
+            );
+
+        if (shouldActivate) {
           const promoted = await query<{ id: string; goal_id: string }>(`
             UPDATE mcp_session_goals SET status = 'active', updated_at = NOW()
             WHERE goal_id = $1 AND session_id = $2 AND status = 'pending'

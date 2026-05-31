@@ -33,6 +33,12 @@
   pointer-events: auto;
 }
 
+/* Goals mode: no filter pills — remove trailing padding so the lens toggle
+   pill sits flush with the dock edge, eliminating the phantom separator line */
+.nords-global-dock[data-active-lens="goals"] {
+  padding-right: 2px;
+}
+
 /* ═══════════════════════════════════════════════ */
 /* LENS TOGGLE — 3-way segmented control           */
 /* ═══════════════════════════════════════════════ */

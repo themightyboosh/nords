@@ -16,7 +16,6 @@
   align-items: center;
   gap: 12px;
   padding: 18px 20px 14px;
-  border-bottom: 1px solid var(--nords-color-border);
 }
 
 .goal-detail-drawer__icon {
@@ -56,10 +55,15 @@
 
 /* ── Content ── */
 .goal-detail-drawer__content {
-  padding: 16px 20px;
+  padding: 0 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+
+/* Tab bar spacing within the goal drawer */
+.goal-detail-drawer .nords-drawer-tabs {
+  padding: 0 20px;
 }
 
 .goal-detail-drawer__field {
@@ -266,4 +270,92 @@
 .goal-detail-drawer__add-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* ── Textarea (Achieved Prompt) ── */
+.goal-detail-drawer__textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 10px;
+  border: 1px solid var(--nords-color-border, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  background: var(--nords-color-bg-deep, #12141a);
+  color: var(--nords-color-text-primary, #e8e8ed);
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.goal-detail-drawer__textarea:focus {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+.goal-detail-drawer__textarea::placeholder {
+  color: var(--nords-color-text-tertiary, #555);
+  font-style: italic;
+}
+
+/* ── Binding badges ── */
+.goal-detail-drawer__binding-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  color: var(--nords-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.goal-detail-drawer__binding-badge.is-required {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.goal-detail-drawer__binding-type {
+  font-size: 10px;
+  color: var(--nords-color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.goal-detail-drawer__binding-toggle {
+  padding: 2px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.goal-detail-drawer__toggle-on {
+  color: var(--nords-color-accent, #6366f1);
+}
+.goal-detail-drawer__toggle-off {
+  color: var(--nords-color-text-tertiary);
+}
+
+/* ── Edge arrow in DAG rows ── */
+.goal-detail-drawer__edge-arrow {
+  color: var(--nords-color-text-tertiary);
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* ── Gate badge (AND/OR pill next to prerequisites header) ── */
+.goal-detail-drawer__gate-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: auto;
+  text-transform: uppercase;
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+}
+
+/* ── Read-only binding row (Unlocks section) ── */
+.goal-detail-drawer__binding-row--readonly {
+  opacity: 0.7;
+  cursor: default;
 }

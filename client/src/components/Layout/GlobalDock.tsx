@@ -15,7 +15,7 @@ import {
   EyeIcon, EyeOff, ChevronDown, ArrowLeftRight, Unlink,
   ArrowRight, ArrowLeft, Minus, Layers, CircleDot,
 } from 'lucide-react';
-import { useLens } from '../../context/LensContext';
+import { useLens, type PersonaTypeVisibility } from '../../context/LensContext';
 import { useTypeVisibility } from '../../hooks/useTypeVisibility';
 import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
 import { useBoardSettingsContext } from '../../context/BoardSettingsContext';
@@ -43,7 +43,7 @@ const DIRECTION_ROWS: { key: DirectionKey; label: string; icon: React.ReactNode 
 ];
 
 export default function GlobalDock({ graph, personas = [], projectMode }: GlobalDockProps) {
-  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activePersonaId, setActivePersonaId, activeLine, setActiveLine, showContext, setShowContext } = useLens();
+  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activePersonaId, setActivePersonaId, activeLine, setActiveLine, showContext, setShowContext, personaTypeFilter, cyclePersonaTypeFilter } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
 
   const { visibleConnectionTypes } = useTypeVisibility();
@@ -151,7 +151,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
             )}
           </div>
 
-          <div className="nords-dock__separator" />
+          {lens !== 'goals' && <div className="nords-dock__separator" />}
 
           {/* ═══ MODE-SPECIFIC FILTER PILLS ═══ */}
 
@@ -328,7 +328,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
           )}
         </div>
 
-        {/* Nord Filter Flyout (board mode) — 3-state: show → dim → hide */}
+        {/* Nord Filter Flyout — 3-state: show → dim → hide */}
         <div className={`nords-flyout nords-glass ${openPanel === 'filter' ? 'is-open' : ''}`}>
           <div className="nords-flyout__header">
             <h3 className="nords-flyout__title">Nord Visibility</h3>
@@ -341,13 +341,19 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
               </div>
             )}
             {projectNordTypes.map(nt => {
-              // In board mode, use board settings per-lane. We show a global view across all lanes.
-              // Use '__global__' key for board-wide nord type visibility.
-              const state = getNordTypeVisibility('__global__', nt.id);
+              // Persona mode uses LensContext personaTypeFilter (keyed by name);
+              // Board mode uses BoardSettings nordTypeVisibility (keyed by id).
+              const isPersonaMode = lens === 'persona';
+              const state: PersonaTypeVisibility = isPersonaMode
+                ? (personaTypeFilter.get(nt.name) || 'show')
+                : getNordTypeVisibility('__global__', nt.id) as PersonaTypeVisibility;
               const NtIcon = nt.icon;
               return (
                 <div key={nt.id} className={`nords-flyout__row nords-flyout__row--selectable ${state === 'show' ? 'is-active' : ''}`}
-                  onClick={() => cycleNordTypeVisibility('__global__', nt.id)}
+                  onClick={() => isPersonaMode
+                    ? cyclePersonaTypeFilter(nt.name)
+                    : cycleNordTypeVisibility('__global__', nt.id)
+                  }
                   style={{ opacity: state === 'hide' ? 0.3 : state === 'dim' ? 0.55 : 1 }}
                 >
                   <div className="nords-flyout__row-left">

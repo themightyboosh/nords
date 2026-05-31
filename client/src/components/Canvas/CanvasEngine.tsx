@@ -936,6 +936,7 @@ interface CanvasEngineProps {
   /** Goals lens */
   goals?: import('../../hooks/useGoals').Goal[];
   goalEdges?: import('../../hooks/useGoals').GoalEdge[];
+  variables?: import('../../hooks/useVariables').ProjectVariable[];
   selectedGoalId?: string | null;
   onGoalClick?: (id: string) => void;
   onGoalEdgeCreate?: (sourceId: string, targetId: string) => void;
@@ -943,7 +944,7 @@ interface CanvasEngineProps {
   onPersonaCenterClick?: () => void;
 }
 
-export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights, activePersona, goals, goalEdges, selectedGoalId, onGoalClick, onGoalEdgeCreate, onGoalEdgeDelete, onPersonaCenterClick }: CanvasEngineProps) {
+export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights, activePersona, goals, goalEdges, variables, selectedGoalId, onGoalClick, onGoalEdgeCreate, onGoalEdgeDelete, onPersonaCenterClick }: CanvasEngineProps) {
   const { lens } = useLens();
   const noop = async () => {};
 
@@ -964,9 +965,10 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
   if (lens === 'goals') {
     return (
       <div className="nords-canvas nords-canvas--goals">
-        <GoalCanvas
+      <GoalCanvas
           goals={goals || []}
           goalEdges={goalEdges || []}
+          variables={variables || []}
           selectedGoalId={selectedGoalId || null}
           onGoalClick={onGoalClick || (() => {})}
           onEdgeCreate={onGoalEdgeCreate || (() => {})}

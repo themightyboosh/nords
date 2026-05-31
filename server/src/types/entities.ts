@@ -255,6 +255,10 @@ export interface Goal {
   /** null = does not end session, 'reset' = end & full reset, 'continue' = end & carry over */
   end_type: 'reset' | 'continue' | null;
   achieved_prompt: string | null;
+  /** Join behavior: 'all' = AND (every prereq), 'any' = OR (first prereq) */
+  prerequisite_gate: 'all' | 'any';
+  /** Fork behavior: 'parallel' = children coexist, 'exclusive' = siblings cancel */
+  fork_type: 'parallel' | 'exclusive';
   is_implicit: boolean;
   created_at: Date;
   updated_at: Date;

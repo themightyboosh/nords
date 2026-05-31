@@ -180,17 +180,22 @@ typesRouter.put('/nord-types/:typeId', validate(UpdateNordTypeSchema), async (re
  */
 typesRouter.delete('/nord-types/:typeId', async (req: Request, res: Response) => {
   try {
-    // Get project IDs before deleting
+    // Get project IDs before deleting (for cache invalidation)
     const projects = await query<{ project_id: string }>('SELECT project_id FROM project_types WHERE type_id = $1', [req.params.typeId]);
     await nordTypesRepo.delete(req.params.typeId as string);
+    // Clean up the project_types join table
+    await query('DELETE FROM project_types WHERE type_id = $1', [req.params.typeId]);
     for (const p of projects) invalidateDictionaryCache(p.project_id);
     res.status(204).end();
   } catch (err: any) {
-    if (err.message?.includes('Cannot delete')) {
-      res.status(409).json({ error: err.message });
+    if (err.message?.includes('Cannot delete') || err.code === '23503' || err.message?.includes('still use')) {
+      const msg = err.message?.includes('Cannot delete') || err.message?.includes('still use')
+        ? err.message
+        : 'Cannot delete this type — nords still reference it. Delete all nords of this type first.';
+      res.status(409).json({ error: msg });
     } else {
-      logger.error('Failed to delete nord type', { error: err.message, typeId: req.params.typeId });
-      res.status(500).json({ error: 'Failed to delete nord type' });
+      logger.error('Failed to delete nord type', { error: err.message, stack: err.stack, typeId: req.params.typeId });
+      res.status(500).json({ error: err.message || 'Failed to delete nord type' });
     }
   }
 });
@@ -317,8 +322,11 @@ typesRouter.delete('/connection-types/:typeId', async (req: Request, res: Respon
     for (const p of projects) invalidateDictionaryCache(p.project_id);
     res.status(204).end();
   } catch (err: any) {
-    if (err.message?.includes('Cannot delete')) {
-      res.status(409).json({ error: err.message });
+    if (err.message?.includes('Cannot delete') || err.code === '23503') {
+      const msg = err.message?.includes('Cannot delete')
+        ? err.message
+        : 'Cannot delete this category — connections still reference it. Delete all connections of this category first.';
+      res.status(409).json({ error: msg });
     } else {
       logger.error('Failed to delete connection type', { error: err.message, typeId: req.params.typeId });
       res.status(500).json({ error: 'Failed to delete connection type' });

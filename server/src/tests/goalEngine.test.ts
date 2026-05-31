@@ -317,6 +317,9 @@ describe('Structural Exclusion', () => {
     sibAId = await createTestGoal(projectId, 'Sibling A');
     sibBId = await createTestGoal(projectId, 'Sibling B');
 
+    // Set parent to exclusive fork — siblings compete
+    await goalsRepo.update(parentId, { fork_type: 'exclusive' });
+
     await bindVariable(parentId, varParentId);
     await bindVariable(sibAId, varAId);
     await bindVariable(sibBId, varBId);
@@ -555,6 +558,9 @@ describe('Full DAG Lifecycle (E2E)', () => {
     await bindVariable(branchBId, varB);
     await bindVariable(leafId, varLeaf);
 
+    // Root uses exclusive fork — branches compete
+    await goalsRepo.update(rootId, { fork_type: 'exclusive' });
+
     // Edges
     await createTestEdge(projectId, rootId, branchAId);
     await createTestEdge(projectId, rootId, branchBId);
@@ -650,6 +656,240 @@ describe('findSessionGoals', () => {
     const states = await goalsRepo.findSessionGoals(sessionId, projectId);
     expect(states[0].variables[0].collected).toBe(true);
     expect(states[0].variables[0].value).toBe('filled!');
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// 13. Cycle Detection
+// ══════════════════════════════════════════════════════════
+
+describe('Cycle Detection', () => {
+  let projectId: string;
+  let goalAId: string;
+  let goalBId: string;
+  let goalCId: string;
+
+  beforeAll(async () => {
+    projectId = await createTestProject('CycleDetect');
+    goalAId = await createTestGoal(projectId, 'Cycle A');
+    goalBId = await createTestGoal(projectId, 'Cycle B');
+    goalCId = await createTestGoal(projectId, 'Cycle C');
+  });
+  afterAll(async () => { await deleteTestProject(projectId); });
+
+  it('detects direct cycle (A→B, B→A)', async () => {
+    await createTestEdge(projectId, goalAId, goalBId);
+    await expect(
+      goalsRepo.createEdge(projectId, goalBId, goalAId)
+    ).rejects.toThrow('circular dependency');
+  });
+
+  it('detects indirect cycle (A→B→C, C→A)', async () => {
+    await createTestEdge(projectId, goalBId, goalCId);
+    await expect(
+      goalsRepo.createEdge(projectId, goalCId, goalAId)
+    ).rejects.toThrow('circular dependency');
+  });
+
+  it('rejects self-loop', async () => {
+    await expect(
+      goalsRepo.createEdge(projectId, goalAId, goalAId)
+    ).rejects.toThrow('own prerequisite');
+  });
+
+  it('allows valid edge (no cycle)', async () => {
+    const goalDId = await createTestGoal(projectId, 'Cycle D');
+    const edge = await goalsRepo.createEdge(projectId, goalCId, goalDId);
+    expect(edge).toBeDefined();
+    expect(edge.target_goal_id).toBe(goalDId);
+  });
+
+  it('pure function: wouldCreateCycle detects cycles without DB', () => {
+    const edges = [
+      { source_goal_id: 'a', target_goal_id: 'b' },
+      { source_goal_id: 'b', target_goal_id: 'c' },
+    ] as any[];
+
+    expect(goalsRepo.wouldCreateCycle('c', 'a', edges)).toBe(true);  // c→a creates cycle
+    expect(goalsRepo.wouldCreateCycle('a', 'a', edges)).toBe(true);  // self-loop
+    expect(goalsRepo.wouldCreateCycle('c', 'd', edges)).toBe(false); // no cycle
+    expect(goalsRepo.wouldCreateCycle('a', 'c', edges)).toBe(false); // already exists, no new cycle
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// 14. OR Gate — Any Prerequisite Activates
+// ══════════════════════════════════════════════════════════
+
+describe('OR Gate (prerequisite_gate=any)', () => {
+  let projectId: string;
+  let parentAId: string;
+  let parentBId: string;
+  let orChildId: string;
+  let varAId: string;
+  let varBId: string;
+  let varChildId: string;
+  let sessionId: string;
+
+  beforeAll(async () => {
+    projectId = await createTestProject('ORGate');
+    varAId = await createTestVariable(projectId, 'OR Parent A Var', { required: true });
+    varBId = await createTestVariable(projectId, 'OR Parent B Var', { required: true });
+    varChildId = await createTestVariable(projectId, 'OR Child Var', { required: true });
+
+    parentAId = await createTestGoal(projectId, 'OR Parent A');
+    parentBId = await createTestGoal(projectId, 'OR Parent B');
+    orChildId = await createTestGoal(projectId, 'OR Child');
+
+    // Set child to OR gate — any parent completes → child activates
+    await goalsRepo.update(orChildId, { prerequisite_gate: 'any' });
+
+    await bindVariable(parentAId, varAId);
+    await bindVariable(parentBId, varBId);
+    await bindVariable(orChildId, varChildId);
+
+    // Both parents → child
+    await createTestEdge(projectId, parentAId, orChildId);
+    await createTestEdge(projectId, parentBId, orChildId);
+
+    sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'guided');
+  });
+  afterAll(async () => { await deleteTestProject(projectId); });
+
+  it('OR child activates when first parent completes', async () => {
+    await setSessionVariable(sessionId, varAId, 'done');
+    const events = await goalsRepo.evaluateGoals(sessionId, projectId);
+
+    expect(events.some(e => e.type === 'goal_completed' && e.goal_name === 'OR Parent A')).toBe(true);
+    // OR gate: child should activate after just one parent
+    expect(events.some(e => e.type === 'goal_activated' && e.goal_name === 'OR Child')).toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// 15. AND Gate (default) — Requires ALL Prerequisites
+// ══════════════════════════════════════════════════════════
+
+describe('AND Gate (prerequisite_gate=all, default)', () => {
+  let projectId: string;
+  let parentAId: string;
+  let parentBId: string;
+  let andChildId: string;
+  let varAId: string;
+  let varBId: string;
+  let varChildId: string;
+  let sessionId: string;
+
+  beforeAll(async () => {
+    projectId = await createTestProject('ANDGate');
+    varAId = await createTestVariable(projectId, 'AND Parent A Var', { required: true });
+    varBId = await createTestVariable(projectId, 'AND Parent B Var', { required: true });
+    varChildId = await createTestVariable(projectId, 'AND Child Var', { required: true });
+
+    parentAId = await createTestGoal(projectId, 'AND Parent A');
+    parentBId = await createTestGoal(projectId, 'AND Parent B');
+    andChildId = await createTestGoal(projectId, 'AND Child');
+    // Default gate is 'all' — no need to set it explicitly
+
+    await bindVariable(parentAId, varAId);
+    await bindVariable(parentBId, varBId);
+    await bindVariable(andChildId, varChildId);
+
+    // Both parents → child
+    await createTestEdge(projectId, parentAId, andChildId);
+    await createTestEdge(projectId, parentBId, andChildId);
+
+    sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'guided');
+  });
+  afterAll(async () => { await deleteTestProject(projectId); });
+
+  it('AND child does NOT activate when only one parent completes', async () => {
+    await setSessionVariable(sessionId, varAId, 'done');
+    const events = await goalsRepo.evaluateGoals(sessionId, projectId);
+
+    expect(events.some(e => e.type === 'goal_completed' && e.goal_name === 'AND Parent A')).toBe(true);
+    // AND gate: child should NOT activate yet
+    expect(events.some(e => e.type === 'goal_activated' && e.goal_name === 'AND Child')).toBe(false);
+  });
+
+  it('AND child activates when ALL parents complete', async () => {
+    await setSessionVariable(sessionId, varBId, 'done');
+    const events = await goalsRepo.evaluateGoals(sessionId, projectId);
+
+    expect(events.some(e => e.type === 'goal_completed' && e.goal_name === 'AND Parent B')).toBe(true);
+    expect(events.some(e => e.type === 'goal_activated' && e.goal_name === 'AND Child')).toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// 16. Parallel Fork (default) — No Sibling Exclusion
+// ══════════════════════════════════════════════════════════
+
+describe('Parallel Fork (fork_type=parallel, default)', () => {
+  let projectId: string;
+  let parentId: string;
+  let sibAId: string;
+  let sibBId: string;
+  let varParentId: string;
+  let varAId: string;
+  let varBId: string;
+  let sessionId: string;
+
+  beforeAll(async () => {
+    projectId = await createTestProject('ParallelFork');
+    varParentId = await createTestVariable(projectId, 'PF Parent Var', { required: true });
+    varAId = await createTestVariable(projectId, 'PF Sib A Var', { required: true });
+    varBId = await createTestVariable(projectId, 'PF Sib B Var', { required: true });
+
+    parentId = await createTestGoal(projectId, 'PF Parent');
+    sibAId = await createTestGoal(projectId, 'PF Sibling A');
+    sibBId = await createTestGoal(projectId, 'PF Sibling B');
+    // Default fork_type is 'parallel' — no sibling exclusion
+
+    await bindVariable(parentId, varParentId);
+    await bindVariable(sibAId, varAId);
+    await bindVariable(sibBId, varBId);
+
+    await createTestEdge(projectId, parentId, sibAId);
+    await createTestEdge(projectId, parentId, sibBId);
+
+    sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'guided');
+  });
+  afterAll(async () => { await deleteTestProject(projectId); });
+
+  it('both siblings activate after parent completes', async () => {
+    await setSessionVariable(sessionId, varParentId, 'done');
+    const events = await goalsRepo.evaluateGoals(sessionId, projectId);
+
+    expect(events.some(e => e.type === 'goal_completed' && e.goal_name === 'PF Parent')).toBe(true);
+    const activated = events.filter(e => e.type === 'goal_activated');
+    expect(activated.length).toBe(2);
+  });
+
+  it('completing one sibling does NOT cancel the other (parallel)', async () => {
+    await setSessionVariable(sessionId, varAId, 'done');
+    const events = await goalsRepo.evaluateGoals(sessionId, projectId);
+
+    expect(events.some(e => e.type === 'goal_completed' && e.goal_name === 'PF Sibling A')).toBe(true);
+    // NO cancellation events — parallel fork
+    const cancelled = events.filter(e => e.type === 'goal_cancelled');
+    expect(cancelled.length).toBe(0);
+
+    // Sibling B should still be active
+    const goals = await query<{ goal_id: string; status: string }>(`
+      SELECT goal_id, status FROM mcp_session_goals WHERE session_id = $1
+    `, [sessionId]);
+    expect(goals.find(g => g.goal_id === sibBId)?.status).toBe('active');
+  });
+
+  it('second sibling can complete independently', async () => {
+    await setSessionVariable(sessionId, varBId, 'done');
+    const events = await goalsRepo.evaluateGoals(sessionId, projectId);
+
+    expect(events.some(e => e.type === 'goal_completed' && e.goal_name === 'PF Sibling B')).toBe(true);
   });
 });
 

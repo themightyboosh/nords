@@ -303,6 +303,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         } : null}
         goals={goalsData.goals}
         goalEdges={goalsData.edges}
+        variables={variablesData.variables}
         selectedGoalId={selectedGoalId}
         onGoalClick={(id) => setSelectedGoalId(id)}
         onGoalEdgeCreate={goalsData.createEdge}
@@ -315,6 +316,8 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           isOpen={!!selectedGoalId}
           onClose={() => setSelectedGoalId(null)}
           goal={goalsData.goals.find(g => g.id === selectedGoalId) || null}
+          goals={goalsData.goals}
+          edges={goalsData.edges}
           nords={(graph?.nords || []).map(n => ({
             id: n.id,
             title: n.title,
@@ -327,6 +330,8 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           onRemoveVariableBinding={goalsData.removeVariableBinding}
           onAddRelevantNord={goalsData.addRelevantNord}
           onRemoveRelevantNord={goalsData.removeRelevantNord}
+          onEdgeCreate={goalsData.createEdge}
+          onEdgeDelete={goalsData.deleteEdge}
         />
       )}
       {/* Persona Lens Drawer — shown when viewing through a persona */}
@@ -352,6 +357,8 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         graph={graph}
         refetchGraph={refetch}
         goals={goalsData.goals}
+        onAddGoalNord={goalsData.addRelevantNord}
+        onRemoveGoalNord={goalsData.removeRelevantNord}
       />
       {manageTypesTab !== null && (
         <ManageTypes

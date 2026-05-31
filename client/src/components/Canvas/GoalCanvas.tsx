@@ -26,6 +26,7 @@ import {
 import { GoalNode, type GoalNodeData } from './GoalNode';
 import ZoomControls from './ZoomControls';
 import type { Goal, GoalEdge } from '../../hooks/useGoals';
+import type { ProjectVariable } from '../../hooks/useVariables';
 import './GoalNode.css';
 
 const goalNodeTypes = {
@@ -35,6 +36,7 @@ const goalNodeTypes = {
 interface GoalCanvasProps {
   goals: Goal[];
   goalEdges: GoalEdge[];
+  variables: ProjectVariable[];
   selectedGoalId: string | null;
   onGoalClick: (goalId: string) => void;
   onEdgeCreate: (sourceId: string, targetId: string) => void;
@@ -42,9 +44,13 @@ interface GoalCanvasProps {
 }
 
 /**
- * Layout goals using the DAG edge structure.
- * Roots (no incoming edges) on the left, children to the right.
- * Branches fan out vertically.
+ * Sugiyama-style DAG layout for goals.
+ *
+ * 1. Topological sort → assign each goal a "layer" (column).
+ *    Join nodes (multiple incoming edges) land at max(parent layers) + 1.
+ * 2. Within each layer, distribute goals evenly on the Y axis.
+ * 3. Center the whole layout so it looks balanced.
+ * 4. Orphans (no edges) sit below the main DAG.
  */
 function computeGoalLayout(
   goals: Goal[],
@@ -55,58 +61,87 @@ function computeGoalLayout(
 
   if (explicit.length === 0) return positions;
 
+  const COL_WIDTH = 300;
+  const ROW_HEIGHT = 160;
+
   // Build adjacency
   const childrenOf = new Map<string, string[]>();
-  const hasParent = new Set<string>();
+  const parentsOf = new Map<string, string[]>();
+  const explicitIds = new Set(explicit.map(g => g.id));
   for (const e of edges) {
-    const list = childrenOf.get(e.source_goal_id) || [];
-    list.push(e.target_goal_id);
-    childrenOf.set(e.source_goal_id, list);
-    hasParent.add(e.target_goal_id);
+    if (!explicitIds.has(e.source_goal_id) || !explicitIds.has(e.target_goal_id)) continue;
+    const cList = childrenOf.get(e.source_goal_id) || [];
+    cList.push(e.target_goal_id);
+    childrenOf.set(e.source_goal_id, cList);
+    const pList = parentsOf.get(e.target_goal_id) || [];
+    pList.push(e.source_goal_id);
+    parentsOf.set(e.target_goal_id, pList);
   }
 
-  // Roots = no incoming edges
-  const roots = explicit.filter(g => !hasParent.has(g.id));
-  const placed = new Set<string>();
-
-  const COL_WIDTH = 200;
-  const ROW_HEIGHT = 150;
-  let globalRow = 0;
-
-  // BFS from each root
-  for (const root of roots) {
-    const queue: Array<{ id: string; col: number }> = [{ id: root.id, col: 0 }];
-    let localRowStart = globalRow;
-
-    while (queue.length > 0) {
-      const { id, col } = queue.shift()!;
-      if (placed.has(id)) continue;
-
-      positions.set(id, { x: col * COL_WIDTH, y: globalRow * ROW_HEIGHT });
-      placed.add(id);
-
-      const children = (childrenOf.get(id) || []).filter(c => !placed.has(c));
-      if (children.length > 0) {
-        // First child continues on same row
-        queue.push({ id: children[0], col: col + 1 });
-        // Additional children get new rows (branching)
-        for (let i = 1; i < children.length; i++) {
-          globalRow++;
-          queue.push({ id: children[i], col: col + 1 });
-        }
-      }
-    }
-
-    globalRow++;
-  }
-
-  // Place orphans (no edges at all) — spread horizontally
-  let orphanCol = 0;
+  // Layer assignment via topological sort (Kahn's algorithm)
+  // Each node's layer = max(parent layers) + 1, roots = layer 0
+  const layers = new Map<string, number>();
+  const inDegree = new Map<string, number>();
   for (const g of explicit) {
-    if (!placed.has(g.id)) {
-      positions.set(g.id, { x: orphanCol * COL_WIDTH, y: globalRow * ROW_HEIGHT });
-      placed.add(g.id);
-      orphanCol++;
+    inDegree.set(g.id, (parentsOf.get(g.id) || []).length);
+  }
+  const queue: string[] = [];
+  for (const g of explicit) {
+    if ((inDegree.get(g.id) || 0) === 0) {
+      queue.push(g.id);
+      layers.set(g.id, 0);
+    }
+  }
+
+  while (queue.length > 0) {
+    const id = queue.shift()!;
+    const myLayer = layers.get(id) || 0;
+    for (const child of (childrenOf.get(id) || [])) {
+      // Join nodes: layer = max of all parent layers + 1
+      const prevLayer = layers.get(child) ?? -1;
+      layers.set(child, Math.max(prevLayer, myLayer + 1));
+      const newDeg = (inDegree.get(child) || 1) - 1;
+      inDegree.set(child, newDeg);
+      if (newDeg === 0) queue.push(child);
+    }
+  }
+
+  // Group nodes by layer
+  const layerGroups = new Map<number, string[]>();
+  const placed = new Set<string>();
+  for (const g of explicit) {
+    const layer = layers.get(g.id);
+    if (layer === undefined) continue; // cycle or disconnected — handled below
+    placed.add(g.id);
+    const group = layerGroups.get(layer) || [];
+    group.push(g.id);
+    layerGroups.set(layer, group);
+  }
+
+  // Position nodes: X = layer * COL_WIDTH, Y = centered within layer
+  const maxLayer = Math.max(...Array.from(layerGroups.keys()), 0);
+  for (let layer = 0; layer <= maxLayer; layer++) {
+    const group = layerGroups.get(layer) || [];
+    const totalHeight = (group.length - 1) * ROW_HEIGHT;
+    const startY = -totalHeight / 2;
+    for (let i = 0; i < group.length; i++) {
+      positions.set(group[i], {
+        x: layer * COL_WIDTH,
+        y: startY + i * ROW_HEIGHT,
+      });
+    }
+  }
+
+  // Place orphans (no edges at all) — row below the main DAG
+  const orphans = explicit.filter(g => !placed.has(g.id));
+  if (orphans.length > 0) {
+    const maxY = Math.max(...Array.from(positions.values()).map(p => p.y), 0);
+    const orphanY = maxY + ROW_HEIGHT * 1.5;
+    const totalWidth = (orphans.length - 1) * COL_WIDTH;
+    const startX = -totalWidth / 2;
+    for (let i = 0; i < orphans.length; i++) {
+      positions.set(orphans[i].id, { x: startX + i * COL_WIDTH, y: orphanY });
+      placed.add(orphans[i].id);
     }
   }
 
@@ -116,11 +151,13 @@ function computeGoalLayout(
 function GoalCanvasInner({
   goals,
   goalEdges,
+  variables,
   selectedGoalId,
   onGoalClick,
   onEdgeCreate,
   onEdgeDelete,
 }: GoalCanvasProps) {
+
   const explicit = useMemo(() => goals.filter(g => !g.is_implicit), [goals]);
   const layout = useMemo(() => computeGoalLayout(goals, goalEdges), [goals, goalEdges]);
 
@@ -130,26 +167,39 @@ function GoalCanvasInner({
     return new Set(explicit.filter(g => !hasParent.has(g.id)).map(g => g.id));
   }, [explicit, goalEdges]);
 
+  // Build variable name lookup for collection bindings
+  const varNameMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const v of variables) m.set(v.id, v.name);
+    return m;
+  }, [variables]);
+
   // Build nodes
   const initialNodes: Node<GoalNodeData>[] = useMemo(() => {
     return explicit.map(g => {
       const pos = layout.get(g.id) || { x: 0, y: 0 };
+      // Resolve variable binding names
+      const collectionItems = (g.variable_bindings || []).map(vb => varNameMap.get(vb.variable_id) || 'Unknown').filter(Boolean);
       return {
         id: g.id,
         type: 'goalNode',
         position: pos,
+        draggable: false, // Always auto-layout — no manual dragging
         data: {
           goalId: g.id,
           name: g.name,
           icon: g.icon,
           accentColor: g.accent_color || '#6366f1',
           endType: g.end_type,
+          prerequisiteGate: g.prerequisite_gate || 'all',
+          forkType: g.fork_type || 'parallel',
           isRoot: rootSet.has(g.id),
           isSelected: g.id === selectedGoalId,
+          collectionItems,
         },
       };
     });
-  }, [explicit, layout, selectedGoalId, rootSet]);
+  }, [explicit, layout, selectedGoalId, rootSet, varNameMap]);
 
   // Build ReactFlow edges from goal_edges
   const initialEdges: Edge[] = useMemo(() => {
@@ -178,11 +228,20 @@ function GoalCanvasInner({
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { fitView } = useReactFlow();
 
+  // Block position/dimension changes — always auto-layout
+  const handleNodesChange = useCallback(
+    (changes: Parameters<typeof onNodesChange>[0]) => {
+      const filtered = changes.filter(c => c.type !== 'position' && c.type !== 'dimensions');
+      if (filtered.length > 0) onNodesChange(filtered);
+    },
+    [onNodesChange]
+  );
+
   // Sync when data changes
   useEffect(() => { setNodes(initialNodes); }, [initialNodes, setNodes]);
   useEffect(() => { setRfEdges(initialEdges); }, [initialEdges, setRfEdges]);
 
-  // Fit view on mount
+  // Fit view on mount + when edges change (auto-layout recalculates positions)
   useEffect(() => {
     setTimeout(() => fitView({ padding: 0.3, duration: 300 }), 100);
   }, [fitView, goals.length, goalEdges.length]);
@@ -190,6 +249,29 @@ function GoalCanvasInner({
   // ── Interactive edge drawing ──
   const handleConnect: OnConnect = useCallback((connection: Connection) => {
     if (connection.source && connection.target && connection.source !== connection.target) {
+      // Client-side cycle guard: check if target can already reach source
+      const wouldCycle = (() => {
+        const visited = new Set<string>();
+        const queue = [connection.target];
+        while (queue.length > 0) {
+          const current = queue.shift()!;
+          if (visited.has(current)) continue;
+          visited.add(current);
+          for (const e of goalEdges) {
+            if (e.source_goal_id === current) {
+              if (e.target_goal_id === connection.source) return true;
+              queue.push(e.target_goal_id);
+            }
+          }
+        }
+        return false;
+      })();
+
+      if (wouldCycle) {
+        console.warn('Edge rejected: would create a circular dependency');
+        return;
+      }
+
       // Persist to DB
       onEdgeCreate(connection.source, connection.target);
       // Optimistically add to ReactFlow
@@ -200,7 +282,7 @@ function GoalCanvasInner({
         markerEnd: { type: 'arrowclosed' as const, color: '#6366f1' },
       }, eds));
     }
-  }, [onEdgeCreate, setRfEdges]);
+  }, [onEdgeCreate, setRfEdges, goalEdges]);
 
   // ── Edge deletion (click edge → backspace/delete) ──
   const handleEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
@@ -226,11 +308,12 @@ function GoalCanvasInner({
       nodes={nodes}
       edges={rfEdges}
       nodeTypes={goalNodeTypes}
-      onNodesChange={onNodesChange}
+      onNodesChange={handleNodesChange}
       onEdgesChange={onEdgesChange}
       onNodeClick={handleNodeClick}
       onConnect={handleConnect}
       onEdgeClick={handleEdgeClick}
+      nodesDraggable={false}
       fitView
       fitViewOptions={{ padding: 0.3 }}
       minZoom={0.3}

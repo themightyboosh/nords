@@ -48,6 +48,10 @@ export interface Goal {
   /** null = does not end session, 'reset' = end & full reset, 'continue' = end & carry over */
   end_type: 'reset' | 'continue' | null;
   achieved_prompt: string | null;
+  /** Join behavior: 'all' = AND (every prereq), 'any' = OR (first prereq) */
+  prerequisite_gate: 'all' | 'any';
+  /** Fork behavior: 'parallel' = children coexist, 'exclusive' = siblings cancel */
+  fork_type: 'parallel' | 'exclusive';
   is_implicit: boolean;
   created_at: string;
   updated_at: string;
@@ -105,7 +109,7 @@ export function useGoals(projectId: string | null) {
     id: string,
     fields: Partial<Pick<Goal,
       'name' | 'description' | 'icon' | 'accent_color' | 'sort_order' |
-      'end_type' | 'achieved_prompt'
+      'end_type' | 'achieved_prompt' | 'prerequisite_gate' | 'fork_type'
     >>
   ) => {
     try {

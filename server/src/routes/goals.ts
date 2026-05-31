@@ -252,6 +252,10 @@ goalsRouter.post('/projects/:id/goal-edges', async (req: Request, res: Response)
     if (!edge) return res.status(409).json({ error: 'Edge already exists' });
     res.status(201).json(edge);
   } catch (err: any) {
+    // Cycle detection and self-loop errors are client errors (400)
+    if (err.message?.includes('circular dependency') || err.message?.includes('own prerequisite')) {
+      return res.status(400).json({ error: err.message });
+    }
     log.error('Error creating goal edge', { error: err.message, requestId: req.requestId, projectId: req.params.id });
     res.status(500).json({ error: err.message });
   }

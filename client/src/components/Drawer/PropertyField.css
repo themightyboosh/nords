@@ -370,3 +370,22 @@
   font-style: italic;
 }
 
+/* ── Date Range Field ── */
+
+.nords-pf__date-range-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nords-pf__date-range-row .nords-pf__input--date {
+  flex: 1;
+  max-width: none;
+}
+
+.nords-pf__date-range-sep {
+  color: var(--nords-color-text-muted, #8b8b9a);
+  font-size: 14px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}

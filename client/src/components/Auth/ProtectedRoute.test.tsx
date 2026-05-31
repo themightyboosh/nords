@@ -15,6 +15,15 @@ vi.mock('../../context/AuthContext', async (importOriginal) => {
   };
 });
 
+// Mock config to ensure dev bypass doesn't kick in during tests
+vi.mock('../../config/env', () => ({
+  config: {
+    isDev: false,
+    skipEmailVerification: false,
+    firebase: { apiKey: 'test-key' },
+  },
+}));
+
 const mockUseAuth = vi.mocked(AuthContextModule.useAuth);
 
 describe('ProtectedRoute', () => {
@@ -26,7 +35,7 @@ describe('ProtectedRoute', () => {
     return render(
       <MemoryRouter initialEntries={[initialEntry]}>
         <Routes>
-          <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/signup" element={<div>Signup Page</div>} />
           <Route path="/verify-email" element={<div>Verify Email Page</div>} />
           <Route path="/" element={ui} />
         </Routes>
@@ -54,7 +63,7 @@ describe('ProtectedRoute', () => {
     expect(container.querySelector('.auth-spinner')).toBeInTheDocument();
   });
 
-  it('redirects to /login when unauthenticated', () => {
+  it('redirects to /signup when unauthenticated', () => {
     mockUseAuth.mockReturnValue({
       user: null,
       loading: false,
@@ -69,7 +78,7 @@ describe('ProtectedRoute', () => {
       </ProtectedRoute>
     );
 
-    expect(screen.getByText('Login Page')).toBeInTheDocument();
+    expect(screen.getByText('Signup Page')).toBeInTheDocument();
     expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
   });
 
@@ -108,7 +117,7 @@ describe('ProtectedRoute', () => {
     );
 
     expect(screen.getByText('Protected Content')).toBeInTheDocument();
-    expect(screen.queryByText('Login Page')).not.toBeInTheDocument();
+    expect(screen.queryByText('Signup Page')).not.toBeInTheDocument();
     expect(screen.queryByText('Verify Email Page')).not.toBeInTheDocument();
   });
 });
