@@ -43,11 +43,12 @@ export async function create(variable: {
   priority?: number;
   depends_on?: string | null;
   sort_order?: number;
+  collection_group_id?: string | null;
 }): Promise<ProjectVariable> {
   return queryOne<ProjectVariable>(`
     INSERT INTO project_variables
-      (project_id, name, description, type, options, required, tags, hint, priority, depends_on, sort_order)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      (project_id, name, description, type, options, required, tags, hint, priority, depends_on, sort_order, collection_group_id)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     RETURNING *
   `, [
     variable.project_id,
@@ -61,6 +62,7 @@ export async function create(variable: {
     variable.priority ?? 0,
     variable.depends_on ?? null,
     variable.sort_order ?? 0,
+    variable.collection_group_id ?? null,
   ]) as Promise<ProjectVariable>;
 }
 
@@ -75,6 +77,7 @@ export async function update(id: string, updates: Partial<{
   priority: number;
   depends_on: string | null;
   sort_order: number;
+  collection_group_id: string | null;
 }>): Promise<ProjectVariable | null> {
   const setClauses: string[] = [];
   const values: unknown[] = [];
@@ -90,6 +93,7 @@ export async function update(id: string, updates: Partial<{
     ['priority', updates.priority],
     ['depends_on', updates.depends_on],
     ['sort_order', updates.sort_order],
+    ['collection_group_id', updates.collection_group_id],
   ];
 
   for (const [field, value] of fields) {

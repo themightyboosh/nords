@@ -1,39 +1,40 @@
 /**
  * ManageVariables — CRUD panel for project-level variables (Collections).
  *
- * Harmonized with ManageTypes: uses an inline table layout with expandable
- * rows instead of a sidebar+editor split. Each row shows:
- *   Name | Type | Required toggle | Expand/Delete
- * Expanding a row reveals: Description, Hint, Tags, Options.
+ * Restructured to match the ManageTypes/Categories pattern:
+ * Groups on the left sidebar, properties (variables) in the right editor.
  *
- * ┌─────────────────────────────────────────────────────────────┐
- * │ Collections                                            [X]  │
- * │ Global data points collected by the AI during sessions.     │
- * ├─────────────────────────────────────────────────────────────┤
- * │  Name          Type         Req   Actions                   │
- * │  ▸ email       Short Text   ☑     ↑ ↓ 🗑                   │
- * │  ▾ phone       Phone        ☐     ↑ ↓ 🗑                   │
- * │    └ Description: [textarea]                                │
- * │    └ Hint: [input]                                          │
- * │    └ Tags: [tag] [tag] [+]                                  │
- * │  [+ New Collection]                                         │
- * └─────────────────────────────────────────────────────────────┘
+ * ┌──────────────────────────────────────────────────────────┐
+ * │ Collections                                          [X]  │
+ * │ Global data points collected by the AI during sessions.    │
+ * ├────────────┬─────────────────────────────────────────────┤
+ * │ GROUPS     │  ☐ General                    GROUP          │
+ * │            │  Name: [editable]  Icon: [picker]            │
+ * │ ☐ General> │  Properties         [+ Add Property]        │
+ * │ ☐ Contact> │  ┌───────────────────────────────────┐      │
+ * │ + New Group│  │ Name │ Type │ Req │ Actions        │      │
+ * │            │  └───────────────────────────────────┘      │
+ * └────────────┴─────────────────────────────────────────────┘
+ *
+ * Groups are organizational containers; variables belong to groups.
+ * Property names must be unique across ALL groups (enforced by DB).
  */
 
-import React, { useState, useCallback, useRef } from 'react';
-import { X, Plus, Trash2, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { X, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { useVariables, type ProjectVariable } from '../../hooks/useVariables';
+import { useCollectionGroups, type CollectionGroup } from '../../hooks/useCollectionGroups';
+import { ColorIcon } from '../shared/ColorIcon';
+import { IconPicker } from '../shared/IconPicker';
+import { HueSlider } from '../shared/HueSlider';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import {
-  UI_PROPERTY_TYPES, PROPERTY_TYPE_META,
   needsOptions as checkNeedsOptions,
   normalizePropertyType, type PropertyType,
 } from '@nords/shared/propertyTypes';
+import { PropertyTable } from '../shared/PropertyTable';
+import { useUIStrings } from '../../hooks/useUIStrings';
 import './ManageVariables.css';
-
-// ── Constants ──
-
-const VARIABLE_TYPES = UI_PROPERTY_TYPES.map(t => ({ value: t, label: PROPERTY_TYPE_META[t].label }));
 
 // ── Types ──
 
@@ -49,30 +50,95 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
   const {
     variables, createVariable, updateVariable, deleteVariable, reorderVariables,
   } = useVariables(projectId);
+  const {
+    groups, createGroup, updateGroup, deleteGroup, refetch: refetchGroups,
+  } = useCollectionGroups(projectId);
 
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const { strings: UI_STRINGS } = useUIStrings();
+  const [expandedVarId, setExpandedVarId] = useState<string | null>(null);
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [draftGroupName, setDraftGroupName] = useState('');
   const [draftNames, setDraftNames] = useState<Record<string, string>>({});
   const nameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const groupNameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleCreate = async () => {
-    const v = await createVariable({ name: 'New Collection', type: 'short_text' });
-    if (v) setExpandedId(v.id);
+  // Auto-select first group on load
+  useEffect(() => {
+    if (groups.length > 0 && !selectedGroupId) {
+      setSelectedGroupId(groups[0].id);
+    }
+  }, [groups, selectedGroupId]);
+
+  // Selected group
+  const selectedGroup = useMemo(() =>
+    groups.find(g => g.id === selectedGroupId),
+    [groups, selectedGroupId]
+  );
+
+  // Variables in the selected group
+  const groupVariables = useMemo(() => {
+    if (!selectedGroupId) return [];
+    return variables.filter(v => v.collection_group_id === selectedGroupId);
+  }, [variables, selectedGroupId]);
+
+  // Sync draft group name when selection changes
+  useEffect(() => {
+    setDraftGroupName(selectedGroup?.name ?? '');
+    setShowIconPicker(false);
+  }, [selectedGroup?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Group mutations ──
+
+  const handleCreateGroup = async () => {
+    const g = await createGroup({ name: 'New Group' });
+    if (g) setSelectedGroupId(g.id);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteGroup = async () => {
+    if (!selectedGroupId) return;
+    await deleteGroup(selectedGroupId);
+    setSelectedGroupId(groups.find(g => g.id !== selectedGroupId)?.id || null);
+  };
+
+  const handleGroupNameChange = (value: string) => {
+    setDraftGroupName(value);
+    if (groupNameTimerRef.current) clearTimeout(groupNameTimerRef.current);
+    groupNameTimerRef.current = setTimeout(() => {
+      if (selectedGroupId) updateGroup(selectedGroupId, { name: value });
+    }, 400);
+  };
+
+  const handleGroupColorChange = (color: string) => {
+    if (selectedGroupId) updateGroup(selectedGroupId, { accent_color: color });
+  };
+
+  // ── Variable mutations ──
+
+  const handleCreateVariable = async () => {
+    if (!selectedGroupId) return;
+    const v = await createVariable({
+      name: 'New Collection',
+      type: 'short_text' as any,
+      collection_group_id: selectedGroupId,
+    });
+    if (v) setExpandedVarId(v.id);
+  };
+
+  const handleDeleteVariable = async (id: string) => {
     await deleteVariable(id);
-    if (expandedId === id) setExpandedId(null);
+    if (expandedVarId === id) setExpandedVarId(null);
   };
 
   const handleReorder = useCallback((fromIdx: number, toIdx: number) => {
-    if (toIdx < 0 || toIdx >= variables.length) return;
-    const ids = variables.map(v => v.id);
+    if (toIdx < 0 || toIdx >= groupVariables.length) return;
+    const ids = groupVariables.map(v => v.id);
     const [moved] = ids.splice(fromIdx, 1);
     ids.splice(toIdx, 0, moved);
     reorderVariables(ids);
-  }, [variables, reorderVariables]);
+  }, [groupVariables, reorderVariables]);
 
-  // Debounced name update (matches ManageTypes pattern)
+  // Debounced name update
   const handleNameChange = (id: string, value: string) => {
     setDraftNames(prev => ({ ...prev, [id]: value }));
     if (nameTimerRef.current) clearTimeout(nameTimerRef.current);
@@ -86,128 +152,158 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
 
   if (!open) return null;
 
+  const currentColor = selectedGroup?.accent_color || '#a78bfa';
+
   return (
-    <FloatingPanel variant="modal" isOpen={open} onClose={onClose} width="min(720px, 90vw)">
-      <div className="manage-variables">
-        {/* Header */}
+    <FloatingPanel variant="modal" isOpen={open} onClose={onClose} width="min(900px, 90vw)">
+      <div className="manage-variables manage-variables--grouped" onClick={e => e.stopPropagation()}>
+
+        {/* ── Header ── */}
         <div className="manage-variables__header">
           <div>
-            <h2 className="manage-variables__title">Collections</h2>
-            <p className="manage-variables__subtitle">Global data points collected by the AI during sessions.</p>
+            <h2 className="manage-variables__title">{UI_STRINGS.collections.title}</h2>
+            <p className="manage-variables__subtitle">{UI_STRINGS.collections.subtitle}</p>
           </div>
           <button className="manage-variables__close" onClick={onClose} title="Close">
             <X size={18} />
           </button>
         </div>
 
-        {/* Table */}
-        <div className="manage-variables__table-wrap">
-          {variables.length === 0 ? (
-            <div className="manage-variables__empty">
-              No collections yet — create one to start collecting data.
+        <div className="manage-variables__body">
+
+          {/* ── Sidebar — Group List ── */}
+          <div className="manage-variables__sidebar">
+            <div className="manage-variables__list">
+              {groups.map(g => (
+                <button
+                  key={g.id}
+                  className={`manage-variables__list-item ${g.id === selectedGroupId ? 'manage-variables__list-item--selected' : ''}`}
+                  onClick={() => setSelectedGroupId(g.id)}
+                >
+                  <ColorIcon
+                    icon={g.icon || 'Layers'}
+                    color={g.accent_color || '#a78bfa'}
+                    size={14}
+                  />
+                  <span className="manage-variables__list-name">{g.name}</span>
+                  <span className="manage-variables__list-count">{g.variables?.length || 0}</span>
+                  <ChevronRight size={12} className="manage-variables__list-chevron" />
+                </button>
+              ))}
             </div>
-          ) : (
-            <table className="manage-variables__table">
-              <thead>
-                <tr>
-                  <th className="manage-variables__th" style={{ width: 24 }}></th>
-                  <th className="manage-variables__th">Name</th>
-                  <th className="manage-variables__th" style={{ width: 140 }}>Type</th>
-                  <th className="manage-variables__th" style={{ width: 50 }}>Req</th>
-                  <th className="manage-variables__th manage-variables__th--actions" style={{ width: 90 }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {variables.map((v, idx) => {
-                  const isExpanded = expandedId === v.id;
-                  return (
-                    <React.Fragment key={v.id}>
-                      {/* Main row */}
-                      <tr
-                        className={`manage-variables__row ${isExpanded ? 'is-expanded' : ''}`}
-                        onClick={() => setExpandedId(isExpanded ? null : v.id)}
-                      >
-                        <td className="manage-variables__td manage-variables__td--chevron">
-                          {isExpanded
-                            ? <ChevronDown size={14} />
-                            : <ChevronRight size={14} />}
-                        </td>
-                        <td className="manage-variables__td manage-variables__td--name">
-                          <input
-                            className="manage-variables__inline-name"
-                            value={getName(v)}
-                            onChange={e => handleNameChange(v.id, e.target.value)}
-                            onClick={e => e.stopPropagation()}
-                            placeholder="Collection name"
-                          />
-                        </td>
-                        <td className="manage-variables__td" onClick={e => e.stopPropagation()}>
-                          <select
-                            className="manage-variables__inline-select"
-                            value={normalizePropertyType(v.type)}
-                            onChange={e => updateVariable(v.id, { type: e.target.value })}
-                          >
-                            {VARIABLE_TYPES.map(t => (
-                              <option key={t.value} value={t.value}>{t.label}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="manage-variables__td manage-variables__td--center" onClick={e => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            className="manage-variables__inline-checkbox"
-                            checked={v.required}
-                            onChange={e => updateVariable(v.id, { required: e.target.checked })}
-                          />
-                        </td>
-                        <td className="manage-variables__td manage-variables__td--actions" onClick={e => e.stopPropagation()}>
-                          <button
-                            className="manage-variables__icon-btn"
-                            disabled={idx === 0}
-                            onClick={() => handleReorder(idx, idx - 1)}
-                            title="Move up"
-                          >
-                            <ChevronUp size={13} />
-                          </button>
-                          <button
-                            className="manage-variables__icon-btn"
-                            disabled={idx === variables.length - 1}
-                            onClick={() => handleReorder(idx, idx + 1)}
-                            title="Move down"
-                          >
-                            <ChevronDown size={13} />
-                          </button>
-                          <button
-                            className="manage-variables__icon-btn manage-variables__icon-btn--danger"
-                            onClick={() => handleDelete(v.id)}
-                            title="Delete"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </td>
-                      </tr>
 
-                      {/* Expanded detail row */}
-                      {isExpanded && (
-                        <tr className="manage-variables__detail-row">
-                          <td colSpan={5}>
-                            <VariableDetail
-                              variable={v}
-                              onUpdate={updateVariable}
-                            />
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
+            <button
+              className="manage-variables__new-btn"
+              onClick={handleCreateGroup}
+            >
+              <Plus size={14} />
+              <span>{UI_STRINGS.collections.newGroup}</span>
+            </button>
+          </div>
 
-          <button className="manage-variables__add-btn" onClick={handleCreate}>
-            <Plus size={14} /> New Collection
-          </button>
+          {/* ── Editor — Group Detail + Variables ── */}
+          <div className="manage-variables__editor">
+            {selectedGroup ? (
+              <>
+                {/* Group header — clickable icon + name */}
+                <div className="manage-variables__editor-header">
+                  <button
+                    className="manage-variables__icon-picker-btn"
+                    onClick={() => setShowIconPicker(!showIconPicker)}
+                    title="Change icon & color"
+                  >
+                    <ColorIcon
+                      icon={selectedGroup.icon || 'Layers'}
+                      color={currentColor}
+                      size={24}
+                      strokeWidth={1.8}
+                    />
+                  </button>
+                  <input
+                    type="text"
+                    className="manage-variables__name-input"
+                    value={draftGroupName}
+                    onChange={e => handleGroupNameChange(e.target.value)}
+                    placeholder="Group name"
+                  />
+                  <button
+                    className="manage-variables__delete-type-btn"
+                    onClick={handleDeleteGroup}
+                    title="Delete group"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+
+                {/* Icon & color picker popover */}
+                {showIconPicker && (
+                  <div className="manage-variables__icon-picker-popover">
+                    <IconPicker
+                      currentIcon={selectedGroup.icon || 'Layers'}
+                      accentColor={currentColor}
+                      onSelect={(iconName) => {
+                        updateGroup(selectedGroup.id, { icon: iconName });
+                        setShowIconPicker(false);
+                      }}
+                    />
+                    <div className="manage-variables__popover-color">
+                      <label className="manage-variables__popover-color-label">Color</label>
+                      <HueSlider
+                        color={currentColor}
+                        onChange={(hex) => handleGroupColorChange(hex)}
+                        saturation={55}
+                        lightness={50}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Description */}
+                <div className="manage-variables__group-desc">
+                  <textarea
+                    className="manage-variables__group-desc-textarea"
+                    value={selectedGroup.description || ''}
+                    onChange={e => updateGroup(selectedGroup.id, { description: e.target.value })}
+                    placeholder="Group description (shown to the AI)"
+                    rows={2}
+                  />
+                </div>
+
+                {/* Properties — shared PropertyTable (no HIDE column for collections) */}
+                <PropertyTable
+                  items={groupVariables.map(v => ({
+                    id: v.id,
+                    name: getName(v),
+                    type: v.type,
+                    required: v.required,
+                    data: v,
+                  }))}
+                  showHide={false}
+                  expandedId={expandedVarId}
+                  onExpandToggle={setExpandedVarId}
+                  onNameChange={handleNameChange}
+                  onTypeChange={(id, type) => updateVariable(id, { type: type as any })}
+                  onRequiredChange={(id, req) => updateVariable(id, { required: req })}
+                  onReorder={handleReorder}
+                  onDelete={handleDeleteVariable}
+                  onAdd={handleCreateVariable}
+                  label="Properties"
+                  renderDetail={(item) => (
+                    <VariableDetail
+                      variable={item.data as ProjectVariable}
+                      onUpdate={updateVariable}
+                    />
+                  )}
+                />
+              </>
+            ) : (
+              <div className="manage-variables__empty-editor">
+                {groups.length === 0
+                  ? UI_STRINGS.collections.emptyGroups
+                  : UI_STRINGS.collections.emptyEditor}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </FloatingPanel>
@@ -248,13 +344,15 @@ function VariableDetail({
 
       {/* Description */}
       <div className="manage-variables__detail-field">
-        <label className="manage-variables__detail-label">Description</label>
+        <label className="manage-variables__detail-label">
+          Description <span className="manage-types__required-badge">Required</span>
+        </label>
         <textarea
-          className="manage-variables__textarea"
+          className={`manage-variables__textarea ${!description ? 'manage-variables__textarea--empty' : ''}`}
           value={description}
           onChange={e => setDescription(e.target.value)}
           onBlur={() => handleBlur('description', description)}
-          placeholder="What data does this collection capture?"
+          placeholder="What data does this collection capture? This is shown to the AI agent."
           rows={2}
         />
       </div>

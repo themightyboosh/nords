@@ -27,7 +27,7 @@ import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
 import { IconPicker } from '../shared/IconPicker';
 import { resolveIcon } from '../../utils/iconRegistry';
-import { UI_STRINGS } from '../../constants/uiStrings';
+import { useUIStrings } from '../../hooks/useUIStrings';
 import './ManageGoals.css';
 
 // ── Types ──
@@ -46,6 +46,7 @@ export function ManageGoals({ projectId, open, onClose }: ManageGoalsProps) {
   } = useGoals(projectId);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { strings: UI_STRINGS } = useUIStrings();
   const explicitGoals = goals.filter(g => !g.is_implicit);
   const selected = explicitGoals.find(g => g.id === selectedId) || null;
 

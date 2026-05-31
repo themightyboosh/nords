@@ -28,9 +28,10 @@ import { IconPicker } from './IconPicker';
 import { SpectrumEditor } from '../Spectrum/SpectrumEditor';
 import { normalizeStageLabels } from '../../utils/stageLabels';
 import { hexToHSL } from '../../utils/color';
-import { UI_STRINGS } from '../../constants/uiStrings';
+import { useUIStrings } from '../../hooks/useUIStrings';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
+import { PropertyTable } from '../shared/PropertyTable';
 import {
   UI_PROPERTY_TYPES, PROPERTY_TYPE_META, getCompatGroup, needsOptions,
   normalizePropertyType, type PropertyType,
@@ -100,6 +101,7 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (op
 
 export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialTab, lockedTab }: ManageTypesProps) {
   const mutations = useTypeMutations(projectId);
+  const { strings: UI_STRINGS } = useUIStrings();
 
   const [nordTypes, setNordTypes] = useState<NordTypeData[]>([]);
   const [connectionTypes, setConnectionTypes] = useState<ConnectionTypeData[]>([]);
@@ -166,7 +168,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
         setNordTypes(prev => [...prev, newType]);
         setSelectedId(newType.id);
       } else {
-        const newType = await mutations.createConnectionType({ name: 'New Connection', accent_color: '#888888' });
+        const newType = await mutations.createConnectionType({ name: 'New Connection', icon: 'Layers', accent_color: '#888888' });
         setConnectionTypes(prev => [...prev, newType]);
         setSelectedId(newType.id);
       }
@@ -438,7 +440,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                 {showIconPicker && (
                   <div className="manage-types__icon-picker-popover">
                     <IconPicker
-                      currentIcon={isNordType ? (selected as NordTypeData).icon : ((selected as any).icon || 'Link')}
+                      currentIcon={isNordType ? (selected as NordTypeData).icon : ((selected as any).icon || 'Layers')}
                       accentColor={currentColor}
                       onSelect={(iconName) => {
                         handleUpdateField('icon', iconName);
@@ -641,233 +643,144 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                   );
                 })()}
 
-                {/* Properties Schema */}
-                <div className="manage-types__field">
-                  <div className="manage-types__field-header">
-                    <label className="manage-types__field-label">Instance Properties</label>
-                    <button className="manage-types__add-prop-btn" onClick={addProperty}>
-                      <Plus size={12} />
-                      <span>Add Property</span>
-                    </button>
-                  </div>
-
-                  <div className="manage-types__props-table">
-                    <div className="manage-types__props-header">
-                      <span></span>
-                      <span>Name</span>
-                      <span>Type</span>
-                      <span>Req</span>
-                      <span>Hide</span>
-                      <span></span>
-                    </div>
-                    {((selected as any).properties_schema || []).map((prop: PropertySchema, i: number) => (
-                      <div key={i} className="manage-types__props-row-group">
-                        <div
-                          className={`manage-types__props-row ${expandedPropIdx === i ? 'manage-types__props-row--expanded' : ''}`}
-                        >
-                          {/* Up/Down arrows */}
-                          <div className="manage-types__prop-arrows">
-                            <button
-                              className="manage-types__prop-arrow"
-                              disabled={i === 0}
-                              onClick={() => reorderProperty(i, i - 1)}
-                              title="Move up"
-                            >
-                              <ChevronUp size={12} />
-                            </button>
-                            <button
-                              className="manage-types__prop-arrow"
-                              disabled={i === ((selected as any).properties_schema || []).length - 1}
-                              onClick={() => reorderProperty(i, i + 1)}
-                              title="Move down"
-                            >
-                              <ChevronDown size={12} />
-                            </button>
-                          </div>
-                          <input
-                            type="text"
-                            className="manage-types__prop-input"
-                            value={prop.name}
-                            onChange={(e) => updateProperty(i, { name: e.target.value })}
-                          />
-                          <select
-                            className="manage-types__prop-select"
-                            value={normalizePropertyType(prop.type)}
-                            onChange={(e) => handleTypeChange(i, e.target.value as PropertyType)}
-                          >
-                            {UI_PROPERTY_TYPES.map(pt => (
-                              <option key={pt} value={pt}>{PROPERTY_TYPE_META[pt].label}</option>
-                            ))}
-                          </select>
-                          <div className="manage-types__prop-req-cell">
-                            {normalizePropertyType(prop.type) === 'computed' ? (
-                              <span className="manage-types__prop-req-na" title="Computed fields cannot be required">—</span>
-                            ) : prop.card_row ? (
+                {/* Properties Schema — uses shared PropertyTable */}
+                <PropertyTable
+                  items={((selected as any).properties_schema || []).map((prop: PropertySchema, i: number) => ({
+                    id: String(i),
+                    name: prop.name,
+                    type: prop.type,
+                    required: !!prop.required,
+                    cardRow: prop.card_row,
+                    data: prop,
+                  }))}
+                  showHide={true}
+                  expandedId={expandedPropIdx != null ? String(expandedPropIdx) : null}
+                  onExpandToggle={(id) => setExpandedPropIdx(id != null ? Number(id) : null)}
+                  onNameChange={(id, name) => updateProperty(Number(id), { name })}
+                  onTypeChange={(id, type) => handleTypeChange(Number(id), type as PropertyType)}
+                  onRequiredChange={(id, req) => updateProperty(Number(id), { required: req })}
+                  onHideChange={(id, hidden) => {
+                    const idx = Number(id);
+                    if (hidden) {
+                      updateProperty(idx, { card_row: null, required: false });
+                    } else {
+                      const schema = (selected as any).properties_schema || [];
+                      const maxRow = Math.max(0, ...schema.map((p: any) => p.card_row || 0));
+                      updateProperty(idx, { card_row: maxRow + 1 });
+                    }
+                  }}
+                  onReorder={(from, to) => reorderProperty(from, to)}
+                  onDelete={(id) => removeProperty(Number(id))}
+                  onAdd={addProperty}
+                  label="Instance Properties"
+                  hint="Title and Scale are built-in. All other properties are user-configured above."
+                  renderDetail={(item) => {
+                    const prop = item.data as PropertySchema;
+                    const idx = Number(item.id);
+                    const propType = normalizePropertyType(prop.type);
+                    return (
+                      <>
+                        <div className="manage-types__prop-detail-row">
+                          <div className="manage-types__prop-detail-field">
+                            <span className="manage-types__prop-detail-label">Default</span>
+                            {propType === 'tags' ? (
+                              <span className="manage-types__prop-detail-hint">Tags are added per instance</span>
+                            ) : propType === 'select' ? (
+                              <select
+                                className="manage-types__prop-default-select"
+                                value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
+                                onChange={(e) => updateProperty(idx, { defaultValue: e.target.value || null })}
+                              >
+                                <option value="">— None —</option>
+                                {(prop.options || []).map(opt => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                            ) : propType === 'date' ? (
                               <input
-                                type="checkbox"
-                                className="manage-types__prop-req-check"
-                                checked={!!prop.required}
-                                onChange={(e) => updateProperty(i, { required: e.target.checked })}
-                                title="Required"
+                                type="date"
+                                className="manage-types__prop-default-input manage-types__prop-default-input--date"
+                                value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
+                                onChange={(e) => updateProperty(idx, { defaultValue: e.target.value || null })}
+                              />
+                            ) : propType === 'long_text' ? (
+                              <textarea
+                                className="manage-types__prop-default-textarea"
+                                value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
+                                onChange={(e) => updateProperty(idx, { defaultValue: e.target.value || null })}
+                                placeholder="Default markdown content…"
+                                rows={4}
                               />
                             ) : (
-                              <span className="manage-types__prop-req-na">—</span>
-                            )}
-                          </div>
-                          {/* Hidden checkbox */}
-                          <div className="manage-types__prop-req-cell">
-                            <input
-                              type="checkbox"
-                              className="manage-types__prop-req-check"
-                              checked={!prop.card_row}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  // Hide: clear card_row and required
-                                  updateProperty(i, { card_row: null, required: false });
-                                } else {
-                                  // Show: assign next card_row
-                                  const schema = (selected as any).properties_schema || [];
-                                  const maxRow = Math.max(0, ...schema.map((p: any) => p.card_row || 0));
-                                  updateProperty(i, { card_row: maxRow + 1 });
-                                }
-                              }}
-                              title={prop.card_row ? 'Hide this property' : 'Show this property'}
-                            />
-                          </div>
-                          {/* Actions: edit + delete */}
-                          <div className="manage-types__prop-actions">
-                            <button
-                              className={`manage-types__prop-edit ${expandedPropIdx === i ? 'is-active' : ''}`}
-                              onClick={() => setExpandedPropIdx(expandedPropIdx === i ? null : i)}
-                              title="Edit defaults & options"
-                            >
-                              <Pencil size={12} />
-                            </button>
-                            <button
-                              className="manage-types__prop-delete"
-                              onClick={() => removeProperty(i)}
-                              title="Remove property"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </div>
-                        </div>
-                        {/* Expandable detail — Required, Default, Options */}
-                        {expandedPropIdx === i && (
-                          <div className="manage-types__prop-detail">
-                            <div className="manage-types__prop-detail-row">
-                              <div className="manage-types__prop-detail-field">
-                                <span className="manage-types__prop-detail-label">Default</span>
-                                {normalizePropertyType(prop.type) === 'tags' ? (
-                                  <span className="manage-types__prop-detail-hint">Tags are added per instance</span>
-                                ) : normalizePropertyType(prop.type) === 'select' ? (
-                                  <select
-                                    className="manage-types__prop-default-select"
-                                    value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
-                                    onChange={(e) => updateProperty(i, { defaultValue: e.target.value || null })}
-                                  >
-                                    <option value="">— None —</option>
-                                    {(prop.options || []).map(opt => (
-                                      <option key={opt} value={opt}>{opt}</option>
-                                    ))}
-                                  </select>
-                                ) : normalizePropertyType(prop.type) === 'date' ? (
-                                  <input
-                                    type="date"
-                                    className="manage-types__prop-default-input manage-types__prop-default-input--date"
-                                    value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
-                                    onChange={(e) => updateProperty(i, { defaultValue: e.target.value || null })}
-                                  />
-                                ) : normalizePropertyType(prop.type) === 'long_text' ? (
-                                  <textarea
-                                    className="manage-types__prop-default-textarea"
-                                    value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
-                                    onChange={(e) => updateProperty(i, { defaultValue: e.target.value || null })}
-                                    placeholder="Default markdown content…"
-                                    rows={4}
-                                  />
-                                ) : (
-                                  <input
-                                    type={prop.type === 'number' ? 'number' : prop.type === 'url' ? 'url' : 'text'}
-                                    className="manage-types__prop-default-input"
-                                    value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
-                                    onChange={(e) => updateProperty(i, { defaultValue: e.target.value || null })}
-                                    placeholder={prop.type === 'url' ? 'https://…' : 'Default value…'}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                            {needsOptions(normalizePropertyType(prop.type)) && (
-                              <OptionsEditor
-                                options={prop.options || []}
-                                onChange={(opts) => updateProperty(i, { options: opts })}
+                              <input
+                                type={prop.type === 'number' ? 'number' : prop.type === 'url' ? 'url' : 'text'}
+                                className="manage-types__prop-default-input"
+                                value={prop.defaultValue != null ? String(prop.defaultValue) : ''}
+                                onChange={(e) => updateProperty(idx, { defaultValue: e.target.value || null })}
+                                placeholder={prop.type === 'url' ? 'https://…' : 'Default value…'}
                               />
                             )}
-                            {normalizePropertyType(prop.type) === 'computed' && (
-                              <div className="manage-types__prop-detail-row manage-types__prop-formula-section">
-                                <div className="manage-types__prop-detail-field">
-                                  <span className="manage-types__prop-detail-label">
-                                    <span className="manage-types__formula-icon">ƒ</span> Formula
-                                  </span>
-                                  <input
-                                    type="text"
-                                    className="manage-types__prop-default-input manage-types__prop-formula-input"
-                                    value={(prop.config as any)?.formula || ''}
-                                    onChange={(e) => updateProperty(i, {
-                                      config: { ...(prop.config || {}), formula: e.target.value }
-                                    })}
-                                    placeholder="e.g. Allocated Hours * Effective Rate"
-                                  />
-                                </div>
-                                <div className="manage-types__prop-detail-field" style={{ maxWidth: '180px' }}>
-                                  <span className="manage-types__prop-detail-label">Display as</span>
-                                  <select
-                                    className="manage-types__prop-default-select"
-                                    value={(prop.config as any)?.output_type || 'number'}
-                                    onChange={(e) => updateProperty(i, {
-                                      config: { ...(prop.config || {}), output_type: e.target.value }
-                                    })}
-                                  >
-                                    <option value="number">Number</option>
-                                    <option value="currency">Currency</option>
-                                    <option value="percentage">Percentage</option>
-                                  </select>
-                                </div>
-                                {(prop.config as any)?.output_type === 'currency' && (
-                                  <div className="manage-types__prop-detail-field" style={{ maxWidth: '80px' }}>
-                                    <span className="manage-types__prop-detail-label">Symbol</span>
-                                    <input
-                                      type="text"
-                                      className="manage-types__prop-default-input"
-                                      value={(prop.config as any)?.output_config?.symbol || '$'}
-                                      onChange={(e) => updateProperty(i, {
-                                        config: {
-                                          ...(prop.config || {}),
-                                          output_config: { ...((prop.config as any)?.output_config || {}), symbol: e.target.value }
-                                        }
-                                      })}
-                                      maxLength={3}
-                                    />
-                                  </div>
-                                )}
+                          </div>
+                        </div>
+                        {needsOptions(propType) && (
+                          <OptionsEditor
+                            options={prop.options || []}
+                            onChange={(opts) => updateProperty(idx, { options: opts })}
+                          />
+                        )}
+                        {propType === 'computed' && (
+                          <div className="manage-types__prop-detail-row manage-types__prop-formula-section">
+                            <div className="manage-types__prop-detail-field">
+                              <span className="manage-types__prop-detail-label">
+                                <span className="manage-types__formula-icon">ƒ</span> Formula
+                              </span>
+                              <input
+                                type="text"
+                                className="manage-types__prop-default-input manage-types__prop-formula-input"
+                                value={(prop.config as any)?.formula || ''}
+                                onChange={(e) => updateProperty(idx, {
+                                  config: { ...(prop.config || {}), formula: e.target.value }
+                                })}
+                                placeholder="e.g. Allocated Hours * Effective Rate"
+                              />
+                            </div>
+                            <div className="manage-types__prop-detail-field" style={{ maxWidth: '180px' }}>
+                              <span className="manage-types__prop-detail-label">Display as</span>
+                              <select
+                                className="manage-types__prop-default-select"
+                                value={(prop.config as any)?.output_type || 'number'}
+                                onChange={(e) => updateProperty(idx, {
+                                  config: { ...(prop.config || {}), output_type: e.target.value }
+                                })}
+                              >
+                                <option value="number">Number</option>
+                                <option value="currency">Currency</option>
+                                <option value="percentage">Percentage</option>
+                              </select>
+                            </div>
+                            {(prop.config as any)?.output_type === 'currency' && (
+                              <div className="manage-types__prop-detail-field" style={{ maxWidth: '80px' }}>
+                                <span className="manage-types__prop-detail-label">Symbol</span>
+                                <input
+                                  type="text"
+                                  className="manage-types__prop-default-input"
+                                  value={(prop.config as any)?.output_config?.symbol || '$'}
+                                  onChange={(e) => updateProperty(idx, {
+                                    config: {
+                                      ...(prop.config || {}),
+                                      output_config: { ...((prop.config as any)?.output_config || {}), symbol: e.target.value }
+                                    }
+                                  })}
+                                  maxLength={3}
+                                />
                               </div>
                             )}
                           </div>
                         )}
-                      </div>
-                    ))}
-
-                    {((selected as any).properties_schema || []).length === 0 && (
-                      <div className="manage-types__props-empty">
-                        No properties defined. Click "Add Property" to create one.
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="manage-types__props-hint">
-                    Title and Scale are built-in. All other properties are user-configured above.
-                  </p>
-                </div>
+                      </>
+                    );
+                  }}
+                />
 
 
               </>

@@ -30,6 +30,7 @@ import { PreviewChat } from './components/PreviewChat/PreviewChat';
 import { GoalDetailDrawer } from './components/Drawer/GoalDetailDrawer';
 import { useGoals } from './hooks/useGoals';
 import { useVariables } from './hooks/useVariables';
+import { useCollectionGroups } from './hooks/useCollectionGroups';
 import { ShareChat } from './pages/ShareChat/ShareChat';
 import { TestRunner } from './components/TestRunner/TestRunner';
 
@@ -118,6 +119,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   // Goals data for the Goals lens canvas
   const goalsData = useGoals(projectId || null);
   const variablesData = useVariables(projectId || null);
+  const collectionGroupsData = useCollectionGroups(projectId || null);
 
   // Safe ReactFlow access — returns null in board view where ReactFlow isn't mounted
   const reactFlow = useOptionalReactFlow();
@@ -324,6 +326,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
             type_name: graph?.nord_types.find((t: any) => t.id === n.type_id)?.name || '',
           }))}
           variables={variablesData.variables}
+          collectionGroups={collectionGroupsData.groups}
           onUpdate={goalsData.updateGoal}
           onAddVariableBinding={goalsData.addVariableBinding}
           onUpdateVariableBinding={goalsData.updateVariableBinding}

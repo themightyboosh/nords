@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import * as variablesRepo from '../repositories/variables.js';
+import * as collectionGroupsRepo from '../repositories/collectionGroups.js';
 import logger from '../lib/logger.js';
 
 const log = logger.child({ route: 'variables' });
@@ -91,6 +92,95 @@ variablesRouter.post('/projects/:id/variables/bulk', async (req: Request, res: R
     res.json(results);
   } catch (err: any) {
     log.error('Error bulk upserting variables', { error: err.message, requestId: req.requestId, projectId: req.params.id });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// Collection Groups — Grouped containers for variables
+// ══════════════════════════════════════════════════════════
+
+// ── GET /api/projects/:id/collection-groups — List groups with nested variables ──
+variablesRouter.get('/projects/:id/collection-groups', async (req: Request, res: Response) => {
+  try {
+    const groups = await collectionGroupsRepo.findByProject(req.params.id as string);
+    const variables = await variablesRepo.findByProject(req.params.id as string);
+
+    // Nest variables into their groups
+    const groupsWithVars = groups.map(g => ({
+      ...g,
+      variables: variables.filter(v => v.collection_group_id === g.id),
+    }));
+
+    // Also include ungrouped variables
+    const ungroupedVars = variables.filter(v => !v.collection_group_id);
+
+    res.json({ groups: groupsWithVars, ungrouped: ungroupedVars });
+  } catch (err: any) {
+    log.error('Error fetching collection groups', { error: err.message, projectId: req.params.id });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/projects/:id/collection-groups — Create group ──
+variablesRouter.post('/projects/:id/collection-groups', async (req: Request, res: Response) => {
+  try {
+    const { name } = req.body;
+    if (!name?.trim()) {
+      return res.status(400).json({ error: 'name is required' });
+    }
+    const group = await collectionGroupsRepo.create({
+      project_id: req.params.id as string,
+      ...req.body,
+    });
+    res.status(201).json(group);
+  } catch (err: any) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: `Collection group "${req.body.name}" already exists` });
+    }
+    log.error('Error creating collection group', { error: err.message, projectId: req.params.id });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── PUT /api/collection-groups/:id — Update group ──
+variablesRouter.put('/collection-groups/:id', async (req: Request, res: Response) => {
+  try {
+    const group = await collectionGroupsRepo.update(req.params.id as string, req.body);
+    if (!group) return res.status(404).json({ error: 'Collection group not found' });
+    res.json(group);
+  } catch (err: any) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: `Collection group name "${req.body.name}" already exists` });
+    }
+    log.error('Error updating collection group', { error: err.message, groupId: req.params.id });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DELETE /api/collection-groups/:id — Soft-delete group ──
+variablesRouter.delete('/collection-groups/:id', async (req: Request, res: Response) => {
+  try {
+    const deleted = await collectionGroupsRepo.softDelete(req.params.id as string);
+    if (!deleted) return res.status(404).json({ error: 'Collection group not found' });
+    res.status(204).send();
+  } catch (err: any) {
+    log.error('Error deleting collection group', { error: err.message, groupId: req.params.id });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── PUT /api/projects/:id/collection-groups/reorder — Reorder groups ──
+variablesRouter.put('/projects/:id/collection-groups/reorder', async (req: Request, res: Response) => {
+  try {
+    const { groupIds } = req.body;
+    if (!Array.isArray(groupIds)) {
+      return res.status(400).json({ error: 'groupIds array is required' });
+    }
+    await collectionGroupsRepo.reorder(req.params.id as string, groupIds);
+    res.json({ ok: true });
+  } catch (err: any) {
+    log.error('Error reordering collection groups', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: err.message });
   }
 });

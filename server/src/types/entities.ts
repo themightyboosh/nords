@@ -320,6 +320,7 @@ export interface ProjectVariable {
   hint: string;
   priority: number;
   depends_on: string | null;
+  collection_group_id: string | null;
   sort_order: number;
   created_at: Date;
   updated_at: Date;

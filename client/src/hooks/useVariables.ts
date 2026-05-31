@@ -26,6 +26,7 @@ export interface ProjectVariable {
   hint: string;
   priority: number;
   depends_on: string | null;
+  collection_group_id: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -63,7 +64,7 @@ export function useVariables(projectId: string | null) {
     id: string,
     fields: Partial<Pick<ProjectVariable,
       'name' | 'description' | 'type' | 'options' | 'required' |
-      'tags' | 'hint' | 'priority' | 'depends_on' | 'sort_order'
+      'tags' | 'hint' | 'priority' | 'depends_on' | 'sort_order' | 'collection_group_id'
     >>
   ) => {
     try {

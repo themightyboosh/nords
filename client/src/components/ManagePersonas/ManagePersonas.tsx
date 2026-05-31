@@ -21,7 +21,7 @@ import { usePersonas, type Persona } from '../../hooks/usePersonas';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
 import { PersonaAvatar } from '../shared/PersonaAvatar';
-import { UI_STRINGS } from '../../constants/uiStrings';
+import { useUIStrings } from '../../hooks/useUIStrings';
 import './ManagePersonas.css';
 
 // ── Types ──
@@ -61,6 +61,7 @@ export function ManagePersonas({ projectId, open, onClose, connectionTypes }: Ma
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const { strings: UI_STRINGS } = useUIStrings();
 
   const selected = personas.find(p => p.id === selectedId) || null;
   const debouncedSave = useDebouncedSave(updatePersona);

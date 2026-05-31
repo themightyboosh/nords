@@ -174,6 +174,22 @@ graphRouter.post('/projects/:id/nords', async (req: Request, res: Response) => {
       res.status(400).json({ error: 'type_id is required' });
       return;
     }
+    // Validate required properties for this nord type
+    const nordType = await nordTypesRepo.findById(req.body.type_id);
+    if (nordType?.properties_schema) {
+      const props = req.body.properties || {};
+      const missing = (nordType.properties_schema as any[])
+        .filter((s: any) => s.required && s.card_row)
+        .filter((s: any) => {
+          const val = props[s.name];
+          return val == null || (typeof val === 'string' && val.trim() === '') || (Array.isArray(val) && val.length === 0);
+        })
+        .map((s: any) => s.name);
+      if (missing.length > 0) {
+        res.status(400).json({ error: `Required properties missing: ${missing.join(', ')}` });
+        return;
+      }
+    }
     const nord = await nordsRepo.create({
       project_id: req.params.id as string,
       type_id: req.body.type_id,

@@ -1,5 +1,5 @@
-/* ManageVariables.css — Inline table layout (harmonized with ManageTypes)
- * Each collection is a compact table row with expand/collapse for details.
+/* ManageVariables.css — Grouped sidebar + editor layout (matches ManageTypes)
+ * Groups on the left, properties in the right editor panel.
  */
 
 /* ── Shell ── */
@@ -14,56 +14,329 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 18px 22px 12px;
-  border-bottom: 1px solid var(--nords-color-border);
+  padding: var(--nords-space-xl, 18px) var(--nords-space-xl, 22px) var(--nords-space-lg, 12px);
+  border-bottom: 1px solid var(--nords-color-border-subtle, var(--nords-color-border));
 }
 
 .manage-variables__title {
   margin: 0;
-  font-size: 17px;
-  font-weight: 600;
+  font-size: var(--nords-font-size-xl, 17px);
+  font-weight: var(--nords-font-weight-bold, 600);
   color: var(--nords-color-text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--nords-letter-spacing-tight, -0.01em);
 }
 
 .manage-variables__subtitle {
   margin: 4px 0 0;
-  font-size: 12px;
+  font-size: var(--nords-font-size-sm, 12px);
   color: var(--nords-color-text-tertiary);
 }
 
 .manage-variables__close {
-  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border: none;
-  color: var(--nords-color-text-tertiary);
+  border-radius: var(--nords-radius-md, 6px);
+  background: transparent;
+  color: var(--nords-color-text-secondary);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  transition: color 0.15s, background 0.15s;
+  transition: all 0.12s ease;
 }
 .manage-variables__close:hover {
+  background: var(--nords-color-bg-hover, var(--nords-color-surface));
   color: var(--nords-color-text-primary);
-  background: var(--nords-color-surface);
 }
 
-/* ── Table Wrapper ── */
+/* ── Body (sidebar + editor) ── */
+.manage-variables__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.manage-variables__sidebar {
+  width: 220px;
+  min-width: 220px;
+  border-right: 1px solid var(--nords-color-border-subtle, var(--nords-color-border));
+  display: flex;
+  flex-direction: column;
+  background: var(--nords-color-bg-deep);
+}
+
+.manage-variables__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--nords-space-sm, 6px);
+}
+
+.manage-variables__list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-sm, 6px);
+  width: 100%;
+  padding: var(--nords-space-sm, 6px) var(--nords-space-md, 10px);
+  border: none;
+  border-radius: var(--nords-radius-md, 6px);
+  background: transparent;
+  color: var(--nords-color-text-secondary);
+  font-size: var(--nords-font-size-sm, 13px);
+  font-family: var(--nords-font-primary, inherit);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-align: left;
+}
+
+.manage-variables__list-item:hover {
+  background: var(--nords-color-bg-hover, rgba(255,255,255,0.04));
+  color: var(--nords-color-text-primary);
+}
+
+.manage-variables__list-item--selected {
+  background: var(--nords-color-accent-dim, rgba(99, 102, 241, 0.12));
+  color: var(--nords-color-accent, #6366f1);
+}
+
+.manage-variables__list-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manage-variables__list-count {
+  font-size: 10px;
+  color: var(--nords-color-text-tertiary);
+  background: var(--nords-color-bg-surface, rgba(255,255,255,0.04));
+  padding: 1px 5px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.manage-variables__list-chevron {
+  opacity: 0.3;
+  flex-shrink: 0;
+}
+.manage-variables__list-item--selected .manage-variables__list-chevron {
+  opacity: 0.7;
+}
+
+.manage-variables__new-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-sm, 6px);
+  margin: var(--nords-space-sm, 6px);
+  padding: var(--nords-space-sm, 6px) var(--nords-space-md, 10px);
+  border: 1px dashed var(--nords-color-border-default, var(--nords-color-border));
+  border-radius: var(--nords-radius-md, 6px);
+  background: transparent;
+  color: var(--nords-color-text-tertiary);
+  font-size: var(--nords-font-size-sm, 12px);
+  font-family: var(--nords-font-primary, inherit);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.manage-variables__new-btn:hover {
+  border-color: var(--nords-color-accent, #6366f1);
+  color: var(--nords-color-accent, #6366f1);
+}
+
+/* ── Editor ── */
+.manage-variables__editor {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--nords-space-xl, 18px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--nords-space-lg, 14px);
+}
+
+.manage-variables__empty-editor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--nords-color-text-tertiary);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ── Editor Header (icon + name + delete) ── */
+.manage-variables__editor-header {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-md, 10px);
+  padding-bottom: var(--nords-space-md, 10px);
+  border-bottom: 1px solid var(--nords-color-border-subtle, var(--nords-color-border));
+}
+
+.manage-variables__icon-picker-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--nords-color-border-default, var(--nords-color-border));
+  border-radius: var(--nords-radius-md, 6px);
+  background: var(--nords-color-bg-deep);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+}
+.manage-variables__icon-picker-btn:hover {
+  border-color: var(--nords-color-accent, #6366f1);
+  box-shadow: var(--nords-shadow-glow, 0 0 8px rgba(99, 102, 241, 0.2));
+}
+
+.manage-variables__name-input {
+  flex: 1;
+  padding: var(--nords-space-sm, 6px) 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--nords-color-text-primary);
+  font-size: var(--nords-font-size-xl, 17px);
+  font-weight: var(--nords-font-weight-bold, 600);
+  font-family: var(--nords-font-primary, inherit);
+  letter-spacing: var(--nords-letter-spacing-tight, -0.01em);
+  outline: none;
+  transition: border-color 0.15s ease;
+  min-width: 0;
+}
+.manage-variables__name-input:focus {
+  border-bottom-color: var(--nords-color-accent, #6366f1);
+}
+.manage-variables__name-input::placeholder {
+  color: var(--nords-color-text-disabled, var(--nords-color-text-tertiary));
+  font-weight: var(--nords-font-weight-medium, 500);
+}
+
+.manage-variables__delete-type-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--nords-radius-md, 6px);
+  background: transparent;
+  color: var(--nords-color-text-tertiary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.manage-variables__delete-type-btn:hover {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--nords-color-danger, #ef4444);
+}
+
+/* ── Icon Picker Popover ── */
+.manage-variables__icon-picker-popover {
+  background: var(--nords-color-bg-elevated, var(--nords-color-bg-deep));
+  border: 1px solid var(--nords-color-border-default, var(--nords-color-border));
+  border-radius: var(--nords-radius-lg, 10px);
+  padding: var(--nords-space-md, 10px);
+  box-shadow: var(--nords-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.3));
+}
+
+.manage-variables__popover-color {
+  margin-top: var(--nords-space-md, 10px);
+  padding-top: var(--nords-space-md, 10px);
+  border-top: 1px solid var(--nords-color-border-subtle, var(--nords-color-border));
+}
+
+.manage-variables__popover-color-label {
+  display: block;
+  font-size: var(--nords-font-size-xs, 10px);
+  font-weight: var(--nords-font-weight-semibold, 600);
+  color: var(--nords-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide, 0.06em);
+  margin-bottom: var(--nords-space-sm, 6px);
+}
+
+/* ── Group Description ── */
+.manage-variables__group-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manage-variables__group-desc-textarea {
+  width: 100%;
+  padding: var(--nords-space-sm, 6px) var(--nords-space-md, 10px);
+  border: 1px solid var(--nords-color-border-subtle, var(--nords-color-border));
+  border-radius: var(--nords-radius-md, 8px);
+  background: var(--nords-color-bg-surface, var(--nords-color-bg-deep));
+  color: var(--nords-color-text-primary);
+  font-size: var(--nords-font-size-sm, 13px);
+  font-family: var(--nords-font-primary, inherit);
+  resize: vertical;
+  outline: none;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+.manage-variables__group-desc-textarea:focus {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+.manage-variables__group-desc-textarea::placeholder {
+  color: var(--nords-color-text-quaternary, var(--nords-color-text-tertiary));
+  font-style: italic;
+}
+
+/* ── Properties Header ── */
+.manage-variables__props-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.manage-variables__props-title {
+  font-size: var(--nords-font-size-xs, 10px);
+  font-weight: var(--nords-font-weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide, 0.06em);
+  color: var(--nords-color-text-tertiary);
+}
+
+.manage-variables__add-prop-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--nords-color-border-default, var(--nords-color-border));
+  border-radius: var(--nords-radius-sm, 4px);
+  background: transparent;
+  color: var(--nords-color-text-secondary);
+  font-size: var(--nords-font-size-xs, 11px);
+  font-family: var(--nords-font-primary, inherit);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.manage-variables__add-prop-btn:hover {
+  border-color: var(--nords-color-accent, #6366f1);
+  color: var(--nords-color-accent, #6366f1);
+}
+
+/* ── Table ── */
 .manage-variables__table-wrap {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 18px 18px;
 }
 
 .manage-variables__empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 120px;
+  height: 100px;
   color: var(--nords-color-text-tertiary);
   font-size: 13px;
   font-style: italic;
 }
 
-/* ── Table ── */
 .manage-variables__table {
   width: 100%;
   border-collapse: collapse;
@@ -218,28 +491,6 @@
   color: var(--nords-color-text-tertiary);
 }
 
-/* ── Add Button ── */
-.manage-variables__add-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 12px 0 0;
-  padding: 8px 12px;
-  border: 1px dashed var(--nords-color-border);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--nords-color-text-tertiary);
-  font-size: 12px;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-  width: 100%;
-  justify-content: center;
-}
-.manage-variables__add-btn:hover {
-  border-color: var(--nords-color-accent, #6366f1);
-  color: var(--nords-color-accent, #6366f1);
-}
-
 /* ── Shared field styles ── */
 .manage-variables__input {
   width: 100%;
@@ -280,6 +531,12 @@
 }
 .manage-variables__textarea::placeholder {
   color: var(--nords-color-text-tertiary);
+}
+.manage-variables__textarea--empty {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+.manage-variables__textarea--empty:focus {
+  border-color: rgba(239, 68, 68, 0.6);
 }
 
 /* ── Tags ── */
@@ -387,4 +644,21 @@
 .manage-variables__add-option-btn:hover {
   border-color: var(--nords-color-accent, #6366f1);
   color: var(--nords-color-accent, #6366f1);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .manage-variables__body {
+    flex-direction: column;
+  }
+  .manage-variables__sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--nords-color-border-subtle, var(--nords-color-border));
+    max-height: 180px;
+  }
+  .manage-variables__editor {
+    padding: 12px;
+  }
 }

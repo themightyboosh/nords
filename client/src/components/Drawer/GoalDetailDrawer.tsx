@@ -13,6 +13,7 @@ import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { resolveIcon } from '../../utils/iconRegistry';
 import type { Goal, GoalVariableBinding, GoalEdge } from '../../hooks/useGoals';
 import type { ProjectVariable } from '../../hooks/useVariables';
+import type { CollectionGroup } from '../../hooks/useCollectionGroups';
 import './GoalDetailDrawer.css';
 
 /**
@@ -59,6 +60,7 @@ interface GoalDetailDrawerProps {
   edges: GoalEdge[];
   nords: NordRef[];
   variables: ProjectVariable[];
+  collectionGroups: CollectionGroup[];
   onUpdate: (id: string, fields: Record<string, unknown>) => Promise<unknown>;
   onAddVariableBinding: (goalId: string, variableId: string, required: boolean) => Promise<unknown>;
   onUpdateVariableBinding: (goalId: string, bindingId: string, required: boolean) => Promise<unknown>;
@@ -79,6 +81,7 @@ export function GoalDetailDrawer({
   edges,
   nords,
   variables,
+  collectionGroups,
   onUpdate,
   onAddVariableBinding,
   onUpdateVariableBinding,
@@ -163,7 +166,22 @@ export function GoalDetailDrawer({
               ════════════════════════════════════════════════ */}
           {activeTab === 'properties' && (
             <>
-              {/* ── Session End Type ── */}
+              {/* ── Description (Required) ── */}
+              <div className="goal-detail-drawer__section">
+                <div className="goal-detail-drawer__section-header">
+                  <span>Description <span className="manage-types__required-badge">Required</span></span>
+                </div>
+                <p className="goal-detail-drawer__hint">
+                  Describe the purpose and completion criteria for this goal. This is shown to the AI agent.
+                </p>
+                <textarea
+                  className={`goal-detail-drawer__textarea ${!goal.description ? 'goal-detail-drawer__textarea--empty' : ''}`}
+                  value={goal.description || ''}
+                  onChange={e => onUpdate(goal.id, { description: e.target.value || null })}
+                  placeholder="e.g. 'Collect the participant's contact details and validate their eligibility.'"
+                  rows={2}
+                />
+              </div>
               <div className="goal-detail-drawer__section">
                 <div className="goal-detail-drawer__section-header">
                   <span>Session Ending</span>
@@ -373,9 +391,15 @@ export function GoalDetailDrawer({
 
                 {goal.variable_bindings?.map(binding => {
                   const variable = variables.find(v => v.id === binding.variable_id);
+                  const group = collectionGroups.find(g => g.id === variable?.collection_group_id);
                   return (
                     <div key={binding.id} className="goal-detail-drawer__binding-row">
-                      <span className="goal-detail-drawer__binding-nord">{variable?.name || 'Unknown'}</span>
+                      <div className="goal-detail-drawer__binding-info">
+                        {group && (
+                          <span className="goal-detail-drawer__binding-group">{group.name} ›</span>
+                        )}
+                        <span className="goal-detail-drawer__binding-nord">{variable?.name || 'Unknown'}</span>
+                      </div>
                       <span className={`goal-detail-drawer__binding-badge ${binding.required ? 'is-required' : ''}`}>
                         {binding.required ? 'Required' : 'Optional'}
                       </span>
@@ -402,6 +426,7 @@ export function GoalDetailDrawer({
 
                 <AddVariableBindingRow
                   variables={unboundVariables}
+                  collectionGroups={collectionGroups}
                   onAdd={(variableId) => onAddVariableBinding(goal.id, variableId, true)}
                 />
               </div>
@@ -419,9 +444,11 @@ export function GoalDetailDrawer({
 
 function AddVariableBindingRow({
   variables,
+  collectionGroups,
   onAdd,
 }: {
   variables: ProjectVariable[];
+  collectionGroups: CollectionGroup[];
   onAdd: (variableId: string) => void;
 }) {
   const [selectedId, setSelectedId] = useState('');
@@ -433,6 +460,15 @@ function AddVariableBindingRow({
     }
   };
 
+  // Build grouped options: group-name → variables in that group
+  const grouped = collectionGroups
+    .map(g => ({
+      group: g,
+      vars: variables.filter(v => v.collection_group_id === g.id),
+    }))
+    .filter(g => g.vars.length > 0);
+  const ungrouped = variables.filter(v => !v.collection_group_id);
+
   return (
     <div className="goal-detail-drawer__add-binding">
       <select
@@ -441,11 +477,24 @@ function AddVariableBindingRow({
         onChange={e => setSelectedId(e.target.value)}
       >
         <option value="">Add collection…</option>
-        {variables.map(v => (
-          <option key={v.id} value={v.id}>
-            {v.name} ({v.type}){v.required ? ' ✦' : ''}
-          </option>
+        {grouped.map(({ group, vars }) => (
+          <optgroup key={group.id} label={group.name}>
+            {vars.map(v => (
+              <option key={v.id} value={v.id}>
+                {v.name} ({v.type}){v.required ? ' ✦' : ''}
+              </option>
+            ))}
+          </optgroup>
         ))}
+        {ungrouped.length > 0 && (
+          <optgroup label="Ungrouped">
+            {ungrouped.map(v => (
+              <option key={v.id} value={v.id}>
+                {v.name} ({v.type}){v.required ? ' ✦' : ''}
+              </option>
+            ))}
+          </optgroup>
+        )}
       </select>
       <button
         className="goal-detail-drawer__add-btn"

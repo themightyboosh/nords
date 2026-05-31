@@ -205,6 +205,22 @@
   font-size: 12px;
 }
 
+.goal-detail-drawer__binding-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+}
+
+.goal-detail-drawer__binding-group {
+  color: var(--nords-color-text-tertiary);
+  font-size: 11px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .goal-detail-drawer__binding-nord {
   font-weight: 500;
   color: var(--nords-color-text-primary);
@@ -294,6 +310,12 @@
 .goal-detail-drawer__textarea::placeholder {
   color: var(--nords-color-text-tertiary, #555);
   font-style: italic;
+}
+.goal-detail-drawer__textarea--empty {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+.goal-detail-drawer__textarea--empty:focus {
+  border-color: rgba(239, 68, 68, 0.6);
 }
 
 /* ── Binding badges ── */

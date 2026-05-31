@@ -98,7 +98,7 @@ export function TypeRegistryProvider({
     rawConnectionTypes.map(t => ({
       id: t.id,
       name: t.name,
-      icon: resolveIcon(t.icon || 'Link'),
+      icon: resolveIcon(t.icon || 'Layers'),
       color: t.accent_color || '#a78bfa',
       strokeStyle: t.stroke_style || 'solid',
       measurementMode: t.measurement_mode || 'spectrum',

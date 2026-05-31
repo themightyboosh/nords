@@ -14,7 +14,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   FolderKanban, Plus, MoreHorizontal,
-  Star, Users,
+  Star, Users, Type,
   Trash2, Download, Settings, X, AlertTriangle, BookOpen,
   ShieldCheck, BarChart3, CreditCard, Settings2,
   Compass, ClipboardList, Target,
@@ -29,6 +29,7 @@ import { ProjectSettings } from '../ProjectSettings/ProjectSettings';
 import { HueSlider } from '../shared/HueSlider';
 import { useAuth } from '../../context/AuthContext';
 import UserAdmin from '../Admin/UserAdmin';
+import ManageUIStrings from '../Admin/ManageUIStrings';
 import '../Admin/UserAdmin.css';
 import './ProjectDashboard.css';
 
@@ -84,7 +85,7 @@ export default function ProjectDashboard() {
 
   // Admin panel state
   const { isAdmin } = useAuth();
-  const [adminView, setAdminView] = useState<'projects' | 'users'>('projects');
+  const [adminView, setAdminView] = useState<'projects' | 'users' | 'strings'>('projects');
 
   const loadProjects = useCallback(async () => {
     try {
@@ -249,6 +250,13 @@ export default function ProjectDashboard() {
                 <Users size={14} strokeWidth={1.5} />
                 Users
               </button>
+              <button
+                className={`nords-dashboard__nav-item ${adminView === 'strings' ? 'is-active' : ''}`}
+                onClick={() => setAdminView('strings')}
+              >
+                <Type size={14} strokeWidth={1.5} />
+                UI Strings
+              </button>
               <button className="nords-dashboard__nav-item">
                 <BarChart3 size={14} strokeWidth={1.5} />
                 Analytics
@@ -279,6 +287,8 @@ export default function ProjectDashboard() {
 
         {adminView === 'users' ? (
           <UserAdmin />
+        ) : adminView === 'strings' ? (
+          <ManageUIStrings />
         ) : (
         <>
 
