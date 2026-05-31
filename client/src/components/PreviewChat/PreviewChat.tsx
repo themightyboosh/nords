@@ -145,6 +145,15 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   const isDragging = useRef(false);
   const dragOffset = useRef({ dx: 0, dy: 0 });
   const chatRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Suppress the "shrink to size" flash by hiding for one frame
+  useEffect(() => {
+    if (isOpen) {
+      setMounted(false);
+      requestAnimationFrame(() => setMounted(true));
+    }
+  }, [isOpen]);
 
   // Persist rect changes
   useEffect(() => {
@@ -864,6 +873,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
         zIndex: 500,
         resize: 'both',
         overflow: 'hidden',
+        visibility: mounted ? 'visible' : 'hidden',
       }}
     >
       {/* Header — doubles as drag handle */}

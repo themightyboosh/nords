@@ -436,6 +436,7 @@ export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: Matr
                 <span className="nords-matrix__lane-chevron">
                   {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
                 </span>
+                {ct.icon && <ct.icon size={14} strokeWidth={1.6} style={{ color: ct.color, flexShrink: 0 }} />}
                 <span className="nords-matrix__lane-color" style={{ background: ct.color }} />
                 <span className="nords-matrix__lane-name">{ct.name}</span>
                 {ct.verb && <span className="nords-matrix__lane-verb">{ct.verb}</span>}

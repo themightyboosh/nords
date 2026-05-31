@@ -132,6 +132,23 @@
   color: var(--nords-color-text-primary);
 }
 
+/* Icons inside nav items → brand accent blue */
+.nords-viewport-header__nav-item svg {
+  color: var(--nords-color-accent, #6b7aed);
+  flex-shrink: 0;
+}
+.nords-viewport-header__nav-item:hover svg {
+  color: var(--nords-color-accent-hover, #8b97f5);
+}
+
+/* ── Light-mode overrides ── */
+[data-theme="light"] .nords-viewport-header__project-title {
+  color: var(--nords-color-text-primary, #1a1a2e);
+}
+[data-theme="light"] .nords-viewport-header__nav-item {
+  color: var(--nords-color-text-secondary, #4a5568);
+}
+
 /* When header is inside the dashboard layout, use relative positioning */
 .nords-dashboard > .nords-viewport-header {
   position: relative;
