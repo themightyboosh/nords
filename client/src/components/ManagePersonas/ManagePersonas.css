@@ -239,7 +239,27 @@
   padding: var(--nords-space-md);
   background: var(--nords-color-bg-deep);
   border-radius: var(--nords-radius-lg);
+  margin-bottom: 0;
+}
+
+/* ── Accent color picker (below avatar grid) ── */
+.manage-personas__avatar-color {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-md);
+  padding: var(--nords-space-sm) var(--nords-space-md);
+  background: var(--nords-color-bg-deep);
+  border-radius: 0 0 var(--nords-radius-lg) var(--nords-radius-lg);
   margin-bottom: var(--nords-space-xl);
+}
+
+.manage-personas__avatar-color-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nords-color-text-tertiary);
+  white-space: nowrap;
 }
 
 .manage-personas__avatar-option {
@@ -312,7 +332,6 @@
   margin: 0 0 var(--nords-space-sm);
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
 
 

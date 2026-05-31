@@ -425,7 +425,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                 {/* Type description / purpose (required) */}
                 <div className="manage-types__field">
                   <label className="manage-types__desc-label">
-                    Description <span className="required-dot">*</span>
+                    Description<span className="required-dot">*</span>
                   </label>
                   <textarea
                     className={`manage-types__desc-input ${!(selected as any).description ? 'manage-types__desc-input--empty' : ''}`}

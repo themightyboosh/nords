@@ -198,7 +198,7 @@ function GoalEditor({ goal, onUpdate, onDelete }: GoalEditorProps) {
 
       {/* ── Description ── */}
       <div className="manage-goals__section">
-        <label className="manage-goals__section-title">Description <span className="required-dot">*</span></label>
+        <label className="manage-goals__section-title">Description<span className="required-dot">*</span></label>
         <textarea
           className="manage-goals__textarea"
           value={description}

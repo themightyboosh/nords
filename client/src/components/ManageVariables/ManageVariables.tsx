@@ -261,7 +261,7 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
                 {/* Description */}
                 <div className="manage-variables__group-desc">
                   <label className="manage-variables__desc-label">
-                    Description <span className="required-dot">*</span>
+                    Description<span className="required-dot">*</span>
                   </label>
                   <textarea
                     className="manage-variables__group-desc-textarea"

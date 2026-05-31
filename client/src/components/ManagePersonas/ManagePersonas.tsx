@@ -225,13 +225,6 @@ function PersonaEditor({
             onBlur={() => handleBlur('name', name)}
             placeholder="Persona name"
           />
-          {/* ── Hue slider ── */}
-          <HueSlider
-            color={persona.accent_color || '#3d4f7c'}
-            onChange={(hex) => onUpdate(persona.id, { accent_color: hex })}
-            saturation={55}
-            lightness={35}
-          />
         </div>
         <button className="manage-personas__delete-btn" onClick={onDelete} title="Delete persona">
           <Trash2 size={16} />
@@ -262,12 +255,21 @@ function PersonaEditor({
             </button>
           ))}
         </div>
+        <div className="manage-personas__avatar-color">
+          <label className="manage-personas__avatar-color-label">Accent Color</label>
+          <HueSlider
+            color={persona.accent_color || '#3d4f7c'}
+            onChange={(hex) => onUpdate(persona.id, { accent_color: hex })}
+            saturation={55}
+            lightness={35}
+          />
+        </div>
       )}
 
       {/* ── Background (required) ── */}
       <div className="manage-personas__section">
         <label className="manage-personas__section-title">
-          Background <span className="required-dot">*</span>
+          Background<span className="required-dot">*</span>
         </label>
         <textarea
           className={`manage-personas__textarea ${!background.trim() ? 'is-error' : ''}`}
@@ -282,7 +284,7 @@ function PersonaEditor({
       {/* ── Primary Motivation (required) ── */}
       <div className="manage-personas__section">
         <label className="manage-personas__section-title">
-          Primary Motivation <span className="required-dot">*</span>
+          Primary Motivation<span className="required-dot">*</span>
         </label>
         <textarea
           className={`manage-personas__textarea ${!motivation.trim() ? 'is-error' : ''}`}
