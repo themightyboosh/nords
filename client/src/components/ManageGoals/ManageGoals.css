@@ -62,7 +62,7 @@
 .manage-goals__sidebar {
   width: 200px;
   min-width: 200px;
-  border-right: 1px solid var(--nords-color-border);
+  border-right: 1px solid var(--nords-color-border-subtle);
   display: flex;
   flex-direction: column;
   background: var(--nords-color-bg-deep);
@@ -77,24 +77,24 @@
 .manage-goals__list-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--nords-space-sm);
   width: 100%;
-  padding: 8px 14px;
+  padding: var(--nords-space-sm) var(--nords-space-lg);
   border: none;
   background: transparent;
   color: var(--nords-color-text-secondary);
-  font-size: 13px;
+  font-size: var(--nords-font-size-sm);
   cursor: pointer;
   text-align: left;
-  transition: background 0.12s, color 0.12s;
+  transition: all 0.12s ease;
   border-left: 3px solid transparent;
 }
 .manage-goals__list-item:hover {
-  background: var(--nords-color-surface);
+  background: var(--nords-color-bg-hover);
   color: var(--nords-color-text-primary);
 }
 .manage-goals__list-item.is-active {
-  background: var(--nords-color-surface);
+  background: var(--nords-color-bg-hover);
   color: var(--nords-color-text-primary);
   border-left-color: var(--nords-color-accent, #6366f1);
 }
