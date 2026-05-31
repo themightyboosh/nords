@@ -115,13 +115,17 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
               <Eye size={14} strokeWidth={1.6} />
               <span>Graph</span>
             </button>
+            {personas.length > 0 && (
             <button
               className={`nords-lens-toggle__btn ${lens === 'persona' ? 'is-active' : ''}`}
               onClick={() => {
                 setLens('persona');
                 setActiveConnectionTypeId(null);
                 setOpenPanel(null);
-                // Don't auto-select persona — let user click to activate (issue #34)
+                // Auto-select first persona if none active so the radial view renders immediately
+                if (!activePersonaId && personas.length > 0) {
+                  setActivePersonaId(personas[0].id);
+                }
               }}
               title="Persona — weighted graph view through a persona's lens"
               data-testid="lens-persona"
@@ -129,6 +133,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
               <Users size={14} strokeWidth={1.6} />
               <span>Persona</span>
             </button>
+            )}
             {projectMode === 'guided' && (
             <button
               className={`nords-lens-toggle__btn ${lens === 'goals' ? 'is-active' : ''}`}
