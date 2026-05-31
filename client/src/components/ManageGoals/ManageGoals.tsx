@@ -157,32 +157,24 @@ function GoalEditor({ goal, onUpdate, onDelete }: GoalEditorProps) {
         <button
           className="manage-goals__icon-btn"
           onClick={() => setShowIconPicker(!showIconPicker)}
-          title="Change icon"
+          title="Change icon & color"
           style={{ borderColor: goal.accent_color || undefined }}
         >
           <GoalIcon size={22} strokeWidth={1.8} style={{ color: goal.accent_color || 'var(--nords-color-text-secondary)' }} />
         </button>
-        <div style={{ flex: 1 }}>
-          <input
-            className="manage-goals__editor-name"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            onBlur={() => handleBlur('name', name)}
-            placeholder="Goal name"
-          />
-          <HueSlider
-            color={goal.accent_color || '#6366f1'}
-            onChange={(hex) => onUpdate(goal.id, { accent_color: hex })}
-            saturation={55}
-            lightness={40}
-          />
-        </div>
+        <input
+          className="manage-goals__editor-name"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          onBlur={() => handleBlur('name', name)}
+          placeholder="Goal name"
+        />
         <button className="manage-goals__delete-btn" onClick={onDelete} title="Delete goal">
           <Trash2 size={16} />
         </button>
       </div>
 
-      {/* ── Icon Picker ── */}
+      {/* ── Icon & Color Picker ── */}
       {showIconPicker && (
         <div className="manage-goals__icon-picker-wrap">
           <IconPicker
@@ -193,6 +185,15 @@ function GoalEditor({ goal, onUpdate, onDelete }: GoalEditorProps) {
             }}
             accentColor={goal.accent_color || '#6366f1'}
           />
+          <div className="manage-goals__popover-color">
+            <label className="manage-goals__popover-color-label">Color</label>
+            <HueSlider
+              color={goal.accent_color || '#6366f1'}
+              onChange={(hex) => onUpdate(goal.id, { accent_color: hex })}
+              saturation={55}
+              lightness={40}
+            />
+          </div>
         </div>
       )}
 

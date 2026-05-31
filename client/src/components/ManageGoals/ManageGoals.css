@@ -189,6 +189,22 @@
   overflow: hidden;
 }
 
+.manage-goals__popover-color {
+  margin-top: var(--nords-space-md);
+  padding-top: var(--nords-space-md);
+  border-top: 1px solid var(--nords-color-border-subtle);
+}
+
+.manage-goals__popover-color-label {
+  display: block;
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-semibold);
+  color: var(--nords-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--nords-letter-spacing-wide);
+  margin-bottom: var(--nords-space-sm);
+}
+
 .manage-goals__editor-name {
   flex: 1;
   font-size: 18px;

@@ -233,6 +233,7 @@ function PersonaEditor({
 
       {/* ── Avatar Picker ── */}
       {showAvatarPicker && (
+        <>
         <div className="manage-personas__avatar-picker">
           <button
             className="manage-personas__avatar-option manage-personas__avatar-randomize"
@@ -264,6 +265,7 @@ function PersonaEditor({
             lightness={35}
           />
         </div>
+        </>
       )}
 
       {/* ── Background (required) ── */}
