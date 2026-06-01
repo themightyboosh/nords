@@ -177,8 +177,11 @@ describe('Persona Category Weights', () => {
 
   it('suggested_next reflects persona bias', async () => {
     const horizon = await mcpRepo.getSessionHorizon(sessionId);
-    // With tech bias, suggested next should be Tech Feature
-    expect(horizon.suggested_next?.title).toBe('Tech Feature');
+    // Ranked list — Tech Feature should be first with highest explore_score
+    expect(horizon.suggested_next.length).toBe(2);
+    expect(horizon.suggested_next[0].title).toBe('Tech Feature');
+    expect(horizon.suggested_next[0].explore_score).toBeGreaterThan(horizon.suggested_next[1].explore_score);
+    expect(horizon.suggested_next[0].verb).toBe('implements');
   });
 });
 

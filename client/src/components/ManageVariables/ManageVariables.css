@@ -71,34 +71,35 @@
 .manage-variables__list {
   flex: 1;
   overflow-y: auto;
-  padding: var(--nords-space-sm, 6px);
+  padding: var(--nords-space-md) 0;
 }
 
 .manage-variables__list-item {
   display: flex;
   align-items: center;
-  gap: var(--nords-space-sm, 6px);
+  gap: var(--nords-space-sm);
   width: 100%;
-  padding: var(--nords-space-sm, 6px) var(--nords-space-md, 10px);
+  padding: var(--nords-space-sm) var(--nords-space-lg);
   border: none;
-  border-radius: var(--nords-radius-md, 6px);
   background: transparent;
   color: var(--nords-color-text-secondary);
-  font-size: var(--nords-font-size-sm, 13px);
-  font-family: var(--nords-font-primary, inherit);
+  font-size: var(--nords-font-size-sm);
+  font-family: var(--nords-font-primary);
   cursor: pointer;
   transition: all 0.12s ease;
   text-align: left;
+  border-left: 3px solid transparent;
 }
 
 .manage-variables__list-item:hover {
-  background: var(--nords-color-bg-hover, rgba(255,255,255,0.04));
+  background: var(--nords-color-bg-hover);
   color: var(--nords-color-text-primary);
 }
 
 .manage-variables__list-item--selected {
-  background: var(--nords-color-accent-dim, rgba(99, 102, 241, 0.12));
-  color: var(--nords-color-accent, #6366f1);
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+  border-left-color: var(--nords-color-accent);
 }
 
 .manage-variables__list-name {
@@ -128,21 +129,21 @@
 .manage-variables__new-btn {
   display: flex;
   align-items: center;
-  gap: var(--nords-space-sm, 6px);
-  margin: var(--nords-space-sm, 6px);
-  padding: var(--nords-space-sm, 6px) var(--nords-space-md, 10px);
-  border: 1px dashed var(--nords-color-border-default, var(--nords-color-border));
-  border-radius: var(--nords-radius-md, 6px);
-  background: transparent;
+  gap: var(--nords-space-xs);
+  padding: var(--nords-space-md) var(--nords-space-lg);
+  border: none;
+  background: none;
   color: var(--nords-color-text-tertiary);
-  font-size: var(--nords-font-size-sm, 12px);
-  font-family: var(--nords-font-primary, inherit);
+  font-size: var(--nords-font-size-sm);
+  font-family: var(--nords-font-primary);
   cursor: pointer;
+  width: 100%;
+  border-top: 1px solid var(--nords-color-border-subtle);
   transition: all 0.12s ease;
 }
 .manage-variables__new-btn:hover {
-  border-color: var(--nords-color-accent, #6366f1);
-  color: var(--nords-color-accent, #6366f1);
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
 }
 
 /* ── Editor ── */

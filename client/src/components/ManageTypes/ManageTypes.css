@@ -108,7 +108,7 @@
 .manage-types__list {
   flex: 1;
   overflow-y: auto;
-  padding: var(--nords-space-sm);
+  padding: var(--nords-space-md) 0;
 }
 
 .manage-types__list-item {
@@ -116,9 +116,8 @@
   align-items: center;
   gap: var(--nords-space-sm);
   width: 100%;
-  padding: var(--nords-space-sm) var(--nords-space-md);
+  padding: var(--nords-space-sm) var(--nords-space-lg);
   border: none;
-  border-radius: var(--nords-radius-md);
   background: transparent;
   color: var(--nords-color-text-secondary);
   font-size: var(--nords-font-size-sm);
@@ -126,6 +125,7 @@
   cursor: pointer;
   transition: all 0.12s ease;
   text-align: left;
+  border-left: 3px solid transparent;
 }
 
 .manage-types__list-item:hover {
@@ -134,8 +134,9 @@
 }
 
 .manage-types__list-item--selected {
-  background: var(--nords-color-accent-dim);
-  color: var(--nords-color-accent);
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+  border-left-color: var(--nords-color-accent);
 }
 
 .manage-types__swatch {
@@ -164,22 +165,22 @@
 .manage-types__new-btn {
   display: flex;
   align-items: center;
-  gap: var(--nords-space-sm);
-  margin: var(--nords-space-sm);
-  padding: var(--nords-space-sm) var(--nords-space-md);
-  border: 1px dashed var(--nords-color-border-default);
-  border-radius: var(--nords-radius-md);
-  background: transparent;
+  gap: var(--nords-space-xs);
+  padding: var(--nords-space-md) var(--nords-space-lg);
+  border: none;
+  background: none;
   color: var(--nords-color-text-tertiary);
   font-size: var(--nords-font-size-sm);
   font-family: var(--nords-font-primary);
   cursor: pointer;
+  width: 100%;
+  border-top: 1px solid var(--nords-color-border-subtle);
   transition: all 0.12s ease;
 }
 
 .manage-types__new-btn:hover {
-  border-color: var(--nords-color-accent);
-  color: var(--nords-color-accent);
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
 }
 
 /* ── Editor ── */
@@ -678,6 +679,13 @@
 .manage-types__prop-default-input--date {
   color-scheme: dark;
   max-width: 160px;
+}
+
+.manage-types__prop-default-input--empty {
+  border-color: rgba(255, 100, 100, 0.35);
+}
+.manage-types__prop-default-input--empty:focus {
+  border-color: rgba(255, 100, 100, 0.6);
 }
 
 .manage-types__prop-default-textarea {

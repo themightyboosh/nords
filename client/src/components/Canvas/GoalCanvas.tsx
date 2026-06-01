@@ -167,7 +167,7 @@ function GoalCanvasInner({
     return new Set(explicit.filter(g => !hasParent.has(g.id)).map(g => g.id));
   }, [explicit, goalEdges]);
 
-  // Build variable name lookup for collection bindings
+  // Build variable name lookup for property bindings
   const varNameMap = useMemo(() => {
     const m = new Map<string, string>();
     for (const v of variables) m.set(v.id, v.name);

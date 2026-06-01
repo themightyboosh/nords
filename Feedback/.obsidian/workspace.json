@@ -20,8 +20,51 @@
               "icon": "lucide-file",
               "title": "Various Editing Panes - Consistency"
             }
+          },
+          {
+            "id": "2b05d69a447d26f4",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Detail Panel Updates.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Detail Panel Updates"
+            }
+          },
+          {
+            "id": "d307bdb90f2fe6f7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "CHANGES.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CHANGES"
+            }
+          },
+          {
+            "id": "6475384ca28f9d83",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "CHANGES TW0.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CHANGES TW0"
+            }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -94,7 +137,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Various Editing Panes - Consistency.md",
+                "file": "CHANGES TW0.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +147,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Various Editing Panes - Consistency"
+              "title": "Backlinks for CHANGES TW0"
             }
           },
           {
@@ -113,12 +156,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Various Editing Panes - Consistency.md",
+                "file": "CHANGES TW0.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Various Editing Panes - Consistency"
+              "title": "Outgoing links from CHANGES TW0"
             }
           },
           {
@@ -156,13 +199,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Various Editing Panes - Consistency.md",
+                "file": "CHANGES TW0.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Various Editing Panes - Consistency"
+              "title": "Outline of CHANGES TW0"
             }
           }
         ]
@@ -183,15 +226,22 @@
       "bases:Create new base": false
     }
   },
-  "active": "a1e3561bfab7d147",
+  "active": "6475384ca28f9d83",
   "lastOpenFiles": [
-    "Pasted image 20260531170942.png",
-    "Pasted image 20260531170347.png",
-    "Pasted image 20260531170226.png",
-    "Pasted image 20260531170125.png",
-    "Pasted image 20260531170041.png",
-    "Pasted image 20260531165958.png",
-    "Pasted image 20260531165919.png",
+    "Pasted image 20260531194543.png",
+    "CHANGES TW0.md",
+    "CHANGES.md",
+    "Pasted image 20260531194118.png",
+    "Pasted image 20260531194048.png",
+    "Pasted image 20260531194030.png",
+    "Pasted image 20260531193656.png",
+    "Pasted image 20260531193152.png",
+    "Pasted image 20260531193046.png",
+    "Detail Panel Updates.md",
+    "Pasted image 20260531185903.png",
+    "Pasted image 20260531185811.png",
+    "Pasted image 20260531185727.png",
+    "Pasted image 20260531185702.png",
     "Various Editing Panes - Consistency.md"
   ]
 }

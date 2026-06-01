@@ -93,10 +93,11 @@ export async function cloneProject(sourceProjectId: string, createdBy: string | 
       personaMap.set(p.id, newId);
       await client.query(`
         INSERT INTO personas (id, project_id, name, avatar_seed, background, primary_motivation,
-          voice_and_tone, guardrails, sort_order, temperature)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          voice_and_tone, guardrails, sort_order, temperature, behavioral_nudge_threshold, behavioral_nudge_window, exchange_style)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       `, [newId, newProjectId, p.name, p.avatar_seed || '', p.background || '', p.primary_motivation || '',
-          p.voice_and_tone || '', JSON.stringify(p.guardrails || []), p.sort_order, p.temperature]);
+          p.voice_and_tone || '', JSON.stringify(p.guardrails || []), p.sort_order, p.temperature,
+          p.behavioral_nudge_threshold ?? 3, p.behavioral_nudge_window ?? 5, p.exchange_style ?? 'bi_directional']);
     }
 
     // ── 5. Clone Nords ──

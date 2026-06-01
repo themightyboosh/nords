@@ -9,24 +9,16 @@
 
 import { useRef, useCallback } from 'react';
 import { ZoomIn, ZoomOut, Maximize, Minimize2 } from 'lucide-react';
-import { useReactFlow, useStore } from '@xyflow/react';
+import { useReactFlow } from '@xyflow/react';
 import { useLens } from '../../context/LensContext';
 import './ZoomControls.css';
 
 export default function ZoomControls() {
-  const { zoomIn, zoomOut, fitView, setViewport, getNodes, getEdges } = useReactFlow();
+  const { zoomIn, zoomOut, fitView, getNodes, getEdges } = useReactFlow();
   const { activeConnectionTypeId } = useLens();
-
-  // Get active zoom multiplier
-  const zoom = useStore((s) => s.transform[2]);
-  const displayZoom = Math.round(zoom * 100);
 
   // Track toggle state: false = "fit category", true = "fit all"
   const lastFitWasCategory = useRef(false);
-
-  const resetZoom = () => {
-    setViewport({ x: 0, y: 0, zoom: 1 }, { duration: 300 });
-  };
 
   const handleFit = useCallback(() => {
     // If no active category, always fit all
@@ -83,14 +75,6 @@ export default function ZoomControls() {
         <ZoomOut size={14} strokeWidth={1.6} />
       </button>
       <button 
-        className="nords-zoom-controls__pct" 
-        onClick={resetZoom} 
-        title="Reset to 100%" 
-        data-testid="zoom-reset"
-      >
-        {displayZoom}%
-      </button>
-      <button 
         className="nords-zoom-controls__btn" 
         onClick={() => zoomIn({ duration: 200 })} 
         title="Zoom in" 
@@ -110,3 +94,4 @@ export default function ZoomControls() {
     </div>
   );
 }
+

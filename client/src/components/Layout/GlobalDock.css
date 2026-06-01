@@ -33,10 +33,9 @@
   pointer-events: auto;
 }
 
-/* Goals mode: no filter pills — remove trailing padding so the lens toggle
-   pill sits flush with the dock edge, eliminating the phantom separator line */
+/* Goals mode: no filter pills — keep balanced padding */
 .nords-global-dock[data-active-lens="goals"] {
-  padding-right: 2px;
+  padding-right: var(--nords-space-sm);
 }
 
 /* ═══════════════════════════════════════════════ */

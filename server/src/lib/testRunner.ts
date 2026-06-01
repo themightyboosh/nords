@@ -36,6 +36,7 @@ export interface TestScenario {
   stop_on_goal_id: string | null;
   stop_on_session_end: boolean;
   min_completion_pct: number;
+  persona_id: string | null;
 }
 
 export interface TestRunRecord {
@@ -93,19 +94,29 @@ export interface RunProgress {
   error?: string;
 }
 
-// ── Behavioral Profile Prompts ──
-
 const PROFILE_INSTRUCTIONS: Record<string, string> = {
   cooperative:
-    'You are helpful and direct. Answer questions clearly. Stay on topic. Provide the information asked for.',
+    `You talk like a real professional in a meeting — not a chatbot. Use contractions, filler words ("honestly", "yeah", "hmm"), and natural sentence fragments.
+Sometimes react emotionally ("oh that's great", "ugh, that's not ideal", "interesting…").
+Don't just dump data — share it the way a person would: "So the pathway is 510(k), we settled on that months ago" instead of "The regulatory pathway is 510(k)."
+Occasionally ask a follow-up question before answering. Sometimes give more context than asked for. You're engaged and collaborative but you're a person, not a database lookup.
+Keep messages 1-3 sentences. You can use incomplete sentences and dashes.`,
   tangential:
-    "You tend to go off on tangents. When asked a question, give the answer but bury it in a longer story. Mention related topics. The AI should work to extract the key data.",
+    `You're the person in the meeting who can't stick to one topic. When asked a question, you answer — but you wrap it in a story or a related concern.
+Talk like a real person: use contractions, react to things ("oh, that reminds me…"), and occasionally go off on a tangent about something you read or experienced.
+The AI should work to extract the key data from your ramblings. You mean well, you're just scattered.`,
   reluctant:
-    "You're not very forthcoming. Give short, vague answers. Say 'I'm not sure' sometimes. The AI needs to probe and ask follow-up questions to get real answers from you.",
+    `You're not being difficult on purpose — you're just not a big talker. Give short answers, sometimes incomplete.
+Use phrases like "I think so", "not sure off the top of my head", "you'd have to check with [someone]".
+You answer questions but don't volunteer extra information. If the AI asks a good follow-up, you'll open up a little more.`,
   adversarial:
-    "You sometimes contradict yourself. You challenge what the AI says. You push back on questions. You might change your answer if asked twice.",
+    `You're skeptical and a bit combative. Challenge assumptions. Say things like "that doesn't sound right" or "who told you that?"
+Sometimes contradict yourself — not maliciously, but because you're thinking out loud and changing your mind.
+You respect competence though — if the AI demonstrates good knowledge, you'll come around.`,
   rushed:
-    "You're in a hurry. Give the minimum possible answer. Ask 'are we almost done?' frequently. Skip details unless pressed.",
+    `You're clearly in a hurry — texting from your phone between meetings. Very short messages.
+Use abbreviations, skip punctuation sometimes. Say things like "what else?", "ok next", "can we wrap up?"
+You'll give info if pressed but you don't have patience for long exchanges.`,
 };
 
 const OTHER_PROFILE_PLACEHOLDER =
@@ -252,9 +263,11 @@ export async function executeTestRun(
     const mcpMutable = project.mcp_mutable ?? false;
 
     // 2. Create a fresh MCP session for this test
+    // Use scenario-specific persona if set, otherwise fall back to project default
+    const activePersonaId = scenario.persona_id || project.default_persona_id || null;
     const session = await mcpRepo.createSession(
       projectId,
-      project.default_persona_id || null,
+      activePersonaId,
       project.default_start_nord_id || null
     );
     const sessionId = session.id;
@@ -287,10 +300,10 @@ Call nords_get_briefing as your first action to receive your full orientation: t
 The briefing contains all the instructions you need. Follow the protocol it provides.
 `;
 
-    if (project.default_persona_id) {
+    if (activePersonaId) {
       const persona = await queryOne<{ temperature: number }>(
         'SELECT temperature FROM personas WHERE id = $1 AND deleted_at IS NULL',
-        [project.default_persona_id]
+        [activePersonaId]
       );
       if (persona) agentTemperature = persona.temperature ?? 0.7;
     }
@@ -304,8 +317,11 @@ The briefing contains all the instructions you need. Follow the protocol it prov
     );
 
     // 6. Get tool declarations
+    // NEVER expose graph-mutating tools (create/update/delete nord/connection) during test runs.
+    // The session layer (update_session_nord, update_session_variables) handles all runtime data collection.
+    // Graph mutations are design-time operations only.
     const dictionary = await mcpRepo.getProjectDictionary(projectId);
-    const toolDeclarations = buildToolDeclarations(mcpMutable, dictionary);
+    const toolDeclarations = buildToolDeclarations(false /* never mutable at runtime */, dictionary);
 
     // ── Conversation Loop ──
     const transcript: TranscriptRound[] = [];
@@ -317,6 +333,100 @@ The briefing contains all the instructions you need. Follow the protocol it prov
     let totalToolCallCount = 0;
     let stopReason: string | null = null;
 
+    // ── Agent Welcome (Round 0): Agent goes first to establish context ──
+    let welcomeReply = '';
+    const welcomeToolCalls: Array<{ name: string; arguments: Record<string, unknown>; result?: unknown }> = [];
+    {
+      // Prompt the agent to introduce itself and set the scene
+      const welcomeContents = [
+        { role: 'user', parts: [{ text: 'A new participant has joined the session. Greet them, introduce yourself, and set the conversational context based on the project briefing. Call nords_get_briefing to orient yourself first.' }] },
+      ];
+
+      let currentContents = welcomeContents;
+      let welcomeTokensIn = 0;
+      let welcomeTokensOut = 0;
+
+      for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
+        const response = await genai.models.generateContent({
+          model: scenario.agent_model,
+          contents: currentContents,
+          config: {
+            systemInstruction: agentSystemPrompt,
+            temperature: agentTemperature,
+            tools: [{ functionDeclarations: toolDeclarations }],
+          },
+        });
+
+        if (response.usageMetadata) {
+          welcomeTokensIn += response.usageMetadata.promptTokenCount || 0;
+          welcomeTokensOut += response.usageMetadata.candidatesTokenCount || 0;
+        }
+
+        const candidate = response.candidates?.[0];
+        if (!candidate?.content?.parts) break;
+
+        const functionCalls = candidate.content.parts.filter((p: any) => p.functionCall);
+
+        if (functionCalls.length === 0) {
+          welcomeReply = candidate.content.parts
+            .filter((p: any) => p.text)
+            .map((p: any) => p.text)
+            .join('');
+          agentHistory = [
+            ...currentContents,
+            { role: 'model', parts: candidate.content.parts },
+          ];
+          break;
+        }
+
+        // Process tool calls (same pattern as main loop)
+        const toolResponseParts: any[] = [];
+        for (const fc of functionCalls) {
+          const call = fc.functionCall;
+          const toolResult = await dispatchTool(call.name, call.args || {}, toolCtx);
+          welcomeToolCalls.push({ name: call.name, arguments: call.args || {}, result: toolResult });
+          toolResponseParts.push({
+            functionResponse: { name: call.name, response: toolResult },
+          });
+        }
+        totalToolCallCount += functionCalls.length;
+
+        currentContents = [
+          ...currentContents,
+          { role: 'model', parts: candidate.content.parts },
+          { role: 'user', parts: toolResponseParts },
+        ];
+      }
+
+      totalTokensIn += welcomeTokensIn;
+      totalTokensOut += welcomeTokensOut;
+
+      onProgress?.({
+        type: 'agent_message',
+        round: 0,
+        maxRounds: scenario.max_rounds,
+        content: welcomeReply,
+        toolCalls: welcomeToolCalls,
+      });
+
+      // Seed synthetic user history with the agent's welcome
+      userHistory = [
+        { role: 'user', parts: [{ text: `The assistant greeted you: "${welcomeReply}"` }] },
+      ];
+
+      // Record the welcome as round 0 in transcript
+      transcript.push({
+        round: 0,
+        user_msg: '',
+        agent_msg: welcomeReply,
+        tool_calls: welcomeToolCalls,
+        horizon_snapshot: null as any,
+        tokens_in: welcomeTokensIn,
+        tokens_out: welcomeTokensOut,
+        latency_ms: 0,
+      });
+    }
+
     for (let round = 1; round <= scenario.max_rounds; round++) {
       // Check cancellation before each round
       if (isCancelled?.()) {
@@ -326,24 +436,9 @@ The briefing contains all the instructions you need. Follow the protocol it prov
 
       const roundStart = Date.now();
 
-      // ── Step 1: Synthetic User generates a message ──
+      // ── Step 1: Synthetic User responds to the agent ──
       let userMessage: string;
-      if (round === 1) {
-        // First round: user opens the conversation
-        const userResponse = await genai.models.generateContent({
-          model: scenario.user_model,
-          contents: [{ role: 'user', parts: [{ text: 'Start the conversation now.' }] }],
-          config: {
-            systemInstruction: syntheticUserPrompt,
-            temperature: 0.9,
-          },
-        });
-        userMessage = userResponse.candidates?.[0]?.content?.parts
-          ?.filter((p: any) => p.text)
-          .map((p: any) => p.text)
-          .join('') || 'Hi';
-      } else {
-        // Subsequent rounds: respond to agent's last message
+      {
         const userResponse = await genai.models.generateContent({
           model: scenario.user_model,
           contents: userHistory,
@@ -440,18 +535,10 @@ The briefing contains all the instructions you need. Follow the protocol it prov
       const roundLatency = Date.now() - roundStart;
 
       // ── Step 3: Update synthetic user history (text only — no tools/horizon) ──
-      if (round === 1) {
-        userHistory = [
-          { role: 'user', parts: [{ text: 'Start the conversation now.' }] },
-          { role: 'model', parts: [{ text: userMessage }] },
-          { role: 'user', parts: [{ text: `The assistant replied: "${agentReply}"` }] },
-        ];
-      } else {
-        userHistory.push(
-          { role: 'model', parts: [{ text: userMessage }] },
-          { role: 'user', parts: [{ text: `The assistant replied: "${agentReply}"` }] },
-        );
-      }
+      userHistory.push(
+        { role: 'model', parts: [{ text: userMessage }] },
+        { role: 'user', parts: [{ text: `The assistant replied: "${agentReply}"` }] },
+      );
 
       // ── Step 4: Get horizon for this round ──
       const horizon = await mcpRepo.getSessionHorizon(sessionId);
@@ -680,19 +767,58 @@ export async function generateCritique(
     ? JSON.parse(run.transcript)
     : run.transcript;
 
-  const critiquePrompt = `You are a senior product engineer reviewing a test run of an AI agent.
+  // Fetch goals and their session status for this run
+  let goalsSection = '';
+  if (project?.goals_enabled && run.session_id) {
+    const goals = await query<{
+      goal_name: string; status: string;
+      bindings: string; relevant_nords: string;
+    }>(
+      `SELECT g.name AS goal_name, sg.status,
+              COALESCE(json_agg(DISTINCT pv.name) FILTER (WHERE pv.name IS NOT NULL), '[]') AS bindings,
+              COALESCE(json_agg(DISTINCT n.title) FILTER (WHERE n.title IS NOT NULL), '[]') AS relevant_nords
+       FROM mcp_session_goals sg
+       JOIN goals g ON g.id = sg.goal_id
+       LEFT JOIN goal_variable_bindings gvb ON gvb.goal_id = g.id
+       LEFT JOIN project_variables pv ON pv.id = gvb.variable_id
+       LEFT JOIN goal_relevant_nords grn ON grn.goal_id = g.id
+       LEFT JOIN nords n ON n.id = grn.nord_id
+       WHERE sg.session_id = $1
+       GROUP BY g.name, sg.status
+       ORDER BY CASE sg.status WHEN 'complete' THEN 0 WHEN 'active' THEN 1 WHEN 'pending' THEN 2 ELSE 3 END`,
+      [run.session_id]
+    );
+
+    if (goals.length > 0) {
+      goalsSection = `\n## Goals (Session Status)\n${goals.map(g =>
+        `- **${g.goal_name}**: ${g.status} | Bindings: ${g.bindings} | Relevant Nords: ${g.relevant_nords}`
+      ).join('\n')}\n`;
+    }
+  }
+
+  // Build connection types summary (verbs + spectrum)
+  const connectionTypesSection = dictionary.connection_types?.length > 0
+    ? `\n## Connection Types (Verbs & Spectrum)\n${dictionary.connection_types.map((ct: any) => {
+        const verbs = ct.verbs ? `${ct.verbs.forward_verb} / ${ct.verbs.backward_verb}` : 'none';
+        const spectrum = ct.spectrum ? `${ct.spectrum.left_label} ← → ${ct.spectrum.right_label}` : 'none';
+        return `- **${ct.name}**: verbs: ${verbs} | spectrum: ${spectrum} | measurement: ${ct.measurement_mode || 'none'}`;
+      }).join('\n')}\n`
+    : '';
+
+  const critiquePrompt = `You are a senior product engineer reviewing a test run of an AI agent that navigates a knowledge graph to collect structured data from users.
 
 ## Project Configuration
 - Name: ${project?.name}
-- Mode: ${project?.project_mode}
+- Mode: ${project?.project_mode} (guided = goal-driven, collect = data-driven, explore = free)
+- Goals Enabled: ${project?.goals_enabled}
 - System Instructions: ${project?.mcp_system_prompt?.slice(0, 2000) || 'None'}
 
 ## Schema (Nord Types and Properties)
-${JSON.stringify(dictionary.nord_types.map(t => ({
+${JSON.stringify(dictionary.nord_types.map((t: any) => ({
   name: t.name,
   properties: t.properties_schema,
 })), null, 2).slice(0, 3000)}
-
+${connectionTypesSection}${goalsSection}
 ## Test Results
 - Rounds: ${run.rounds_completed}
 - Completion: ${run.completion_pct}%
@@ -707,14 +833,22 @@ ${transcript.map((r: any) =>
 ).join('\n\n')}
 
 ## Your Task
-Analyze this test run and produce actionable suggestions. For each suggestion, categorize it and rate severity.
+Analyze this test run and produce actionable suggestions. Consider:
+1. **Goal Progress**: Did the agent make progress toward goals? Were bindings collected?
+2. **Graph Navigation**: Did the agent use traverse_connection and visit_nord effectively?
+3. **Data Collection**: Were properties saved via update_session_nord and update_session_variables?
+4. **Conversation Quality**: Did the agent maintain natural flow while extracting data?
+5. **Efficiency**: How many rounds/tokens were used relative to what was accomplished?
+
+For each suggestion, categorize it and rate severity.
 
 Respond in this exact JSON format:
 {
   "summary": "2-3 sentence overall assessment",
+  "goal_assessment": "1-2 sentences on goal achievement patterns",
   "suggestions": [
     {
-      "category": "schema|persona|prompt|graph|efficiency",
+      "category": "schema|persona|prompt|graph|efficiency|goals",
       "severity": "high|medium|low",
       "title": "Short title",
       "detail": "What went wrong / could be better",

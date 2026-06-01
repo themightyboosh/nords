@@ -91,7 +91,11 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
   // ── Group mutations ──
 
   const handleCreateGroup = async () => {
-    const g = await createGroup({ name: 'New Group' });
+    let name = 'New Group';
+    const existing = new Set(groups.map(g => g.name));
+    let i = 2;
+    while (existing.has(name)) { name = `New Group ${i++}`; }
+    const g = await createGroup({ name });
     if (g) setSelectedGroupId(g.id);
   };
 

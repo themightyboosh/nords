@@ -14,6 +14,7 @@ import { api } from '../api/client';
 
 export interface PropertySchema {
   name: string;
+  description?: string;
   type: string;
   required?: boolean;
   defaultValue?: string | number | boolean | null;

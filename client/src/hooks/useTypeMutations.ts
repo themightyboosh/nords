@@ -44,6 +44,7 @@ export interface ConnectionTypeData {
 
 export interface PropertySchema {
   name: string;
+  description?: string;
   type: PropertyType;
   required?: boolean;
   defaultValue?: string | number | boolean | null;

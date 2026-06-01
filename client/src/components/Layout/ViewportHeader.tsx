@@ -26,6 +26,7 @@ interface ViewportHeaderProps {
   onOpenVariables?: () => void;
   onOpenGoals?: () => void;
   onOpenSettings?: () => void;
+  onOpenProfile?: () => void;
   onOpenPreview?: () => void;
   onOpenTestRunner?: () => void;
   /** Project name displayed next to the logo */
@@ -36,7 +37,7 @@ interface ViewportHeaderProps {
 
 export default function ViewportHeader({
   currentTheme, onThemeChange,
-  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenVariables, onOpenGoals, onOpenSettings, onOpenPreview, onOpenTestRunner,
+  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenVariables, onOpenGoals, onOpenSettings, onOpenProfile, onOpenPreview, onOpenTestRunner,
   projectName = 'Product Launch Q3',
   mode = 'workspace',
 }: ViewportHeaderProps) {
@@ -106,8 +107,8 @@ export default function ViewportHeader({
                     <div style={{ fontSize: 'var(--nords-font-size-xs)', color: 'var(--nords-color-text-tertiary)' }}>{user?.email}</div>
                   </div>
                   <button
-                    onClick={() => { setUserDropdownOpen(false); onOpenSettings?.(); }}
-                    data-testid="dropdown-settings"
+                    onClick={() => { setUserDropdownOpen(false); onOpenProfile?.(); }}
+                    data-testid="dropdown-profile"
                     style={{
                       display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
                       padding: '8px 12px', background: 'transparent', border: 'none',
@@ -117,6 +118,20 @@ export default function ViewportHeader({
                   >
                     <User size={14} /> Profile
                   </button>
+                  {onOpenSettings && (
+                    <button
+                      onClick={() => { setUserDropdownOpen(false); onOpenSettings(); }}
+                      data-testid="dropdown-project-settings"
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                        padding: '8px 12px', background: 'transparent', border: 'none',
+                        color: 'var(--nords-color-text-secondary)', cursor: 'pointer',
+                        fontSize: 'var(--nords-font-size-sm)', borderRadius: 'var(--nords-radius-sm)',
+                      }}
+                    >
+                      <Settings size={14} /> Project Settings
+                    </button>
+                  )}
                   <button
                     onClick={handleLogout}
                     data-testid="dropdown-logout"

@@ -10,6 +10,7 @@
     "db:rollback": "tsx db/migrate.ts rollback"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "node-pg-migrate": "^7.9.1",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"

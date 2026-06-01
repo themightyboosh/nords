@@ -35,8 +35,14 @@ import { z } from 'zod';
 import { createLogger, format, transports } from 'winston';
 import { dispatchTool, type ToolContext } from './lib/toolDispatch.js';
 import * as mcpRepo from './repositories/mcpSessions.js';
+import { stripNulls } from './repositories/mcpSessions.js';
 import { query } from './db.js';
 import { nordTypesRepo, connectionTypesRepo } from './repositories/types.js';
+
+// Wrap tool result in JSON, stripping null values for token savings
+function toJson(data: unknown): string {
+  return JSON.stringify(stripNulls(data), null, 2);
+}
 
 // MCP uses stdio transport — stdout is reserved for protocol messages.
 // We create a dedicated stderr logger so structured logs don't corrupt the protocol.
@@ -84,7 +90,12 @@ async function buildProjectContext(): Promise<string> {
 let currentSessionId: string | null = null;
 
 async function ensureSession(projectId: string): Promise<string> {
-  if (currentSessionId) return currentSessionId;
+  if (currentSessionId) {
+    const session = await query<{ status: string }>('SELECT status FROM mcp_sessions WHERE id = $1', [currentSessionId]);
+    if (session[0] && session[0].status === 'active') {
+      return currentSessionId;
+    }
+  }
 
   const personaId = process.env.PERSONA_ID || null;
   const startNordId = process.env.START_NORD_ID || null;
@@ -118,27 +129,50 @@ server.tool('nords_get_dictionary',
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_get_dictionary', getToolContext(sid), {});
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
   }
 );
 
 server.tool('nords_get_horizon',
-  `Get Session Horizon — current position, persona-weighted neighbors, completion %, predicted path.${projectContext}`,
+  `Get lean horizon — current position, neighbors (no schemas), suggested path, completion %. Check context_hint.stale — if true, call nords_get_context next.${projectContext}`,
   {},
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_get_horizon', getToolContext(sid), {});
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
+  }
+);
+
+server.tool('nords_get_context',
+  `Get rich context: remaining variables with descriptions, connection schemas, planning queue, persona details. Call when context_hint.stale is true in the horizon response.${projectContext}`,
+  {},
+  async () => {
+    const sid = await ensureSession(process.env.PROJECT_ID!);
+    const result = await dispatchTool('nords_get_context', getToolContext(sid), {});
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
+  }
+);
+
+server.tool('nords_list_all',
+  'Lightweight directory of every nord in the project — returns only id, title, and type_name (no properties or connections). Use this to scan the full project before drilling in with nords_get_nord or nords_query_nords.',
+  {},
+  async () => {
+    const sid = await ensureSession(process.env.PROJECT_ID!);
+    const result = await dispatchTool('nords_list_all', getToolContext(sid), {});
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
   }
 );
 
 server.tool('nords_get_graph',
-  'Get the full project graph with all nords, connections, and types.',
-  {},
-  async () => {
+  'Get the project graph. For small projects (<50 nords) returns everything. For larger projects, returns a neighborhood subgraph scoped to max_depth hops from your current position. Includes nords, connections, and type definitions.',
+  {
+    max_depth: z.number().optional().describe('Max hops from current position (default 3, max 5). Only applies to projects with 50+ nords.'),
+    center_nord_id: z.string().optional().describe('Override center for the subgraph (defaults to your current position)'),
+  },
+  async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
-    const result = await dispatchTool('nords_get_graph', getToolContext(sid), {});
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+    const result = await dispatchTool('nords_get_graph', getToolContext(sid), args);
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
   }
 );
 
@@ -148,7 +182,10 @@ server.tool('nords_get_nord',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_get_nord', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { 
+      content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }],
+      isError: !result.success
+    };
   }
 );
 
@@ -169,7 +206,7 @@ server.tool('nords_query_nords',
       if (match) resolvedArgs.type_id = match.id;
     }
     const result = await dispatchTool('nords_query_nords', getToolContext(sid), resolvedArgs);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
   }
 );
 
@@ -179,7 +216,7 @@ server.tool('nords_get_connections',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_get_connections', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
   }
 );
 
@@ -189,7 +226,7 @@ server.tool('nords_get_session_state',
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_get_session_state', getToolContext(sid), {});
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
   }
 );
 
@@ -199,7 +236,7 @@ server.tool('nords_get_incomplete_nords',
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_get_incomplete_nords', getToolContext(sid), {});
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
   }
 );
 
@@ -209,7 +246,7 @@ server.tool('nords_get_goals',
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_get_goals', getToolContext(sid), {});
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
   }
 );
 
@@ -219,7 +256,7 @@ server.tool('nords_get_briefing',
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_get_briefing', getToolContext(sid), {});
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
   }
 );
 
@@ -229,11 +266,24 @@ server.tool('nords_get_analytics',
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_get_analytics', getToolContext(sid), {});
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data) }] };
   }
 );
 
+
 // ── Tier 2: Session Tools ──
+
+server.tool('nords_jump_to_nord',
+  `Jump directly to any nord by its ID. Use this to reposition yourself when you need to explore a specific node (e.g. from query results or the planning_queue). Returns updated horizon with neighbors.${projectContext}`,
+  {
+    nord_id: z.string().describe('UUID of the nord to jump to'),
+  },
+  async (args) => {
+    const sid = await ensureSession(process.env.PROJECT_ID!);
+    const result = await dispatchTool('nords_jump_to_nord', getToolContext(sid), args);
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
+  }
+);
 
 server.tool('nords_traverse_connection',
   `Move to a connected nord. Get connection_id from the horizon's neighbors[].relationship.connection_id. source_nord_id is your current position, target_nord_id is neighbors[].nord.id. Returns updated horizon.${projectContext}`,
@@ -247,7 +297,7 @@ server.tool('nords_traverse_connection',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_traverse_connection', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -260,7 +310,7 @@ server.tool('nords_update_session_nord',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_update_session_nord', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -275,7 +325,7 @@ server.tool('nords_update_session_variables',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_update_session_variables', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -290,7 +340,7 @@ server.tool('nords_visit_nord',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_visit_nord', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -300,7 +350,7 @@ server.tool('nords_switch_persona',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_switch_persona', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -316,7 +366,7 @@ server.tool('nords_create_nord',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_create_nord', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -330,7 +380,7 @@ server.tool('nords_update_nord',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_update_nord', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -340,7 +390,7 @@ server.tool('nords_delete_nord',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_delete_nord', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -357,7 +407,7 @@ server.tool('nords_create_connection',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_create_connection', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -373,7 +423,7 @@ server.tool('nords_update_connection',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_update_connection', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -383,7 +433,7 @@ server.tool('nords_delete_connection',
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
     const result = await dispatchTool('nords_delete_connection', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(result.data ?? result.error, null, 2) }] };
+    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
   }
 );
 
@@ -398,8 +448,8 @@ server.tool('nords_reset_session',
     }
     currentSessionId = null;
     const sid = await ensureSession(process.env.PROJECT_ID!);
-    const horizon = await mcpRepo.getSessionHorizon(sid);
-    return { content: [{ type: 'text' as const, text: JSON.stringify({ session_id: sid, horizon }, null, 2) }] };
+    const horizon = await mcpRepo.getSessionHorizonLean(sid);
+    return { content: [{ type: 'text' as const, text: toJson({ session_id: sid, horizon }) }] };
   }
 );
 

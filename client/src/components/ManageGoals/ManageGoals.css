@@ -60,8 +60,8 @@
 
 /* ── Sidebar ── */
 .manage-goals__sidebar {
-  width: 200px;
-  min-width: 200px;
+  width: 220px;
+  min-width: 220px;
   border-right: 1px solid var(--nords-color-border-subtle);
   display: flex;
   flex-direction: column;
@@ -71,7 +71,7 @@
 .manage-goals__list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: var(--nords-space-md) 0;
 }
 
 .manage-goals__list-item {
@@ -121,20 +121,20 @@
 .manage-goals__add-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 8px 12px;
-  padding: 8px 12px;
-  border: 1px dashed var(--nords-color-border);
-  border-radius: 8px;
-  background: transparent;
+  gap: var(--nords-space-xs);
+  padding: var(--nords-space-md) var(--nords-space-lg);
+  border: none;
+  background: none;
   color: var(--nords-color-text-tertiary);
-  font-size: 12px;
+  font-size: var(--nords-font-size-sm);
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  width: 100%;
+  border-top: 1px solid var(--nords-color-border-subtle);
+  transition: all 0.12s ease;
 }
 .manage-goals__add-btn:hover {
-  border-color: var(--nords-color-accent, #6366f1);
-  color: var(--nords-color-accent, #6366f1);
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
 }
 
 /* ── Editor ── */
@@ -161,25 +161,27 @@
 .manage-goals__editor-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: var(--nords-space-md);
+  padding-bottom: var(--nords-space-md);
+  border-bottom: 1px solid var(--nords-color-border-subtle);
 }
 
 .manage-goals__icon-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  border: 2px solid var(--nords-color-border);
-  background: var(--nords-color-bg-deep);
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: var(--nords-radius-md);
+  background: var(--nords-color-bg-deep);
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: all 0.12s ease;
   flex-shrink: 0;
 }
 .manage-goals__icon-btn:hover {
   border-color: var(--nords-color-accent, #6366f1);
+  box-shadow: var(--nords-shadow-glow);
 }
 
 .manage-goals__icon-picker-wrap {
@@ -207,29 +209,40 @@
 
 .manage-goals__editor-name {
   flex: 1;
-  font-size: 18px;
-  font-weight: 600;
-  background: transparent;
+  padding: var(--nords-space-sm) 0;
   border: none;
-  border-bottom: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  background: transparent;
   color: var(--nords-color-text-primary);
-  padding: 4px 0;
+  font-size: var(--nords-font-size-xl);
+  font-weight: var(--nords-font-weight-bold);
+  font-family: var(--nords-font-primary);
+  letter-spacing: var(--nords-letter-spacing-tight);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s ease;
+  min-width: 0;
   width: 100%;
 }
 .manage-goals__editor-name:focus {
   border-bottom-color: var(--nords-color-accent, #6366f1);
 }
+.manage-goals__editor-name::placeholder {
+  color: var(--nords-color-text-disabled);
+  font-weight: var(--nords-font-weight-medium);
+}
 
 .manage-goals__delete-btn {
-  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border: none;
+  border-radius: var(--nords-radius-md);
   background: transparent;
   color: var(--nords-color-text-tertiary);
   cursor: pointer;
-  border-radius: 6px;
-  transition: color 0.15s, background 0.15s;
+  transition: all 0.12s ease;
 }
 .manage-goals__delete-btn:hover {
   color: #ef4444;
@@ -245,27 +258,28 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--nords-font-size-xs);
+  font-weight: var(--nords-font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--nords-letter-spacing-wide);
   color: var(--nords-color-text-tertiary);
   margin-bottom: 6px;
 }
 
 .manage-goals__textarea {
   width: 100%;
-  font-size: 13px;
-  padding: 8px 10px;
-  border: 1px solid var(--nords-color-border);
-  border-radius: 8px;
-  background: var(--nords-color-bg-deep);
+  font-size: var(--nords-font-size-sm);
+  padding: var(--nords-space-sm) var(--nords-space-md);
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: var(--nords-radius-md);
+  background: var(--nords-color-bg-inset, var(--nords-color-bg-surface));
   color: var(--nords-color-text-primary);
   resize: vertical;
   outline: none;
-  font-family: inherit;
-  transition: border-color 0.15s;
+  font-family: var(--nords-font-primary);
+  transition: border-color 0.15s ease;
   box-sizing: border-box;
+  line-height: 1.5;
 }
 .manage-goals__textarea:focus {
   border-color: var(--nords-color-accent, #6366f1);

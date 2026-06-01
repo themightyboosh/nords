@@ -135,7 +135,7 @@ export async function createTestConnectionType(
   `, [
     projectId,
     name,
-    opts?.verb ?? null,
+    opts?.verb ? JSON.stringify({ forward: opts.verb, backward: opts.verb }) : '{}',
     opts?.defaultDirection ?? 'none',
     opts?.measurementMode ?? 'none',
   ]);
@@ -244,11 +244,24 @@ export async function setSessionCurrentNord(sessionId: string, nordId: string | 
 // ── Cleanup: Delete a test project (cascades to everything) ──
 export async function deleteTestProject(projectId: string): Promise<void> {
   // Delete entities that may not have ON DELETE CASCADE FK constraints
-  await query('DELETE FROM goal_properties WHERE goal_id IN (SELECT id FROM goals WHERE project_id = $1)', [projectId]);
-  await query('DELETE FROM goal_edges WHERE project_id = $1', [projectId]);
-  await query('DELETE FROM goals WHERE project_id = $1', [projectId]);
-  await query('DELETE FROM connections WHERE project_id = $1', [projectId]);
-  await query('DELETE FROM nords WHERE project_id = $1', [projectId]);
+  // Use DO $$ to handle tables that may not exist yet
+  await query(`DELETE FROM goal_properties WHERE goal_id IN (SELECT id FROM goals WHERE project_id = $1)`, [projectId]).catch(() => {});
+  await query('DELETE FROM goal_variable_bindings WHERE goal_id IN (SELECT id FROM goals WHERE project_id = $1)', [projectId]).catch(() => {});
+  await query('DELETE FROM mcp_traversals WHERE session_id IN (SELECT id FROM mcp_sessions WHERE project_id = $1)', [projectId]).catch(() => {});
+  await query('DELETE FROM mcp_session_variables WHERE session_id IN (SELECT id FROM mcp_sessions WHERE project_id = $1)', [projectId]).catch(() => {});
+  await query('DELETE FROM mcp_session_nords WHERE session_id IN (SELECT id FROM mcp_sessions WHERE project_id = $1)', [projectId]).catch(() => {});
+  await query('DELETE FROM mcp_sessions WHERE project_id = $1', [projectId]).catch(() => {});
+  await query('DELETE FROM persona_category_weights WHERE persona_id IN (SELECT id FROM personas WHERE project_id = $1)', [projectId]).catch(() => {});
+  await query('DELETE FROM persona_goal_weights WHERE persona_id IN (SELECT id FROM personas WHERE project_id = $1)', [projectId]).catch(() => {});
+  await query('DELETE FROM persona_mental_models WHERE persona_id IN (SELECT id FROM personas WHERE project_id = $1)', [projectId]).catch(() => {});
+  await query('DELETE FROM personas WHERE project_id = $1', [projectId]).catch(() => {});
+  await query('DELETE FROM goal_edges WHERE project_id = $1', [projectId]).catch(() => {});
+  await query('DELETE FROM goals WHERE project_id = $1', [projectId]).catch(() => {});
+  await query('DELETE FROM connections WHERE project_id = $1', [projectId]).catch(() => {});
+  await query('DELETE FROM nords WHERE project_id = $1', [projectId]).catch(() => {});
+  await query('DELETE FROM connection_types WHERE project_id = $1', [projectId]).catch(() => {});
+  await query('DELETE FROM nord_types WHERE project_id = $1', [projectId]).catch(() => {});
+  await query('DELETE FROM project_variables WHERE project_id = $1', [projectId]).catch(() => {});
   // Now safe to delete the project itself
   await query('DELETE FROM projects WHERE id = $1', [projectId]);
 }
@@ -256,6 +269,40 @@ export async function deleteTestProject(projectId: string): Promise<void> {
 // ── DB lifecycle ──
 export async function closePool(): Promise<void> {
   await pool.end();
+}
+
+/** Record a traversal (simulates the user navigating a connection) */
+export async function createTestTraversal(
+  sessionId: string,
+  connectionId: string,
+  sourceNordId: string,
+  targetNordId: string,
+  opts?: { direction?: string; traversalType?: string }
+): Promise<string> {
+  const row = await queryOne<{ id: string }>(`
+    INSERT INTO mcp_traversals (session_id, connection_id, source_nord_id, target_nord_id, direction, traversal_type, context)
+    VALUES ($1, $2, $3, $4, $5, $6, '{}')
+    RETURNING id
+  `, [
+    sessionId,
+    connectionId,
+    sourceNordId,
+    targetNordId,
+    opts?.direction ?? 'forward',
+    opts?.traversalType ?? 'advance',
+  ]);
+  return row!.id;
+}
+
+/** Set per-persona behavioral nudge settings */
+export async function setPersonaNudgeSettings(
+  personaId: string,
+  threshold: number,
+  window: number
+): Promise<void> {
+  await query(`
+    UPDATE personas SET behavioral_nudge_threshold = $2, behavioral_nudge_window = $3 WHERE id = $1
+  `, [personaId, threshold, window]);
 }
 
 export { query, queryOne };

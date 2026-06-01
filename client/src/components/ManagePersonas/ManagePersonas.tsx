@@ -338,6 +338,58 @@ function PersonaEditor({
         </p>
       </div>
 
+      {/* ── Behavioral Nudge Settings ── */}
+      <div className="manage-personas__section">
+        <label className="manage-personas__section-title">Behavioral Nudge</label>
+        <p className="manage-personas__temp-hint" style={{ marginBottom: 8 }}>
+          When a user consistently picks paths that another persona would have prioritized higher, the system suggests switching. These settings control sensitivity.
+        </p>
+        <div className="manage-personas__nudge-row">
+          <div className="manage-personas__nudge-field">
+            <label className="manage-personas__nudge-label">Window</label>
+            <input
+              type="number"
+              className="manage-personas__nudge-input"
+              min={2}
+              max={20}
+              value={persona.behavioral_nudge_window ?? 5}
+              onChange={e => onUpdate(persona.id, { behavioral_nudge_window: Math.max(2, Math.min(20, parseInt(e.target.value) || 5)) })}
+            />
+            <span className="manage-personas__nudge-hint">Recent traversals to analyze</span>
+          </div>
+          <div className="manage-personas__nudge-field">
+            <label className="manage-personas__nudge-label">Threshold</label>
+            <input
+              type="number"
+              className="manage-personas__nudge-input"
+              min={1}
+              max={20}
+              value={persona.behavioral_nudge_threshold ?? 3}
+              onChange={e => onUpdate(persona.id, { behavioral_nudge_threshold: Math.max(1, Math.min(20, parseInt(e.target.value) || 3)) })}
+            />
+            <span className="manage-personas__nudge-hint">Misaligned picks to trigger</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Exchange Style ── */}
+      <div className="manage-personas__section">
+        <label className="manage-personas__section-title">Exchange Style</label>
+        <p className="manage-personas__temp-hint" style={{ marginBottom: 8 }}>
+          Controls how assertively this persona drives data collection during conversations.
+        </p>
+        <select
+          className="manage-personas__nudge-input"
+          style={{ width: '100%', padding: '6px 8px' }}
+          value={persona.exchange_style ?? 'bi_directional'}
+          onChange={e => onUpdate(persona.id, { exchange_style: e.target.value as any })}
+        >
+          <option value="free_form">Free-form — follows user's lead, collects opportunistically</option>
+          <option value="bi_directional">Bi-directional — answers then pivots to collection</option>
+          <option value="interrogate">Interrogate — actively drives, probes for specifics</option>
+        </select>
+      </div>
+
       {/* ── Mental Models ── */}
       <div className="manage-personas__section">
         <label className="manage-personas__section-title">

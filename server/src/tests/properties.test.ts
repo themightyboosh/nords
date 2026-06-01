@@ -11,7 +11,7 @@
  *   6. Connection-level values — users can set property values on connections
  *   7. Required validation — server enforces required properties on save
  *   8. Hidden properties — card_row=null/0 hides from UI but flows to AI
- *   9. AI collectability — hidden + visible properties appear in horizon remaining_schema
+ *   9. Nord properties as read-only context — properties appear on horizon as metadata, not collection targets
  *  10. Goal completion via collections — variables bound to goals complete when filled
  *
  * Uses a SINGLE shared project to avoid Neon connection limits on serverless PG.
@@ -571,10 +571,10 @@ describe('Hidden Property Semantics (card_row)', () => {
 
 
 // ══════════════════════════════════════════════════════════
-// 8. AI Collectability — Properties in Horizon
+// 8. Nord Properties as Read-Only Context in Horizon
 // ══════════════════════════════════════════════════════════
 
-describe('AI Collectability — Horizon remaining_schema', () => {
+describe('Nord Properties — Read-Only Context in Horizon', () => {
   let sessionId: string;
   let nordId: string;
 
@@ -587,40 +587,33 @@ describe('AI Collectability — Horizon remaining_schema', () => {
       ],
     });
 
-    nordId = await createTestNord(projectId, typeId, 'Data Point');
+    nordId = await createTestNord(projectId, typeId, 'Data Point', {
+      properties: { VisibleField: 'hello', UserSetField: 'admin-set' },
+    });
     sessionId = await createTestSession(projectId, { startNordId: nordId });
   });
 
-  it('visible properties appear in horizon remaining_schema', async () => {
+  it('nord properties appear as read-only context on current_nord', async () => {
     const horizon = await mcpRepo.getSessionHorizon(sessionId);
-    const remaining = (horizon.current_nord!.remaining_schema as any[]) || [];
-    const names = remaining.map(r => r.name);
-
-    expect(names).toContain('VisibleField');
-    expect(names).toContain('HiddenField');  // hidden but still AI-collectible
-    expect(names).not.toContain('UserSetField');  // source:'user' excluded
+    expect(horizon.current_nord).toBeDefined();
+    expect(horizon.current_nord!.properties).toBeDefined();
+    expect(horizon.current_nord!.properties.VisibleField).toBe('hello');
+    expect(horizon.current_nord!.properties.UserSetField).toBe('admin-set');
   });
 
-  it('hidden properties are passed to AI (not filtered from schema)', async () => {
+  it('horizon current_nord does not have remaining_schema', async () => {
     const horizon = await mcpRepo.getSessionHorizon(sessionId);
-    const remaining = (horizon.current_nord!.remaining_schema as any[]) || [];
-    const hiddenField = remaining.find(r => r.name === 'HiddenField');
-
-    expect(hiddenField).toBeDefined();
-    expect(hiddenField.type).toBe('short_text');
+    expect((horizon.current_nord as any).remaining_schema).toBeUndefined();
   });
 
-  it('filling a property removes it from remaining_schema', async () => {
-    await nordsRepo.update(nordId, { properties: { VisibleField: 'filled' } });
-
+  it('properties are contextual metadata, not collection targets', async () => {
     const horizon = await mcpRepo.getSessionHorizon(sessionId);
-    const remaining = (horizon.current_nord!.remaining_schema as any[]) || [];
-    const names = remaining.map(r => r.name);
-
-    expect(names).not.toContain('VisibleField');
-    expect(names).toContain('HiddenField');
+    // Properties exist as read-only context — they inform the AI but are NOT collected via session
+    expect(horizon.current_nord!.type_name).toBe('Collectable');
+    expect(typeof horizon.current_nord!.properties).toBe('object');
   });
 });
+
 
 
 // ══════════════════════════════════════════════════════════
@@ -785,15 +778,12 @@ describe('E2E: Property Flow — Schema → Values → AI → Goal', () => {
     await goalsRepo.initializeSessionGoals(sessionId, projectId, 'guided');
   });
 
-  it('horizon shows remaining schema including hidden properties', async () => {
+  it('horizon shows nord properties as read-only context', async () => {
     const horizon = await mcpRepo.getSessionHorizon(sessionId);
-    const remaining = (horizon.current_nord!.remaining_schema as any[]) || [];
-    const names = remaining.map(r => r.name);
-
-    expect(names).toContain('Name');
-    expect(names).toContain('Email');
-    expect(names).toContain('Phone');
-    expect(names).not.toContain('InternalScore');  // already filled
+    // Properties are design-time metadata — shown as context, not collection targets
+    expect(horizon.current_nord!.properties).toBeDefined();
+    expect(horizon.current_nord!.properties.InternalScore).toBe(85);  // pre-filled value visible
+    expect((horizon.current_nord as any).remaining_schema).toBeUndefined();
   });
 
   it('horizon shows unfilled collection variables', async () => {

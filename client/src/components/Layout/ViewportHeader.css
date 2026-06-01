@@ -65,7 +65,7 @@
 /* Project title — all caps, subtle, next to logo */
 .nords-viewport-header__project-title {
   font-family: var(--nords-font-primary);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: var(--nords-font-weight-semibold);
   color: #ffffff;
   letter-spacing: 0.08em;

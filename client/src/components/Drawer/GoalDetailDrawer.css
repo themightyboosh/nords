@@ -6,39 +6,36 @@
   gap: 0;
   height: 100%;
   overflow-y: auto;
-  background: var(--nords-color-bg-surface, #1a1d24);
-  border-radius: 12px;
 }
 
-/* ── Header ── */
+/* ── Header ── uses .nords-drawer-header from DetailDrawer.css */
 .goal-detail-drawer__header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 18px 20px 14px;
+  justify-content: space-between;
+  padding: 16px 20px 0;
+  flex-shrink: 0;
 }
 
 .goal-detail-drawer__icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 2px solid #6366f1;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--nords-color-bg-deep);
-  flex-shrink: 0;
 }
 
 .goal-detail-drawer__identity {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .goal-detail-drawer__name {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
   color: var(--nords-color-text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -55,7 +52,7 @@
 
 /* ── Content ── */
 .goal-detail-drawer__content {
-  padding: 0 20px 16px;
+  padding: 16px 20px 20px;
   display: flex;
   flex-direction: column;
   gap: 18px;

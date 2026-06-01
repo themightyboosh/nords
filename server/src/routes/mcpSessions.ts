@@ -312,7 +312,7 @@ mcpSessionsRouter.get('/projects/:id/personas', async (req: Request, res: Respon
       background: p.background,
       primary_motivation: p.primary_motivation,
       voice_and_tone: p.voice_and_tone,
-      temperature: p.temperature,
+      exchange_style: p.exchange_style,
       guardrails: p.guardrails,
       category_weights: (p.category_weights || []).map(w => ({
         connection_type_id: w.connection_type_id,

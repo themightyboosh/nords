@@ -33,6 +33,7 @@ import { useVariables } from './hooks/useVariables';
 import { useCollectionGroups } from './hooks/useCollectionGroups';
 import { ShareChat } from './pages/ShareChat/ShareChat';
 import { TestRunner } from './components/TestRunner/TestRunner';
+import { UserProfile } from './components/UserProfile/UserProfile';
 
 /**
  * Safe ReactFlow access — returns null when ReactFlow isn't mounted (e.g. board view).
@@ -105,6 +106,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [variablesOpen, setVariablesOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [testRunnerOpen, setTestRunnerOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
@@ -264,10 +266,12 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onOpenVariables={() => setVariablesOpen(true)}
         onOpenGoals={() => setGoalsOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenProfile={() => setProfileOpen(true)}
         onOpenPreview={() => setPreviewOpen(p => !p)}
         onOpenTestRunner={() => setTestRunnerOpen(true)}
         projectName={projectName}
       />
+      <UserProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
       {projectId && (
         <ProjectSettings
           isOpen={settingsOpen}

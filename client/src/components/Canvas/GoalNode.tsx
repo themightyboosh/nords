@@ -39,7 +39,7 @@ export const GoalNode = memo(({ id, data, selected, isConnectable }: NodeProps<G
   const GoalIcon = resolveIcon(data.icon);
   const accentColor = data.accentColor || '#6366f1';
 
-  // Build properties from collection bindings
+  // Build properties from property bindings
   const properties: { key: string; value: string; color?: string }[] = [];
 
   // Gate/fork badges
@@ -50,7 +50,7 @@ export const GoalNode = memo(({ id, data, selected, isConnectable }: NodeProps<G
     properties.push({ key: 'Fork', value: '◇ Exclusive', color: '#f59e0b' });
   }
 
-  // Collection bindings
+  // Property bindings
   const bindings = (data.collectionItems || []).slice(0, 3);
   for (const name of bindings) {
     properties.push({ key: 'Collects', value: name });

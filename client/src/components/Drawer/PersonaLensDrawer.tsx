@@ -10,8 +10,10 @@
  */
 
 import React, { useMemo, useCallback, useRef } from 'react';
+import { X, User } from 'lucide-react';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { PersonaAvatar } from '../shared/PersonaAvatar';
+import { resolveIcon } from '../../utils/iconRegistry';
 import type { Persona } from '../../hooks/usePersonas';
 import './PersonaLensDrawer.css';
 
@@ -19,6 +21,7 @@ interface ConnectionType {
   id: string;
   name: string;
   accent_color?: string | null;
+  icon?: string | null;
 }
 
 interface PersonaLensDrawerProps {
@@ -51,19 +54,28 @@ export function PersonaLensDrawer({
   return (
     <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
       <div className="persona-lens-drawer">
-        {/* ── Header: Avatar + Name ── */}
+        {/* ── Header: Eyebrow + Close ── */}
         <div className="persona-lens-drawer__header">
+          <div style={{ flex: 1 }}>
+            <div className="nords-drawer-type-eyebrow" style={{ color: persona.accent_color || '#a78bfa' }}>
+              Persona
+            </div>
+            <div className="persona-lens-drawer__identity">
+              <User size={20} className="nords-drawer-title-icon" style={{ color: persona.accent_color || '#a78bfa' }} />
+              <h2 className="persona-lens-drawer__name">{persona.name}</h2>
+            </div>
+          </div>
+          <button className="nords-close-btn" onClick={onClose} aria-label="Close"><X size={18} strokeWidth={2} /></button>
+        </div>
+
+        {/* ── Avatar (larger, standalone) ── */}
+        <div style={{ padding: '12px 20px 0', display: 'flex', justifyContent: 'center' }}>
           <PersonaAvatar
             seed={persona.avatar_seed || 'default'}
             size={80}
             className="persona-lens-drawer__avatar"
             bgColor={persona.accent_color}
           />
-          <div className="persona-lens-drawer__identity">
-            <h2 className="persona-lens-drawer__name">{persona.name}</h2>
-            <span className="persona-lens-drawer__eyebrow">Persona Lens</span>
-          </div>
-          <button className="nords-close-btn" onClick={onClose} aria-label="Close">×</button>
         </div>
 
         {/* ── Read-only fields ── */}
@@ -103,6 +115,7 @@ export function PersonaLensDrawer({
                     connectionTypeId={ct.id}
                     name={ct.name}
                     color={ct.accent_color || '#a78bfa'}
+                    icon={ct.icon || null}
                     value={weight}
                     onChange={onWeightChange}
                     onCommit={onWeightCommit}
@@ -128,12 +141,13 @@ interface WeightSliderProps {
   connectionTypeId: string;
   name: string;
   color: string;
+  icon: string | null;
   value: number;
   onChange: (connectionTypeId: string, weight: number) => void;
   onCommit: (connectionTypeId: string, weight: number) => void;
 }
 
-function WeightSlider({ connectionTypeId, name, color, value, onChange, onCommit }: WeightSliderProps) {
+function WeightSlider({ connectionTypeId, name, color, icon, value, onChange, onCommit }: WeightSliderProps) {
   const localRef = useRef(value);
   localRef.current = value;
 
@@ -154,7 +168,12 @@ function WeightSlider({ connectionTypeId, name, color, value, onChange, onCommit
   return (
     <div className="persona-weight-slider">
       <div className="persona-weight-slider__header">
-        <span className="persona-weight-slider__swatch" style={{ backgroundColor: color }} />
+        {(() => {
+          const SliderIcon = icon ? resolveIcon(icon) : null;
+          return SliderIcon
+            ? <SliderIcon size={14} style={{ color, flexShrink: 0 }} />
+            : <span className="persona-weight-slider__swatch" style={{ backgroundColor: color }} />;
+        })()}
         <span className="persona-weight-slider__name">{name}</span>
         <span className={`persona-weight-slider__value ${isNegative ? 'is-negative' : ''} ${isPositive ? 'is-positive' : ''}`}>
           {value > 0 ? `+${value}` : value}

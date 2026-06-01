@@ -56,6 +56,7 @@ export interface Project {
 
 export interface PropertySchema {
   name: string;
+  description?: string;
   type: string;
   required?: boolean;
   defaultValue?: string | number | boolean | null;
@@ -99,6 +100,8 @@ export interface McpSession {
   current_nord_id: string | null;
   user_id: string | null;
   token_id: string | null;
+  context_version: number;
+  last_context_served: number;
   started_at: Date;
   ended_at: Date | null;
   status: 'active' | 'completed' | 'abandoned';

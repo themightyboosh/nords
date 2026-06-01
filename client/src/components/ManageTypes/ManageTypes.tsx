@@ -229,7 +229,7 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
       alert('Maximum of 6 properties per type. Remove an existing property to add a new one.');
       return;
     }
-    const newProp: PropertySchema = { name: 'New Property', type: 'short_text' };
+    const newProp: PropertySchema = { name: 'New Property', description: '', type: 'short_text' };
     handleUpdateField('properties_schema', [...currentSchema, newProp]);
   }, [selected, handleUpdateField]);
 
@@ -678,6 +678,20 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
                     const propType = normalizePropertyType(prop.type);
                     return (
                       <>
+                        <div className="manage-types__prop-detail-row">
+                          <div className="manage-types__prop-detail-field" style={{ flex: '1 1 100%' }}>
+                            <span className="manage-types__prop-detail-label">
+                              Description<span className="required-dot">*</span>
+                            </span>
+                            <input
+                              type="text"
+                              className={`manage-types__prop-default-input ${!prop.description ? 'manage-types__prop-default-input--empty' : ''}`}
+                              value={prop.description || ''}
+                              onChange={(e) => updateProperty(idx, { description: e.target.value })}
+                              placeholder="What does this property capture? (shown to AI)"
+                            />
+                          </div>
+                        </div>
                         <div className="manage-types__prop-detail-row">
                           <div className="manage-types__prop-detail-field">
                             <span className="manage-types__prop-detail-label">Default</span>

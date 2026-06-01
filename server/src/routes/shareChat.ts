@@ -35,7 +35,8 @@ const SESSION_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 async function buildSystemPrompt(
   personaId: string | null
 ): Promise<{ prompt: string; temperature: number }> {
-  let temperature = 0.7;
+  // Fixed temperature — preview chat is vanilla Gemini to keep MCP tests pure
+  const temperature = 0.7;
 
   const prompt = `You are an AI assistant connected to a knowledge graph via MCP tools.
 
@@ -43,14 +44,6 @@ Call nords_get_briefing as your first action to receive your full orientation: t
 
 The briefing contains all the instructions you need. Follow the protocol it provides.
 `;
-
-  if (personaId) {
-    const persona = await queryOne<{ temperature: number }>(
-      'SELECT temperature FROM personas WHERE id = $1 AND deleted_at IS NULL',
-      [personaId]
-    );
-    if (persona) temperature = persona.temperature ?? 0.7;
-  }
 
   return { prompt, temperature };
 }
@@ -215,7 +208,7 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
     const genAI = new GoogleGenAI({ apiKey });
 
     const project = await projectsRepo.findById(projectId);
-    const mcpMutable = project?.mcp_mutable ?? false;
+    const mcpMutable = false; // Graph mutation by AI is on the long-term roadmap
 
     // Fetch project dictionary for dynamic tool descriptions
     const dictionary = await mcpRepo.getProjectDictionary(projectId);

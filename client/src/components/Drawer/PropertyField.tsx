@@ -27,6 +27,8 @@ export interface PropertyFieldProps {
   color?: string;
   required?: boolean;
   config?: Record<string, unknown>;
+  /** Schema-defined default value — shown as placeholder when value is empty */
+  defaultValue?: string | number | boolean | null;
   /** Full properties bag — needed for computed field evaluation */
   allProperties?: Record<string, unknown>;
   onChange: (value: unknown) => void;
@@ -40,6 +42,7 @@ export const PropertyField: React.FC<PropertyFieldProps> = ({
   color,
   required,
   config,
+  defaultValue,
   allProperties,
   onChange,
 }) => {
@@ -54,25 +57,27 @@ export const PropertyField: React.FC<PropertyFieldProps> = ({
   };
   const missing = !!required && isEmpty(value);
 
+  const placeholderStr = defaultValue != null ? String(defaultValue) : undefined;
+
   switch (type) {
     // Text types
     case 'string':
     case 'short_text':
     case 'email':
     case 'phone':
-      return <StringField name={label} value={value as string} onChange={onChange} missing={missing} />;
+      return <StringField name={label} value={value as string} onChange={onChange} missing={missing} placeholder={placeholderStr} />;
     case 'long_text':
     case 'markdown':
-      return <MarkdownField name={label} value={value as string} onChange={onChange} missing={missing} />;
+      return <MarkdownField name={label} value={value as string} onChange={onChange} missing={missing} placeholder={placeholderStr} />;
     // Numeric types
     case 'number':
     case 'currency':
     case 'percentage':
-      return <NumberField name={label} value={value as number} onChange={onChange} missing={missing} />;
+      return <NumberField name={label} value={value as number} onChange={onChange} missing={missing} placeholder={placeholderStr} />;
     // Selection types
     case 'select':
     case 'multi_select':
-      return <SelectField name={label} value={value as string} options={options} color={color} onChange={onChange} missing={missing} />;
+      return <SelectField name={label} value={value as string} options={options} color={color} onChange={onChange} missing={missing} placeholder={placeholderStr} />;
     // Boolean
     case 'boolean':
       return <SelectField name={label} value={value as string} options={['Yes', 'No']} color={color} onChange={onChange} missing={missing} />;
@@ -83,7 +88,7 @@ export const PropertyField: React.FC<PropertyFieldProps> = ({
       return <DateRangeField name={label} value={value} onChange={onChange} missing={missing} />;
     // Rich types
     case 'url':
-      return <UrlField name={label} value={value as string} onChange={onChange} missing={missing} />;
+      return <UrlField name={label} value={value as string} onChange={onChange} missing={missing} placeholder={placeholderStr} />;
     case 'spectrum_1d':
       return <SpectrumField name={label} value={value as number} color={color} />;
     case 'tags':
@@ -91,13 +96,13 @@ export const PropertyField: React.FC<PropertyFieldProps> = ({
     case 'computed':
       return <ComputedField name={name} formula={config?.formula as string} properties={allProperties || {}} config={config} />;
     default:
-      return <StringField name={label} value={String(value ?? '')} onChange={onChange} missing={missing} />;
+      return <StringField name={label} value={String(value ?? '')} onChange={onChange} missing={missing} placeholder={placeholderStr} />;
   }
 };
 
 // ── Individual Field Components ──
 
-function StringField({ name, value, onChange, missing }: { name: string; value: string; onChange: (v: string) => void; missing?: boolean }) {
+function StringField({ name, value, onChange, missing, placeholder }: { name: string; value: string; onChange: (v: string) => void; missing?: boolean; placeholder?: string }) {
   const debouncedChange = useDebouncedCallback(onChange, 400);
   return (
     <div className={`nords-pf${missing ? ' nords-pf--missing' : ''}`}>
@@ -106,14 +111,14 @@ function StringField({ name, value, onChange, missing }: { name: string; value: 
         className="nords-pf__input"
         type="text"
         defaultValue={value || ''}
-        placeholder={`Enter ${name}…`}
+        placeholder={placeholder || `Enter ${name}…`}
         onChange={(e) => debouncedChange(e.target.value)}
       />
     </div>
   );
 }
 
-function NumberField({ name, value, onChange, missing }: { name: string; value: number; onChange: (v: number) => void; missing?: boolean }) {
+function NumberField({ name, value, onChange, missing, placeholder }: { name: string; value: number; onChange: (v: number) => void; missing?: boolean; placeholder?: string }) {
   const debouncedChange = useDebouncedCallback((v: string) => onChange(parseFloat(v) || 0), 400);
   return (
     <div className={`nords-pf${missing ? ' nords-pf--missing' : ''}`}>
@@ -122,15 +127,15 @@ function NumberField({ name, value, onChange, missing }: { name: string; value: 
         className="nords-pf__input nords-pf__input--number"
         type="number"
         defaultValue={value ?? ''}
-        placeholder="0"
+        placeholder={placeholder || '0'}
         onChange={(e) => debouncedChange(e.target.value)}
       />
     </div>
   );
 }
 
-function SelectField({ name, value, options, color, onChange, missing }: {
-  name: string; value: string; options: string[]; color?: string; onChange: (v: string) => void; missing?: boolean;
+function SelectField({ name, value, options, color, onChange, missing, placeholder }: {
+  name: string; value: string; options: string[]; color?: string; onChange: (v: string) => void; missing?: boolean; placeholder?: string;
 }) {
   return (
     <div className={`nords-pf${missing ? ' nords-pf--missing' : ''}`}>
@@ -141,7 +146,7 @@ function SelectField({ name, value, options, color, onChange, missing }: {
         onChange={(e) => onChange(e.target.value)}
         style={color ? { borderColor: color } : undefined}
       >
-        <option value="">— Select —</option>
+        <option value="">{placeholder ? `Default: ${placeholder}` : '— Select —'}</option>
         {options.map(opt => (
           <option key={opt} value={opt}>{opt}</option>
         ))}
@@ -198,7 +203,7 @@ function DateRangeField({ name, value, onChange, missing }: { name: string; valu
   );
 }
 
-function MarkdownField({ name, value, onChange, missing }: { name: string; value: string; onChange: (v: string) => void; missing?: boolean }) {
+function MarkdownField({ name, value, onChange, missing, placeholder }: { name: string; value: string; onChange: (v: string) => void; missing?: boolean; placeholder?: string }) {
   const [editing, setEditing] = useState(!value);
   const debouncedChange = useDebouncedCallback(onChange, 500);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -227,7 +232,7 @@ function MarkdownField({ name, value, onChange, missing }: { name: string; value
           ref={textareaRef}
           className="nords-pf__textarea"
           defaultValue={value || ''}
-          placeholder={`Write markdown…`}
+          placeholder={placeholder || `Write markdown…`}
           rows={8}
           onChange={handleInput}
         />
@@ -241,7 +246,7 @@ function MarkdownField({ name, value, onChange, missing }: { name: string; value
   );
 }
 
-function UrlField({ name, value, onChange, missing }: { name: string; value: string; onChange: (v: string) => void; missing?: boolean }) {
+function UrlField({ name, value, onChange, missing, placeholder }: { name: string; value: string; onChange: (v: string) => void; missing?: boolean; placeholder?: string }) {
   const debouncedChange = useDebouncedCallback(onChange, 400);
   return (
     <div className={`nords-pf nords-pf--url${missing ? ' nords-pf--missing' : ''}`}>
@@ -251,7 +256,7 @@ function UrlField({ name, value, onChange, missing }: { name: string; value: str
           className="nords-pf__input"
           type="url"
           defaultValue={value || ''}
-          placeholder="https://…"
+          placeholder={placeholder || 'https://…'}
           onChange={(e) => debouncedChange(e.target.value)}
         />
         {value && (

@@ -41,7 +41,8 @@ async function buildSystemPrompt(
   _sessionId: string,
   personaId: string | null
 ): Promise<{ prompt: string; temperature: number }> {
-  let temperature = 0.7; // default
+  // Fixed temperature — preview chat is vanilla Gemini to keep MCP tests pure
+  const temperature = 0.7;
 
   const prompt = `You are an AI assistant connected to a knowledge graph via MCP tools.
 
@@ -49,17 +50,6 @@ Call nords_get_briefing as your first action to receive your full orientation: t
 
 The briefing contains all the instructions you need. Follow the protocol it provides.
 `;
-
-  // Persona temperature — the only Gemini-specific parameter we need from the persona
-  if (personaId) {
-    const persona = await queryOne<{ temperature: number }>(
-      'SELECT temperature FROM personas WHERE id = $1 AND deleted_at IS NULL',
-      [personaId]
-    );
-    if (persona) {
-      temperature = persona.temperature ?? 0.7;
-    }
-  }
 
   return { prompt, temperature };
 }
@@ -221,8 +211,11 @@ Set GEMINI_API_KEY in server/.env or configure GOOGLE_CLOUD_PROJECT for Vertex A
     }
 
     // Fetch project dictionary for dynamic tool descriptions (uses 5-min cache)
+    // NEVER expose graph-mutating tools (create/update/delete nord/connection) in chat.
+    // The session layer (update_session_nord, update_session_variables) handles all runtime data collection.
+    // Graph mutations are design-time operations handled by the canvas UI.
     const dictionary = await mcpRepo.getProjectDictionary(projectId);
-    const toolDeclarations = buildToolDeclarations(mcpMutable, dictionary);
+    const toolDeclarations = buildToolDeclarations(false /* never mutable at runtime */, dictionary);
 
     // 7. Build conversation history
     const messageHistory = await mcpMessagesRepo.findBySession(sessionId);

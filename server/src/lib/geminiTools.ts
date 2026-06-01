@@ -1,5 +1,5 @@
 /**
- * geminiTools.ts — Gemini function declarations for all 18 MCP tools.
+ * geminiTools.ts — Gemini function declarations for MCP tools.
  *
  * These are the JSON schemas that tell Gemini what tools are available
  * and what parameters each accepts. Gemini uses these to decide which
@@ -58,18 +58,30 @@ export function buildToolDeclarations(
   const readOnly: FunctionDeclaration[] = [
     {
       name: 'nords_get_dictionary',
-      description: `Get the project dictionary — the full ontology of nord types (with descriptions and property schemas), connection types (with verbs, measurement modes, stage labels), and personas (with backgrounds, motivations, mental models, and category weights).${ctx ? ' The horizon already gives you inline schemas, so you may not need this unless you want the full ontology.' : ' Call this FIRST at the start of every session to understand the vocabulary before making decisions.'}`,
+      description: `Get the project dictionary — the full ontology and mission definition. Returns nord types (with property schemas), connection types (with verbs, stages, measurement modes), personas (with exchange styles, guardrails, mental models, category weights), goals (with variable bindings, prerequisite chains, relevant nords/types), goal edges (DAG sequencing), and collection variables (typed data points the AI needs to gather).${ctx ? ' The horizon already gives you inline context, so you may not need this unless you want the full ontology.' : ' Call this FIRST at the start of every session to understand the vocabulary before making decisions.'}`,
       parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
     },
     {
       name: 'nords_get_horizon',
-      description: `Get the Session Horizon — your full situational awareness. Returns current position (with session_properties and remaining_schema), persona-weighted neighbors, overall completion %, traversal breadcrumbs, suggested next nord, predicted 2-hop path, and planning_queue.${ctx}`,
+      description: `Get the Session Horizon — your full situational awareness. Returns current position (with type and properties for context), persona-weighted neighbors, remaining collection variables, overall completion %, traversal breadcrumbs, suggested next nord, predicted 2-hop path, and planning_queue.${ctx}`,
+      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
+    },
+    {
+      name: 'nords_list_all',
+      description: 'Lightweight directory of every nord — returns only id, title, and type_name (no properties or connections). Use to scan the full project before drilling in.',
       parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
     },
     {
       name: 'nords_get_graph',
-      description: 'Get the full project graph including all nords, connections, and their types. Use this for broad exploration when the horizon is insufficient.',
-      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
+      description: 'Get the project graph. For small projects returns everything. For larger projects, returns a neighborhood subgraph scoped to max_depth hops from your current position. Use for broad exploration when the horizon is insufficient.',
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          max_depth: { type: 'NUMBER' as Type, description: 'Max hops from current position (default 3, max 5)' },
+          center_nord_id: { type: 'STRING' as Type, description: 'Override center for the subgraph (defaults to current position)' },
+        },
+        required: [],
+      },
     },
     {
       name: 'nords_get_nord',
@@ -82,11 +94,12 @@ export function buildToolDeclarations(
     },
     {
       name: 'nords_query_nords',
-      description: 'Search nords by type and/or title substring.',
+      description: 'Search nords by type name and/or title substring. Use type_name (e.g. "Requirement", "Risk") instead of type_id to avoid UUID errors.',
       parameters: {
         type: 'OBJECT' as Type,
         properties: {
-          type_id: { type: 'STRING' as Type, description: 'Filter by nord type UUID' },
+          type_name: { type: 'STRING' as Type, description: 'Filter by nord type name (case-insensitive, e.g. "Requirement", "Risk"). Preferred over type_id.' },
+          type_id: { type: 'STRING' as Type, description: 'Filter by nord type UUID (use type_name instead when possible)' },
           title: { type: 'STRING' as Type, description: 'Search by title substring (case-insensitive)' },
         },
         required: [],
@@ -103,22 +116,17 @@ export function buildToolDeclarations(
     },
     {
       name: 'nords_get_session_state',
-      description: 'Get full session state: current position, all session nords with completion, and traversal history.',
-      parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
-    },
-    {
-      name: 'nords_get_incomplete_nords',
-      description: 'Get all nords in the session that still have unfilled required properties.',
+      description: 'Get full session state: current position, collected variable values, and traversal history.',
       parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
     },
     {
       name: 'nords_get_goals',
-      description: 'Get session goals with progress. Returns each goal\'s status (pending/active/complete/cancelled), bound properties with collected values, exclusion groups, and prerequisite chains. Goal events are also returned automatically after every nords_update_session_nord call.',
+      description: 'Get session goal progress at runtime. Returns each goal\'s current status (pending/active/complete/cancelled) and its bound collection variables with collected/uncollected state and values. Use this to check live progress — the dictionary has the design-time goal definitions, this has the session-level state. Goal events are also returned automatically after every nords_update_session_variables call.',
       parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
     },
     {
       name: 'nords_get_briefing',
-      description: `Cold-start composite tool — returns dictionary + horizon + goals in a single call. Use this at the very beginning of a session instead of calling nords_get_dictionary and nords_get_horizon separately. Saves 2 round-trips.${ctx}`,
+      description: `Cold-start composite tool — returns dictionary (full ontology including goals, collection variables, and goal sequencing) + horizon (current position, neighbors, remaining variables) + session goal progress + protocol in a single call. Use this at the very beginning of a session. Saves 3+ round-trips.${ctx}`,
       parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
     },
     {
@@ -130,8 +138,19 @@ export function buildToolDeclarations(
 
   const session: FunctionDeclaration[] = [
     {
+      name: 'nords_jump_to_nord',
+      description: `Jump directly to any nord by its ID. Use this to reposition yourself when you need to explore a specific node (e.g. from query results or the planning_queue). This updates your position and returns the updated horizon with neighbors. Use nords_traverse_connection for connected moves and this for direct jumps.${ctx}`,
+      parameters: {
+        type: 'OBJECT' as Type,
+        properties: {
+          nord_id: { type: 'STRING' as Type, description: 'UUID of the nord to jump to' },
+        },
+        required: ['nord_id'],
+      },
+    },
+    {
       name: 'nords_traverse_connection',
-      description: `Move to a connected nord by traversing a connection. Get the connection_id from neighbors[].relationship.connection_id in the horizon. The source_nord_id is your current position (horizon.current_nord.id) and target_nord_id is neighbors[].nord.id. direction should match neighbors[].relationship.direction. This updates your position and automatically returns the updated horizon.${ctx}`,
+      description: `Move to a connected neighbor by traversing a connection. Get the connection_id from neighbors[].relationship.connection_id in the horizon. The source_nord_id is your current position (horizon.current_nord.id) and target_nord_id is neighbors[].nord.id. direction should match neighbors[].relationship.direction. This updates your position and automatically returns the updated horizon. Prefer this over nords_jump_to_nord when the target is a neighbor — traversal records the relationship context.${ctx}`,
       parameters: {
         type: 'OBJECT' as Type,
         properties: {
@@ -146,20 +165,8 @@ export function buildToolDeclarations(
       },
     },
     {
-      name: 'nords_update_session_nord',
-      description: 'Save collected property values to a session nord. Validates properties against the nord type schema, computes completion automatically, and returns the updated horizon. Use this when you have gathered information from the user. You can save to any nord, not just the current one.',
-      parameters: {
-        type: 'OBJECT' as Type,
-        properties: {
-          nord_id: { type: 'STRING' as Type, description: 'UUID of the nord to update' },
-          properties: { type: 'OBJECT' as Type, description: 'Key-value pairs of collected properties', properties: {} },
-        },
-        required: ['nord_id', 'properties'],
-      },
-    },
-    {
       name: 'nords_update_session_variables',
-      description: 'Save collected project variable values. Variables are project-level data points (not tied to a specific nord). Pass the variable_id from remaining_variables in the horizon. Automatically evaluates goal completion and returns goal events + updated horizon. Use this whenever you learn a piece of information that maps to a project variable.',
+      description: 'Save collected variable values. Collection variables are typed data points (string, select, boolean, number) bound to goals — collecting all required variables for a goal drives goal completion. Each variable may have enum options constraining valid values. Find uncollected variables in remaining_variables on the horizon — each entry includes variable_id, name, type, description, and options. Call this immediately when the user provides information matching a variable description. This is the ONLY tool for saving data collected from the user.',
       parameters: {
         type: 'OBJECT' as Type,
         properties: {
@@ -169,8 +176,8 @@ export function buildToolDeclarations(
             items: {
               type: 'OBJECT' as Type,
               properties: {
-                variable_id: { type: 'STRING' as Type, description: 'UUID of the project variable' },
-                value: { type: 'STRING' as Type, description: 'The collected value (will be JSON-parsed if object)' },
+                variable_id: { type: 'STRING' as Type, description: 'UUID of the collection variable (from remaining_variables in the horizon)' },
+                value: { type: 'STRING' as Type, description: 'The collected value. For select types, must match one of the variable\'s options.' },
               },
               required: ['variable_id', 'value'],
             },

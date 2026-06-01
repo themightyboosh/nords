@@ -76,7 +76,7 @@ testRunnerRouter.post('/projects/:id/test-scenarios', async (req: Request, res: 
     const { name, description, user_objective, user_profile, user_profile_custom,
       user_context, agent_model, user_model, max_rounds,
       stop_on_completion_pct, stop_on_goal_id, stop_on_session_end,
-      min_completion_pct } = req.body;
+      min_completion_pct, persona_id } = req.body;
 
     if (!name || !user_objective) {
       return res.status(400).json({ error: 'name and user_objective are required' });
@@ -86,8 +86,8 @@ testRunnerRouter.post('/projects/:id/test-scenarios', async (req: Request, res: 
       INSERT INTO test_scenarios (
         project_id, name, description, user_objective, user_profile, user_profile_custom,
         user_context, agent_model, user_model, max_rounds,
-        stop_on_completion_pct, stop_on_goal_id, stop_on_session_end, min_completion_pct
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+        stop_on_completion_pct, stop_on_goal_id, stop_on_session_end, min_completion_pct, persona_id
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
       RETURNING *
     `, [
       req.params.id as string, name, description || null, user_objective,
@@ -96,7 +96,7 @@ testRunnerRouter.post('/projects/:id/test-scenarios', async (req: Request, res: 
       agent_model || 'gemini-2.5-flash', user_model || 'gemini-2.5-flash-lite',
       max_rounds || 20, stop_on_completion_pct || null,
       stop_on_goal_id || null, stop_on_session_end ?? true,
-      min_completion_pct ?? 80,
+      min_completion_pct ?? 80, persona_id || null,
     ]);
 
     res.status(201).json(scenario);
@@ -116,7 +116,7 @@ testRunnerRouter.put('/test-scenarios/:id', async (req: Request, res: Response) 
       'name', 'description', 'user_objective', 'user_profile', 'user_profile_custom',
       'user_context', 'agent_model', 'user_model', 'max_rounds',
       'stop_on_completion_pct', 'stop_on_goal_id', 'stop_on_session_end',
-      'min_completion_pct',
+      'min_completion_pct', 'persona_id',
     ];
 
     const setClauses: string[] = ['updated_at = NOW()'];
@@ -367,9 +367,13 @@ testRunnerRouter.get('/test-runs/:id/export', async (req: Request, res: Response
         round: r.round,
         user: r.user_msg,
         agent: r.agent_msg,
+        tool_calls: (r.tool_calls || []).map((tc: any) => ({
+          name: tc.name,
+          arguments: tc.arguments,
+          ...(verbose ? { result: tc.result } : {}),
+        })),
       };
       if (verbose) {
-        base.tool_calls = r.tool_calls;
         base.horizon_snapshot = r.horizon_snapshot;
         base.tokens = { in: r.tokens_in, out: r.tokens_out };
         base.latency_ms = r.latency_ms;
@@ -433,7 +437,7 @@ testRunnerRouter.delete('/test-runs/:id', async (req: Request, res: Response) =>
 
 /**
  * GET /api/test-runs/:id/report/conversation
- * Generate a clean Markdown conversation report.
+ * Generate a Markdown conversation report with variables + goals.
  */
 testRunnerRouter.get('/test-runs/:id/report/conversation', async (req: Request, res: Response) => {
   try {
@@ -451,6 +455,33 @@ testRunnerRouter.get('/test-runs/:id/report/conversation', async (req: Request, 
     const transcript = typeof run.transcript === 'string'
       ? JSON.parse(run.transcript) : (run.transcript || []);
 
+    // ── Fetch collected variables ──
+    const collectedVars = run.session_id ? await query<{
+      name: string; value: any; description: string; type: string; required: boolean;
+    }>(`
+      SELECT pv.name, sv.value, pv.description, pv.type, pv.required
+      FROM mcp_session_variables sv
+      JOIN project_variables pv ON pv.id = sv.variable_id
+      WHERE sv.session_id = $1
+      ORDER BY pv.name
+    `, [run.session_id]) : [];
+
+    // ── Fetch goal status ──
+    const goalStatus = run.session_id ? await query<{
+      name: string; status: string; description: string;
+    }>(`
+      SELECT g.name, sg.status, g.description
+      FROM mcp_session_goals sg
+      JOIN goals g ON g.id = sg.goal_id
+      WHERE sg.session_id = $1 AND NOT g.is_implicit
+      ORDER BY sg.status DESC, g.name
+    `, [run.session_id]) : [];
+
+    // ── Fetch persona ──
+    const persona = scenario?.persona_id ? await queryOne<{ name: string }>(`
+      SELECT name FROM personas WHERE id = $1
+    `, [scenario.persona_id]) : null;
+
     const statusIcon = run.passed ? '✅' : run.status === 'cancelled' ? '⚠️' : '❌';
     const statusLabel = run.passed ? 'PASS' : run.status === 'cancelled' ? 'CANCELLED' : 'FAIL';
     const date = new Date(run.started_at).toLocaleDateString('en-US', {
@@ -462,27 +493,86 @@ testRunnerRouter.get('/test-runs/:id/report/conversation', async (req: Request, 
       '',
       `**Date**: ${date} | **Status**: ${statusIcon} ${statusLabel} | **NPS**: ${run.synthetic_nps ?? 'N/A'}/10`,
       '',
-      '## Summary',
-      '',
-      `| Metric | Value |`,
-      `|--------|-------|`,
-      `| Rounds | ${run.rounds_completed} |`,
-      `| Completion | ${run.completion_pct ?? 0}% |`,
-      `| Stop Reason | ${run.stop_reason || 'N/A'} |`,
-      `| Profile | ${scenario?.user_profile || 'N/A'} |`,
-      '',
     ];
 
+    // ── Scenario Metadata ──
+    lines.push('## Scenario', '');
+    if (scenario?.description) lines.push(`${scenario.description}`, '');
+    lines.push(
+      '| Setting | Value |',
+      '|---------|-------|',
+      `| **Objective** | ${scenario?.user_objective || 'N/A'} |`,
+      `| **Behavior Profile** | ${scenario?.user_profile || 'N/A'} |`,
+      `| **Persona** | ${persona?.name || 'None'} |`,
+      `| **Agent Model** | ${scenario?.agent_model || 'N/A'} |`,
+      '',
+    );
+
+    // ── Summary Metrics ──
+    lines.push('## Results', '');
+    lines.push(
+      '| Metric | Value |',
+      '|--------|-------|',
+      `| Rounds | ${run.rounds_completed} |`,
+      `| Completion | ${run.completion_pct ?? 0}% |`,
+      `| Variables Collected | ${collectedVars.length} |`,
+      `| Goals Completed | ${goalStatus.filter(g => g.status === 'complete').length} / ${goalStatus.length} |`,
+      `| Stop Reason | ${run.stop_reason || 'N/A'} |`,
+      '',
+    );
+
     if (run.user_sentiment) {
-      lines.push(`**Sentiment**: "${run.user_sentiment}"`, '');
+      lines.push(`**User Sentiment**: "${run.user_sentiment}"`, '');
     }
 
+    // ── Collected Variables ──
+    if (collectedVars.length > 0) {
+      lines.push('## Collected Variables', '');
+      lines.push('| Variable | Value | Type | Required | Description |');
+      lines.push('|----------|-------|------|----------|-------------|');
+      for (const v of collectedVars) {
+        const val = typeof v.value === 'string' ? v.value.replace(/^"|"$/g, '') : JSON.stringify(v.value);
+        const desc = (v.description || '').split('.')[0]; // first sentence
+        lines.push(`| ${v.name} | ${val} | ${v.type} | ${v.required ? '✅' : '⬜'} | ${desc} |`);
+      }
+      lines.push('');
+    }
+
+    // ── Goal Status ──
+    if (goalStatus.length > 0) {
+      lines.push('## Goals', '');
+      lines.push('| Status | Goal | Description |');
+      lines.push('|--------|------|-------------|');
+      for (const g of goalStatus) {
+        const icon = g.status === 'complete' ? '✅' : g.status === 'active' ? '🔄' : '⬜';
+        const desc = (g.description || '').split('.')[0];
+        lines.push(`| ${icon} ${g.status} | **${g.name}** | ${desc} |`);
+      }
+      lines.push('');
+    }
+
+    // ── Conversation ──
     lines.push('---', '', '## Conversation', '');
 
     for (const round of transcript) {
-      lines.push(`### Round ${round.round}`, '');
+      const toolCount = round.tool_calls?.length || 0;
+      lines.push(`### Round ${round.round}${toolCount ? ` (${toolCount} tool call${toolCount > 1 ? 's' : ''})` : ''}`, '');
       if (round.user_msg) {
         lines.push(`**🧪 User**: ${round.user_msg}`, '');
+      }
+      if (round.tool_calls?.length > 0) {
+        for (const tc of round.tool_calls) {
+          const args = tc.arguments || tc.args || {};
+          const argSummary = Object.entries(args)
+            .filter(([k]) => !['nord_id'].includes(k) || Object.keys(args).length <= 2)
+            .map(([k, v]) => {
+              const val = typeof v === 'string' ? v : (Array.isArray(v) ? `[${v.length} items]` : JSON.stringify(v));
+              return `${k}=${val.length > 60 ? val.slice(0, 57) + '...' : val}`;
+            })
+            .join(', ');
+          lines.push(`> 🔧 \`${tc.name}\`${argSummary ? ` — ${argSummary}` : ''}`);
+        }
+        lines.push('');
       }
       if (round.agent_msg) {
         lines.push(`**🤖 Agent**: ${round.agent_msg}`, '');
@@ -498,7 +588,7 @@ testRunnerRouter.get('/test-runs/:id/report/conversation', async (req: Request, 
 
 /**
  * GET /api/test-runs/:id/report/detailed
- * Generate a detailed Markdown report with tool calls, metrics, and per-round breakdown.
+ * Generate a detailed Markdown report with tool calls, metrics, variables, goals, and per-round breakdown.
  */
 testRunnerRouter.get('/test-runs/:id/report/detailed', async (req: Request, res: Response) => {
   try {
@@ -518,11 +608,56 @@ testRunnerRouter.get('/test-runs/:id/report/detailed', async (req: Request, res:
     const score = typeof run.score === 'string'
       ? JSON.parse(run.score) : (run.score || {});
 
+    // ── Fetch collected variables with goal bindings ──
+    const collectedVars = run.session_id ? await query<{
+      name: string; value: any; description: string; type: string; required: boolean;
+      goal_names: string | null;
+    }>(`
+      SELECT pv.name, sv.value, pv.description, pv.type, pv.required,
+        (SELECT string_agg(g.name, ', ')
+         FROM goal_variable_bindings gvb
+         JOIN goals g ON g.id = gvb.goal_id
+         WHERE gvb.variable_id = pv.id
+        ) AS goal_names
+      FROM mcp_session_variables sv
+      JOIN project_variables pv ON pv.id = sv.variable_id
+      WHERE sv.session_id = $1
+      ORDER BY pv.name
+    `, [run.session_id]) : [];
+
+    // ── Fetch all project variables to show remaining ──
+    const allVars = run.project_id ? await query<{ name: string; required: boolean }>(`
+      SELECT name, required FROM project_variables WHERE project_id = $1 ORDER BY name
+    `, [run.project_id]) : [];
+    const collectedNames = new Set(collectedVars.map(v => v.name));
+    const remainingVars = allVars.filter(v => !collectedNames.has(v.name));
+
+    // ── Fetch goal status ──
+    const goalStatus = run.session_id ? await query<{
+      name: string; status: string; description: string; end_type: string | null;
+    }>(`
+      SELECT g.name, sg.status, g.description, g.end_type
+      FROM mcp_session_goals sg
+      JOIN goals g ON g.id = sg.goal_id
+      WHERE sg.session_id = $1 AND NOT g.is_implicit
+      ORDER BY
+        CASE sg.status WHEN 'complete' THEN 0 WHEN 'active' THEN 1 ELSE 2 END,
+        g.name
+    `, [run.session_id]) : [];
+
+    // ── Fetch persona ──
+    const persona = scenario?.persona_id ? await queryOne<{ name: string; description: string }>(`
+      SELECT name, description FROM personas WHERE id = $1
+    `, [scenario.persona_id]) : null;
+
     const statusIcon = run.passed ? '✅' : run.status === 'cancelled' ? '⚠️' : '❌';
     const statusLabel = run.passed ? 'PASS' : run.status === 'cancelled' ? 'CANCELLED' : 'FAIL';
     const date = new Date(run.started_at).toLocaleDateString('en-US', {
       year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
+    const duration = run.finished_at
+      ? `${((new Date(run.finished_at).getTime() - new Date(run.started_at).getTime()) / 1000).toFixed(0)}s`
+      : 'N/A';
 
     const totalTokensIn = transcript.reduce((sum: number, r: any) => sum + (r.tokens_in || 0), 0);
     const totalTokensOut = transcript.reduce((sum: number, r: any) => sum + (r.tokens_out || 0), 0);
@@ -534,36 +669,87 @@ testRunnerRouter.get('/test-runs/:id/report/detailed', async (req: Request, res:
     const lines: string[] = [
       `# Detailed Test Report: ${scenario?.name || 'Unknown Scenario'}`,
       '',
-      `**Date**: ${date} | **Status**: ${statusIcon} ${statusLabel} | **NPS**: ${run.synthetic_nps ?? 'N/A'}/10`,
+      `**Date**: ${date} | **Duration**: ${duration} | **Status**: ${statusIcon} ${statusLabel} | **NPS**: ${run.synthetic_nps ?? 'N/A'}/10`,
       '',
-      '## Configuration',
-      '',
+    ];
+
+    // ── Scenario Configuration ──
+    lines.push('## Scenario Configuration', '');
+    if (scenario?.description) lines.push(`> ${scenario.description}`, '');
+    lines.push(
       '| Setting | Value |',
       '|---------|-------|',
-      `| Agent Model | ${scenario?.agent_model || 'N/A'} |`,
-      `| User Model | ${scenario?.user_model || 'N/A'} |`,
-      `| User Profile | ${scenario?.user_profile || 'N/A'} |`,
-      `| Max Rounds | ${scenario?.max_rounds || 'N/A'} |`,
-      `| Stop on Completion % | ${scenario?.stop_on_completion_pct ?? 'N/A'} |`,
-      `| Min Completion % | ${scenario?.min_completion_pct ?? 'N/A'} |`,
+      `| **User Objective** | ${scenario?.user_objective || 'N/A'} |`,
+      `| **Behavior Profile** | ${scenario?.user_profile || 'N/A'} |`,
+      `| **Persona** | ${persona ? `${persona.name} — ${persona.description || ''}` : 'None'} |`,
+      `| **Agent Model** | ${scenario?.agent_model || 'N/A'} |`,
+      `| **User Model** | ${scenario?.user_model || 'N/A'} |`,
+      `| **Max Rounds** | ${scenario?.max_rounds || 'N/A'} |`,
+      `| **Stop on Completion** | ${scenario?.stop_on_completion_pct ?? 'N/A'}% |`,
+      `| **Pass Threshold** | ${scenario?.min_completion_pct ?? 'N/A'}% |`,
       '',
-      '## Metrics',
-      '',
+    );
+
+    // ── Metrics ──
+    lines.push('## Performance Metrics', '');
+    lines.push(
       '| Metric | Value |',
       '|--------|-------|',
       `| Total Tokens | ${((totalTokensIn + totalTokensOut) / 1000).toFixed(1)}K (in: ${(totalTokensIn / 1000).toFixed(1)}K, out: ${(totalTokensOut / 1000).toFixed(1)}K) |`,
-      `| Avg Latency | ${avgLatency.toLocaleString()}ms |`,
+      `| Duration | ${duration} |`,
+      `| Avg Latency/Round | ${avgLatency.toLocaleString()}ms |`,
       `| Tool Calls | ${totalToolCalls} |`,
       `| Rounds Completed | ${run.rounds_completed} |`,
       `| Completion | ${run.completion_pct ?? 0}% |`,
       `| Stop Reason | ${run.stop_reason || 'N/A'} |`,
       '',
-    ];
+    );
 
     if (run.user_sentiment) {
-      lines.push(`**Sentiment**: "${run.user_sentiment}"`, '');
+      lines.push(`**User Sentiment**: "${run.user_sentiment}"`, '');
     }
 
+    // ── Collected Variables ──
+    lines.push('## Collected Variables', '');
+    if (collectedVars.length > 0) {
+      lines.push(`${collectedVars.length} of ${allVars.length} variables collected (${allVars.filter(v => v.required).length} required).`, '');
+      lines.push('| Variable | Value | Type | Req | Goals | Description |');
+      lines.push('|----------|-------|------|-----|-------|-------------|');
+      for (const v of collectedVars) {
+        const val = typeof v.value === 'string' ? v.value.replace(/^"|"$/g, '') : JSON.stringify(v.value);
+        const desc = (v.description || '').split('.')[0];
+        lines.push(`| **${v.name}** | ${val} | ${v.type} | ${v.required ? '✅' : '⬜'} | ${v.goal_names || '—'} | ${desc} |`);
+      }
+      lines.push('');
+    } else {
+      lines.push('*No variables were collected during this run.*', '');
+    }
+
+    // ── Remaining Variables ──
+    if (remainingVars.length > 0) {
+      lines.push('### Remaining (Not Collected)', '');
+      for (const v of remainingVars) {
+        lines.push(`- ${v.required ? '🔴' : '⚪'} ${v.name}${v.required ? ' *(required)*' : ''}`);
+      }
+      lines.push('');
+    }
+
+    // ── Goal Status ──
+    if (goalStatus.length > 0) {
+      lines.push('## Goals', '');
+      const completed = goalStatus.filter(g => g.status === 'complete').length;
+      lines.push(`${completed} of ${goalStatus.length} goals completed.`, '');
+      lines.push('| Status | Goal | Type | Description |');
+      lines.push('|--------|------|------|-------------|');
+      for (const g of goalStatus) {
+        const icon = g.status === 'complete' ? '✅' : g.status === 'active' ? '🔄' : '⬜';
+        const desc = (g.description || '').split('.')[0];
+        lines.push(`| ${icon} ${g.status} | **${g.name}** | ${g.end_type || '—'} | ${desc} |`);
+      }
+      lines.push('');
+    }
+
+    // ── Coverage Gaps ──
     if (score.coverage_gaps?.length > 0) {
       lines.push('### Coverage Gaps', '');
       for (const gap of score.coverage_gaps) {
@@ -572,11 +758,14 @@ testRunnerRouter.get('/test-runs/:id/report/detailed', async (req: Request, res:
       lines.push('');
     }
 
+    // ── Per-Round Breakdown ──
     lines.push('---', '', '## Per-Round Breakdown', '');
 
     for (const round of transcript) {
       const latency = round.latency_ms ? `${round.latency_ms.toLocaleString()}ms` : '?';
-      const tokens = `${((round.tokens_in || 0) + (round.tokens_out || 0) / 1000).toFixed(1)}K tokens`;
+      const tokensIn = round.tokens_in || 0;
+      const tokensOut = round.tokens_out || 0;
+      const tokens = `${((tokensIn + tokensOut) / 1000).toFixed(1)}K tokens`;
       const tools = round.tool_calls?.length || 0;
 
       lines.push(`### Round ${round.round} (${latency} | ${tokens} | ${tools} tools)`, '');
@@ -591,18 +780,31 @@ testRunnerRouter.get('/test-runs/:id/report/detailed', async (req: Request, res:
       if (round.tool_calls?.length > 0) {
         lines.push('<details><summary>Tool Calls</summary>', '');
         for (const tc of round.tool_calls) {
-          const args = tc.args ? JSON.stringify(tc.args).slice(0, 200) : '';
-          lines.push(`- \`${tc.name}\` ${args ? `→ ${args}` : ''}`);
+          const args = tc.arguments || tc.args;
+          const argStr = args ? JSON.stringify(args, null, 2) : '';
+          lines.push(`**\`${tc.name}\`**`);
+          if (argStr) {
+            lines.push('```json', argStr.slice(0, 500), '```');
+          }
+          lines.push('');
         }
-        lines.push('', '</details>', '');
+        lines.push('</details>', '');
       }
     }
 
-    // Add critique if available
+    // ── Critique ──
     if (run.critique) {
       const critique = typeof run.critique === 'string' ? JSON.parse(run.critique) : run.critique;
       lines.push('---', '', '## AI Critique', '');
       if (critique.summary) lines.push(critique.summary, '');
+      if (critique.suggestions?.length > 0) {
+        lines.push('| Severity | Category | Finding | Action |');
+        lines.push('|----------|----------|---------|--------|');
+        for (const s of critique.suggestions) {
+          lines.push(`| ${s.severity || 'info'} | ${s.category || 'general'} | ${s.title || s.message || ''} | ${s.action || ''} |`);
+        }
+        lines.push('');
+      }
       if (critique.findings?.length > 0) {
         lines.push('| Severity | Category | Finding |', '|----------|----------|---------|');
         for (const f of critique.findings) {

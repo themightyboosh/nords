@@ -50,7 +50,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
   const { nordTypes, connectionTypes } = useTypeRegistryContext();
   const {
     isLaneCollapsed, toggleLaneCollapse,
-    getNordTypeVisibility, cycleNordTypeVisibility,
+    getNordTypeVisibility, cycleNordTypeVisibility, toggleNordTypeFilter,
     getDirectionFilter, toggleDirectionFilter,
   } = useBoardSettingsContext();
 
@@ -328,7 +328,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
           )}
         </div>
 
-        {/* Nord Filter Flyout — 3-state: show → dim → hide */}
+        {/* Nord Filter Flyout — Board: 2-state show/hide | Persona: 3-state show/dim/hide */}
         <div className={`nords-flyout nords-glass ${openPanel === 'filter' ? 'is-open' : ''}`}>
           <div className="nords-flyout__header">
             <h3 className="nords-flyout__title">Nord Visibility</h3>
@@ -341,19 +341,28 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
               </div>
             )}
             {projectNordTypes.map(nt => {
-              // Persona mode uses LensContext personaTypeFilter (keyed by name);
-              // Board mode uses BoardSettings nordTypeVisibility (keyed by id).
               const isPersonaMode = lens === 'persona';
+              const isBoardMode = lens === 'board';
               const state: PersonaTypeVisibility = isPersonaMode
                 ? (personaTypeFilter.get(nt.name) || 'show')
                 : getNordTypeVisibility('__global__', nt.id) as PersonaTypeVisibility;
               const NtIcon = nt.icon;
+
+              // Board mode: simple 2-state toggle (show/hide)
+              // Persona mode: 3-state cycle (show/dim/hide)
+              const handleClick = () => {
+                if (isPersonaMode) {
+                  cyclePersonaTypeFilter(nt.name);
+                } else if (isBoardMode) {
+                  toggleNordTypeFilter('__global__', nt.id);
+                } else {
+                  cycleNordTypeVisibility('__global__', nt.id);
+                }
+              };
+
               return (
                 <div key={nt.id} className={`nords-flyout__row nords-flyout__row--selectable ${state === 'show' ? 'is-active' : ''}`}
-                  onClick={() => isPersonaMode
-                    ? cyclePersonaTypeFilter(nt.name)
-                    : cycleNordTypeVisibility('__global__', nt.id)
-                  }
+                  onClick={handleClick}
                   style={{ opacity: state === 'hide' ? 0.3 : state === 'dim' ? 0.55 : 1 }}
                 >
                   <div className="nords-flyout__row-left">
@@ -363,16 +372,20 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
                   </div>
                   <div className="nords-flyout__row-right" style={{ gap: '4px', display: 'flex', alignItems: 'center' }}>
                     {state === 'show' && <EyeIcon size={13} style={{ color: nt.color }} />}
-                    {state === 'dim' && <CircleDot size={13} style={{ opacity: 0.5 }} />}
+                    {state === 'dim' && !isBoardMode && <CircleDot size={13} style={{ opacity: 0.5 }} />}
                     {state === 'hide' && <EyeOff size={13} style={{ opacity: 0.3 }} />}
-                    <span style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--nords-color-text-disabled)', minWidth: '24px' }}>{state}</span>
+                    <span style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--nords-color-text-disabled)', minWidth: '24px' }}>
+                      {isBoardMode ? (state === 'show' ? 'show' : 'hide') : state}
+                    </span>
                   </div>
                 </div>
               );
             })}
           </div>
           <div className="nords-flyout__footer">
-            <span className="nords-flyout__footer-hint">Click to cycle: show → dim → hide</span>
+            <span className="nords-flyout__footer-hint">
+              {lens === 'board' ? 'Click to show or hide' : 'Click to cycle: show → dim → hide'}
+            </span>
           </div>
         </div>
 

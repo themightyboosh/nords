@@ -123,14 +123,14 @@ export function GoalDetailDrawer({
       <div className="goal-detail-drawer">
         {/* ── Header ── */}
         <div className="goal-detail-drawer__header">
-          <div className="goal-detail-drawer__icon" style={{ borderColor: goal.accent_color || '#6366f1' }}>
-            <GoalIcon size={20} strokeWidth={1.6} style={{ color: goal.accent_color || '#6366f1' }} />
-          </div>
-          <div className="goal-detail-drawer__identity">
-            <h2 className="goal-detail-drawer__name">{goal.name}</h2>
-            {goal.description && (
-              <span className="goal-detail-drawer__eyebrow">{goal.description}</span>
-            )}
+          <div style={{ flex: 1 }}>
+            <div className="nords-drawer-type-eyebrow" style={{ color: goal.accent_color || '#6366f1' }}>
+              Goal
+            </div>
+            <div className="goal-detail-drawer__identity">
+              <GoalIcon size={20} strokeWidth={1.6} className="nords-drawer-title-icon" style={{ color: goal.accent_color || '#6366f1' }} />
+              <h2 className="goal-detail-drawer__name">{goal.name}</h2>
+            </div>
           </div>
           <button className="nords-close-btn" onClick={onClose} aria-label="Close">
             <X size={18} strokeWidth={2} />
@@ -377,13 +377,13 @@ export function GoalDetailDrawer({
           )}
 
           {/* ════════════════════════════════════════════════
-              COLLECTION TAB — Variable bindings
+              COLLECTION TAB — Property bindings
               ════════════════════════════════════════════════ */}
           {activeTab === 'collection' && (
             <>
               <div className="goal-detail-drawer__section">
                 <div className="goal-detail-drawer__section-header">
-                  <span>Collection Bindings ({goal.variable_bindings?.length || 0})</span>
+                  <span>Property Bindings ({goal.variable_bindings?.length || 0})</span>
                 </div>
                 <p className="goal-detail-drawer__hint">
                   Assign collections to this goal. Required collections must be collected for the goal to complete.

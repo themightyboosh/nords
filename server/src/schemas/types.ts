@@ -34,6 +34,8 @@ export const PropertySchemaItem = z.preprocess(
   z.object({
     name: z.string().min(1)
       .describe('Property name (column heading) — must be unique within the type'),
+    description: z.string().max(300).optional().default('')
+      .describe('Short description explaining what this property captures — surfaced to the AI as a conversational prompt'),
     type: PropertyTypeField,
     required: z.boolean().optional().default(false)
       .describe('Whether this property must have a value'),

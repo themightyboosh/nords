@@ -12,3 +12,4 @@ Nards/
 playwright-report/
 test-results/
 coverage/
+.pgdata

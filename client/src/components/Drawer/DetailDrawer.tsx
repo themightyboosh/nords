@@ -14,7 +14,7 @@
  */
 
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { X, Plus, XCircle } from 'lucide-react';
+import { X, Plus, XCircle, Trash2 } from 'lucide-react';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { useDrawerEntity } from '../../hooks/useDrawerEntity';
@@ -169,6 +169,7 @@ function CategoryList({
         typeId: ct.id,
         typeName: ct.name,
         typeColor: ct.accent_color || '#888',
+        typeIcon: ct.icon || null,
         verb: ct.verb || null,
         prepositions: ct.direction_prepositions || { forward: 'from', reverse: 'to', both: 'together' },
         connections: myConnections.map(c => {
@@ -216,10 +217,12 @@ function CategoryList({
       {activeCategories.map(cat => (
         <div key={cat.typeId} className="nords-category-group">
           <div className="nords-category-group__header">
-            <span
-              className="nords-category-group__dot"
-              style={{ backgroundColor: cat.typeColor }}
-            />
+            {(() => {
+              const CatIcon = cat.typeIcon ? resolveIcon(cat.typeIcon) : null;
+              return CatIcon
+                ? <CatIcon size={16} style={{ color: cat.typeColor }} className="nords-category-group__icon" />
+                : <span className="nords-category-group__dot" style={{ backgroundColor: cat.typeColor }} />;
+            })()}
             <span className="nords-category-group__name">{cat.typeName}</span>
             <span className="nords-category-group__count">{cat.connections.length}</span>
           </div>
@@ -291,10 +294,12 @@ function CategoryList({
       {inactiveCategories.map(cat => (
         <div key={cat.typeId} className="nords-category-group nords-category-group--inactive">
           <div className="nords-category-group__header">
-            <span
-              className="nords-category-group__dot"
-              style={{ backgroundColor: cat.typeColor, opacity: 0.4 }}
-            />
+            {(() => {
+              const CatIcon = cat.typeIcon ? resolveIcon(cat.typeIcon) : null;
+              return CatIcon
+                ? <CatIcon size={16} style={{ color: cat.typeColor, opacity: 0.4 }} className="nords-category-group__icon" />
+                : <span className="nords-category-group__dot" style={{ backgroundColor: cat.typeColor, opacity: 0.4 }} />;
+            })()}
             <span className="nords-category-group__name">{cat.typeName}</span>
             <span className="nords-category-group__inactive-label">no connections</span>
           </div>
@@ -355,7 +360,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
     if (entity?.kind !== 'nord') return [];
     const propsMap = new Map(entity.properties.map(p => [p.key, p.value]));
     return schema
-      .filter(s => s.card_row != null && s.card_row > 0)
+      .filter(s => s.card_row != null && s.card_row > 0 && s.type !== 'hidden')
       .map(s => ({
         name: s.name,
         type: s.type as any,
@@ -364,6 +369,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
         cardRow: s.card_row,
         required: s.required,
         config: (s as any).config,
+        defaultValue: s.defaultValue,
       }));
   }, [entity, schema]);
 
@@ -377,13 +383,16 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
   const connectionProperties = useMemo(() => {
     if (entity?.kind !== 'connection') return [];
     const propsMap = new Map(entity.properties.map(p => [p.key, p.value]));
-    return schema.map(s => ({
-      name: s.name,
-      type: s.type as any,
-      value: propsMap.get(s.name) ?? '',
-      options: s.options,
-      required: s.required,
-    }));
+    return schema
+      .filter(s => s.type !== 'hidden')
+      .map(s => ({
+        name: s.name,
+        type: s.type as any,
+        value: propsMap.get(s.name) ?? '',
+        options: s.options,
+        required: s.required,
+        defaultValue: s.defaultValue,
+      }));
   }, [entity, schema]);
 
   // Resolve closest spectrum label for a connection
@@ -451,16 +460,22 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
         </header>
 
         <div className="nords-drawer-content">
-          {/* Editable Title */}
-          <h1
-            ref={titleRef}
-            className="nords-drawer-title"
-            contentEditable
-            suppressContentEditableWarning
-            onInput={handleTitleInput}
-          >
-            {entity.title}
-          </h1>
+          {/* Editable Title with type icon */}
+          <div className="nords-drawer-title-row">
+            {(() => {
+              const TypeIcon = resolveIcon(entity.typeIcon);
+              return TypeIcon ? <TypeIcon size={20} className="nords-drawer-title-icon" style={{ color: entity.typeColor }} /> : null;
+            })()}
+            <h1
+              ref={titleRef}
+              className="nords-drawer-title"
+              contentEditable
+              suppressContentEditableWarning
+              onInput={handleTitleInput}
+            >
+              {entity.title}
+            </h1>
+          </div>
 
           {/* Tab Bar */}
           <div className="nords-drawer-tabs">
@@ -522,6 +537,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
                       color={entity.typeColor}
                       required={p.required}
                       config={p.config}
+                      defaultValue={p.defaultValue}
                       allProperties={allPropertiesBag}
                       onChange={(v) => mutations.updateProperty(p.name, v as string)}
                     />
@@ -690,7 +706,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
               }}
               title="Delete this connection"
               aria-label="Delete connection"
-            >×</button>
+            ><Trash2 size={14} /></button>
             <button className="nords-close-btn" onClick={onClose} aria-label="Close"><X size={18} strokeWidth={2} /></button>
           </div>
         </header>
@@ -767,6 +783,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
                   options={p.options}
                   color={entity.typeColor}
                   required={p.required}
+                  defaultValue={p.defaultValue}
                   onChange={(v) => mutations.updateConnectionProperty(p.name, v as string)}
                 />
               ))}

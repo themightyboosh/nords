@@ -654,3 +654,48 @@
   line-height: 1.4;
 }
 
+/* ── Behavioral Nudge Settings ── */
+.manage-personas__nudge-row {
+  display: flex;
+  gap: var(--nords-space-xl);
+}
+
+.manage-personas__nudge-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.manage-personas__nudge-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nords-color-text-secondary);
+}
+
+.manage-personas__nudge-input {
+  width: 100%;
+  max-width: 100px;
+  padding: var(--nords-space-xs) var(--nords-space-sm);
+  background: var(--nords-color-bg-deep);
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-md);
+  color: var(--nords-color-text-primary);
+  font: inherit;
+  font-size: var(--nords-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.manage-personas__nudge-input:focus {
+  border-color: var(--nords-color-accent);
+}
+
+.manage-personas__nudge-hint {
+  font-size: 10px;
+  color: var(--nords-color-text-tertiary);
+  line-height: 1.3;
+}
