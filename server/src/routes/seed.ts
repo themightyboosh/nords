@@ -1,6 +1,29 @@
 /**
  * seed.ts — Development-only seed route for realistic test data.
- * 
+ *
+ * @openapi
+ * /api/seed:
+ *   post:
+ *     tags: [Admin]
+ *     summary: Seed project with test data (dev only)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [project_id]
+ *             properties:
+ *               project_id: { type: string, format: uuid }
+ *               user_id: { type: string }
+ *               nord_types: { type: array }
+ *               connection_types: { type: array }
+ *               nords: { type: array }
+ *               connections: { type: array }
+ *     responses:
+ *       200:
+ *         description: Seed results with created entity counts
+ *
  * POST /api/seed — accepts bulk types and nords, inserts them directly.
  * This creates multiple nord types, connection types, nords, and connections
  * for visually testing the canvas with realistic data.

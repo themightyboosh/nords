@@ -276,6 +276,199 @@ with physics-based spatial relationships.
             error: { type: 'string', example: 'Resource not found' },
           },
         },
+
+        // ── Goals ──
+        Goal: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            project_id: { type: 'string', format: 'uuid' },
+            name: { type: 'string', example: 'Complete Requirements Gathering' },
+            description: { type: 'string', nullable: true },
+            completion_rule: { type: 'string', enum: ['all_variables', 'any_variable', 'custom'], example: 'all_variables' },
+            is_implicit: { type: 'boolean' },
+            end_type: { type: 'string', nullable: true, enum: ['success', 'failure', 'reset', null] },
+            achieved_prompt: { type: 'string', nullable: true },
+            sort_order: { type: 'integer' },
+            created_at: { type: 'string', format: 'date-time' },
+            updated_at: { type: 'string', format: 'date-time' },
+          },
+        },
+        CreateGoalRequest: {
+          type: 'object',
+          required: ['name'],
+          properties: {
+            name: { type: 'string', example: 'Capture Patient Demographics' },
+            description: { type: 'string' },
+            completion_rule: { type: 'string', enum: ['all_variables', 'any_variable', 'custom'], default: 'all_variables' },
+            is_implicit: { type: 'boolean', default: false },
+            end_type: { type: 'string', nullable: true, enum: ['success', 'failure', 'reset'] },
+            achieved_prompt: { type: 'string' },
+          },
+        },
+        GoalVariableBinding: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            goal_id: { type: 'string', format: 'uuid' },
+            variable_id: { type: 'string', format: 'uuid' },
+            required: { type: 'boolean' },
+          },
+        },
+        GoalEdge: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            project_id: { type: 'string', format: 'uuid' },
+            source_goal_id: { type: 'string', format: 'uuid' },
+            target_goal_id: { type: 'string', format: 'uuid' },
+          },
+        },
+
+        // ── Project Variables ──
+        ProjectVariable: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            project_id: { type: 'string', format: 'uuid' },
+            collection_group_id: { type: 'string', format: 'uuid', nullable: true },
+            name: { type: 'string', example: 'Chief Complaint' },
+            description: { type: 'string', example: 'Primary reason for the visit' },
+            type: { type: 'string', enum: ['short_text', 'long_text', 'number', 'boolean', 'select', 'multi_select', 'date'], example: 'short_text' },
+            options: { type: 'array', items: { type: 'string' }, nullable: true, example: ['Headache', 'Chest Pain', 'Fatigue'] },
+            required: { type: 'boolean' },
+            hint: { type: 'string', nullable: true },
+            tags: { type: 'array', items: { type: 'string' }, nullable: true },
+            sort_order: { type: 'integer' },
+            created_at: { type: 'string', format: 'date-time' },
+            updated_at: { type: 'string', format: 'date-time' },
+          },
+        },
+        CreateVariableRequest: {
+          type: 'object',
+          required: ['name', 'type'],
+          properties: {
+            name: { type: 'string' },
+            description: { type: 'string' },
+            type: { type: 'string', enum: ['short_text', 'long_text', 'number', 'boolean', 'select', 'multi_select', 'date'] },
+            options: { type: 'array', items: { type: 'string' } },
+            required: { type: 'boolean', default: false },
+            hint: { type: 'string' },
+            collection_group_id: { type: 'string', format: 'uuid' },
+          },
+        },
+
+        // ── Collection Groups ──
+        CollectionGroup: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            project_id: { type: 'string', format: 'uuid' },
+            name: { type: 'string', example: 'Patient Demographics' },
+            description: { type: 'string' },
+            icon: { type: 'string', example: 'Layers' },
+            accent_color: { type: 'string', example: '#a78bfa' },
+            sort_order: { type: 'integer' },
+          },
+        },
+
+        // ── Test Scenarios & Runs ──
+        TestScenario: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            project_id: { type: 'string', format: 'uuid' },
+            name: { type: 'string', example: 'Wandering Priya' },
+            description: { type: 'string', nullable: true },
+            persona_id: { type: 'string', format: 'uuid', nullable: true },
+            system_prompt_override: { type: 'string', nullable: true },
+            max_turns: { type: 'integer', example: 15 },
+            temperature: { type: 'number', format: 'float', example: 0.9 },
+            tags: { type: 'array', items: { type: 'string' }, nullable: true },
+            sort_order: { type: 'integer' },
+            created_at: { type: 'string', format: 'date-time' },
+            updated_at: { type: 'string', format: 'date-time' },
+          },
+        },
+        TestRun: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            scenario_id: { type: 'string', format: 'uuid' },
+            session_id: { type: 'string', format: 'uuid', nullable: true },
+            status: { type: 'string', enum: ['pending', 'running', 'completed', 'failed', 'cancelled'] },
+            started_at: { type: 'string', format: 'date-time' },
+            ended_at: { type: 'string', format: 'date-time', nullable: true },
+            result: { type: 'object', nullable: true },
+          },
+        },
+
+        // ── Sessions ──
+        SessionSummary: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            project_id: { type: 'string', format: 'uuid' },
+            persona_id: { type: 'string', format: 'uuid', nullable: true },
+            source_type: { type: 'string', enum: ['chat', 'test', 'api', 'share'] },
+            status: { type: 'string', enum: ['active', 'completed', 'abandoned'] },
+            started_at: { type: 'string', format: 'date-time' },
+            ended_at: { type: 'string', format: 'date-time', nullable: true },
+            summary: { type: 'string', nullable: true },
+            persona_name: { type: 'string', nullable: true },
+            message_count: { type: 'integer' },
+            variables_collected: { type: 'integer' },
+            goals_completed: { type: 'integer' },
+          },
+        },
+        SessionEvent: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            session_id: { type: 'string', format: 'uuid' },
+            action_type: { type: 'string', example: 'variable_set' },
+            key: { type: 'string', example: 'Chief Complaint' },
+            value: { type: 'object', additionalProperties: true },
+            event_at: { type: 'string', format: 'date-time' },
+          },
+        },
+        CollectedVariableGroup: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid', nullable: true },
+            name: { type: 'string', example: 'Patient Demographics' },
+            icon: { type: 'string', nullable: true },
+            color: { type: 'string', nullable: true },
+            variables: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  name: { type: 'string' },
+                  description: { type: 'string' },
+                  type: { type: 'string' },
+                  value: {},
+                  collected_at: { type: 'string', format: 'date-time' },
+                  collected_at_nord: { type: 'string', nullable: true },
+                },
+              },
+            },
+          },
+        },
+
+        // ── Share Links ──
+        ShareLink: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            project_id: { type: 'string', format: 'uuid' },
+            token: { type: 'string' },
+            label: { type: 'string', nullable: true },
+            active: { type: 'boolean' },
+            created_at: { type: 'string', format: 'date-time' },
+          },
+        },
       },
       securitySchemes: {
         BearerAuth: {
@@ -296,6 +489,14 @@ with physics-based spatial relationships.
       { name: 'Accounts', description: 'Billing accounts, usage metering, and invoices' },
       { name: 'Snapshots', description: 'Immutable graph state captures' },
       { name: 'Comments', description: 'Threaded comments on nords, connections, or project-level' },
+      { name: 'Goals', description: 'Goal engine — DAG, variable bindings, completion rules' },
+      { name: 'Variables', description: 'Project variables and collection groups' },
+      { name: 'Tests', description: 'Test scenarios, runs, and reports' },
+      { name: 'Sessions', description: 'Session explorer — browsing, events, metrics, variables' },
+      { name: 'Chat', description: 'Chat and share chat endpoints' },
+      { name: 'Admin', description: 'Admin user and invite key management' },
+      { name: 'Auth', description: 'Registration and authentication' },
+      { name: 'System', description: 'Health, logs, seed, UI strings' },
     ],
   },
   apis: ['./src/routes/*.ts'],

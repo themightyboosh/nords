@@ -6,7 +6,26 @@ const log = logger.child({ route: 'goals' });
 
 export const goalsRouter = Router();
 
-// ── GET /api/projects/:id/goals — List all goals with variable bindings + relevant nords ──
+/**
+ * @openapi
+ * /api/projects/{id}/goals:
+ *   get:
+ *     tags: [Goals]
+ *     summary: List all goals with variable bindings and relevant nords
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of goals with bindings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/Goal' }
+ */
 goalsRouter.get('/projects/:id/goals', async (req: Request, res: Response) => {
   try {
     const goals = await goalsRepo.findByProjectWithBindings(req.params.id as string);
@@ -17,7 +36,29 @@ goalsRouter.get('/projects/:id/goals', async (req: Request, res: Response) => {
   }
 });
 
-// ── POST /api/projects/:id/goals — Create a goal ──
+/**
+ * @openapi
+ * /api/projects/{id}/goals:
+ *   post:
+ *     tags: [Goals]
+ *     summary: Create a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/CreateGoalRequest' }
+ *     responses:
+ *       201:
+ *         description: Created goal
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Goal' }
+ */
 goalsRouter.post('/projects/:id/goals', async (req: Request, res: Response) => {
   try {
     const goal = await goalsRepo.create({
@@ -31,7 +72,28 @@ goalsRouter.post('/projects/:id/goals', async (req: Request, res: Response) => {
   }
 });
 
-// ── PUT /api/goals/:id — Update a goal ──
+/**
+ * @openapi
+ * /api/goals/{id}:
+ *   put:
+ *     tags: [Goals]
+ *     summary: Update a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/CreateGoalRequest' }
+ *     responses:
+ *       200:
+ *         description: Updated goal
+ *       404:
+ *         description: Goal not found
+ */
 goalsRouter.put('/goals/:id', async (req: Request, res: Response) => {
   try {
     const goal = await goalsRepo.update(req.params.id as string, req.body);
@@ -43,7 +105,23 @@ goalsRouter.put('/goals/:id', async (req: Request, res: Response) => {
   }
 });
 
-// ── DELETE /api/goals/:id — Delete a goal ──
+/**
+ * @openapi
+ * /api/goals/{id}:
+ *   delete:
+ *     tags: [Goals]
+ *     summary: Delete a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       204:
+ *         description: Goal deleted
+ *       404:
+ *         description: Goal not found
+ */
 goalsRouter.delete('/goals/:id', async (req: Request, res: Response) => {
   try {
     const deleted = await goalsRepo.remove(req.params.id as string);
@@ -59,7 +137,33 @@ goalsRouter.delete('/goals/:id', async (req: Request, res: Response) => {
 // Variable Bindings (replaces property bindings)
 // ══════════════════════════════════════════════════════════
 
-// ── POST /api/goals/:id/variable-bindings — Add a variable binding ──
+/**
+ * @openapi
+ * /api/goals/{id}/variable-bindings:
+ *   post:
+ *     tags: [Goals]
+ *     summary: Add a variable binding to a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [variable_id]
+ *             properties:
+ *               variable_id: { type: string, format: uuid }
+ *               required: { type: boolean, default: true }
+ *     responses:
+ *       201:
+ *         description: Binding created
+ *       409:
+ *         description: Binding already exists
+ */
 goalsRouter.post('/goals/:id/variable-bindings', async (req: Request, res: Response) => {
   try {
     const { variable_id, required } = req.body;
@@ -79,7 +183,36 @@ goalsRouter.post('/goals/:id/variable-bindings', async (req: Request, res: Respo
   }
 });
 
-// ── PUT /api/goals/:id/variable-bindings/:bindingId — Update binding (required toggle) ──
+/**
+ * @openapi
+ * /api/goals/{id}/variable-bindings/{bindingId}:
+ *   put:
+ *     tags: [Goals]
+ *     summary: Update a variable binding (toggle required)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *       - in: path
+ *         name: bindingId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [required]
+ *             properties:
+ *               required: { type: boolean }
+ *     responses:
+ *       200:
+ *         description: Updated binding
+ *       404:
+ *         description: Binding not found
+ */
 goalsRouter.put('/goals/:id/variable-bindings/:bindingId', async (req: Request, res: Response) => {
   try {
     const { required } = req.body;
@@ -95,7 +228,27 @@ goalsRouter.put('/goals/:id/variable-bindings/:bindingId', async (req: Request, 
   }
 });
 
-// ── DELETE /api/goals/:id/variable-bindings/:bindingId — Remove a variable binding ──
+/**
+ * @openapi
+ * /api/goals/{id}/variable-bindings/{bindingId}:
+ *   delete:
+ *     tags: [Goals]
+ *     summary: Remove a variable binding
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *       - in: path
+ *         name: bindingId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       204:
+ *         description: Binding removed
+ *       404:
+ *         description: Binding not found
+ */
 goalsRouter.delete('/goals/:id/variable-bindings/:bindingId', async (req: Request, res: Response) => {
   try {
     const deleted = await goalsRepo.removeVariableBinding(req.params.bindingId as string);
@@ -111,7 +264,21 @@ goalsRouter.delete('/goals/:id/variable-bindings/:bindingId', async (req: Reques
 // Relevant Nords
 // ══════════════════════════════════════════════════════════
 
-// ── GET /api/goals/:id/relevant-nords ──
+/**
+ * @openapi
+ * /api/goals/{id}/relevant-nords:
+ *   get:
+ *     tags: [Goals]
+ *     summary: Get nords relevant to a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of relevant nords
+ */
 goalsRouter.get('/goals/:id/relevant-nords', async (req: Request, res: Response) => {
   try {
     const nords = await goalsRepo.findRelevantNords(req.params.id as string);
@@ -122,7 +289,32 @@ goalsRouter.get('/goals/:id/relevant-nords', async (req: Request, res: Response)
   }
 });
 
-// ── POST /api/goals/:id/relevant-nords ──
+/**
+ * @openapi
+ * /api/goals/{id}/relevant-nords:
+ *   post:
+ *     tags: [Goals]
+ *     summary: Link a nord as relevant to a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nord_id]
+ *             properties:
+ *               nord_id: { type: string, format: uuid }
+ *     responses:
+ *       201:
+ *         description: Nord linked
+ *       409:
+ *         description: Already linked
+ */
 goalsRouter.post('/goals/:id/relevant-nords', async (req: Request, res: Response) => {
   try {
     const { nord_id } = req.body;
@@ -136,7 +328,27 @@ goalsRouter.post('/goals/:id/relevant-nords', async (req: Request, res: Response
   }
 });
 
-// ── DELETE /api/goals/:id/relevant-nords/:nordId ──
+/**
+ * @openapi
+ * /api/goals/{id}/relevant-nords/{nordId}:
+ *   delete:
+ *     tags: [Goals]
+ *     summary: Unlink a nord from a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *       - in: path
+ *         name: nordId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       204:
+ *         description: Link removed
+ *       404:
+ *         description: Link not found
+ */
 goalsRouter.delete('/goals/:id/relevant-nords/:nordId', async (req: Request, res: Response) => {
   try {
     const deleted = await goalsRepo.removeRelevantNord(req.params.id as string, req.params.nordId as string);
@@ -148,7 +360,21 @@ goalsRouter.delete('/goals/:id/relevant-nords/:nordId', async (req: Request, res
   }
 });
 
-// ── GET /api/nords/:nordId/goals — Get goals linked to a nord (reverse lookup) ──
+/**
+ * @openapi
+ * /api/nords/{nordId}/goals:
+ *   get:
+ *     tags: [Goals]
+ *     summary: Get goals linked to a nord (reverse lookup)
+ *     parameters:
+ *       - in: path
+ *         name: nordId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of goals linked to the nord
+ */
 goalsRouter.get('/nords/:nordId/goals', async (req: Request, res: Response) => {
   try {
     const goals = await goalsRepo.findGoalsByNord(req.params.nordId as string);
@@ -163,7 +389,32 @@ goalsRouter.get('/nords/:nordId/goals', async (req: Request, res: Response) => {
 // Relevant Nord Types
 // ══════════════════════════════════════════════════════════
 
-// ── POST /api/goals/:id/relevant-types ──
+/**
+ * @openapi
+ * /api/goals/{id}/relevant-types:
+ *   post:
+ *     tags: [Goals]
+ *     summary: Link a nord type as relevant to a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nord_type_id]
+ *             properties:
+ *               nord_type_id: { type: string, format: uuid }
+ *     responses:
+ *       201:
+ *         description: Type linked
+ *       409:
+ *         description: Already linked
+ */
 goalsRouter.post('/goals/:id/relevant-types', async (req: Request, res: Response) => {
   try {
     const { nord_type_id } = req.body;
@@ -177,7 +428,27 @@ goalsRouter.post('/goals/:id/relevant-types', async (req: Request, res: Response
   }
 });
 
-// ── DELETE /api/goals/:id/relevant-types/:typeId ──
+/**
+ * @openapi
+ * /api/goals/{id}/relevant-types/{typeId}:
+ *   delete:
+ *     tags: [Goals]
+ *     summary: Unlink a nord type from a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *       - in: path
+ *         name: typeId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       204:
+ *         description: Link removed
+ *       404:
+ *         description: Link not found
+ */
 goalsRouter.delete('/goals/:id/relevant-types/:typeId', async (req: Request, res: Response) => {
   try {
     const deleted = await goalsRepo.removeRelevantNordType(req.params.id as string, req.params.typeId as string);
@@ -193,7 +464,21 @@ goalsRouter.delete('/goals/:id/relevant-types/:typeId', async (req: Request, res
 // Persona Weights
 // ══════════════════════════════════════════════════════════
 
-// ── GET /api/goals/:id/persona-weights — Get all persona weights for a goal ──
+/**
+ * @openapi
+ * /api/goals/{id}/persona-weights:
+ *   get:
+ *     tags: [Goals]
+ *     summary: Get all persona weights for a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of persona goal weights
+ */
 goalsRouter.get('/goals/:id/persona-weights', async (req: Request, res: Response) => {
   try {
     const weights = await goalsRepo.findWeightsByGoal(req.params.id as string);
@@ -204,7 +489,34 @@ goalsRouter.get('/goals/:id/persona-weights', async (req: Request, res: Response
   }
 });
 
-// ── PUT /api/goals/:id/persona-weights/:personaId — Set persona weight ──
+/**
+ * @openapi
+ * /api/goals/{id}/persona-weights/{personaId}:
+ *   put:
+ *     tags: [Goals]
+ *     summary: Set persona weight for a goal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *       - in: path
+ *         name: personaId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [weight]
+ *             properties:
+ *               weight: { type: integer, minimum: -100, maximum: 100 }
+ *     responses:
+ *       200:
+ *         description: Updated weight
+ */
 goalsRouter.put('/goals/:id/persona-weights/:personaId', async (req: Request, res: Response) => {
   try {
     const { weight } = req.body;
@@ -227,7 +539,26 @@ goalsRouter.put('/goals/:id/persona-weights/:personaId', async (req: Request, re
 // Goal Edges — DAG connections
 // ══════════════════════════════════════════════════════════
 
-// ── GET /api/projects/:id/goal-edges — List all edges for a project ──
+/**
+ * @openapi
+ * /api/projects/{id}/goal-edges:
+ *   get:
+ *     tags: [Goals]
+ *     summary: List all goal DAG edges for a project
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of goal edges
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/GoalEdge' }
+ */
 goalsRouter.get('/projects/:id/goal-edges', async (req: Request, res: Response) => {
   try {
     const edges = await goalsRepo.findEdgesByProject(req.params.id as string);
@@ -238,7 +569,35 @@ goalsRouter.get('/projects/:id/goal-edges', async (req: Request, res: Response) 
   }
 });
 
-// ── POST /api/projects/:id/goal-edges — Create an edge ──
+/**
+ * @openapi
+ * /api/projects/{id}/goal-edges:
+ *   post:
+ *     tags: [Goals]
+ *     summary: Create a goal DAG edge (with cycle detection)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [source_goal_id, target_goal_id]
+ *             properties:
+ *               source_goal_id: { type: string, format: uuid }
+ *               target_goal_id: { type: string, format: uuid }
+ *     responses:
+ *       201:
+ *         description: Edge created
+ *       400:
+ *         description: Self-reference or circular dependency detected
+ *       409:
+ *         description: Edge already exists
+ */
 goalsRouter.post('/projects/:id/goal-edges', async (req: Request, res: Response) => {
   try {
     const { source_goal_id, target_goal_id } = req.body;
@@ -261,7 +620,23 @@ goalsRouter.post('/projects/:id/goal-edges', async (req: Request, res: Response)
   }
 });
 
-// ── DELETE /api/goal-edges/:id — Remove an edge ──
+/**
+ * @openapi
+ * /api/goal-edges/{id}:
+ *   delete:
+ *     tags: [Goals]
+ *     summary: Remove a goal DAG edge
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       204:
+ *         description: Edge removed
+ *       404:
+ *         description: Edge not found
+ */
 goalsRouter.delete('/goal-edges/:id', async (req: Request, res: Response) => {
   try {
     const deleted = await goalsRepo.removeEdge(req.params.id as string);
@@ -273,7 +648,23 @@ goalsRouter.delete('/goal-edges/:id', async (req: Request, res: Response) => {
   }
 });
 
-// ── GET /api/goals/check-nord/:nordId — Check if nord is linked to goals (deletion guard) ──
+/**
+ * @openapi
+ * /api/goals/check-nord/{nordId}:
+ *   get:
+ *     tags: [Goals]
+ *     summary: Check if a nord is linked to goals (deletion guard)
+ *     parameters:
+ *       - in: path
+ *         name: nordId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Nord is safe to delete
+ *       409:
+ *         description: Nord is linked to goals
+ */
 goalsRouter.get('/goals/check-nord/:nordId', async (req: Request, res: Response) => {
   try {
     const boundGoals = await goalsRepo.findGoalsByNord(req.params.nordId as string);

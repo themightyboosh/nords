@@ -4,6 +4,37 @@ import logger from '../lib/logger.js';
 export const logsRouter = Router();
 
 /**
+ * @openapi
+ * /api/logs:
+ *   post:
+ *     tags: [Logging]
+ *     summary: Receive batched client-side log entries
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [entries]
+ *             properties:
+ *               entries:
+ *                 type: array
+ *                 maxItems: 50
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     level: { type: string }
+ *                     message: { type: string }
+ *                     timestamp: { type: string }
+ *                     service: { type: string }
+ *                     meta: { type: object }
+ *                     stack: { type: string }
+ *     responses:
+ *       202:
+ *         description: Logs accepted
+ *       400:
+ *         description: Invalid entries array
+ *
  * POST /api/logs
  * Receives batched log entries from the client and pipes them into
  * the server's Winston instance. Each entry is tagged with service: 'nords-client'

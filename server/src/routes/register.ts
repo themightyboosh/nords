@@ -1,6 +1,26 @@
 /**
  * register.ts — Public registration endpoint.
  *
+ * @openapi
+ * /api/register:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Register a new user after Firebase auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [invite_key]
+ *             properties:
+ *               invite_key: { type: string }
+ *     responses:
+ *       200:
+ *         description: Registration result with user, org, and account
+ *       400:
+ *         description: Invalid or used invite key
+ *
  * Called after Firebase auth completes (email or Google sign-up).
  * Validates the invite key, provisions the user + org + account,
  * and clones all demo-flagged projects into their workspace.

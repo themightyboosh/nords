@@ -1794,10 +1794,36 @@ export async function dispatchTool(
   if (!handler) {
     return { success: false, error: `Unknown tool: ${toolName}` };
   }
+  const start = Date.now();
   try {
-    return await handler(ctx, args);
+    const result = await handler(ctx, args);
+    const latencyMs = Date.now() - start;
+
+    logger.info('tool.executed', {
+      tool: toolName,
+      session: ctx.sessionId,
+      project: ctx.projectId,
+      success: result.success,
+      latencyMs,
+    });
+
+    // Log variable collection events separately for analytics
+    if (toolName === 'nords_update_session_variables' && result.success) {
+      const vars = args.variables as Array<{ variable_id: string; value?: unknown }> | undefined;
+      if (vars?.length) {
+        logger.info('session.variables_collected', {
+          session: ctx.sessionId,
+          project: ctx.projectId,
+          variableCount: vars.length,
+          variableIds: vars.map(v => v.variable_id),
+        });
+      }
+    }
+
+    return result;
   } catch (err: any) {
-    logger.error('Tool dispatch error', { tool: toolName, error: err.message });
+    const latencyMs = Date.now() - start;
+    logger.error('Tool dispatch error', { tool: toolName, error: err.message, session: ctx.sessionId, latencyMs });
     return { success: false, error: err.message };
   }
 }

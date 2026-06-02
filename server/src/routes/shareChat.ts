@@ -1,7 +1,42 @@
 /**
  * shareChat.ts — Public chat endpoint for share links.
  *
- * POST /api/share/chat — No auth required. Token in header or body.
+ * @openapi
+ * /api/share/info:
+ *   get:
+ *     tags: [Chat]
+ *     summary: Get project info for a share link (public, token-gated)
+ *     parameters:
+ *       - in: header
+ *         name: x-share-token
+ *         schema: { type: string }
+ *       - in: query
+ *         name: token
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Project info for share display
+ *       401:
+ *         description: Invalid or missing share token
+ *
+ * /api/share/chat:
+ *   post:
+ *     tags: [Chat]
+ *     summary: Send a message via share link (no auth required)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [message]
+ *             properties:
+ *               message: { type: string }
+ *               token: { type: string }
+ *               sessionId: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: AI response with session ID
  *
  * Same Gemini + MCP pipeline as chat.ts, but:
  *   - Auth via share link token (not Firebase)

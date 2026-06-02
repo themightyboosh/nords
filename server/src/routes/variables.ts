@@ -7,7 +7,26 @@ const log = logger.child({ route: 'variables' });
 
 export const variablesRouter = Router();
 
-// ── GET /api/projects/:id/variables — List all project variables ──
+/**
+ * @openapi
+ * /api/projects/{id}/variables:
+ *   get:
+ *     tags: [Variables]
+ *     summary: List all project variables
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of project variables
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/ProjectVariable' }
+ */
 variablesRouter.get('/projects/:id/variables', async (req: Request, res: Response) => {
   try {
     const variables = await variablesRepo.findByProject(req.params.id as string);
@@ -18,7 +37,28 @@ variablesRouter.get('/projects/:id/variables', async (req: Request, res: Respons
   }
 });
 
-// ── POST /api/projects/:id/variables — Create a variable ──
+/**
+ * @openapi
+ * /api/projects/{id}/variables:
+ *   post:
+ *     tags: [Variables]
+ *     summary: Create a variable
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/CreateVariableRequest' }
+ *     responses:
+ *       201:
+ *         description: Created variable
+ *       409:
+ *         description: Variable name already exists
+ */
 variablesRouter.post('/projects/:id/variables', async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
@@ -39,7 +79,25 @@ variablesRouter.post('/projects/:id/variables', async (req: Request, res: Respon
   }
 });
 
-// ── PUT /api/variables/:id — Update a variable ──
+/**
+ * @openapi
+ * /api/variables/{id}:
+ *   put:
+ *     tags: [Variables]
+ *     summary: Update a variable
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Updated variable
+ *       404:
+ *         description: Variable not found
+ *       409:
+ *         description: Variable name conflict
+ */
 variablesRouter.put('/variables/:id', async (req: Request, res: Response) => {
   try {
     const variable = await variablesRepo.update(req.params.id as string, req.body);
@@ -54,7 +112,23 @@ variablesRouter.put('/variables/:id', async (req: Request, res: Response) => {
   }
 });
 
-// ── DELETE /api/variables/:id — Delete a variable ──
+/**
+ * @openapi
+ * /api/variables/{id}:
+ *   delete:
+ *     tags: [Variables]
+ *     summary: Delete a variable
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       204:
+ *         description: Variable deleted
+ *       404:
+ *         description: Variable not found
+ */
 variablesRouter.delete('/variables/:id', async (req: Request, res: Response) => {
   try {
     const deleted = await variablesRepo.remove(req.params.id as string);
@@ -66,7 +140,32 @@ variablesRouter.delete('/variables/:id', async (req: Request, res: Response) => 
   }
 });
 
-// ── PUT /api/projects/:id/variables/reorder — Reorder variables ──
+/**
+ * @openapi
+ * /api/projects/{id}/variables/reorder:
+ *   put:
+ *     tags: [Variables]
+ *     summary: Reorder variables within a project
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [variableIds]
+ *             properties:
+ *               variableIds:
+ *                 type: array
+ *                 items: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Variables reordered
+ */
 variablesRouter.put('/projects/:id/variables/reorder', async (req: Request, res: Response) => {
   try {
     const { variableIds } = req.body;
@@ -81,7 +180,32 @@ variablesRouter.put('/projects/:id/variables/reorder', async (req: Request, res:
   }
 });
 
-// ── POST /api/projects/:id/variables/bulk — Bulk upsert variables ──
+/**
+ * @openapi
+ * /api/projects/{id}/variables/bulk:
+ *   post:
+ *     tags: [Variables]
+ *     summary: Bulk upsert variables
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [variables]
+ *             properties:
+ *               variables:
+ *                 type: array
+ *                 items: { $ref: '#/components/schemas/CreateVariableRequest' }
+ *     responses:
+ *       200:
+ *         description: Bulk upsert results
+ */
 variablesRouter.post('/projects/:id/variables/bulk', async (req: Request, res: Response) => {
   try {
     const { variables } = req.body;
@@ -100,7 +224,21 @@ variablesRouter.post('/projects/:id/variables/bulk', async (req: Request, res: R
 // Collection Groups — Grouped containers for variables
 // ══════════════════════════════════════════════════════════
 
-// ── GET /api/projects/:id/collection-groups — List groups with nested variables ──
+/**
+ * @openapi
+ * /api/projects/{id}/collection-groups:
+ *   get:
+ *     tags: [Variables]
+ *     summary: List collection groups with nested variables
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Groups with variables and ungrouped variables
+ */
 variablesRouter.get('/projects/:id/collection-groups', async (req: Request, res: Response) => {
   try {
     const groups = await collectionGroupsRepo.findByProject(req.params.id as string);
@@ -122,7 +260,35 @@ variablesRouter.get('/projects/:id/collection-groups', async (req: Request, res:
   }
 });
 
-// ── POST /api/projects/:id/collection-groups — Create group ──
+/**
+ * @openapi
+ * /api/projects/{id}/collection-groups:
+ *   post:
+ *     tags: [Variables]
+ *     summary: Create a collection group
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name]
+ *             properties:
+ *               name: { type: string }
+ *               description: { type: string }
+ *               icon: { type: string }
+ *               accent_color: { type: string }
+ *     responses:
+ *       201:
+ *         description: Created collection group
+ *       409:
+ *         description: Name conflict
+ */
 variablesRouter.post('/projects/:id/collection-groups', async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
@@ -143,7 +309,23 @@ variablesRouter.post('/projects/:id/collection-groups', async (req: Request, res
   }
 });
 
-// ── PUT /api/collection-groups/:id — Update group ──
+/**
+ * @openapi
+ * /api/collection-groups/{id}:
+ *   put:
+ *     tags: [Variables]
+ *     summary: Update a collection group
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Updated group
+ *       404:
+ *         description: Group not found
+ */
 variablesRouter.put('/collection-groups/:id', async (req: Request, res: Response) => {
   try {
     const group = await collectionGroupsRepo.update(req.params.id as string, req.body);
@@ -158,7 +340,23 @@ variablesRouter.put('/collection-groups/:id', async (req: Request, res: Response
   }
 });
 
-// ── DELETE /api/collection-groups/:id — Soft-delete group ──
+/**
+ * @openapi
+ * /api/collection-groups/{id}:
+ *   delete:
+ *     tags: [Variables]
+ *     summary: Soft-delete a collection group
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       204:
+ *         description: Group deleted
+ *       404:
+ *         description: Group not found
+ */
 variablesRouter.delete('/collection-groups/:id', async (req: Request, res: Response) => {
   try {
     const deleted = await collectionGroupsRepo.softDelete(req.params.id as string);
@@ -170,7 +368,32 @@ variablesRouter.delete('/collection-groups/:id', async (req: Request, res: Respo
   }
 });
 
-// ── PUT /api/projects/:id/collection-groups/reorder — Reorder groups ──
+/**
+ * @openapi
+ * /api/projects/{id}/collection-groups/reorder:
+ *   put:
+ *     tags: [Variables]
+ *     summary: Reorder collection groups
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [groupIds]
+ *             properties:
+ *               groupIds:
+ *                 type: array
+ *                 items: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Groups reordered
+ */
 variablesRouter.put('/projects/:id/collection-groups/reorder', async (req: Request, res: Response) => {
   try {
     const { groupIds } = req.body;

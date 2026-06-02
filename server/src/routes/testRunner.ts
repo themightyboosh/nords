@@ -1,6 +1,192 @@
 /**
  * testRunnerRoutes.ts — REST API for Test Scenarios and Test Runs
  *
+ * @openapi
+ * /api/projects/{id}/test-scenarios:
+ *   get:
+ *     tags: [Test Runner]
+ *     summary: List test scenarios for a project
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of test scenarios
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/TestScenario' }
+ *   post:
+ *     tags: [Test Runner]
+ *     summary: Create a test scenario
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       201:
+ *         description: Created test scenario
+ *
+ * /api/test-scenarios/{id}:
+ *   put:
+ *     tags: [Test Runner]
+ *     summary: Update a test scenario
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Updated scenario
+ *   delete:
+ *     tags: [Test Runner]
+ *     summary: Delete a test scenario
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       204:
+ *         description: Scenario deleted
+ *
+ * /api/test-scenarios/{id}/runs:
+ *   get:
+ *     tags: [Test Runner]
+ *     summary: List runs for a test scenario
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of test runs
+ *
+ * /api/test-scenarios/{id}/run:
+ *   post:
+ *     tags: [Test Runner]
+ *     summary: Execute a test run (triggers Gemini + MCP loop)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Completed test run result
+ *
+ * /api/test-runs/{id}:
+ *   get:
+ *     tags: [Test Runner]
+ *     summary: Get test run details
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Test run with conversation log
+ *   delete:
+ *     tags: [Test Runner]
+ *     summary: Delete a test run
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       204:
+ *         description: Test run deleted
+ *
+ * /api/test-runs/{id}/stream:
+ *   get:
+ *     tags: [Test Runner]
+ *     summary: SSE stream for live test run progress
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Server-Sent Events stream
+ *         content:
+ *           text/event-stream: {}
+ *
+ * /api/test-runs/{id}/cancel:
+ *   post:
+ *     tags: [Test Runner]
+ *     summary: Cancel a running test
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Cancellation acknowledged
+ *
+ * /api/test-runs/{id}/critique:
+ *   post:
+ *     tags: [Test Runner]
+ *     summary: Generate AI critique for a test run
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Critique text
+ *
+ * /api/test-runs/{id}/export:
+ *   get:
+ *     tags: [Test Runner]
+ *     summary: Export test run as markdown
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Markdown export of the test run
+ *         content:
+ *           text/markdown: {}
+ *
+ * /api/test-runs/{id}/report/conversation:
+ *   get:
+ *     tags: [Test Runner]
+ *     summary: Get conversation-format report
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Conversation report with messages and tool calls
+ *
+ * /api/test-runs/{id}/report/detailed:
+ *   get:
+ *     tags: [Test Runner]
+ *     summary: Get detailed report with metrics
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Detailed report with timing, tool usage, and completion
+ *
  * CRUD for test scenarios, run trigger with SSE streaming,
  * export, critique, and cancellation.
  */

@@ -1,11 +1,131 @@
 /**
  * sessionExplorer.ts — Session browsing, replay, and export API.
  *
- * GET /projects/:id/sessions          — List sessions with filters
- * GET /sessions/:id/events            — Event stream for a session
- * GET /sessions/:id/replay            — Replay data (rounds with timing)
- * GET /sessions/:id/export            — Download as markdown or CSV
- * GET /sessions/:id/metrics           — Computed metrics summary
+ * @openapi
+ * /api/projects/{id}/sessions:
+ *   get:
+ *     tags: [Sessions]
+ *     summary: List sessions for a project with filters
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: source
+ *         schema: { type: string }
+ *         description: Comma-separated source types (chat,test,api,share)
+ *       - in: query
+ *         name: status
+ *         schema: { type: string, enum: [active, completed, abandoned] }
+ *       - in: query
+ *         name: from
+ *         schema: { type: string, format: date-time }
+ *       - in: query
+ *         name: to
+ *         schema: { type: string, format: date-time }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 50 }
+ *       - in: query
+ *         name: offset
+ *         schema: { type: integer, default: 0 }
+ *     responses:
+ *       200:
+ *         description: Paginated session list
+ */
+
+/**
+ * @openapi
+ * /api/sessions/{id}/events:
+ *   get:
+ *     tags: [Sessions]
+ *     summary: Get event stream for a session
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of session events
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/SessionEvent' }
+ */
+
+/**
+ * @openapi
+ * /api/sessions/{id}/replay:
+ *   get:
+ *     tags: [Sessions]
+ *     summary: Replay data with rounds and timing
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Replay data with conversation rounds
+ */
+
+/**
+ * @openapi
+ * /api/sessions/{id}/export:
+ *   get:
+ *     tags: [Sessions]
+ *     summary: Download session as markdown or CSV
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: format
+ *         schema: { type: string, enum: [markdown, csv], default: markdown }
+ *     responses:
+ *       200:
+ *         description: Exported session data
+ */
+
+/**
+ * @openapi
+ * /api/sessions/{id}/metrics:
+ *   get:
+ *     tags: [Sessions]
+ *     summary: Computed metrics summary for a session
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Session metrics
+ */
+
+/**
+ * @openapi
+ * /api/sessions/{id}/variables:
+ *   get:
+ *     tags: [Sessions]
+ *     summary: Get collected variables grouped by collection group
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of collected variable groups
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/CollectedVariableGroup' }
  */
 
 import { Router, Request, Response } from 'express';

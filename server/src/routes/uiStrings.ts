@@ -1,10 +1,42 @@
 /**
  * uiStrings routes — GET/PUT for runtime UI string management.
  *
- * GET  /api/ui-strings          → merged defaults + overrides (public, cached in memory)
- * GET  /api/ui-strings/overrides → just the overrides (admin only)
- * PUT  /api/ui-strings          → update overrides (admin only)
- * POST /api/ui-strings/reset    → reset all overrides to defaults (admin only)
+ * @openapi
+ * /api/ui-strings:
+ *   get:
+ *     tags: [Admin]
+ *     summary: Get merged UI strings (defaults + overrides)
+ *     responses:
+ *       200:
+ *         description: Merged UI strings object
+ *   put:
+ *     tags: [Admin]
+ *     summary: Update UI string overrides (admin only)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Updated overrides
+ *
+ * /api/ui-strings/overrides:
+ *   get:
+ *     tags: [Admin]
+ *     summary: Get only custom UI string overrides (admin only)
+ *     responses:
+ *       200:
+ *         description: Overrides object
+ *
+ * /api/ui-strings/reset:
+ *   post:
+ *     tags: [Admin]
+ *     summary: Reset all UI string overrides to defaults (admin only)
+ *     responses:
+ *       200:
+ *         description: Reset confirmation
  */
 
 import { Router } from 'express';

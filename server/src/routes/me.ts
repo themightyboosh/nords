@@ -1,5 +1,19 @@
 /**
  * me.ts — GET /api/me
+ *
+ * @openapi
+ * /api/me:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Get authenticated user profile
+ *     responses:
+ *       200:
+ *         description: User profile with role
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: User not found in database
+ *
  * Returns the authenticated user's profile from the database.
  * Used by the client to determine role-based access (admin vs member).
  */

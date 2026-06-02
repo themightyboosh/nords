@@ -1,9 +1,64 @@
 /**
  * shareLinksRoutes.ts — Admin CRUD for share links (authenticated).
  *
- * POST   /api/projects/:id/share-links       — Create a share link
- * GET    /api/projects/:id/share-links       — List share links for project
- * DELETE /api/projects/:id/share-links/:linkId — Revoke a share link
+ * @openapi
+ * /api/projects/{id}/share-links:
+ *   post:
+ *     tags: [Share Links]
+ *     summary: Create a share link for a project
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [label]
+ *             properties:
+ *               label: { type: string }
+ *               welcome_message_override: { type: string }
+ *               model: { type: string }
+ *               persona_id_override: { type: string, format: uuid }
+ *               max_sessions: { type: integer }
+ *               expires_at: { type: string, format: date-time }
+ *               prefills: { type: array }
+ *     responses:
+ *       201:
+ *         description: Created share link
+ *   get:
+ *     tags: [Share Links]
+ *     summary: List share links for a project
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of share links
+ *
+ * /api/projects/{id}/share-links/{linkId}:
+ *   delete:
+ *     tags: [Share Links]
+ *     summary: Revoke a share link
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *       - in: path
+ *         name: linkId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Revoked share link
+ *       404:
+ *         description: Share link not found
  */
 
 import { Router } from 'express';

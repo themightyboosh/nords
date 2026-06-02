@@ -3,8 +3,43 @@ import { createHash } from 'node:crypto';
 /**
  * chat.ts — Gemini proxy with full tool-calling loop.
  *
- * POST /api/projects/:id/chat  — Send a message, get AI response
- * GET  /api/sessions/:id/messages — Get conversation history
+ * @openapi
+ * /api/projects/{id}/chat:
+ *   post:
+ *     tags: [Chat]
+ *     summary: Send a message and get AI response via Gemini
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [message]
+ *             properties:
+ *               message: { type: string }
+ *               session_id: { type: string, format: uuid }
+ *               persona_id: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: AI response with tool results
+ *
+ * /api/sessions/{id}/messages:
+ *   get:
+ *     tags: [Chat]
+ *     summary: Get conversation history for a session
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Array of conversation messages
  *
  * Flow per turn:
  *   1. Resolve/create session

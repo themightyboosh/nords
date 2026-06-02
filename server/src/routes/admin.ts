@@ -1,6 +1,39 @@
 /**
  * admin.ts — Admin-only API routes.
  *
+ * @openapi
+ * /api/admin/users:
+ *   get:
+ *     tags: [Admin]
+ *     summary: List all users (admin only)
+ *     responses:
+ *       200:
+ *         description: Array of user objects
+ *
+ * /api/admin/users/{id}:
+ *   put:
+ *     tags: [Admin]
+ *     summary: Update a user's role (admin only)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Updated user
+ *   delete:
+ *     tags: [Admin]
+ *     summary: Delete a user (admin only)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       204:
+ *         description: User deleted
+ *
  * Provides user management (list, update role, delete) for platform admins.
  * Protected by an admin guard that checks the user's role in the DB.
  */

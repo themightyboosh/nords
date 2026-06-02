@@ -278,6 +278,18 @@ export async function executeTestRun(
     );
     const sessionId = session.id;
 
+    logger.info('test.run.started', {
+      runId,
+      sessionId,
+      scenarioId: scenario.id,
+      scenarioName: scenario.name,
+      projectId,
+      projectMode,
+      agentModel: scenario.agent_model,
+      userProfile: scenario.user_profile,
+      maxRounds: scenario.max_rounds,
+    });
+
     // Fire session_start event
     logEvent(sessionId, 'session_start', 'source', {
       source_type: 'test',
@@ -858,6 +870,24 @@ SENTIMENT: [2 sentences]`
       sentiment: userSentiment ?? undefined,
       passed,
       stopReason: stopReason ?? undefined,
+    });
+
+    logger.info('test.run.completed', {
+      runId,
+      sessionId,
+      scenarioName: scenario.name,
+      projectId,
+      rounds: transcript.length,
+      completionPct,
+      passed,
+      stopReason,
+      syntheticNps,
+      totalTokensIn,
+      totalTokensOut,
+      totalLatencyMs: totalLatency,
+      toolCallCount: totalToolCallCount,
+      propertiesCollected: Object.keys(propertiesCollected).length,
+      coverageGaps: coverageGaps.length,
     });
 
   } catch (err) {
