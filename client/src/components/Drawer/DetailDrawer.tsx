@@ -39,6 +39,8 @@ interface DetailDrawerProps {
     options?: string[];
     card_row?: number;
     required?: boolean;
+    defaultValue?: string | number | boolean | null;
+    config?: Record<string, unknown>;
   }>>;
   /** Callback when user clicks a connection in the connections tab */
   onSelectConnection?: (connectionId: string) => void;
