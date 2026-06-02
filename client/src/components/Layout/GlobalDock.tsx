@@ -13,7 +13,7 @@ import { useState, useMemo, useEffect } from 'react';
 import {
   Eye, LayoutGrid, Users, Target,
   EyeIcon, EyeOff, ChevronDown, ArrowLeftRight, Unlink,
-  ArrowRight, ArrowLeft, Minus, Layers, CircleDot,
+  ArrowRight, ArrowLeft, Minus, Layers, CircleDot, Filter,
 } from 'lucide-react';
 import { useLens, type PersonaTypeVisibility } from '../../context/LensContext';
 import { useTypeVisibility } from '../../hooks/useTypeVisibility';
@@ -43,13 +43,14 @@ const DIRECTION_ROWS: { key: DirectionKey; label: string; icon: React.ReactNode 
 ];
 
 export default function GlobalDock({ graph, personas = [], projectMode }: GlobalDockProps) {
-  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activePersonaId, setActivePersonaId, activeLine, setActiveLine, showContext, setShowContext, personaTypeFilter, cyclePersonaTypeFilter } = useLens();
+  const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activePersonaId, setActivePersonaId, activeLine, setActiveLine, showContext, setShowContext, personaTypeFilter, cyclePersonaTypeFilter, personaEngagementFilter, cyclePersonaEngagementFilter } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
 
   const { visibleConnectionTypes } = useTypeVisibility();
   const { nordTypes, connectionTypes } = useTypeRegistryContext();
   const {
     isLaneCollapsed, toggleLaneCollapse,
+    isLaneHidden, toggleLaneHidden,
     getNordTypeVisibility, cycleNordTypeVisibility, toggleNordTypeFilter,
     getDirectionFilter, toggleDirectionFilter,
   } = useBoardSettingsContext();
@@ -78,7 +79,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
   const nonSystemTypes = useMemo(() => visibleConnectionTypes.filter(t => !t.isSystem), [visibleConnectionTypes]);
 
   // Count hidden lanes / dimmed types for badge display
-  const hiddenLaneCount = useMemo(() => nonSystemTypes.filter(t => isLaneCollapsed(t.id)).length, [nonSystemTypes, isLaneCollapsed]);
+  const hiddenLaneCount = useMemo(() => nonSystemTypes.filter(t => isLaneHidden(t.id)).length, [nonSystemTypes, isLaneHidden]);
 
   // Nord types present in the project (with counts)
   const projectNordTypes = useMemo(() => {
@@ -252,6 +253,20 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
                   <ChevronDown size={10} className="nords-dock__chevron" />
                 </button>
               </div>
+
+              {/* Persona: Engagement filter (All / Engaged / Disengaged) */}
+              <div className="nords-dock__section">
+                <button
+                  className={`nords-dock__item ${personaEngagementFilter !== 'all' ? 'is-active' : ''}`}
+                  onClick={cyclePersonaEngagementFilter}
+                  title="Filter by engagement: All → Engaged → Disengaged"
+                >
+                  <Filter size={14} strokeWidth={1.6} />
+                  <span className="nords-dock__label">
+                    {personaEngagementFilter === 'all' ? 'All' : personaEngagementFilter === 'engaged' ? 'Engaged' : 'Disengaged'}
+                  </span>
+                </button>
+              </div>
             </>
           )}
 
@@ -271,9 +286,9 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
               </div>
               <div className="nords-flyout__list">
                 {nonSystemTypes.map(type => {
-                  const hidden = isLaneCollapsed(type.id);
+                  const hidden = isLaneHidden(type.id);
                   return (
-                    <div key={type.id} className={`nords-flyout__row nords-flyout__row--selectable ${!hidden ? 'is-active' : ''}`} onClick={() => toggleLaneCollapse(type.id)}>
+                    <div key={type.id} className={`nords-flyout__row nords-flyout__row--selectable ${!hidden ? 'is-active' : ''}`} onClick={() => toggleLaneHidden(type.id)}>
                       <div className="nords-flyout__row-left">
                         {type.icon && <type.icon size={13} style={{ color: type.color, flexShrink: 0 }} />}
                         <span className="nords-flyout__row-name">{type.name}</span>
@@ -441,8 +456,8 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
                 onClick={() => { setActivePersonaId(p.id); setOpenPanel(null); }}
               >
                 <div className="nords-flyout__row-left">
-                  <Users size={14} strokeWidth={1.6} style={{ color: 'var(--nords-color-text-tertiary)', flexShrink: 0 }} />
-                  <span className="nords-flyout__row-name">{p.name}</span>
+                  <Users size={14} strokeWidth={1.6} style={{ color: p.accent_color || 'var(--nords-color-text-tertiary)', flexShrink: 0 }} />
+                  <span className="nords-flyout__row-name" style={{ color: p.accent_color || undefined }}>{p.name}</span>
                 </div>
               </div>
             ))}

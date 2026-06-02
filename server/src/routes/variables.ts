@@ -7,6 +7,21 @@ const log = logger.child({ route: 'variables' });
 
 export const variablesRouter = Router();
 
+/** Server-side snake_case normalization (safety net for client-side conversion) */
+function toSnakeCase(input: string): string {
+  return input
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+    .replace(/[\s\-\.]+/g, '_')
+    .replace(/[^a-zA-Z0-9_]/g, '')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '')
+    .toLowerCase()
+    || 'variable';
+}
+
+const SNAKE_CASE_RE = /^[a-z][a-z0-9_]*$/;
+
 /**
  * @openapi
  * /api/projects/{id}/variables:
@@ -61,13 +76,19 @@ variablesRouter.get('/projects/:id/variables', async (req: Request, res: Respons
  */
 variablesRouter.post('/projects/:id/variables', async (req: Request, res: Response) => {
   try {
-    const { name } = req.body;
+    let { name } = req.body;
     if (!name?.trim()) {
       return res.status(400).json({ error: 'name is required' });
+    }
+    // Auto-normalize to snake_case
+    name = toSnakeCase(name);
+    if (!SNAKE_CASE_RE.test(name)) {
+      return res.status(400).json({ error: `Variable name must be snake_case (got "${req.body.name}")` });
     }
     const variable = await variablesRepo.create({
       project_id: req.params.id as string,
       ...req.body,
+      name,
     });
     res.status(201).json(variable);
   } catch (err: any) {
@@ -100,6 +121,13 @@ variablesRouter.post('/projects/:id/variables', async (req: Request, res: Respon
  */
 variablesRouter.put('/variables/:id', async (req: Request, res: Response) => {
   try {
+    // Auto-normalize name to snake_case if provided
+    if (req.body.name) {
+      req.body.name = toSnakeCase(req.body.name);
+      if (!SNAKE_CASE_RE.test(req.body.name)) {
+        return res.status(400).json({ error: `Variable name must be snake_case (got "${req.body.name}")` });
+      }
+    }
     const variable = await variablesRepo.update(req.params.id as string, req.body);
     if (!variable) return res.status(404).json({ error: 'Variable not found' });
     res.json(variable);

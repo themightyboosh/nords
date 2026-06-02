@@ -37,6 +37,8 @@ interface ManagePersonasProps {
   open: boolean;
   onClose: () => void;
   connectionTypes: ConnectionType[];
+  /** Called after persona mutations so parent can refetch its own persona state */
+  onPersonaChanged?: () => void;
 }
 
 
@@ -52,19 +54,26 @@ function useDebouncedSave(saveFn: (id: string, fields: Record<string, unknown>) 
 
 // ── Main Component ──
 
-export function ManagePersonas({ projectId, open, onClose, connectionTypes }: ManagePersonasProps) {
+export function ManagePersonas({ projectId, open, onClose, connectionTypes, onPersonaChanged }: ManagePersonasProps) {
   const {
     personas, createPersona, updatePersona, deletePersona,
     addMentalModel, updateMentalModel, deleteMentalModel,
     updateCategoryWeight,
   } = usePersonas(projectId);
 
+  // Wrap updatePersona to notify parent of changes (fixes stale avatar on canvas/drawer)
+  const handleUpdate = useCallback(async (id: string, fields: Record<string, unknown>) => {
+    const result = await updatePersona(id, fields);
+    onPersonaChanged?.();
+    return result;
+  }, [updatePersona, onPersonaChanged]);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const { strings: UI_STRINGS } = useUIStrings();
 
   const selected = personas.find(p => p.id === selectedId) || null;
-  const debouncedSave = useDebouncedSave(updatePersona);
+  const debouncedSave = useDebouncedSave(handleUpdate);
 
   // Auto-select first persona
   React.useEffect(() => {
@@ -73,12 +82,16 @@ export function ManagePersonas({ projectId, open, onClose, connectionTypes }: Ma
 
   const handleCreate = async () => {
     const p = await createPersona();
-    if (p) setSelectedId(p.id);
+    if (p) {
+      setSelectedId(p.id);
+      onPersonaChanged?.();
+    }
   };
 
   const handleDelete = async (id: string) => {
     await deletePersona(id);
     if (selectedId === id) setSelectedId(personas.find(p => p.id !== id)?.id || null);
+    onPersonaChanged?.();
   };
 
   // ── Avatar seed options (20 deterministic seeds) ──
@@ -136,7 +149,7 @@ export function ManagePersonas({ projectId, open, onClose, connectionTypes }: Ma
                 showAvatarPicker={showAvatarPicker}
                 setShowAvatarPicker={setShowAvatarPicker}
                 avatarSeeds={avatarSeeds}
-                onUpdate={updatePersona}
+                onUpdate={handleUpdate}
                 onDebouncedUpdate={debouncedSave}
                 onDelete={() => handleDelete(selected.id)}
                 onAddModel={() => addMentalModel(selected.id)}
@@ -311,30 +324,6 @@ function PersonaEditor({
         />
         <p className="manage-personas__temp-hint">
           Injected into the AI briefing — shapes how the persona communicates throughout every session.
-        </p>
-      </div>
-
-      {/* ── AI Temperature ── */}
-      <div className="manage-personas__section">
-        <label className="manage-personas__section-title">
-          AI Temperature
-          <span className="manage-personas__temp-value">{(persona.temperature ?? 1.0).toFixed(1)}</span>
-        </label>
-        <div className="manage-personas__temp-row">
-          <span className="manage-personas__temp-label">Precise</span>
-          <input
-            type="range"
-            className="manage-personas__temp-slider"
-            min={0}
-            max={2}
-            step={0.1}
-            value={persona.temperature ?? 1.0}
-            onChange={e => onUpdate(persona.id, { temperature: parseFloat(e.target.value) })}
-          />
-          <span className="manage-personas__temp-label">Creative</span>
-        </div>
-        <p className="manage-personas__temp-hint">
-          Controls randomness in AI responses. Lower values produce more focused, deterministic output. Higher values encourage creativity and variation. Default: 1.0 (Gemini balanced).
         </p>
       </div>
 

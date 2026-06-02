@@ -188,18 +188,50 @@ export function GoalDetailDrawer({
                 </div>
 
                 <p className="goal-detail-drawer__hint">
-                  When this goal completes, does the session end? If so, how does the next session start?
+                  When this goal completes, does the session end?
                 </p>
 
-                <select
-                  className="goal-detail-drawer__select"
-                  value={goal.end_type || ''}
-                  onChange={(e) => onUpdate(goal.id, { end_type: e.target.value || null })}
-                >
-                  <option value="">No end — session continues</option>
-                  <option value="reset">🔴 Reset — end session, start fresh</option>
-                  <option value="continue">🟡 Continue — end session, carry over</option>
-                </select>
+                {/* Continue / End toggle */}
+                <div className="goal-detail-drawer__end-toggle">
+                  <button
+                    className={`goal-detail-drawer__end-toggle-btn ${!goal.end_type ? 'is-active' : ''}`}
+                    onClick={() => onUpdate(goal.id, { end_type: null })}
+                  >
+                    Continue
+                  </button>
+                  <button
+                    className={`goal-detail-drawer__end-toggle-btn ${goal.end_type ? 'is-active is-end' : ''}`}
+                    onClick={async () => {
+                      // If switching TO end_type and there are downstream edges, confirm pruning
+                      if (!goal.end_type && nextGoalEdges.length > 0) {
+                        const confirmed = window.confirm(
+                          `This goal unlocks ${nextGoalEdges.length} downstream goal${nextGoalEdges.length > 1 ? 's' : ''}. ` +
+                          'Setting it as an End goal will remove those links. Continue?'
+                        );
+                        if (!confirmed) return;
+                        // Delete all outgoing edges
+                        for (const edge of nextGoalEdges) {
+                          await onEdgeDelete(edge.id);
+                        }
+                      }
+                      onUpdate(goal.id, { end_type: goal.end_type || 'continue' });
+                    }}
+                  >
+                    ⏹ End
+                  </button>
+                </div>
+
+                {/* Reset checkbox — only shown when End is selected */}
+                {goal.end_type && (
+                  <label className="goal-detail-drawer__reset-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={goal.end_type === 'reset'}
+                      onChange={(e) => onUpdate(goal.id, { end_type: e.target.checked ? 'reset' : 'continue' })}
+                    />
+                    <span>Reset session (start fresh with welcome message)</span>
+                  </label>
+                )}
               </div>
 
               {/* ── Achieved Prompt ── */}
@@ -327,8 +359,8 @@ export function GoalDetailDrawer({
                 />
               </div>
 
-              {/* ── Unlocks (read-only downstream) ── */}
-              {nextGoalEdges.length > 0 && (
+              {/* ── Unlocks (read-only downstream) — hidden for End goals ── */}
+              {!goal.end_type && nextGoalEdges.length > 0 && (
                 <div className="goal-detail-drawer__section">
                   <div className="goal-detail-drawer__section-header">
                     <ArrowRight size={14} />
@@ -354,8 +386,8 @@ export function GoalDetailDrawer({
                 </div>
               )}
 
-              {/* ── Fork Type ── */}
-              {nextGoalEdges.length > 1 && (
+              {/* ── Fork Type — hidden for End goals ── */}
+              {!goal.end_type && nextGoalEdges.length > 1 && (
                 <div className="goal-detail-drawer__section">
                   <div className="goal-detail-drawer__section-header">
                     <span>Fork Type</span>
@@ -451,51 +483,59 @@ function AddVariableBindingRow({
   collectionGroups: CollectionGroup[];
   onAdd: (variableId: string) => void;
 }) {
+  const [selectedGroupId, setSelectedGroupId] = useState('');
   const [selectedId, setSelectedId] = useState('');
+
+  // Groups that have at least one unbound variable
+  const availableGroups = collectionGroups.filter(g =>
+    variables.some(v => v.collection_group_id === g.id)
+  );
+  const ungroupedVars = variables.filter(v => !v.collection_group_id);
+
+  // Variables in the selected group (or ungrouped)
+  const filteredVars = selectedGroupId === '__ungrouped__'
+    ? ungroupedVars
+    : variables.filter(v => v.collection_group_id === selectedGroupId);
 
   const handleAdd = () => {
     if (selectedId) {
       onAdd(selectedId);
       setSelectedId('');
+      setSelectedGroupId('');
     }
   };
 
-  // Build grouped options: group-name → variables in that group
-  const grouped = collectionGroups
-    .map(g => ({
-      group: g,
-      vars: variables.filter(v => v.collection_group_id === g.id),
-    }))
-    .filter(g => g.vars.length > 0);
-  const ungrouped = variables.filter(v => !v.collection_group_id);
+  if (variables.length === 0) return null;
 
   return (
-    <div className="goal-detail-drawer__add-binding">
+    <div className="goal-detail-drawer__add-binding goal-detail-drawer__add-binding--cascade">
       <select
         className="goal-detail-drawer__select goal-detail-drawer__select--small"
-        value={selectedId}
-        onChange={e => setSelectedId(e.target.value)}
+        value={selectedGroupId}
+        onChange={e => { setSelectedGroupId(e.target.value); setSelectedId(''); }}
       >
-        <option value="">Add collection…</option>
-        {grouped.map(({ group, vars }) => (
-          <optgroup key={group.id} label={group.name}>
-            {vars.map(v => (
-              <option key={v.id} value={v.id}>
-                {v.name} ({v.type}){v.required ? ' ✦' : ''}
-              </option>
-            ))}
-          </optgroup>
+        <option value="">Select group…</option>
+        {availableGroups.map(g => (
+          <option key={g.id} value={g.id}>{g.name}</option>
         ))}
-        {ungrouped.length > 0 && (
-          <optgroup label="Ungrouped">
-            {ungrouped.map(v => (
-              <option key={v.id} value={v.id}>
-                {v.name} ({v.type}){v.required ? ' ✦' : ''}
-              </option>
-            ))}
-          </optgroup>
+        {ungroupedVars.length > 0 && (
+          <option value="__ungrouped__">Ungrouped</option>
         )}
       </select>
+      {selectedGroupId && (
+        <select
+          className="goal-detail-drawer__select goal-detail-drawer__select--small"
+          value={selectedId}
+          onChange={e => setSelectedId(e.target.value)}
+        >
+          <option value="">Select variable…</option>
+          {filteredVars.map(v => (
+            <option key={v.id} value={v.id}>
+              {v.name} ({v.type}){v.required ? ' ✦' : ''}
+            </option>
+          ))}
+        </select>
+      )}
       <button
         className="goal-detail-drawer__add-btn"
         onClick={handleAdd}
@@ -516,27 +556,49 @@ function AddRelevantNordRow({
   nords: NordRef[];
   onAdd: (nordId: string) => void;
 }) {
+  const [selectedType, setSelectedType] = useState('');
   const [selectedId, setSelectedId] = useState('');
+
+  // Derive unique types from available nords
+  const types = Array.from(new Set(nords.map(n => n.type_name))).sort();
+  const filteredNords = selectedType
+    ? nords.filter(n => n.type_name === selectedType)
+    : [];
 
   const handleAdd = () => {
     if (selectedId) {
       onAdd(selectedId);
       setSelectedId('');
+      setSelectedType('');
     }
   };
 
+  if (nords.length === 0) return null;
+
   return (
-    <div className="goal-detail-drawer__add-binding">
+    <div className="goal-detail-drawer__add-binding goal-detail-drawer__add-binding--cascade">
       <select
         className="goal-detail-drawer__select goal-detail-drawer__select--small"
-        value={selectedId}
-        onChange={e => setSelectedId(e.target.value)}
+        value={selectedType}
+        onChange={e => { setSelectedType(e.target.value); setSelectedId(''); }}
       >
-        <option value="">Link nord…</option>
-        {nords.map(n => (
-          <option key={n.id} value={n.id}>{n.title} ({n.type_name})</option>
+        <option value="">Select type…</option>
+        {types.map(t => (
+          <option key={t} value={t}>{t}</option>
         ))}
       </select>
+      {selectedType && (
+        <select
+          className="goal-detail-drawer__select goal-detail-drawer__select--small"
+          value={selectedId}
+          onChange={e => setSelectedId(e.target.value)}
+        >
+          <option value="">Select nord…</option>
+          {filteredNords.map(n => (
+            <option key={n.id} value={n.id}>{n.title}</option>
+          ))}
+        </select>
+      )}
       <button
         className="goal-detail-drawer__add-btn"
         onClick={handleAdd}

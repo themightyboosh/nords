@@ -98,7 +98,22 @@ goalsRouter.put('/goals/:id', async (req: Request, res: Response) => {
   try {
     const goal = await goalsRepo.update(req.params.id as string, req.body);
     if (!goal) return res.status(404).json({ error: 'Goal not found' });
-    res.json(goal);
+
+    // Auto-prune downstream edges when end_type is being set
+    let prunedEdgeIds: string[] = [];
+    if (req.body.end_type && req.body.end_type !== null) {
+      const edges = await goalsRepo.findEdgesByProject(goal.project_id);
+      const downstream = edges.filter(e => e.source_goal_id === goal.id);
+      for (const edge of downstream) {
+        await goalsRepo.removeEdge(edge.id);
+        prunedEdgeIds.push(edge.id);
+      }
+      if (prunedEdgeIds.length > 0) {
+        log.info('Pruned downstream edges for end goal', { goalId: goal.id, prunedEdgeIds });
+      }
+    }
+
+    res.json({ ...goal, pruned_edge_ids: prunedEdgeIds });
   } catch (err: any) {
     log.error('Error updating goal', { error: err.message, requestId: req.requestId, goalId: req.params.id });
     res.status(500).json({ error: err.message });

@@ -540,11 +540,41 @@ export async function evaluateGoals(
       WHERE id = $1
     `, [sg.id, JSON.stringify(completedData)]);
 
+    // Resolve {{variable_name}} placeholders in achieved_prompt using collected values
+    let resolvedPrompt = goal.achieved_prompt;
+    if (resolvedPrompt && resolvedPrompt.includes('{{')) {
+      // Load variable names → values for this session
+      const sessionVarValues = await query<{ name: string; value: unknown }>(`
+        SELECT pv.name, sv.value
+        FROM mcp_session_variables sv
+        JOIN project_variables pv ON pv.id = sv.variable_id
+        WHERE sv.session_id = $1 AND sv.value IS NOT NULL
+      `, [sessionId]);
+
+      const varLookup = new Map<string, string>();
+      for (const sv of sessionVarValues) {
+        // Normalize: strip quotes from JSON string values
+        let strValue = String(sv.value ?? '');
+        if (strValue.startsWith('"') && strValue.endsWith('"')) {
+          strValue = strValue.slice(1, -1);
+        }
+        varLookup.set(sv.name.toLowerCase(), strValue);
+      }
+
+      resolvedPrompt = resolvedPrompt.replace(
+        /\{\{(\s*[\w\s]+?\s*)\}\}/g,
+        (_, varName: string) => {
+          const trimmed = varName.trim().toLowerCase();
+          return varLookup.get(trimmed) || `(${varName.trim()})`;
+        }
+      );
+    }
+
     events.push({
       type: 'goal_completed',
       goal_id: goal.id,
       goal_name: goal.name,
-      achieved_prompt: goal.achieved_prompt,
+      achieved_prompt: resolvedPrompt,
       end_type: goal.end_type || null,
       progress,
     });

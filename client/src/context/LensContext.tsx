@@ -22,6 +22,9 @@ export type LensMode = 'canvas' | 'board' | 'persona' | 'goals';
 /** 3-state visibility for persona view: show (default) → dim → hide → show */
 export type PersonaTypeVisibility = 'show' | 'dim' | 'hide';
 
+/** Engagement filter for persona view: All / Engaged (positive score) / Disengaged (negative score) */
+export type PersonaEngagementFilter = 'all' | 'engaged' | 'disengaged';
+
 interface LensContextValue {
   lens: LensMode;
   setLens: (lens: LensMode) => void;
@@ -42,6 +45,10 @@ interface LensContextValue {
   personaTypeFilter: Map<string, PersonaTypeVisibility>;
   /** Cycle a type's persona visibility: show → dim → hide → show */
   cyclePersonaTypeFilter: (typeName: string) => void;
+  /** Persona engagement filter: all / engaged / disengaged */
+  personaEngagementFilter: PersonaEngagementFilter;
+  /** Cycle persona engagement filter: all → engaged → disengaged → all */
+  cyclePersonaEngagementFilter: () => void;
 }
 
 const LensContext = createContext<LensContextValue | null>(null);
@@ -113,6 +120,7 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
   const [showContext, setShowContext] = useState(true);
   const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
   const [personaTypeFilter, setPersonaTypeFilter] = useState<Map<string, PersonaTypeVisibility>>(new Map());
+  const [personaEngagementFilter, setPersonaEngagementFilter] = useState<PersonaEngagementFilter>('all');
   const [activeConnectionTypeId, setActiveConnectionTypeIdState] = useState<string | null>(
     () => projectId ? getStoredTypeId(projectId) : null
   );
@@ -173,6 +181,17 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
     });
   }, []);
 
+  const cyclePersonaEngagementFilter = useCallback(() => {
+    setPersonaEngagementFilter(prev => {
+      const cycle: Record<PersonaEngagementFilter, PersonaEngagementFilter> = {
+        all: 'engaged',
+        engaged: 'disengaged',
+        disengaged: 'all',
+      };
+      return cycle[prev];
+    });
+  }, []);
+
   return (
     <LensContext.Provider value={{ 
       lens, setLens, 
@@ -181,7 +200,8 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
       activeLine, setActiveLine, 
       showContext, setShowContext,
       hiddenTypes, toggleTypeVisibility,
-      personaTypeFilter, cyclePersonaTypeFilter
+      personaTypeFilter, cyclePersonaTypeFilter,
+      personaEngagementFilter, cyclePersonaEngagementFilter
     }}>
       {children}
     </LensContext.Provider>

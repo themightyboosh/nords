@@ -1,8 +1,7 @@
 /* ═══════════════════════════════════════════════ */
-/* VIEWPORT HEADER — Two-row top bar               */
+/* VIEWPORT HEADER — Single-row, icon-flyout nav    */
 /*                                                  */
-/*  Row 1 (brand):  Logo | PROJECT TITLE  ...  🎨 👤 */
-/*  Row 2 (nav):    Types | Categories | ... | Test */
+/*  Logo | TITLE | 🔧 🧠 🔬 🚀  ···  🎨 👤          */
 /* ═══════════════════════════════════════════════ */
 
 .nords-viewport-header {
@@ -10,59 +9,40 @@
   top: 0;
   left: 0;
   right: 0;
-  display: flex;
-  flex-direction: column;
   z-index: 100;
   box-shadow: var(--nords-shadow-sm);
   border-bottom: 1px solid var(--nords-color-border-subtle);
   border-radius: 0;
 }
 
-/* ── Row 1: Brand Bar ── */
-.nords-viewport-header__brand-row {
+/* ── Single row ── */
+.nords-viewport-header__row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 36px;
-  padding: 0 var(--nords-space-md) 0 0;
-}
-
-.nords-viewport-header__brand-left {
-  display: flex;
-  align-items: center;
+  padding: 0 var(--nords-space-sm) 0 0;
   gap: 0;
-  min-width: 0;
 }
 
-.nords-viewport-header__brand-right {
-  display: flex;
-  align-items: center;
-  gap: var(--nords-space-sm);
-  flex-shrink: 0;
-}
 
-/* Logo button */
+
 .nords-viewport-header__logo-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
   background: transparent;
   border: none;
   color: var(--nords-color-text-secondary);
   cursor: pointer;
   padding: 0 14px;
-  border-radius: 0;
+  height: 36px;
   transition: all 0.15s ease;
-  height: 100%;
-  align-self: stretch;
+  flex-shrink: 0;
 }
-
 .nords-viewport-header__logo-btn:hover {
   background: rgba(128, 128, 128, 0.08);
   color: var(--nords-color-text-primary);
 }
 
-/* Project title — all caps, subtle, next to logo */
 .nords-viewport-header__project-title {
   font-family: var(--nords-font-primary);
   font-size: 13px;
@@ -73,89 +53,159 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 480px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 0 var(--nords-space-md);
-  border-left: 1px solid var(--nords-color-border-subtle);
   line-height: 1;
 }
 
-/* ── Row 2: Nav Bar ── */
-.nords-viewport-header__nav-row {
+.nords-viewport-header__project-icon {
   display: flex;
   align-items: center;
-  height: 36px;
-  padding: 0 var(--nords-space-sm);
-  border-top: 1px solid var(--nords-color-border-default);
-}
-
-.nords-viewport-header__nav {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-/* Separator between schema nav and utility nav */
-.nords-viewport-header__nav-sep {
-  width: 1px;
-  height: 16px;
-  background: var(--nords-color-border-subtle);
-  margin: 0 var(--nords-space-sm);
   flex-shrink: 0;
 }
 
-.nords-viewport-header__nav-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: transparent;
-  border: none;
-  border-right: 1px solid var(--nords-color-border-subtle);
-  color: rgba(255, 255, 255, 0.85);
-  cursor: pointer;
-  padding: 5px 12px;
-  border-radius: 0;
-  font-family: var(--nords-font-primary);
-  font-size: var(--nords-font-size-sm);
-  font-weight: var(--nords-font-weight-medium);
-  letter-spacing: 0.01em;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-
-/* First item gets a left border too */
-.nords-viewport-header__nav-item:first-child {
-  border-left: 1px solid var(--nords-color-border-subtle);
-}
-
-.nords-viewport-header__nav-item:hover {
-  background: var(--nords-color-bg-hover);
+[data-theme="obsidian-light"] .nords-viewport-header__project-title {
   color: var(--nords-color-text-primary);
 }
 
-/* Icons inside nav items → brand accent blue */
-.nords-viewport-header__nav-item svg {
+/* ── Center: Group icon buttons ── */
+.nords-viewport-header__groups {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 100%;
+  flex-shrink: 0;
+  border-left: 1px solid var(--nords-color-border-subtle);
+}
+
+.nords-viewport-header__group-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 105px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--nords-color-border-subtle);
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-sm);
+  font-weight: var(--nords-font-weight-medium);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.nords-viewport-header__group-btn:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+.nords-viewport-header__group-btn:hover svg {
+  color: var(--nords-color-accent, #6b7aed);
+}
+
+/* Active/open state */
+.nords-viewport-header__group-btn.is-open {
+  background: rgba(107, 122, 237, 0.1);
+  color: var(--nords-color-text-primary);
+}
+.nords-viewport-header__group-btn.is-open svg {
+  color: var(--nords-color-accent, #6b7aed);
+}
+.nords-viewport-header__group-btn.is-open::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 6px;
+  right: 6px;
+  height: 2px;
+  background: var(--nords-color-accent, #6b7aed);
+  border-radius: 2px 2px 0 0;
+}
+
+/* Light mode */
+[data-theme="obsidian-light"] .nords-viewport-header__group-btn {
+  color: var(--nords-color-text-tertiary);
+}
+
+/* ── Right: Theme + User ── */
+.nords-viewport-header__right {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-sm);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ═══ Flyout dropdown ═══ */
+.nords-viewport-header__flyout {
+  position: absolute;
+  top: 36px; /* flush below header */
+  left: 0; /* overridden inline by JS */
+  z-index: 200;
+  min-width: 160px;
+  padding: 4px;
+  background: var(--nords-glass-bg);
+  backdrop-filter: blur(var(--nords-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nords-glass-blur));
+  border: 1px solid var(--nords-color-border-default);
+  border-top: none;
+  border-radius: 0 0 var(--nords-radius-lg) var(--nords-radius-lg);
+  box-shadow: var(--nords-shadow-lg);
+  animation: nords-flyout-in 0.12s ease-out;
+}
+
+@keyframes nords-flyout-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.nords-viewport-header__flyout-label {
+  font-family: var(--nords-font-primary);
+  font-size: 9px;
+  font-weight: var(--nords-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--nords-color-text-disabled);
+  padding: 6px 12px 4px;
+}
+
+.nords-viewport-header__flyout-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 12px;
+  background: transparent;
+  border: none;
+  color: var(--nords-color-text-secondary);
+  font-family: var(--nords-font-primary);
+  font-size: var(--nords-font-size-sm);
+  font-weight: var(--nords-font-weight-medium);
+  border-radius: var(--nords-radius-sm);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-align: left;
+}
+.nords-viewport-header__flyout-item:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+.nords-viewport-header__flyout-item svg {
   color: var(--nords-color-accent, #6b7aed);
   flex-shrink: 0;
+  opacity: 0.7;
 }
-.nords-viewport-header__nav-item:hover svg {
-  color: var(--nords-color-accent-hover, #8b97f5);
-}
-
-/* ── Light-mode overrides ── */
-[data-theme="light"] .nords-viewport-header__project-title {
-  color: var(--nords-color-text-primary, #1a1a2e);
-}
-[data-theme="light"] .nords-viewport-header__nav-item {
-  color: var(--nords-color-text-secondary, #4a5568);
+.nords-viewport-header__flyout-item:hover svg {
+  opacity: 1;
 }
 
-/* When header is inside the dashboard layout, use relative positioning */
-.nords-dashboard > .nords-viewport-header {
-  position: relative;
-  flex-shrink: 0;
-}
-
-/* ── Avatars ── */
+/* ═══ User dropdown ═══ */
 .nords-viewport-header__avatar {
   width: 22px;
   height: 22px;
@@ -166,15 +216,8 @@
   justify-content: center;
   font-size: 9px;
   font-weight: var(--nords-font-weight-bold);
-  border: 2px solid var(--nords-color-bg-canvas);
-  position: relative;
 }
 
-.nords-viewport-header__avatar--self {
-  margin-left: 0;
-}
-
-/* User menu button */
 .nords-viewport-header__user-btn {
   display: flex;
   align-items: center;
@@ -187,20 +230,75 @@
   color: var(--nords-color-text-disabled);
   transition: all 0.15s ease;
 }
-
 .nords-viewport-header__user-btn:hover {
   color: var(--nords-color-text-secondary);
   background: var(--nords-color-bg-hover);
 }
 
-.nords-viewport-header__user-btn .nords-viewport-header__avatar {
-  border: none;
-  width: 22px;
-  height: 22px;
-  font-size: 9px;
+.nords-viewport-header__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 199;
 }
 
-/* ── Hamburger button (hidden on desktop) ── */
+.nords-viewport-header__dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--nords-glass-bg);
+  backdrop-filter: blur(var(--nords-glass-blur));
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: var(--nords-radius-lg);
+  padding: 4px;
+  min-width: 160px;
+  z-index: 200;
+  box-shadow: var(--nords-shadow-lg);
+}
+
+.nords-viewport-header__dropdown-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--nords-color-border-subtle);
+}
+.nords-viewport-header__dropdown-name {
+  font-size: var(--nords-font-size-sm);
+  font-weight: 600;
+  color: var(--nords-color-text-primary);
+}
+.nords-viewport-header__dropdown-email {
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-text-tertiary);
+}
+
+.nords-viewport-header__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--nords-color-text-secondary);
+  cursor: pointer;
+  font-size: var(--nords-font-size-sm);
+  border-radius: var(--nords-radius-sm);
+  text-align: left;
+  transition: background 0.1s ease;
+}
+.nords-viewport-header__dropdown-item:hover {
+  background: var(--nords-color-bg-hover);
+}
+.nords-viewport-header__dropdown-item--danger {
+  color: var(--nords-color-danger, #ef4444);
+}
+
+/* Dashboard header in relative flow */
+.nords-dashboard > .nords-viewport-header {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ═══ Hamburger (mobile only) ═══ */
 .nords-viewport-header__hamburger {
   display: none;
   width: 36px;
@@ -219,7 +317,7 @@
   color: var(--nords-color-text-primary);
 }
 
-/* ── Mobile slide-down menu ── */
+/* ═══ Mobile slide-down ═══ */
 .nords-viewport-header__mobile-menu {
   display: none;
   position: absolute;
@@ -233,17 +331,26 @@
   box-shadow: var(--nords-shadow-lg);
   padding: var(--nords-space-md) var(--nords-space-lg);
   flex-direction: column;
-  gap: var(--nords-space-sm);
+  gap: var(--nords-space-xs);
   z-index: 101;
-  animation: nords-slide-down 0.2s ease;
+  animation: nords-flyout-in 0.15s ease-out;
 }
 .nords-viewport-header__mobile-menu.is-open {
   display: flex;
 }
 
-@keyframes nords-slide-down {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+.nords-viewport-header__mobile-group-label {
+  font-family: var(--nords-font-primary);
+  font-size: 9px;
+  font-weight: var(--nords-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--nords-color-text-disabled);
+  padding: 8px 12px 2px;
+  margin-top: 4px;
+}
+.nords-viewport-header__mobile-group-label:first-child {
+  margin-top: 0;
 }
 
 .nords-viewport-header__mobile-menu-item {
@@ -268,18 +375,18 @@
   color: var(--nords-color-text-primary);
 }
 
-/* ── Responsive: Mobile ── */
+/* ═══ Responsive ═══ */
 @media (max-width: 768px) {
-  .nords-viewport-header__nav-row {
+  .nords-viewport-header__groups {
     display: none;
   }
-  .nords-viewport-header__brand-right > *:not(.nords-viewport-header__hamburger) {
+  .nords-viewport-header__right > *:not(.nords-viewport-header__hamburger) {
     display: none;
   }
   .nords-viewport-header__hamburger {
     display: flex;
   }
   .nords-viewport-header__project-title {
-    max-width: 200px;
+    max-width: 180px;
   }
 }

@@ -51,6 +51,7 @@ interface SwimCard {
   sortOrder: number;
   direction: string;
   isDimmed: boolean;
+  categoryCount: number;
   properties: Array<{ key: string; value: string; color?: string }>;
 }
 
@@ -77,7 +78,7 @@ interface Swimlane {
 
 export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: MatrixViewProps) {
   const { connectionTypes } = useTypeRegistryContext();
-  const { getNordTypeVisibility, isLaneCollapsed, toggleLaneCollapse, getDirectionFilter } = useBoardSettingsContext();
+  const { getNordTypeVisibility, isLaneCollapsed, toggleLaneCollapse, isLaneHidden, getDirectionFilter } = useBoardSettingsContext();
   const { createConnection, deleteConnection } = useConnectionMutations(projectId);
   const { upsertPosition } = useBoardPositionMutations(projectId);
 
@@ -85,6 +86,8 @@ export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: Matr
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
   const [undoToast, setUndoToast] = useState<{ message: string; undoFn: () => Promise<void> } | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lanesRef = useRef<HTMLDivElement>(null);
+
 
   // Card click: set scoped selection + open drawer
   const handleCardClick = useCallback((card: SwimCard) => {
@@ -152,9 +155,28 @@ export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: Matr
       boardPosMap.set(posKey(bp.nord_id, bp.type_id), { distance_x: bp.distance_x, distance_y: bp.distance_y });
     }
 
+    // Build category count per nord: how many distinct connection types each nord participates in
+    const nordCategoryCounts = new Map<string, number>();
+    for (const conn of graph.connections) {
+      for (const nId of [conn.source_nord_id, conn.target_nord_id]) {
+        const key = `${nId}|${conn.type_id}`;
+        if (!nordCategoryCounts.has(key)) {
+          nordCategoryCounts.set(key, 1);
+        }
+      }
+    }
+    // Collapse to just nordId -> count of distinct type_ids
+    const nordDistinctCategoryCounts = new Map<string, number>();
+    for (const key of nordCategoryCounts.keys()) {
+      const nordId = key.split('|')[0];
+      nordDistinctCategoryCounts.set(nordId, (nordDistinctCategoryCounts.get(nordId) || 0) + 1);
+    }
+
     const lanes: Swimlane[] = [];
 
     for (const ct of connectionTypes) {
+      // Skip lanes hidden via dock visibility toggle
+      if (isLaneHidden(ct.id)) continue;
       const conns = graph.connections.filter(c => c.type_id === ct.id);
       if (conns.length === 0 && ct.count === 0) continue;
 
@@ -221,6 +243,7 @@ export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: Matr
           sortOrder: 0,
           direction: 'forward',
           isDimmed,
+          categoryCount: nordDistinctCategoryCounts.get(nord.id) || 1,
           properties: (() => {
             const schema = nordType?.properties_schema || [];
             const propsObj = nord.properties || {};
@@ -274,7 +297,18 @@ export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: Matr
     }
 
     return lanes;
-  }, [graph, connectionTypes, getNordTypeVisibility, getDirectionFilter]);
+  }, [graph, connectionTypes, getNordTypeVisibility, getDirectionFilter, isLaneHidden]);
+
+  // Force scroll-to-top when swimlanes first populate (fixes sticky header
+  // not rendering on initial mount due to the scroll container not being laid out yet)
+  useEffect(() => {
+    if (swimlanes.length > 0 && lanesRef.current) {
+      // Micro-tick delay to let the browser finish layout
+      requestAnimationFrame(() => {
+        lanesRef.current?.scrollTo({ top: 0 });
+      });
+    }
+  }, [swimlanes.length]);
 
   const handleDragStart = useCallback((e: React.DragEvent, card: SwimCard) => {
     setDragData(e, {
@@ -421,7 +455,7 @@ export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: Matr
         </div>
       )}
 
-      <div className="nords-matrix__lanes">
+      <div className="nords-matrix__lanes" ref={lanesRef}>
         {swimlanes.map(lane => {
           const ct = lane.connectionType;
           const collapsed = isLaneCollapsed(ct.id);
@@ -437,7 +471,6 @@ export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: Matr
                   {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
                 </span>
                 {ct.icon && <ct.icon size={14} strokeWidth={1.6} style={{ color: ct.color, flexShrink: 0 }} />}
-                <span className="nords-matrix__lane-color" style={{ background: ct.color }} />
                 <span className="nords-matrix__lane-name">{ct.name}</span>
                 {ct.verb && <span className="nords-matrix__lane-verb">{ct.verb}</span>}
                 <span className="nords-matrix__lane-count">{lane.cardCount}</span>
@@ -571,6 +604,7 @@ const BoardCard = memo(function BoardCard({
         typeColor={card.typeColor}
         typeIcon={card.typeIcon}
         properties={card.properties}
+        categoryCount={card.categoryCount}
         isSelected={isSelected}
         style={{ width: '270px' }}
       />

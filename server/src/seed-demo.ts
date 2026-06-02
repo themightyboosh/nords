@@ -5,7 +5,7 @@
  *   • 10 Nord Types (with hidden props + defaultValues)
  *   • 8 Connection Types (with stage labels + properties_schema + verbs)
  *   • 5 Personas (with mental models, category weights, goal weights)
- *   • 6 Goals (with prerequisite DAG, achieved prompts, variable bindings, relevant nords)
+ *   • 12 Goals (with complex prerequisite DAG, AND/OR gates, exclusive forks, achieved prompts, variable bindings, relevant nords)
  *   • 59 Nords (with intentional gaps for demo)
  *   • ~85 Connections (with typed properties)
  *   • 15 Project Variables (3 boolean, 5 select, 3 number, 2 string)
@@ -53,14 +53,20 @@ const CT = {
   relatesTo:     id(),
 };
 
-// Goals
+// Goals (12 — complex DAG with 4 roots)
 const GOAL = {
-  reqLocked:      id(),
-  riskComplete:   id(),
-  verifComplete:  id(),
-  clinApproved:   id(),
-  fivetenReady:   id(),
-  fdaSubmission:  id(),
+  reqLocked:         id(),
+  riskComplete:      id(),
+  bioCompatCleared:  id(),
+  archDecided:       id(),
+  verifComplete:     id(),
+  supplyChainQual:   id(),
+  clinApproved:      id(),
+  designTransfer:    id(),
+  fivetenReady:      id(),
+  mfgValidation:     id(),
+  regFiling:         id(),
+  fdaSubmission:     id(),
 };
 
 // Persona IDs
@@ -205,7 +211,7 @@ async function run() {
       true, true, true, 'guided', true,
       false, true, $2,
       'You are an expert medical device regulatory and engineering assistant working on the Pulse Sense CGM project for Meridian Medical. You understand FDA 510(k) processes, ISO 14971 risk management, IEC 62304 software lifecycle, and design control requirements. Always reference specific requirements, risks, and test cases by their IDs.\\n\\nNAVIGATE organically — follow persona-weighted connections and verbs to explore the graph. The topology tells you where to go.\\nCOLLECT aggressively — at each stop, actively drive conversation to collect remaining collection variables. Use the description field on each variable to phrase your questions naturally. Nord properties are read-only context — do NOT try to fill or update them.\\nSAVE immediately — call save tools as soon as you learn a value. Do not wait.\\nGoals are milestones you notice in the rearview mirror, not destinations on your GPS. When the current nord is goal-relevant, you have permission to probe harder.',
-      'Welcome! I\\'m your design control partner for the Pulse Sense CGM — Meridian Medical\\'s continuous glucose monitor heading toward FDA 510(k) clearance. I can help you trace requirements to tests, assess risk mitigations, review verification status, and identify submission gaps. Where are you picking up today?',
+      'Welcome! I''m your design control partner for the Pulse Sense CGM — Meridian Medical''s continuous glucose monitor heading toward FDA 510(k) clearance. I can help you trace requirements to tests, assess risk mitigations, review verification status, and identify submission gaps. Where are you picking up today?',
       'Would you like me to summarize the gaps remaining for FDA submission readiness?')
   `, [PROJECT_ID, userId]);
 
@@ -797,34 +803,87 @@ async function run() {
   console.log('  ✅ 15 Project Variables (in 5 groups)');
 
   /* ══════════════════════════════════════════════════════════════════════
-   * GOALS (6) — with prerequisite DAG (must be inserted before Personas)
+   * GOALS (12) — complex prerequisite DAG with 4 roots, AND/OR gates, exclusive forks
+   *
+   *   Layer 0 (4 roots):
+   *     ReqLocked  RiskComplete  BioCompatCleared  ArchDecided
+   *
+   *   Layer 1 (3 goals):
+   *     VerifComplete ←── AND(ReqLocked, RiskComplete)
+   *     SupplyChainQual ←── AND(BioCompatCleared, ArchDecided)
+   *     ClinApproved ←── ReqLocked
+   *
+   *   Layer 2 (2 goals):
+   *     DesignTransfer ←── AND(VerifComplete, SupplyChainQual)
+   *     510(k)Ready ←── OR(VerifComplete, ClinApproved)
+   *
+   *   Layer 3 (2 goals):
+   *     MfgValidation ←── DesignTransfer  (fork: exclusive)
+   *     RegFiling ←── AND(510kReady, DesignTransfer)
+   *
+   *   Layer 4 (1 goal):
+   *     FDASubmission ←── AND(MfgValidation, RegFiling)  — ends session
+   *
    * ══════════════════════════════════════════════════════════════════════ */
 
   const goals = [
+    // ── Layer 0: 4 roots ──
     { id: GOAL.reqLocked, name: 'Requirements Locked', icon: 'Lock', color: '#3B82F6',
       desc: 'All user needs, design inputs, and design outputs are documented with priority, verification method, and traceability status.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'All requirements are now fully documented with traceability. That\'s a solid foundation.' },
+      achievedPrompt: 'Confirm that requirements are now locked for the {{regulatory_pathway}} pathway targeting the {{target_population}} population. Mention that traceability to the predicate device is established and this is a solid regulatory foundation.' },
     { id: GOAL.riskComplete, name: 'Risk Analysis Complete', icon: 'ShieldCheck', color: '#EF4444',
       desc: 'All identified hazards have severity, probability, mitigation strategy, and residual risk documented per ISO 14971.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'The risk analysis is complete — every hazard has been assessed and mitigated per ISO 14971.' },
+      achievedPrompt: 'Acknowledge the risk analysis milestone. Note the team chose a {{risk_tolerance}} risk tolerance and that the {{highest_risk_subsystem}} was identified as the highest-risk subsystem. All hazards have been assessed per ISO 14971.' },
+    { id: GOAL.bioCompatCleared, name: 'Biocompatibility Cleared', icon: 'HeartPulse', color: '#A855F7',
+      desc: 'All patient-contacting materials have passed ISO 10993 biocompatibility testing: cytotoxicity, sensitization, irritation, and systemic toxicity.',
+      endType: null, prerequisiteGate: 'all', forkType: 'parallel',
+      achievedPrompt: 'Confirm biocompatibility is cleared — {{biocompatibility_confirmed}} that all patient-contacting materials passed ISO 10993 testing. This removes a key regulatory gate for submission.' },
+    { id: GOAL.archDecided, name: 'Architecture Decided', icon: 'Cpu', color: '#F59E0B',
+      desc: 'All Architecture Decision Records are in Accepted status. Key technology choices (BLE vs NFC, cloud platform, sensor material) are finalized.',
+      endType: null, prerequisiteGate: 'all', forkType: 'parallel',
+      achievedPrompt: 'Acknowledge that architecture decisions are locked. The software is classified as {{software_classification}} per IEC 62304, which sets the development rigor level. The engineering team now has a clear technology direction.' },
+
+    // ── Layer 1: 3 goals ──
     { id: GOAL.verifComplete, name: 'Verification Complete', icon: 'CheckCircle', color: '#10B981',
       desc: 'All verification test cases have been executed with pass/fail results and actual results documented.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'All verification tests now have documented results. The evidence package is taking shape.' },
+      achievedPrompt: 'Celebrate that all verification tests are executed. Confirm there are {{open_critical_ncs}} open critical nonconformances remaining. The evidence package for the {{regulatory_pathway}} submission is taking shape.' },
+    { id: GOAL.supplyChainQual, name: 'Supply Chain Qualified', icon: 'Package', color: '#06B6D4',
+      desc: 'All critical suppliers are qualified per ISO 13485. Component specifications locked, incoming inspection protocols established, and backup suppliers identified for single-source components.',
+      endType: null, prerequisiteGate: 'all', forkType: 'parallel',
+      achievedPrompt: 'Supply chain qualification is complete. With biocompatibility {{biocompatibility_confirmed}} confirmed and the {{highest_risk_subsystem}} identified as highest-risk, procurement can begin for long-lead items.' },
     { id: GOAL.clinApproved, name: 'Clinical Protocol Approved', icon: 'Stethoscope', color: '#0EA5E9',
       desc: 'All clinical study protocols have IRB approval and are actively enrolling.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'Clinical protocols are approved and enrolling. Strong clinical evidence is being generated.' },
+      achievedPrompt: 'Clinical protocols are approved — IRB status is {{irb_status}} and enrollment is targeting {{enrollment_target}} subjects. Strong clinical evidence is being generated for the {{target_population}} population.' },
+
+    // ── Layer 2: 2 goals ──
+    { id: GOAL.designTransfer, name: 'Design Transfer Ready', icon: 'ArrowRightLeft', color: '#84CC16',
+      desc: 'Design outputs are frozen and transferred to manufacturing. Device Master Record (DMR) is complete, process validation protocols are approved, and pilot production has yielded conforming units.',
+      endType: null, prerequisiteGate: 'all', forkType: 'exclusive',
+      achievedPrompt: 'Design transfer is complete — manufacturing has the full DMR and process specs. With {{open_critical_ncs}} open critical NCs resolved, the design is ready for production.' },
     { id: GOAL.fivetenReady, name: '510(k) Ready', icon: 'FileCheck', color: '#DC2626',
       desc: 'The 510(k) submission document has a predicate device identified and substantial equivalence argument drafted.',
       endType: null, prerequisiteGate: 'any', forkType: 'parallel',
-      achievedPrompt: 'The 510(k) package is drafted with predicate device and substantial equivalence arguments.' },
+      achievedPrompt: 'The 510(k) package is drafted with {{predicate_device}} as the predicate device. The substantial equivalence argument is ready for the {{regulatory_pathway}} pathway, targeting {{submission_quarter}} for submission.' },
+
+    // ── Layer 3: 2 goals ──
+    { id: GOAL.mfgValidation, name: 'Manufacturing Validation', icon: 'Factory', color: '#78716C',
+      desc: 'Process validation (IQ/OQ/PQ) is complete. Three consecutive production lots meet all specifications. Sterilization validation is accepted.',
+      endType: null, prerequisiteGate: 'all', forkType: 'parallel',
+      achievedPrompt: 'Manufacturing is validated — production processes consistently yield conforming product. Process validation for the {{highest_risk_subsystem}} and all other subsystems is complete.' },
+    { id: GOAL.regFiling, name: 'Regulatory Filing', icon: 'Stamp', color: '#E11D48',
+      desc: 'All regulatory dossier components are assembled: technical summary, performance data, labeling, and risk-benefit analysis. Pre-submission feedback from FDA has been incorporated.',
+      endType: null, prerequisiteGate: 'all', forkType: 'parallel',
+      achievedPrompt: 'The regulatory dossier is assembled for {{regulatory_pathway}} submission with {{predicate_device}} as the predicate. Targeting {{submission_quarter}} — all technical documentation is ready.' },
+
+    // ── Layer 4: terminal goal ──
     { id: GOAL.fdaSubmission, name: 'FDA Submission', icon: 'Send', color: '#F97316',
       desc: 'The 510(k) has been submitted to FDA with a tracking number and target date.',
       endType: 'continue', prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'The 510(k) has been submitted to FDA. A major milestone for the program.' },
+      achievedPrompt: 'Congratulate the team — the {{regulatory_pathway}} has been submitted to FDA targeting {{submission_quarter}}! The launch plan for {{market_launch_region}} with {{reimbursement_strategy}} reimbursement strategy is the next frontier. A major milestone for the program.' },
   ];
 
   for (let i = 0; i < goals.length; i++) {
@@ -837,17 +896,48 @@ async function run() {
         g.endType, g.achievedPrompt, g.prerequisiteGate, g.forkType]);
   }
 
-  // Goal DAG edges (prerequisite chains)
-  //   ReqLocked ──┐
-  //                ├──► VerifComplete ──┬──► ClinApproved ──┐
-  //   RiskComplete ┘    (AND-gate)     │                    ├──► 510(k)Ready ──► FDASubmission
-  //                                    └────────────────────┘    (OR-gate)
+  // Goal DAG edges (prerequisite chains) — 13 edges
+  //
+  //   Layer 0 → 1:
+  //     ReqLocked ─────┬──► VerifComplete (AND)
+  //     RiskComplete ──┘
+  //     BioCompatCleared ┬──► SupplyChainQual (AND)
+  //     ArchDecided ─────┘
+  //     ReqLocked ──► ClinApproved
+  //
+  //   Layer 1 → 2:
+  //     VerifComplete ────┬──► DesignTransfer (AND)
+  //     SupplyChainQual ──┘
+  //     VerifComplete ──┬──► 510(k)Ready (OR — any prereq)
+  //     ClinApproved ───┘
+  //
+  //   Layer 2 → 3:
+  //     DesignTransfer ──► MfgValidation  (fork: exclusive)
+  //     510(k)Ready ───┬──► RegFiling (AND)
+  //     DesignTransfer ┘
+  //
+  //   Layer 3 → 4:
+  //     MfgValidation ─┬──► FDASubmission (AND)
+  //     RegFiling ──────┘
+  //
+  // Layer 0 → 1
   await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.reqLocked, GOAL.verifComplete]);
   await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.riskComplete, GOAL.verifComplete]);
-  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.verifComplete, GOAL.clinApproved]);
+  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.bioCompatCleared, GOAL.supplyChainQual]);
+  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.archDecided, GOAL.supplyChainQual]);
+  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.reqLocked, GOAL.clinApproved]);
+  // Layer 1 → 2
+  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.verifComplete, GOAL.designTransfer]);
+  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.supplyChainQual, GOAL.designTransfer]);
   await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.verifComplete, GOAL.fivetenReady]);
   await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.clinApproved, GOAL.fivetenReady]);
-  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.fivetenReady, GOAL.fdaSubmission]);
+  // Layer 2 → 3
+  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.designTransfer, GOAL.mfgValidation]);
+  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.fivetenReady, GOAL.regFiling]);
+  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.designTransfer, GOAL.regFiling]);
+  // Layer 3 → 4
+  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.mfgValidation, GOAL.fdaSubmission]);
+  await pool.query(`INSERT INTO goal_edges (id, project_id, source_goal_id, target_goal_id) VALUES ($1, $2, $3, $4)`, [id(), PROJECT_ID, GOAL.regFiling, GOAL.fdaSubmission]);
 
   // Goal → Variable Bindings
   const goalBindings: { goalId: string; varId: string; required: boolean }[] = [
@@ -858,19 +948,36 @@ async function run() {
     // Risk Analysis Complete
     { goalId: GOAL.riskComplete, varId: VAR.riskTolerance, required: true },
     { goalId: GOAL.riskComplete, varId: VAR.highestRiskSubsystem, required: false },
-    { goalId: GOAL.riskComplete, varId: VAR.biocompatibilityConfirmed, required: false },
+    // Biocompatibility Cleared
+    { goalId: GOAL.bioCompatCleared, varId: VAR.biocompatibilityConfirmed, required: true },
+    { goalId: GOAL.bioCompatCleared, varId: VAR.riskTolerance, required: false },
+    // Architecture Decided
+    { goalId: GOAL.archDecided, varId: VAR.softwareClassification, required: true },
+    { goalId: GOAL.archDecided, varId: VAR.highestRiskSubsystem, required: false },
     // Verification Complete
     { goalId: GOAL.verifComplete, varId: VAR.allTestsExecuted, required: true },
     { goalId: GOAL.verifComplete, varId: VAR.openCriticalNcs, required: false },
     { goalId: GOAL.verifComplete, varId: VAR.softwareClassification, required: false },
+    // Supply Chain Qualified
+    { goalId: GOAL.supplyChainQual, varId: VAR.biocompatibilityConfirmed, required: false },
+    { goalId: GOAL.supplyChainQual, varId: VAR.highestRiskSubsystem, required: false },
     // Clinical Protocol Approved
     { goalId: GOAL.clinApproved, varId: VAR.irbStatus, required: true },
     { goalId: GOAL.clinApproved, varId: VAR.primaryEndpointMet, required: false },
     { goalId: GOAL.clinApproved, varId: VAR.enrollmentTarget, required: false },
+    // Design Transfer Ready
+    { goalId: GOAL.designTransfer, varId: VAR.allTestsExecuted, required: true },
+    { goalId: GOAL.designTransfer, varId: VAR.openCriticalNcs, required: true },
     // 510(k) Ready
     { goalId: GOAL.fivetenReady, varId: VAR.predicateDevice, required: true },
     { goalId: GOAL.fivetenReady, varId: VAR.submissionQuarter, required: false },
     { goalId: GOAL.fivetenReady, varId: VAR.regulatoryPathway, required: false },
+    // Manufacturing Validation
+    { goalId: GOAL.mfgValidation, varId: VAR.allTestsExecuted, required: false },
+    // Regulatory Filing
+    { goalId: GOAL.regFiling, varId: VAR.predicateDevice, required: true },
+    { goalId: GOAL.regFiling, varId: VAR.regulatoryPathway, required: true },
+    { goalId: GOAL.regFiling, varId: VAR.submissionQuarter, required: false },
     // FDA Submission
     { goalId: GOAL.fdaSubmission, varId: VAR.submissionQuarter, required: true },
     { goalId: GOAL.fdaSubmission, varId: VAR.marketLaunchRegion, required: false },
@@ -886,9 +993,15 @@ async function run() {
   // Goal relevant nord types
   await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.reqLocked, NT.requirement]);
   await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.riskComplete, NT.risk]);
+  await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.bioCompatCleared, NT.risk]);
+  await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.archDecided, NT.adr]);
   await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.verifComplete, NT.testCase]);
+  await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.supplyChainQual, NT.subsystem]);
   await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.clinApproved, NT.clinicalProto]);
+  await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.designTransfer, NT.subsystem]);
   await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.fivetenReady, NT.regSub]);
+  await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.mfgValidation, NT.testCase]);
+  await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.regFiling, NT.regSub]);
   await pool.query(`INSERT INTO goal_relevant_nord_types (id, goal_id, nord_type_id) VALUES ($1, $2, $3)`, [id(), GOAL.fdaSubmission, NT.regSub]);
 
   // Goal → Relevant Nords (specific nords linked to goals)
@@ -897,13 +1010,30 @@ async function run() {
     ...Object.values(REQ).map(nordId => ({ goalId: GOAL.reqLocked, nordId })),
     // Risk Analysis Complete — all 8 risks
     ...Object.values(RISK).map(nordId => ({ goalId: GOAL.riskComplete, nordId })),
+    // Biocompatibility Cleared — dermatitis risk + sensor module
+    { goalId: GOAL.bioCompatCleared, nordId: RISK.h005 },
+    { goalId: GOAL.bioCompatCleared, nordId: SUB.sensor },
+    { goalId: GOAL.bioCompatCleared, nordId: SUB.applicator },
+    // Architecture Decided — all ADRs
+    ...Object.values(ADR).map(nordId => ({ goalId: GOAL.archDecided, nordId })),
     // Verification Complete — all 10 test cases
     ...Object.values(TC).map(nordId => ({ goalId: GOAL.verifComplete, nordId })),
+    // Supply Chain Qualified — all subsystems
+    ...Object.values(SUB).map(nordId => ({ goalId: GOAL.supplyChainQual, nordId })),
     // Clinical Protocol Approved — all 3 clinical protocols
     ...Object.values(CP).map(nordId => ({ goalId: GOAL.clinApproved, nordId })),
+    // Design Transfer Ready — subsystems + milestone
+    ...Object.values(SUB).map(nordId => ({ goalId: GOAL.designTransfer, nordId })),
+    { goalId: GOAL.designTransfer, nordId: MS.ms3 },
     // 510(k) Ready — both regulatory submissions
     { goalId: GOAL.fivetenReady, nordId: REGSUB.fivetenk },
     { goalId: GOAL.fivetenReady, nordId: REGSUB.ceMark },
+    // Manufacturing Validation — applicator + sensor subsystems
+    { goalId: GOAL.mfgValidation, nordId: SUB.applicator },
+    { goalId: GOAL.mfgValidation, nordId: SUB.sensor },
+    // Regulatory Filing — submissions + substantial equivalence ADR
+    { goalId: GOAL.regFiling, nordId: REGSUB.fivetenk },
+    { goalId: GOAL.regFiling, nordId: ADR.adr006 },
     // FDA Submission — 510(k) submission + submission milestone
     { goalId: GOAL.fdaSubmission, nordId: REGSUB.fivetenk },
     { goalId: GOAL.fdaSubmission, nordId: MS.ms5 },
@@ -915,7 +1045,7 @@ async function run() {
     `, [id(), grn.goalId, grn.nordId]);
   }
 
-  console.log('  ✅ 6 Goals (with DAG + variable bindings + relevant nords + achieved prompts)');
+  console.log('  ✅ 12 Goals (with DAG + variable bindings + relevant nords + achieved prompts)');
 
   /* ══════════════════════════════════════════════════════════════════════
    * PERSONAS (5) — with mental models + category weights + goal weights
@@ -941,7 +1071,7 @@ async function run() {
         { name: 'Substantial Equivalence', body: 'Substantial equivalence is a legal argument, not a technical one' },
       ],
       catWeights: { [CT.designControl]: 25, [CT.blocks]: 30, [CT.mitigates]: 20, [CT.verifies]: 15, [CT.assignedTo]: -10, [CT.partOf]: 0, [CT.reportedIn]: 5, [CT.relatesTo]: -5 },
-      goalWeights: { [GOAL.reqLocked]: 15, [GOAL.riskComplete]: 25, [GOAL.verifComplete]: 20, [GOAL.clinApproved]: 10, [GOAL.fivetenReady]: 30, [GOAL.fdaSubmission]: 25 },
+      goalWeights: { [GOAL.reqLocked]: 15, [GOAL.riskComplete]: 25, [GOAL.bioCompatCleared]: 20, [GOAL.archDecided]: 5, [GOAL.verifComplete]: 20, [GOAL.supplyChainQual]: 10, [GOAL.clinApproved]: 10, [GOAL.designTransfer]: 5, [GOAL.fivetenReady]: 30, [GOAL.mfgValidation]: 5, [GOAL.regFiling]: 25, [GOAL.fdaSubmission]: 25 },
     },
     { id: PERSONA.marcus, name: 'Marcus Cole', color: '#3B82F6', temp: 0.4, exchangeStyle: 'bi_directional' as const,
       bg: '10 years in embedded medical devices. Previously at Medtronic on insulin pump firmware. Expert in IEC 62304 software lifecycle.',
@@ -961,7 +1091,7 @@ async function run() {
         { name: 'Class C Code Liability', body: 'IEC 62304 Class C means every line of code is a liability' },
       ],
       catWeights: { [CT.partOf]: 25, [CT.verifies]: 20, [CT.blocks]: 15, [CT.mitigates]: 10, [CT.designControl]: 5, [CT.assignedTo]: 10, [CT.reportedIn]: 5, [CT.relatesTo]: 0 },
-      goalWeights: { [GOAL.reqLocked]: 20, [GOAL.riskComplete]: 15, [GOAL.verifComplete]: 30, [GOAL.clinApproved]: 0, [GOAL.fivetenReady]: 5, [GOAL.fdaSubmission]: 5 },
+      goalWeights: { [GOAL.reqLocked]: 20, [GOAL.riskComplete]: 15, [GOAL.bioCompatCleared]: 10, [GOAL.archDecided]: 25, [GOAL.verifComplete]: 30, [GOAL.supplyChainQual]: 15, [GOAL.clinApproved]: 0, [GOAL.designTransfer]: 20, [GOAL.fivetenReady]: 5, [GOAL.mfgValidation]: 15, [GOAL.regFiling]: 5, [GOAL.fdaSubmission]: 5 },
     },
     { id: PERSONA.sarah, name: 'Sarah Kim', color: '#0EA5E9', temp: 0.6, exchangeStyle: 'free_form' as const,
       bg: 'PhD in Biomedical Engineering. 8 years in clinical trials for continuous monitoring devices. Managed 5 pivotal studies.',
@@ -981,7 +1111,7 @@ async function run() {
         { name: 'Study Design Foresight', body: 'A well-designed study answers questions we haven\'t thought to ask yet' },
       ],
       catWeights: { [CT.reportedIn]: 25, [CT.verifies]: 15, [CT.relatesTo]: 10, [CT.designControl]: 5, [CT.mitigates]: 10, [CT.blocks]: 0, [CT.assignedTo]: -5, [CT.partOf]: -10 },
-      goalWeights: { [GOAL.reqLocked]: 5, [GOAL.riskComplete]: 10, [GOAL.verifComplete]: 10, [GOAL.clinApproved]: 30, [GOAL.fivetenReady]: 15, [GOAL.fdaSubmission]: 10 },
+      goalWeights: { [GOAL.reqLocked]: 5, [GOAL.riskComplete]: 10, [GOAL.bioCompatCleared]: 15, [GOAL.archDecided]: 0, [GOAL.verifComplete]: 10, [GOAL.supplyChainQual]: 5, [GOAL.clinApproved]: 30, [GOAL.designTransfer]: 5, [GOAL.fivetenReady]: 15, [GOAL.mfgValidation]: 0, [GOAL.regFiling]: 10, [GOAL.fdaSubmission]: 10 },
     },
     { id: PERSONA.james, name: 'James Okonkwo', color: '#F59E0B', temp: 0.3, exchangeStyle: 'interrogate' as const,
       bg: '12 years in medical device QMS. ISO 13485 Lead Auditor. Built the quality system at two startups from scratch.',
@@ -1001,7 +1131,7 @@ async function run() {
         { name: 'Audit Findings as Gifts', body: 'An audit finding is a gift — it tells you where your system is weak' },
       ],
       catWeights: { [CT.verifies]: 30, [CT.assignedTo]: 15, [CT.blocks]: 10, [CT.reportedIn]: 10, [CT.designControl]: 10, [CT.mitigates]: 5, [CT.partOf]: 0, [CT.relatesTo]: -5 },
-      goalWeights: { [GOAL.reqLocked]: 20, [GOAL.riskComplete]: 20, [GOAL.verifComplete]: 30, [GOAL.clinApproved]: 5, [GOAL.fivetenReady]: 15, [GOAL.fdaSubmission]: 10 },
+      goalWeights: { [GOAL.reqLocked]: 20, [GOAL.riskComplete]: 20, [GOAL.bioCompatCleared]: 15, [GOAL.archDecided]: 10, [GOAL.verifComplete]: 30, [GOAL.supplyChainQual]: 15, [GOAL.clinApproved]: 5, [GOAL.designTransfer]: 20, [GOAL.fivetenReady]: 15, [GOAL.mfgValidation]: 10, [GOAL.regFiling]: 10, [GOAL.fdaSubmission]: 10 },
     },
     { id: PERSONA.elena, name: 'Elena Vasquez', color: '#8B5CF6', temp: 0.7, exchangeStyle: 'bi_directional' as const,
       bg: '9 years in medtech product management. Previously led consumer health products at Abbott. Expert in translating clinical requirements into user experiences.',
@@ -1021,7 +1151,7 @@ async function run() {
         { name: 'Market Access as Last Mile', body: 'Market access is the last mile — clearance means nothing without reimbursement' },
       ],
       catWeights: { [CT.designControl]: 20, [CT.assignedTo]: 15, [CT.blocks]: 10, [CT.relatesTo]: 5, [CT.mitigates]: 5, [CT.verifies]: 0, [CT.partOf]: -5, [CT.reportedIn]: -5 },
-      goalWeights: { [GOAL.reqLocked]: 10, [GOAL.riskComplete]: 5, [GOAL.verifComplete]: 10, [GOAL.clinApproved]: 10, [GOAL.fivetenReady]: 20, [GOAL.fdaSubmission]: 30 },
+      goalWeights: { [GOAL.reqLocked]: 10, [GOAL.riskComplete]: 5, [GOAL.bioCompatCleared]: 5, [GOAL.archDecided]: 5, [GOAL.verifComplete]: 10, [GOAL.supplyChainQual]: 10, [GOAL.clinApproved]: 10, [GOAL.designTransfer]: 15, [GOAL.fivetenReady]: 20, [GOAL.mfgValidation]: 15, [GOAL.regFiling]: 20, [GOAL.fdaSubmission]: 30 },
     },
   ];
 
@@ -1129,7 +1259,7 @@ async function run() {
 ║  59 Nords (with intentional data gaps)           ║
 ║  ~85 Connections (with typed properties)         ║
 ║   5 Personas (mental models + weights)           ║
-║   6 Goals (DAG + bindings + relevant nords)      ║
+║  12 Goals (complex DAG + bindings + relevant nords)  ║
 ║  15 Project Variables (3 boolean)                ║
 ║   5 Test Scenarios (persona-aligned)             ║
 ║                                                  ║

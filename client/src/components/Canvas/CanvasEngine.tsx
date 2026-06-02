@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   BackgroundVariant,
   useNodesState,
@@ -67,15 +68,37 @@ interface InteractiveCanvasProps {
   personaWeights?: Map<string, number> | null;
   activePersona?: ActivePersonaInfo | null;
   onPersonaCenterClick?: () => void;
+  onCenterOnNordReady?: (fn: (nordId: string) => void) => void;
 }
 
-function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord, graph, refetchGraph, personaWeights, activePersona, onPersonaCenterClick }: InteractiveCanvasProps) {
+function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selectedNord, graph, refetchGraph, personaWeights, activePersona, onPersonaCenterClick, onCenterOnNordReady }: InteractiveCanvasProps) {
   const { createNord, batchUpdatePositions, deleteNord } = useNordMutations(projectId);
   const { createConnection, updateConnection, deleteConnection } = useConnectionMutations(projectId);
   const { connectionTypes } = useTypeRegistry();
-  const { activeConnectionTypeId, lens, personaTypeFilter } = useLens();
+  const { activeConnectionTypeId, lens, personaTypeFilter, personaEngagementFilter } = useLens();
   const isPersonaMode = lens === 'persona';
-  const { addNodes, screenToFlowPosition, getNodes, fitView } = useReactFlow();
+  const { addNodes, screenToFlowPosition, getNodes, fitView, getNode, setCenter, getZoom } = useReactFlow();
+
+  // Register center-on-nord callback for parent to use
+  useEffect(() => {
+    if (onCenterOnNordReady) {
+      onCenterOnNordReady((nordId: string) => {
+        requestAnimationFrame(() => {
+          try {
+            const node = getNode(nordId);
+            if (node) {
+              const x = node.position.x + (node.measured?.width ?? 200) / 2;
+              const y = node.position.y + (node.measured?.height ?? 60) / 2;
+              setCenter(x, y, { duration: 400, zoom: getZoom() });
+            }
+          } catch {
+            // ReactFlow not ready — ignore
+          }
+        });
+      });
+    }
+    return () => { if (onCenterOnNordReady) onCenterOnNordReady(() => {}); };
+  }, [onCenterOnNordReady, getNode, setCenter, getZoom]);
 
   // ── Click-to-place mode ──
   // When set, a ghost node follows the cursor until clicked to place
@@ -162,6 +185,10 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         const nodeTypeName = (n.data as any)?.type as string | undefined;
         const typeState = nodeTypeName ? (personaTypeFilter.get(nodeTypeName) || 'show') : 'show';
         if (typeState === 'hide') continue; // completely hidden
+
+        // Apply engagement filter
+        if (personaEngagementFilter === 'engaged' && ps.score <= 0) continue;
+        if (personaEngagementFilter === 'disengaged' && ps.score > 0) continue;
 
         const radialPos = personaRadialPositions?.get(n.id);
         radialNodes.push({
@@ -256,7 +283,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       ...n,
       draggable: !connectedIds.has(n.id), // only orphans are draggable
     }));
-  }, [rfNodes, rfEdges, activeConnectionTypeId, isPersonaMode, personaScores, personaRadialPositions, personaLayout, activePersona, personaTypeFilter]);
+  }, [rfNodes, rfEdges, activeConnectionTypeId, isPersonaMode, personaScores, personaRadialPositions, personaLayout, activePersona, personaTypeFilter, personaEngagementFilter]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(lensNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(lensEdges);
@@ -349,7 +376,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
       // Delay to let React reconcile new positions + zone circles
       const timer = setTimeout(() => {
         fitView({ padding: 0.08, duration: 500 });
-      }, 80);
+      }, 200);
       prevPersonaModeRef.current = isPersonaMode;
       return () => clearTimeout(timer);
     }
@@ -366,14 +393,39 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const { saveNodePosition } = useLensLayout(activeConnectionTypeId, rfNodes, personaWeights);
   const { onNodeClick: baseOnNodeClick } = useNodeSelection(onNordClick);
 
-  // In persona mode, intercept clicks on the center node to toggle the drawer
+  // Center click toggles zoom between red (outer) and green (neutral) circles
+  const personaZoomState = React.useRef<'all' | 'green'>('all');
   const onNodeClick = useCallback((event: React.MouseEvent, node: any) => {
-    if (node.type === 'personaCenterNode' && onPersonaCenterClick) {
-      onPersonaCenterClick();
+    if (node.type === 'personaCenterNode') {
+      if (onPersonaCenterClick) onPersonaCenterClick();
+
+      // Toggle zoom between fitting all nodes (red zone) and green zone only
+      if (personaLayout) {
+        const { neutralRadius } = personaLayout;
+        if (personaZoomState.current === 'all' && neutralRadius > 0) {
+          // Zoom to green zone — fit only nodes within neutral radius
+          const greenNodes = getNodes().filter(n => {
+            if (n.id.startsWith('__persona_zone_')) return false;
+            if (n.id === '__persona_center__') return true;
+            const dx = (n.position.x || 0);
+            const dy = (n.position.y || 0);
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            return dist <= neutralRadius;
+          });
+          if (greenNodes.length > 0) {
+            fitView({ nodes: greenNodes.map(n => ({ id: n.id })), padding: 0.15, duration: 500 });
+          }
+          personaZoomState.current = 'green';
+        } else {
+          // Zoom to all (red zone)
+          fitView({ padding: 0.08, duration: 500 });
+          personaZoomState.current = 'all';
+        }
+      }
       return;
     }
     baseOnNodeClick(event, node);
-  }, [baseOnNodeClick, onPersonaCenterClick]);
+  }, [baseOnNodeClick, onPersonaCenterClick, personaLayout, fitView, getNodes]);
 
   // ── Focused node: the node whose connected edges get full rendering ──
   // Priority: dragged node > selected node
@@ -942,9 +994,11 @@ interface CanvasEngineProps {
   onGoalEdgeCreate?: (sourceId: string, targetId: string) => void;
   onGoalEdgeDelete?: (edgeId: string) => void;
   onPersonaCenterClick?: () => void;
+  /** Callback to register center-on-nord function from InteractiveCanvas */
+  onCenterOnNordReady?: (fn: (nordId: string) => void) => void;
 }
 
-export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights, activePersona, goals, goalEdges, variables, selectedGoalId, onGoalClick, onGoalEdgeCreate, onGoalEdgeDelete, onPersonaCenterClick }: CanvasEngineProps) {
+export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedNord, projectId, graph, refetchGraph, personaWeights, activePersona, goals, goalEdges, variables, selectedGoalId, onGoalClick, onGoalEdgeCreate, onGoalEdgeDelete, onPersonaCenterClick, onCenterOnNordReady }: CanvasEngineProps) {
   const { lens } = useLens();
   const noop = async () => {};
 
@@ -966,6 +1020,7 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
     return (
       <div className="nords-canvas nords-canvas--goals">
       <GoalCanvas
+          key="goals-canvas"
           goals={goals || []}
           goalEdges={goalEdges || []}
           variables={variables || []}
@@ -980,7 +1035,9 @@ export default function CanvasEngine({ onNordClick, onEdgeDoubleClick, selectedN
 
   return (
     <div className={`nords-canvas ${lens === 'persona' ? 'nords-canvas--persona' : ''}`}>
-      <InteractiveCanvas projectId={projectId || ''} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} personaWeights={personaWeights} activePersona={activePersona} onPersonaCenterClick={onPersonaCenterClick} />
+      <ReactFlowProvider>
+        <InteractiveCanvas projectId={projectId || ''} onNordClick={onNordClick} onEdgeDoubleClick={onEdgeDoubleClick} selectedNord={selectedNord} graph={graph ?? null} refetchGraph={refetchGraph ?? noop} personaWeights={personaWeights} activePersona={activePersona} onPersonaCenterClick={onPersonaCenterClick} onCenterOnNordReady={onCenterOnNordReady} />
+      </ReactFlowProvider>
     </div>
   );
 }

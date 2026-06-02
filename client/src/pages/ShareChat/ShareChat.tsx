@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Send, Bot, Loader2 } from 'lucide-react';
+import { Send, Bot, Loader2, RotateCcw } from 'lucide-react';
 import './ShareChat.css';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -83,6 +83,14 @@ export function ShareChat() {
     })();
   }, [token]);
 
+  // Set document title to project name
+  useEffect(() => {
+    if (info?.project_name) {
+      document.title = info.project_name;
+    }
+    return () => { document.title = 'Nords'; };
+  }, [info?.project_name]);
+
   // Send message
   const handleSend = useCallback(async () => {
     if (!input.trim() || sending || !token) return;
@@ -138,6 +146,14 @@ export function ShareChat() {
     }
   }, [input, sending, token, sessionId]);
 
+  // Reset session
+  const handleReset = useCallback(() => {
+    if (!confirm('Start a new conversation? Current messages will be cleared.')) return;
+    setMessages([]);
+    setSessionId(null);
+    setInput('');
+  }, []);
+
   // Enter to send, Shift+Enter for newline
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -183,8 +199,15 @@ export function ShareChat() {
           )}
           <span className="share-chat__project-name">{info?.project_name}</span>
         </div>
-        <div className="share-chat__header-badge">
-          <span className="share-chat__powered-by">Powered by Nords</span>
+        <div className="share-chat__header-actions">
+          <button
+            className="share-chat__reset-btn"
+            onClick={handleReset}
+            title="Start new conversation"
+            disabled={messages.length === 0}
+          >
+            <RotateCcw size={14} /> Reset
+          </button>
         </div>
       </div>
 

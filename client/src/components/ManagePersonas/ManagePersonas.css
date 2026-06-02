@@ -584,68 +584,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Temperature Slider ── */
-
-.manage-personas__temp-value {
-  margin-left: 8px;
-  font-size: var(--nords-font-size-xs);
-  font-weight: 700;
-  color: var(--nords-color-accent);
-  font-variant-numeric: tabular-nums;
-  background: var(--nords-color-bg-hover);
-  padding: 1px 6px;
-  border-radius: var(--nords-radius-sm);
-}
-
-.manage-personas__temp-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.manage-personas__temp-label {
-  font-size: var(--nords-font-size-xs);
-  color: var(--nords-color-text-tertiary);
-  white-space: nowrap;
-  min-width: 48px;
-}
-
-.manage-personas__temp-label:last-child {
-  text-align: right;
-}
-
-.manage-personas__temp-slider {
-  flex: 1;
-  height: 4px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: linear-gradient(90deg,
-    hsl(210, 70%, 50%) 0%,
-    hsl(210, 50%, 55%) 25%,
-    hsl(45, 10%, 55%) 50%,
-    hsl(30, 60%, 55%) 75%,
-    hsl(20, 80%, 55%) 100%
-  );
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-}
-
-.manage-personas__temp-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--nords-color-accent);
-  border: 2px solid var(--nords-color-bg-surface);
-  cursor: pointer;
-  transition: transform 0.1s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-}
-
-.manage-personas__temp-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
+/* ── Hint text (shared by sections) ── */
 
 .manage-personas__temp-hint {
   font-size: 11px;

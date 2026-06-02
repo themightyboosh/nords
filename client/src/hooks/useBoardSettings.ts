@@ -23,6 +23,7 @@ interface PerBoardSettings {
   hiddenNordIds: string[];
   showOrphans: boolean;        // Legacy — now controlled by directionFilters.unconnected
   collapsedLanes: Record<string, boolean>;
+  hiddenLanes: Record<string, boolean>;   // dock visibility — completely hides swimlane
   directionFilters: Record<DirectionKey, boolean>;
 }
 
@@ -69,6 +70,7 @@ function defaultBoard(): PerBoardSettings {
     hiddenNordIds: [],
     showOrphans: false,
     collapsedLanes: {},
+    hiddenLanes: {},
     directionFilters: { ...DEFAULT_DIRECTION_FILTERS },
   };
 }
@@ -263,6 +265,34 @@ export function useBoardSettings(projectId: string | null) {
     });
   }, []);
 
+  /** Check if a swimlane is hidden via dock visibility toggle */
+  const isLaneHidden = useCallback((connectionTypeId: string): boolean => {
+    const globalBoard = settings.boards['__lanes__'];
+    if (!globalBoard) return false;
+    return globalBoard.hiddenLanes?.[connectionTypeId] ?? false;
+  }, [settings]);
+
+  /** Toggle a swimlane's dock visibility (hide/show entire lane) */
+  const toggleLaneHidden = useCallback((connectionTypeId: string) => {
+    setSettings(prev => {
+      const globalBoard = prev.boards['__lanes__'] || defaultBoard();
+      const current = globalBoard.hiddenLanes?.[connectionTypeId] ?? false;
+      return {
+        ...prev,
+        boards: {
+          ...prev.boards,
+          ['__lanes__']: {
+            ...globalBoard,
+            hiddenLanes: {
+              ...globalBoard.hiddenLanes,
+              [connectionTypeId]: !current,
+            },
+          },
+        },
+      };
+    });
+  }, []);
+
   /** Get direction filter state for a board (all default to true except unconnected) */
   const getDirectionFilter = useCallback((connectionTypeId: string, direction: DirectionKey): boolean => {
     const board = settings.boards[connectionTypeId];
@@ -312,6 +342,8 @@ export function useBoardSettings(projectId: string | null) {
     toggleNordFilter,
     isLaneCollapsed,
     toggleLaneCollapse,
+    isLaneHidden,
+    toggleLaneHidden,
     getDirectionFilter,
     toggleDirectionFilter,
   };

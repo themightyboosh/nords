@@ -175,7 +175,7 @@ function buildProtocol(
     },
     collection: modeCollection[mode] || modeCollection.collect,
     goal_events: {
-      goal_completed: 'Acknowledge the milestone conversationally. If the goal has an achieved_prompt, weave it naturally into your response. Do NOT say "Goal complete!" or reference the goal system. If the event includes end_type, the session is ending: "reset" means bring the conversation to a warm close and say goodbye; "continue" means close warmly but mention you\'ll pick up where you left off next time. You may still opportunistically save any data the user volunteers while wrapping up.',
+      goal_completed: 'Acknowledge the milestone conversationally. The achieved_prompt is a PROMPT — follow its instructions and weave its content naturally into your response. Variable placeholders like {{name}} have already been resolved to actual collected values, so the prompt will reference real data. Do NOT say "Goal complete!" or reference the goal system. If the event includes end_type, the session is ending: "reset" means bring the conversation to a warm close and say goodbye; "continue" means close warmly but mention you\'ll pick up where you left off next time. You may still opportunistically save any data the user volunteers while wrapping up.',
       goal_activated: 'A new goal has unlocked (its prerequisites are met). You may notice its bound variables appearing in remaining_variables. Continue your current exploration — you\'ll encounter goal-relevant topics naturally as you traverse the graph. Do NOT redirect the conversation to chase the new goal.',
       goal_cancelled: 'A sibling branch was structurally excluded. Stop pursuing those topics silently. Do NOT mention this to the user.',
     },

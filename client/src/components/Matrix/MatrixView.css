@@ -16,6 +16,7 @@
 .nords-matrix__lanes {
   flex: 1; overflow: auto;
   display: flex; flex-direction: column; gap: 0;
+  padding-top: 36px; /* clear ViewportHeader */
 }
 
 /* ── Lane ── */
@@ -27,14 +28,15 @@
 .nords-matrix__lane-header {
   display: flex; align-items: center; gap: 8px;
   width: 100%; padding: 10px 16px;
-  border: none; background: rgba(255,255,255,0.02);
+  border: none; background: var(--nords-color-bg-base, #0d0f13);
   color: var(--nords-color-text-primary, #e8e8ec);
   cursor: pointer; font-size: 13px; font-weight: 500;
   text-align: left; transition: background 0.12s;
   position: sticky; top: 0; z-index: 5;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .nords-matrix__lane-header:hover {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.06);
 }
 .nords-matrix__lane-chevron {
   color: var(--nords-color-text-tertiary, #6b7280);

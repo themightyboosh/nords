@@ -469,6 +469,19 @@
   letter-spacing: var(--nords-letter-spacing-wide);
 }
 
+.nords-node__category-count {
+  font-size: 9px;
+  font-weight: var(--nords-font-weight-bold);
+  color: var(--nords-color-text-tertiary);
+  background: var(--nords-color-bg-hover);
+  border-radius: var(--nords-radius-pill, 100px);
+  padding: 0 5px;
+  line-height: 16px;
+  min-width: 16px;
+  text-align: center;
+  margin-left: auto;
+}
+
 .nords-node__title {
   font-size: var(--nords-font-size-sm);
   font-weight: var(--nords-font-weight-semibold);

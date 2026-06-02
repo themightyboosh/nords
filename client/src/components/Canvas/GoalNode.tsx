@@ -52,14 +52,14 @@ export const GoalNode = memo(({ id, data, selected, isConnectable }: NodeProps<G
 
   // Property bindings
   const bindings = (data.collectionItems || []).slice(0, 3);
-  for (const name of bindings) {
-    properties.push({ key: 'Collects', value: name });
+  for (let i = 0; i < bindings.length; i++) {
+    properties.push({ key: `Collects${i > 0 ? ` (${i + 1})` : ''}`, value: bindings[i] });
   }
 
-  // End-type as a subtle indicator
-  let endLabel = '';
-  if (data.endType === 'reset') endLabel = '⏹ Ends → Reset';
-  else if (data.endType === 'continue') endLabel = '↻ Ends → Continue';
+  // Build a type label for the header
+  let typeLabel = 'Goal';
+  if (data.endType === 'reset') typeLabel = 'Goal · Ends (Reset)';
+  else if (data.endType === 'continue') typeLabel = 'Goal · Ends';
 
   return (
     <div style={{ width: `${CARD_WIDTH}px`, position: 'relative' }}>
@@ -73,8 +73,8 @@ export const GoalNode = memo(({ id, data, selected, isConnectable }: NodeProps<G
       <Handle type="source" position={Position.Left} id="s-left" className="nords-node__handle--border" isConnectable={isConnectable} />
 
       <NordCard
-        title={endLabel || (properties.length > 0 ? '' : '')}
-        typeName={data.name || 'Untitled Goal'}
+        title={data.name || 'Untitled Goal'}
+        typeName={typeLabel}
         typeColor={accentColor}
         typeIcon={GoalIcon}
         properties={properties}

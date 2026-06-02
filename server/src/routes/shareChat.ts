@@ -191,22 +191,20 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
       const projectMode = project?.project_mode || 'collect';
       await goalsRepo.initializeSessionGoals(sessionId, projectId, projectMode);
 
-      // Apply property pre-fills directly to nords
+      // Apply collection variable pre-fills to the session
       if (link.prefills.length > 0) {
         for (const pf of link.prefills) {
-          const nord = await queryOne<{ properties: Record<string, unknown> }>(
-            'SELECT properties FROM nords WHERE id = $1 AND deleted_at IS NULL',
-            [pf.nord_id]
-          );
-          if (nord) {
-            const merged = { ...(nord.properties || {}), [pf.property_name]: pf.property_value };
-            await queryOne(
-              'UPDATE nords SET properties = $1 WHERE id = $2 RETURNING id',
-              [JSON.stringify(merged), pf.nord_id]
+          if (pf.variable_id && pf.value != null) {
+            await mcpRepo.upsertSessionVariable(
+              sessionId,
+              pf.variable_id,
+              pf.value,
+              null,  // no nord context for prefills
+              null   // no persona context for prefills
             );
           }
         }
-        logger.info('Applied share link prefills', { linkId: link.id, count: link.prefills.length });
+        logger.info('Applied share link variable prefills', { linkId: link.id, count: link.prefills.length });
       }
 
       // Set session cookie

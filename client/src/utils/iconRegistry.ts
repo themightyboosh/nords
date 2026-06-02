@@ -29,8 +29,9 @@ import {
   Truck, Tv, Type, Umbrella, Upload, Users, Video,
   Volume2, Watch, Wifi, Wind, XCircle, Crosshair,
   // Additional icons used in DB but previously missing
-  ArrowRight, Ban, ClipboardCheck, FileCheck, FileWarning,
-  FlaskConical, Stethoscope, UserCheck,
+  ArrowRight, ArrowRightLeft, Ban, CheckCircle, ClipboardCheck,
+  Factory, FileCheck, FileWarning, FlaskConical,
+  HeartPulse, ShieldCheck, Stamp, Stethoscope, UserCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -65,9 +66,10 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   // Extras
   Flame, Rocket, Eye, Play, Pause,
   MoreHorizontal,
-  // Additional icons — #55 fix
-  ArrowRight, Ban, ClipboardCheck, FileCheck, FileWarning,
-  FlaskConical, Stethoscope, UserCheck,
+  // Additional icons — #55 fix + goals
+  ArrowRight, ArrowRightLeft, Ban, CheckCircle, ClipboardCheck,
+  Factory, FileCheck, FileWarning, FlaskConical,
+  HeartPulse, ShieldCheck, Stamp, Stethoscope, UserCheck,
 };
 
 export const DEFAULT_ICON: LucideIcon = Square;

@@ -23,9 +23,8 @@ export interface ShareLink {
 export interface ShareLinkPrefill {
   id: string;
   share_link_id: string;
-  nord_id: string;
-  property_name: string;
-  property_value: string;
+  variable_id: string;
+  value: string;
 }
 
 /** Generate a random share token: nrd_<24 hex chars> */
@@ -43,7 +42,7 @@ export async function create(
     max_sessions?: number | null;
     expires_at?: string | null;
     created_by?: string | null;
-    prefills?: Array<{ nord_id: string; property_name: string; property_value: string }>;
+    prefills?: Array<{ variable_id: string; value: string }>;
   }
 ): Promise<ShareLink & { prefills: ShareLinkPrefill[] }> {
   const token = generateToken();
@@ -71,10 +70,10 @@ export async function create(
   if (data.prefills?.length) {
     for (const p of data.prefills) {
       const pf = await queryOne<ShareLinkPrefill>(`
-        INSERT INTO share_link_prefills (share_link_id, nord_id, property_name, property_value)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO share_link_prefills (share_link_id, variable_id, value)
+        VALUES ($1, $2, $3)
         RETURNING *
-      `, [link.id, p.nord_id, p.property_name, p.property_value]);
+      `, [link.id, p.variable_id, p.value]);
       if (pf) prefills.push(pf);
     }
   }

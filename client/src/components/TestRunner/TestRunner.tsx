@@ -412,7 +412,7 @@ export function TestRunner({ projectId, projectMode, goalsEnabled, open, onClose
                       onChange={e => { setForm(f => ({ ...f, stop_on_goal_id: e.target.value || null })); setTimeout(handleSave, 50); }}
                     >
                       <option value="">None</option>
-                      {goals.filter(g => g.end_type !== 'continue').map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                      {goals.filter(g => g.end_type != null).map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                     </select>
                   </div>
                 )}

@@ -1,9 +1,102 @@
-/* GoalNode.css — Goal-canvas-specific styles.
+/* GoalCanvas.css — Goal-canvas-specific styles.
  *
- * Card rendering is handled by the shared NordCard component
- * using .nords-node styles from CanvasEngine.css.
- * This file only contains goal-canvas chrome (layout toggle, etc).
+ * Card rendering is handled by NordNode/NordCard.
+ * This file contains goal-canvas chrome: step badges, gate nodes, edge overrides.
  */
+
+/* ── Step Badge (column header) ── */
+.goal-step-badge {
+  display: flex;
+  align-items: center;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  backdrop-filter: blur(8px);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.goal-step-badge__label {
+  color: var(--nords-color-text-secondary, #8b949e);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Gate Node (AND/OR/XOR circle connector) ── */
+.goal-gate-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid;
+  backdrop-filter: blur(8px);
+  user-select: none;
+  cursor: default;
+  box-shadow:
+    0 0 12px rgba(0, 0, 0, 0.4),
+    0 0 24px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.goal-gate-node:hover {
+  transform: scale(1.1);
+}
+
+.goal-gate-node__label {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+/* AND gate — indigo */
+.goal-gate-node--all {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+.goal-gate-node--all .goal-gate-node__label {
+  color: #c7d2fe;
+}
+
+/* OR gate — amber */
+.goal-gate-node--or {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.5);
+}
+.goal-gate-node--or .goal-gate-node__label {
+  color: #fde68a;
+}
+
+/* XOR gate — red */
+.goal-gate-node--xor {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+.goal-gate-node--xor .goal-gate-node__label {
+  color: #fecaca;
+}
+
+/* Hide gate node handles visually but keep them functional */
+.goal-gate-handle {
+  width: 6px !important;
+  height: 6px !important;
+  background: transparent !important;
+  border: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* ── Edge path overrides ── */
+.goal-canvas .react-flow__edge-path {
+  stroke-linecap: round;
+}
 
 /* ── Auto-Layout Toggle ── */
 .goal-canvas__layout-toggle {

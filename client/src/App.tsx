@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import '@xyflow/react/dist/style.css';
-import { ReactFlowProvider, useReactFlow } from '@xyflow/react';
 import { AuthProvider } from './context/AuthContext';
 import { LensProvider } from './context/LensContext';
 import { TypeRegistryProvider } from './context/TypeRegistryContext';
@@ -35,18 +34,10 @@ import { ShareChat } from './pages/ShareChat/ShareChat';
 import { TestRunner } from './components/TestRunner/TestRunner';
 import { SessionExplorer } from './components/SessionExplorer/SessionExplorer';
 import { UserProfile } from './components/UserProfile/UserProfile';
+import { SharePanel } from './components/SharePanel/SharePanel';
 
-/**
- * Safe ReactFlow access — returns null when ReactFlow isn't mounted (e.g. board view).
- */
-function useOptionalReactFlow() {
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useReactFlow();
-  } catch {
-    return null;
-  }
-}
+/** Callback type for centering on a node from outside CanvasEngine */
+export type CenterOnNordFn = (nordId: string) => void;
 
 /**
  * WorkspaceShell — wraps Header + Dock + Canvas for a single project.
@@ -59,7 +50,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
 
   // Load graph at the shell level so TypeRegistryProvider wraps everything
   const { graph, refetch } = useProjectGraph(projectId || '');
-  const { personas, updateCategoryWeight } = usePersonas(projectId || '');
+  const { personas, updateCategoryWeight, refetch: refetchPersonas } = usePersonas(projectId || '');
 
   return (
     <LensProvider projectId={projectId || ''}>
@@ -76,6 +67,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
           refetch={refetch}
           personas={personas}
           updateCategoryWeight={updateCategoryWeight}
+          refetchPersonas={refetchPersonas}
           currentTheme={currentTheme}
           onThemeChange={onThemeChange}
         />
@@ -95,11 +87,12 @@ interface WorkspaceContentProps {
   refetch: () => Promise<void>;
   personas: ReturnType<typeof usePersonas>['personas'];
   updateCategoryWeight: ReturnType<typeof usePersonas>['updateCategoryWeight'];
+  refetchPersonas: () => Promise<void>;
   currentTheme: string;
   onThemeChange: (theme: string) => void;
 }
 
-function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryWeight, currentTheme, onThemeChange }: WorkspaceContentProps) {
+function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryWeight, refetchPersonas, currentTheme, onThemeChange }: WorkspaceContentProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<{ id: string; type: 'nord' | 'connection' } | null>(null);
   const [manageTypesTab, setManageTypesTab] = useState<'nord' | 'connection' | null>(null);
@@ -111,9 +104,12 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [previewOpen, setPreviewOpen] = useState(false);
   const [testRunnerOpen, setTestRunnerOpen] = useState(false);
   const [sessionsOpen, setSessionsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
-  const [personaDrawerOpen, setPersonaDrawerOpen] = useState(true);
+  const [personaDrawerOpen, setPersonaDrawerOpen] = useState(false);
   const [projectName, setProjectName] = useState<string>('Loading…');
+  const [projectIcon, setProjectIcon] = useState<string | null>(null);
+  const [projectColor, setProjectColor] = useState<string | null>(null);
   const [projectMode, setProjectMode] = useState<'explore' | 'collect' | 'guided'>('explore');
 
   // Replay state — shared between TestRunner and PreviewChat
@@ -125,16 +121,18 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const variablesData = useVariables(projectId || null);
   const collectionGroupsData = useCollectionGroups(projectId || null);
 
-  // Safe ReactFlow access — returns null in board view where ReactFlow isn't mounted
-  const reactFlow = useOptionalReactFlow();
+  // Center-on-nord callback — set by CanvasEngine when InteractiveCanvas is mounted
+  const centerOnNordRef = useRef<CenterOnNordFn | null>(null);
   const { lens, activePersonaId } = useLens();
 
   // Fetch project name + mode
   useEffect(() => {
     if (!projectId) return;
-    api.get<{ name: string; project_mode?: 'explore' | 'collect' | 'guided' }>(`/api/projects/${projectId}`)
+    api.get<{ name: string; icon?: string | null; accent_color?: string | null; project_mode?: 'explore' | 'collect' | 'guided' }>(`/api/projects/${projectId}`)
       .then(p => {
         setProjectName(p.name);
+        setProjectIcon(p.icon || null);
+        setProjectColor(p.accent_color || null);
         setProjectMode(p.project_mode || 'explore');
       })
       .catch(() => setProjectName('Project'));
@@ -145,14 +143,8 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
     return personas.find(p => p.id === activePersonaId) || null;
   }, [personas, activePersonaId]);
 
-  // Auto-open persona drawer when persona changes
-  const prevPersonaIdRef = useRef(activePersonaId);
-  useEffect(() => {
-    if (activePersonaId && activePersonaId !== prevPersonaIdRef.current) {
-      setPersonaDrawerOpen(true);
-    }
-    prevPersonaIdRef.current = activePersonaId;
-  }, [activePersonaId]);
+
+
 
   // Persona weights map for the layout engine
   const personaWeights = useMemo(() => {
@@ -237,20 +229,8 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
     setIsDrawerOpen(true);
 
     // Center the graph view on the selected nord (graph view only)
-    if (!reactFlow) return;
-    requestAnimationFrame(() => {
-      try {
-        const node = reactFlow!.getNode(nordId);
-        if (node) {
-          const x = node.position.x + (node.measured?.width ?? 200) / 2;
-          const y = node.position.y + (node.measured?.height ?? 60) / 2;
-          reactFlow!.setCenter(x, y, { duration: 400, zoom: reactFlow!.getZoom() });
-        }
-      } catch {
-        // ReactFlow not mounted — ignore
-      }
-    });
-  }, [reactFlow]);
+    centerOnNordRef.current?.(nordId);
+  }, []);
 
   const closeDrawer = () => {
     setIsDrawerOpen(false);
@@ -272,7 +252,10 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onOpenPreview={() => setPreviewOpen(p => !p)}
         onOpenTestRunner={() => setTestRunnerOpen(true)}
         onOpenSessions={() => setSessionsOpen(true)}
+        onOpenShare={() => setShareOpen(true)}
         projectName={projectName}
+        projectIcon={projectIcon}
+        projectColor={projectColor}
       />
       <UserProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
       {projectId && (
@@ -283,9 +266,11 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
             setPreviewOpen(false);
             // Re-fetch project to pick up mode changes
             if (projectId) {
-              api.get<{ name: string; project_mode?: 'explore' | 'collect' | 'guided' }>(`/api/projects/${projectId}`)
+              api.get<{ name: string; icon?: string | null; accent_color?: string | null; project_mode?: 'explore' | 'collect' | 'guided' }>(`/api/projects/${projectId}`)
                 .then(p => {
                   setProjectName(p.name);
+                  setProjectIcon(p.icon || null);
+                  setProjectColor(p.accent_color || null);
                   setProjectMode(p.project_mode || 'explore');
                 })
                 .catch(() => {});
@@ -318,6 +303,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onGoalEdgeCreate={goalsData.createEdge}
         onGoalEdgeDelete={goalsData.deleteEdge}
         onPersonaCenterClick={() => setPersonaDrawerOpen(prev => !prev)}
+        onCenterOnNordReady={(fn) => { centerOnNordRef.current = fn; }}
       />
       {/* Goal Canvas state */}
       {lens === 'goals' && (
@@ -384,6 +370,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         open={personasOpen}
         onClose={() => setPersonasOpen(false)}
         connectionTypes={graph?.connection_types || []}
+        onPersonaChanged={refetchPersonas}
       />
       <ManageGoals
         projectId={projectId || ''}
@@ -395,6 +382,13 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         open={variablesOpen}
         onClose={() => setVariablesOpen(false)}
       />
+      {projectId && (
+        <SharePanel
+          projectId={projectId}
+          isOpen={shareOpen}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
       {projectId && (
         <PreviewChat
           projectId={projectId}
@@ -499,9 +493,7 @@ function App() {
           path="/project/:id"
           element={
             <ProtectedRoute>
-              <ReactFlowProvider>
-                <WorkspaceShell currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
-              </ReactFlowProvider>
+              <WorkspaceShell currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
             </ProtectedRoute>
           }
         />

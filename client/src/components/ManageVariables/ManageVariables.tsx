@@ -36,6 +36,30 @@ import { PropertyTable } from '../shared/PropertyTable';
 import { useUIStrings } from '../../hooks/useUIStrings';
 import './ManageVariables.css';
 
+// ── Snake-case utility ──
+
+/** Convert any string to snake_case for variable naming */
+function toSnakeCase(input: string): string {
+  return input
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')   // camelCase → camel_Case
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2') // XMLParser → XML_Parser
+    .replace(/[\s\-\.]+/g, '_')                // spaces, hyphens, dots → _
+    .replace(/[^a-zA-Z0-9_]/g, '')             // strip non-alphanumeric
+    .replace(/_+/g, '_')                        // collapse multiple _
+    .replace(/^_|_$/g, '')                      // trim leading/trailing _
+    .toLowerCase()
+    || 'variable';                              // fallback if empty
+}
+
+/** Ensure name is unique among existing variables; appends _2, _3 etc. */
+function ensureUniqueName(name: string, existingNames: Set<string>, currentId?: string): string {
+  // If currently editing and the name hasn't changed, keep it
+  if (!existingNames.has(name)) return name;
+  let i = 2;
+  while (existingNames.has(`${name}_${i}`)) i++;
+  return `${name}_${i}`;
+}
+
 // ── Types ──
 
 interface ManageVariablesProps {
@@ -121,8 +145,11 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
 
   const handleCreateVariable = async () => {
     if (!selectedGroupId) return;
+    // Generate a unique snake_case default name
+    const existingNames = new Set(variables.map(v => v.name));
+    const defaultName = ensureUniqueName('new_variable', existingNames);
     const v = await createVariable({
-      name: 'New Collection',
+      name: defaultName,
       type: 'short_text' as any,
       collection_group_id: selectedGroupId,
     });
@@ -142,12 +169,16 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
     reorderVariables(ids);
   }, [groupVariables, reorderVariables]);
 
-  // Debounced name update
+  // Debounced name update — auto-converts to snake_case and ensures uniqueness
   const handleNameChange = (id: string, value: string) => {
     setDraftNames(prev => ({ ...prev, [id]: value }));
     if (nameTimerRef.current) clearTimeout(nameTimerRef.current);
     nameTimerRef.current = setTimeout(() => {
-      updateVariable(id, { name: value });
+      const normalized = toSnakeCase(value);
+      const existingNames = new Set(variables.filter(v => v.id !== id).map(v => v.name));
+      const uniqueName = ensureUniqueName(normalized, existingNames, id);
+      setDraftNames(prev => ({ ...prev, [id]: uniqueName }));
+      updateVariable(id, { name: uniqueName });
     }, 400);
   };
 

@@ -262,6 +262,15 @@
   flex-wrap: wrap;
 }
 
+/* Cascade variant — two selects side by side */
+.goal-detail-drawer__add-binding--cascade {
+  flex-wrap: wrap;
+}
+.goal-detail-drawer__add-binding--cascade .goal-detail-drawer__select {
+  flex: 1 1 40%;
+  min-width: 100px;
+}
+
 .goal-detail-drawer__add-btn {
   display: flex;
   align-items: center;
@@ -377,4 +386,75 @@
 .goal-detail-drawer__binding-row--readonly {
   opacity: 0.7;
   cursor: default;
+}
+
+/* ── Continue / End toggle ── */
+.goal-detail-drawer__end-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--nords-color-border, rgba(255,255,255,0.1));
+}
+
+.goal-detail-drawer__end-toggle-btn {
+  flex: 1;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: var(--nords-color-bg-deep, #12141a);
+  color: var(--nords-color-text-tertiary, #6b7280);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.goal-detail-drawer__end-toggle-btn + .goal-detail-drawer__end-toggle-btn {
+  border-left: 1px solid var(--nords-color-border, rgba(255,255,255,0.1));
+}
+
+.goal-detail-drawer__end-toggle-btn:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--nords-color-text-secondary);
+}
+
+.goal-detail-drawer__end-toggle-btn.is-active {
+  background: color-mix(in srgb, var(--nords-color-accent, #6366f1) 15%, var(--nords-color-bg-deep, #12141a));
+  color: var(--nords-color-accent, #6366f1);
+}
+
+.goal-detail-drawer__end-toggle-btn.is-active.is-end {
+  background: color-mix(in srgb, #ef4444 12%, var(--nords-color-bg-deep, #12141a));
+  color: #f87171;
+}
+
+/* ── Reset checkbox ── */
+.goal-detail-drawer__reset-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--nords-color-text-secondary, #a1a1aa);
+  cursor: pointer;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.02);
+  transition: background 0.12s;
+  animation: goalResetFadeIn 0.2s ease;
+}
+
+.goal-detail-drawer__reset-checkbox:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.goal-detail-drawer__reset-checkbox input[type="checkbox"] {
+  accent-color: #ef4444;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+@keyframes goalResetFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

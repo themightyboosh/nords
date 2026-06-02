@@ -23,6 +23,8 @@ export interface NordCardProps {
   isGhosted?: boolean;
   /** Optional extra className on the .nords-node container */
   className?: string;
+  /** Number of distinct categories (connection types) this nord belongs to */
+  categoryCount?: number;
   /** Override container width (canvas = 225px, board = 100%) */
   style?: React.CSSProperties;
   /** Ref forwarded to the outer div */
@@ -39,6 +41,7 @@ export const NordCard: React.FC<NordCardProps> = ({
   maxProperties = 3,
   isSelected,
   isGhosted,
+  categoryCount,
   className,
   style,
   innerRef,
@@ -71,6 +74,9 @@ export const NordCard: React.FC<NordCardProps> = ({
           <span className="nords-node__type-label" style={{ color: typeColor }}>
             {typeName}
           </span>
+          {categoryCount != null && categoryCount > 1 && (
+            <span className="nords-node__category-count" title={`In ${categoryCount} categories`}>{categoryCount}</span>
+          )}
         </div>
       </div>
 
