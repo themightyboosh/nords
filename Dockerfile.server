@@ -41,6 +41,7 @@ RUN pnpm install --frozen-lockfile --prod && pnpm store prune
 # Copy compiled output and migrations
 COPY --from=builder /app/server/dist ./server/dist
 COPY server/migrations ./server/migrations
+COPY server/functions ./server/functions
 
 WORKDIR /app/server
 
