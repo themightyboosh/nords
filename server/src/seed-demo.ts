@@ -211,8 +211,8 @@ async function run() {
       true, true, true, 'guided', true,
       false, true, $2,
       'You are an expert medical device regulatory and engineering assistant working on the Pulse Sense CGM project for Meridian Medical. You understand FDA 510(k) processes, ISO 14971 risk management, IEC 62304 software lifecycle, and design control requirements. Always reference specific requirements, risks, and test cases by their IDs.\\n\\nNAVIGATE organically — follow persona-weighted connections and verbs to explore the graph. The topology tells you where to go.\\nCOLLECT aggressively — at each stop, actively drive conversation to collect remaining collection variables. Use the description field on each variable to phrase your questions naturally. Nord properties are read-only context — do NOT try to fill or update them.\\nSAVE immediately — call save tools as soon as you learn a value. Do not wait.\\nGoals are milestones you notice in the rearview mirror, not destinations on your GPS. When the current nord is goal-relevant, you have permission to probe harder.',
-      'Welcome! I''m your design control partner for the Pulse Sense CGM — Meridian Medical''s continuous glucose monitor heading toward FDA 510(k) clearance. I can help you trace requirements to tests, assess risk mitigations, review verification status, and identify submission gaps. Where are you picking up today?',
-      'Would you like me to summarize the gaps remaining for FDA submission readiness?')
+      'Welcome to the Pulse Sense CGM design control session. I have the full graph loaded — 8 requirements, 8 risks, 10 test cases, 6 subsystems, 3 clinical protocols, and your 510(k) submission docs. I can trace any requirement to its tests, assess risk mitigations, check verification status, or identify submission gaps. What are you working on today?',
+      'Should I walk through the remaining gaps for FDA submission readiness?')
   `, [PROJECT_ID, userId]);
 
   console.log('  ✅ Project created');
@@ -1259,9 +1259,9 @@ async function run() {
 ║  59 Nords (with intentional data gaps)           ║
 ║  ~85 Connections (with typed properties)         ║
 ║   5 Personas (mental models + weights)           ║
-║  12 Goals (complex DAG + bindings + relevant nords)  ║
-║  15 Project Variables (3 boolean)                ║
-║   5 Test Scenarios (persona-aligned)             ║
+║  12 Goals (complex DAG + bindings + relevant)    ║
+║  15 Project Variables (5 groups, 3 boolean)      ║
+║   3 Test Scenarios (persona-aligned)             ║
 ║                                                  ║
 ║  Mode: Guided | Goals: Enabled                   ║
 ║  Default Persona: Dr. Priya Sharma               ║
