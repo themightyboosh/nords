@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/nords-api-staging'
+      - '-f'
+      - 'Dockerfile.server'
+      - '.'
+images:
+  - 'gcr.io/$PROJECT_ID/nords-api-staging'
+timeout: '600s'

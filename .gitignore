@@ -14,3 +14,4 @@ playwright-report/
 test-results/
 coverage/
 .pgdata
+firebase-debug.log

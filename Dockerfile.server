@@ -11,14 +11,16 @@ WORKDIR /app
 # Copy workspace root files first (lockfile, workspace config)
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 
-# Copy server package.json for dependency resolution
+# Copy workspace member package.json files for dependency resolution
 COPY server/package.json ./server/
-
-# Copy client package.json (pnpm workspace needs all workspace members)
 COPY client/package.json ./client/
+COPY shared/package.json ./shared/
 
 # Install ALL dependencies (including devDependencies for tsc)
 RUN pnpm install --frozen-lockfile
+
+# Copy shared package (imported by server at compile time)
+COPY shared ./shared
 
 # Copy server source and compile TypeScript
 COPY server/tsconfig.json ./server/
@@ -34,6 +36,7 @@ WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY server/package.json ./server/
 COPY client/package.json ./client/
+COPY shared ./shared
 
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod && pnpm store prune
