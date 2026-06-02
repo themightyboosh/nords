@@ -48,6 +48,9 @@ COPY server/functions ./server/functions
 
 # Overlay compiled shared JS onto workspace source so pnpm symlinks resolve to JS at runtime
 COPY --from=builder /app/server/dist/shared/ ./shared/
+# Remove .ts source files and fix exports to point to compiled .js
+RUN rm -f ./shared/*.ts && \
+    sed -i 's/\.ts"/\.js"/g' ./shared/package.json
 
 WORKDIR /app/server
 
