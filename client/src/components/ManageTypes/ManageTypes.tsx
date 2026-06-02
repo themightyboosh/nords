@@ -20,7 +20,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { X, Plus, Trash2, ChevronUp, ChevronDown, Pencil, ChevronRight } from 'lucide-react';
+import { X, Plus, Trash2, ChevronUp, ChevronDown, Pencil, ChevronRight, Box, Link2 } from 'lucide-react';
 import { useTypeMutations, type NordTypeData, type ConnectionTypeData, type PropertySchema } from '../../hooks/useTypeMutations';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { ColorIcon } from '../shared/ColorIcon';
@@ -309,7 +309,8 @@ export function ManageTypes({ projectId, open, onClose, onTypesChanged, initialT
         {/* ── Header ── */}
         <div className="manage-types__header">
           <div>
-            <h2 className="manage-types__title">
+            <h2 className="manage-types__title nords-panel-title">
+              {lockedTab === 'connection' ? <Link2 size={18} strokeWidth={1.6} /> : <Box size={18} strokeWidth={1.6} />}
               {lockedTab === 'nord' ? UI_STRINGS.types.titleNordOnly : lockedTab === 'connection' ? UI_STRINGS.types.titleCategoryOnly : UI_STRINGS.types.title}
             </h2>
             <p className="manage-types__subtitle">

@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, AlertTriangle, Save, Copy, Trash2, Plus, Key, Link, ExternalLink, ChevronDown, ChevronUp, Compass, ClipboardList, Target } from 'lucide-react';
+import { X, AlertTriangle, Save, Copy, Trash2, Plus, Key, Link, ExternalLink, ChevronDown, ChevronUp, Compass, ClipboardList, Target, Settings as SettingsIcon } from 'lucide-react';
 import { api } from '../../api/client';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { IconPicker } from '../shared/IconPicker';
@@ -239,7 +239,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
         {/* Header */}
         <div className="nords-project-settings__header">
           <div>
-            <h2 className="nords-project-settings__title">Project Settings</h2>
+            <h2 className="nords-project-settings__title nords-panel-title"><SettingsIcon size={18} strokeWidth={1.6} />Project Settings</h2>
             <p className="nords-project-settings__subtitle">Configure project details and integrations.</p>
           </div>
           <button className="nords-project-settings__close" onClick={onClose} title="Close">

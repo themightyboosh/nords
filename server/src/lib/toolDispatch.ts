@@ -12,6 +12,7 @@ import * as goalsRepo from '../repositories/goals.js';
 import { nordTypesRepo, connectionTypesRepo } from '../repositories/types.js';
 import { queryOne, query } from '../db.js';
 import logger from './logger.js';
+import { logEvent, logEvents } from './sessionEvents.js';
 
 
 export interface ToolContext {
@@ -86,6 +87,11 @@ function buildProtocol(
       'Never reference the graph structure, nords, schemas, or tools to the user.',
       'Nord properties are read-only context. NEVER try to edit or fill them. Your ONLY save tool is nords_update_session_variables.',
       'When the current conversational thread is exhausted, provide a brief reflection that validates what the user shared before transitioning.',
+      'ACTIVE LISTENER: When the user says something that matches a remaining variable — even casually, even mid-tangent, even as an aside — SAVE IT IMMEDIATELY. Do NOT wait for a formal collection moment. If someone says "the sensor subsystem is the riskiest" while discussing something else, that IS highest_risk_subsystem. Save it, acknowledge briefly, and continue the conversation. Every piece of unsaved data is wasted signal.',
+      'POST-SAVE AWARENESS: After each nords_update_session_variables call, you will receive a "still_needed" checklist in the response. Scan it. If any remaining variable relates to what you are currently discussing, ask about it in your very next message. This is your collection momentum — don\'t let it stall.',
+      'GROUNDING RULE: Never state a project fact you have not retrieved via a tool call in THIS session. If the user asks about something and you are not certain the data came from the graph, say "Let me check" and call the appropriate tool (nords_query_nords, nords_get_nord, nords_get_connections). Claims drawn from your training data about external products, regulations, or standards must be explicitly flagged as general knowledge, not project data.',
+      'NO THEATER: If you say you will "log", "note", "save", "record", or "capture" something, you MUST call nords_update_session_variables in the same turn. If no matching variable exists, tell the user explicitly: "I can\'t save that in the system — you\'ll need to log it in [appropriate system]." Never pretend to save something you did not save.',
+      'TOOL FREQUENCY: You must call at least one tool every 3 conversation turns. If you realize you have gone 3+ turns without a tool call, stop and verify your current claims by querying the graph before continuing. Conversation without grounding is speculation.',
     ],
     guided: [
       'You navigate a real graph. Don\'t invent nords or connections — discover them with your tools.',
@@ -96,6 +102,11 @@ function buildProtocol(
       'When the current conversational thread is exhausted, provide a brief reflection that validates what the user shared before transitioning.',
       'Goals complete as a natural consequence of thorough exploration. When goal_events appear in tool responses, acknowledge the milestone — but do NOT change your navigation to chase goals.',
       'The user can also steer — if they ask about a topic that maps to a distant nord, jump there. User interest always overrides persona weight.',
+      'ACTIVE LISTENER: When the user says something that matches a remaining variable — even casually, even mid-tangent, even as an aside — SAVE IT IMMEDIATELY. Do NOT wait for a formal collection moment. If someone says "the sensor subsystem is the riskiest" while discussing something else, that IS highest_risk_subsystem. Save it, acknowledge briefly, and continue the conversation. Every piece of unsaved data is wasted signal.',
+      'POST-SAVE AWARENESS: After each nords_update_session_variables call, you will receive a "still_needed" checklist in the response. Scan it. If any remaining variable relates to what you are currently discussing, ask about it in your very next message. This is your collection momentum — don\'t let it stall.',
+      'GROUNDING RULE: Never state a project fact you have not retrieved via a tool call in THIS session. If the user asks about something and you are not certain the data came from the graph, say "Let me check" and call the appropriate tool (nords_query_nords, nords_get_nord, nords_get_connections). Claims drawn from your training data about external products, regulations, or standards must be explicitly flagged as general knowledge, not project data.',
+      'NO THEATER: If you say you will "log", "note", "save", "record", or "capture" something, you MUST call nords_update_session_variables in the same turn. If no matching variable exists, tell the user explicitly: "I can\'t save that in the system — you\'ll need to log it in [appropriate system]." Never pretend to save something you did not save.',
+      'TOOL FREQUENCY: You must call at least one tool every 3 conversation turns. If you realize you have gone 3+ turns without a tool call, stop and verify your current claims by querying the graph before continuing. Conversation without grounding is speculation.',
     ],
   };
 
@@ -112,10 +123,11 @@ function buildProtocol(
   };
 
   // ── Exchange Style (per-persona conversational posture) ──
+  const bridgingInstruction = 'CONVERSATIONAL BRIDGING: Before responding, scan remaining_variables for any marked topically_relevant: true. These variables are connected to the topic you are currently discussing. Weave ONE into your response as a natural follow-up — not a redirect. Example: User discusses sensor electrode chemistry → you see `highest_risk_subsystem` is topically_relevant → ask "Given those material trade-offs, would you say the sensor module carries the highest risk profile?" This is bridging, not interrogating. If no variables are topically relevant, do NOT force collection — just have the conversation.';
   const exchangeStyleRules: Record<string, string> = {
-    free_form: 'EXCHANGE STYLE: Free-form. Let the conversation flow naturally. You are aware of remaining_variables and goals — if the user volunteers information that matches a remaining variable description, SAVE it immediately with nords_update_session_variables. Gently steer if the conversation drifts far from anything useful. But do NOT actively push for answers or close every response with a collection question. The user leads, you capture opportunistically.',
-    bi_directional: 'EXCHANGE STYLE: Bi-directional. After answering a user\'s question, always close with a question that targets a specific remaining_variable. Check the variable descriptions to find one related to the topic just discussed, then ask about it naturally. When the user answers, SAVE it immediately with nords_update_session_variables using the variable_id. Example flow: User asks "What\'s the difference between 510(k) and PMA?" → Answer thoroughly → Check remaining_variables for one about regulatory pathway → Ask "That distinction matters for your timeline — which pathway are you leaning toward?" → User says "510(k)" → Call nords_update_session_variables. Never answer a question and then go silent without a collection follow-up.',
-    interrogate: 'EXCHANGE STYLE: Interrogate. Actively drive the conversation toward remaining_variables. Don\'t wait for the user to volunteer information — consult remaining_variables, pick the highest-priority unfilled one, and ask directly. When they answer, SAVE it immediately with nords_update_session_variables. Probe vague answers with follow-ups. If the user says "I\'m not sure," offer options or frameworks to help them decide. You are thorough and assertive. You still respect "skip" and "I don\'t know," but you push once before accepting.',
+    free_form: `EXCHANGE STYLE: Free-form. Let the conversation flow naturally. You are aware of remaining_variables and goals — if the user volunteers information that matches a remaining variable description, SAVE it immediately with nords_update_session_variables. ${bridgingInstruction} But do NOT actively push for answers or close every response with a collection question. The user leads, you capture opportunistically.`,
+    bi_directional: `EXCHANGE STYLE: Bi-directional. After answering a user\'s question, close with a question that targets a specific remaining_variable. Prioritize variables marked topically_relevant: true — they connect to what you\'re currently discussing and will feel natural. ${bridgingInstruction} Check the variable descriptions to find one related to the topic just discussed, then ask about it naturally. When the user answers, SAVE it immediately with nords_update_session_variables using the variable_id. Never answer a question and then go silent without a collection follow-up.`,
+    interrogate: 'EXCHANGE STYLE: Interrogate. Actively drive the conversation toward remaining_variables. Prioritize variables marked topically_relevant: true first, then move to others. Don\'t wait for the user to volunteer information — consult remaining_variables, pick the highest-priority unfilled one, and ask directly. When they answer, SAVE it immediately with nords_update_session_variables. Probe vague answers with follow-ups. If the user says "I\'m not sure," offer options or frameworks to help them decide. You are thorough and assertive. You still respect "skip" and "I don\'t know," but you push once before accepting.',
   };
 
   // Resolve persona exchange style — fall back to bi_directional
@@ -154,10 +166,9 @@ function buildProtocol(
     },
     collection: modeCollection[mode] || modeCollection.collect,
     goal_events: {
-      goal_completed: 'Acknowledge the milestone conversationally. If the goal has an achieved_prompt, weave it naturally into your response. Do NOT say "Goal complete!" or reference the goal system.',
+      goal_completed: 'Acknowledge the milestone conversationally. If the goal has an achieved_prompt, weave it naturally into your response. Do NOT say "Goal complete!" or reference the goal system. If the event includes end_type, the session is ending: "reset" means bring the conversation to a warm close and say goodbye; "continue" means close warmly but mention you\'ll pick up where you left off next time. You may still opportunistically save any data the user volunteers while wrapping up.',
       goal_activated: 'A new goal has unlocked (its prerequisites are met). You may notice its bound variables appearing in remaining_variables. Continue your current exploration — you\'ll encounter goal-relevant topics naturally as you traverse the graph. Do NOT redirect the conversation to chase the new goal.',
       goal_cancelled: 'A sibling branch was structurally excluded. Stop pursuing those topics silently. Do NOT mention this to the user.',
-      session_terminating: 'A terminal goal was reached. If end_type is "reset", bring the conversation to a warm close and say goodbye. If "continue", close warmly but mention you\'ll pick up where you left off next time.',
     },
     error_recovery: {
       tool_error: 'If a tool returns success=false, handle it gracefully. Explain the situation naturally to the user if relevant, or silently try an alternative approach. Never show raw error messages or tool names.',
@@ -197,6 +208,126 @@ function buildProtocol(
     pacing: pacingSuffix || null,
     rules: modeRules[mode] || modeRules.collect,
   };
+}
+// ── Variable Type Validation & Normalization ──
+// Server-side guardrail: prevents the LLM from saving a value that contradicts
+// what the user said. E.g. user says "definitely False" but LLM sends "True".
+
+function validateAndNormalize(
+  type: string,
+  value: unknown,
+  options: string | string[] | null
+): { valid: boolean; normalizedValue: unknown; reason?: string } {
+  const strVal = String(value ?? '').trim();
+
+  if (strVal === '' || strVal === 'null' || strVal === 'undefined') {
+    return { valid: false, normalizedValue: value, reason: 'Value cannot be empty, null, or undefined' };
+  }
+
+  switch (type) {
+    case 'boolean': {
+      const lower = strVal.toLowerCase();
+      const trueValues = ['true', 'yes', '1', 'y', 'correct', 'confirmed', 'affirmative'];
+      const falseValues = ['false', 'no', '0', 'n', 'incorrect', 'denied', 'negative', 'not yet', 'not'];
+      if (trueValues.includes(lower)) return { valid: true, normalizedValue: true };
+      if (falseValues.includes(lower)) return { valid: true, normalizedValue: false };
+      return {
+        valid: false,
+        normalizedValue: value,
+        reason: `Boolean variable requires a true/false value. You sent: "${strVal}". Valid inputs: true, false, yes, no.`,
+      };
+    }
+
+    case 'select': {
+      // Parse options — may be JSON string or array
+      let optionsList: string[] = [];
+      if (Array.isArray(options)) {
+        optionsList = options;
+      } else if (typeof options === 'string') {
+        try { optionsList = JSON.parse(options); } catch { optionsList = []; }
+      }
+
+      if (optionsList.length === 0) {
+        // No options defined — accept any value
+        return { valid: true, normalizedValue: strVal };
+      }
+
+      // Exact match (case-insensitive)
+      const exactMatch = optionsList.find(o => o.toLowerCase() === strVal.toLowerCase());
+      if (exactMatch) return { valid: true, normalizedValue: exactMatch };
+
+      // Fuzzy: check if the value is a substring of any option or vice versa
+      const fuzzyMatch = optionsList.find(o =>
+        o.toLowerCase().includes(strVal.toLowerCase()) ||
+        strVal.toLowerCase().includes(o.toLowerCase())
+      );
+      if (fuzzyMatch) return { valid: true, normalizedValue: fuzzyMatch };
+
+      return {
+        valid: false,
+        normalizedValue: value,
+        reason: `Select variable requires one of: [${optionsList.join(', ')}]. You sent: "${strVal}".`,
+      };
+    }
+
+    case 'multi_select': {
+      // Accept comma-separated or JSON array
+      let values: string[];
+      try {
+        const parsed = JSON.parse(strVal);
+        values = Array.isArray(parsed) ? parsed.map(String) : [strVal];
+      } catch {
+        values = strVal.split(',').map(s => s.trim()).filter(Boolean);
+      }
+
+      let optionsList: string[] = [];
+      if (Array.isArray(options)) {
+        optionsList = options;
+      } else if (typeof options === 'string') {
+        try { optionsList = JSON.parse(options); } catch { optionsList = []; }
+      }
+
+      if (optionsList.length > 0) {
+        const invalid = values.filter(v => !optionsList.some(o => o.toLowerCase() === v.toLowerCase()));
+        if (invalid.length > 0) {
+          return {
+            valid: false,
+            normalizedValue: value,
+            reason: `Multi-select values [${invalid.join(', ')}] not in valid options: [${optionsList.join(', ')}].`,
+          };
+        }
+        // Normalize case to match defined options
+        values = values.map(v => optionsList.find(o => o.toLowerCase() === v.toLowerCase()) || v);
+      }
+      return { valid: true, normalizedValue: values };
+    }
+
+    case 'number':
+    case 'currency':
+    case 'percentage': {
+      // Strip common formatting: $, %, commas
+      const cleaned = strVal.replace(/[$%,]/g, '').trim();
+      const num = Number(cleaned);
+      if (isNaN(num)) {
+        return { valid: false, normalizedValue: value, reason: `${type} variable requires a numeric value. You sent: "${strVal}".` };
+      }
+      return { valid: true, normalizedValue: num };
+    }
+
+    case 'date':
+    case 'date_range': {
+      // Basic date validation — must parse to a valid date
+      const d = new Date(strVal);
+      if (isNaN(d.getTime())) {
+        return { valid: false, normalizedValue: value, reason: `Date variable requires a valid date. You sent: "${strVal}". Try ISO format: YYYY-MM-DD.` };
+      }
+      return { valid: true, normalizedValue: type === 'date' ? strVal : value };
+    }
+
+    // Text types, tags, etc. — accept any non-empty value
+    default:
+      return { valid: true, normalizedValue: strVal };
+  }
 }
 
 // ── Tool Implementations ──
@@ -1122,7 +1253,7 @@ const tools: Record<string, ToolHandler> = {
       }
     });
 
-    const goalsCompleted = goalEvents.filter(e => e.event_type === 'goal_completed' || e.event_type === 'session_terminating');
+    const goalsCompleted = goalEvents.filter(e => e.event_type === 'goal_completed');
 
     return {
       success: true,
@@ -1345,6 +1476,27 @@ const tools: Record<string, ToolHandler> = {
     await mcpRepo.updateCurrentNord(ctx.sessionId, args.target_nord_id as string);
     await mcpRepo.bumpContextVersion(ctx.sessionId);
     const horizon = await mcpRepo.getSessionHorizonLean(ctx.sessionId);
+
+    // Fire traversal + position_change events
+    logEvents(ctx.sessionId, [
+      {
+        actionType: 'traversal',
+        key: `${args.source_nord_id} → ${args.target_nord_id}`,
+        value: {
+          source_nord_id: args.source_nord_id,
+          target_nord_id: args.target_nord_id,
+          direction: args.direction,
+          traversal_type: args.traversal_type,
+          connection_id: args.connection_id,
+        },
+      },
+      {
+        actionType: 'position_change',
+        key: args.target_nord_id as string,
+        value: { previous: args.source_nord_id },
+      },
+    ]);
+
     return { success: true, data: { traversal, horizon } };
   },
 
@@ -1368,19 +1520,51 @@ const tools: Record<string, ToolHandler> = {
     const currentNordId = session?.current_nord_id || null;
     const personaId = session?.persona_id || null;
 
+    // ── Type Validation & Normalization ──
+    // Look up variable definitions so we can validate by type.
+    // This prevents the LLM from saving "True" when the user said "False".
+    const varDefs = await query<{
+      id: string; name: string; type: string;
+      options: string | string[] | null; required: boolean;
+    }>(
+      'SELECT id, name, type, options, required FROM project_variables WHERE project_id = $1',
+      [ctx.projectId]
+    );
+    const varDefMap = new Map(varDefs.map(v => [v.id, v]));
+
     const allGoalEvents: goalsRepo.GoalEvent[] = [];
-    const saved: Array<{ variable_id: string; value: unknown }> = [];
+    const saved: Array<{ variable_id: string; name: string; type: string; value: unknown; normalized: boolean }> = [];
+    const rejected: Array<{ variable_id: string; name: string; type: string; value: unknown; reason: string }> = [];
 
     for (const v of variables) {
+      const def = varDefMap.get(v.variable_id);
+      if (!def) {
+        rejected.push({ variable_id: v.variable_id, name: '(unknown)', type: '(unknown)', value: v.value, reason: `Variable ${v.variable_id} not found in this project` });
+        continue;
+      }
+
+      // Validate and normalize by type
+      const { valid, normalizedValue, reason } = validateAndNormalize(def.type, v.value, def.options);
+      if (!valid) {
+        rejected.push({ variable_id: v.variable_id, name: def.name, type: def.type, value: v.value, reason: reason! });
+        continue;
+      }
+
       const { variable: savedVar, goalEvents } = await mcpRepo.upsertSessionVariable(
-        ctx.sessionId, v.variable_id, v.value, currentNordId, personaId
+        ctx.sessionId, v.variable_id, normalizedValue, currentNordId, personaId
       );
-      saved.push({ variable_id: savedVar.variable_id, value: savedVar.value });
+      saved.push({
+        variable_id: savedVar.variable_id,
+        name: def.name,
+        type: def.type,
+        value: normalizedValue,
+        normalized: normalizedValue !== v.value,
+      });
       allGoalEvents.push(...goalEvents);
     }
 
-    // Auto-terminate session if a terminal goal fired
-    const terminatingEvent = allGoalEvents.find(e => e.type === 'session_terminating');
+    // Auto-terminate session if a terminal goal fired (goal_completed with end_type)
+    const terminatingEvent = allGoalEvents.find(e => e.type === 'goal_completed' && e.end_type);
     if (terminatingEvent) {
       await mcpRepo.endSession(ctx.sessionId, 'completed',
         `Session ended: ${terminatingEvent.goal_name} (${terminatingEvent.end_type || 'reset'})`
@@ -1398,15 +1582,72 @@ const tools: Record<string, ToolHandler> = {
       persona_switched = true;
     }
 
+    // Build confirmation echo — prominently show what was saved so the LLM
+    // can self-correct if its saved value doesn't match what the user said.
+    const confirmationLines = saved.map(s =>
+      `✅ ${s.name} (${s.type}) = ${JSON.stringify(s.value)}${s.normalized ? ' [normalized]' : ''}`
+    );
+    const rejectionLines = rejected.map(r =>
+      `❌ ${r.name} (${r.type}): REJECTED — ${r.reason}. You sent: ${JSON.stringify(r.value)}`
+    );
+
+    // Build "still needed" checklist from the updated horizon's remaining variables.
+    // This gives the LLM a fresh view of what's uncollected right after each save,
+    // creating collection momentum — it can immediately pursue related variables.
+    const finalHorizon = persona_switched
+      ? await mcpRepo.getSessionHorizonLean(ctx.sessionId)
+      : horizon;
+
+    // Get full horizon for remaining_variables (stripped from lean horizon to save tokens,
+    // but critical here for post-save awareness)
+    const fullHorizon = await mcpRepo.getSessionHorizon(ctx.sessionId);
+    const stillNeeded = (fullHorizon.remaining_variables || []).map(rv =>
+      `• ${rv.name} (${rv.type}${rv.required ? ', required' : ''}) — ${rv.description || 'no description'}`
+    );
+
+    // Fire variable_set / variable_rejected events
+    const varEvents: Array<{ actionType: import('./sessionEvents.js').ActionType; key: string; value: Record<string, unknown> }> = [];
+    for (const s of saved) {
+      varEvents.push({
+        actionType: 'variable_set',
+        key: s.name,
+        value: { variable_id: s.variable_id, value: s.value, type: s.type, normalized: s.normalized },
+      });
+    }
+    for (const r of rejected) {
+      varEvents.push({
+        actionType: 'variable_rejected',
+        key: r.name,
+        value: { variable_id: r.variable_id, value: r.value, type: r.type, reason: r.reason },
+      });
+    }
+    // Fire goal events
+    for (const ge of allGoalEvents) {
+      const goalActionType = ge.type === 'goal_completed' ? 'goal_completed'
+        : ge.type === 'goal_activated' ? 'goal_activated'
+        : 'goal_progress';
+      varEvents.push({
+        actionType: goalActionType as import('./sessionEvents.js').ActionType,
+        key: ge.goal_name || ge.goal_id,
+        value: { goal_id: ge.goal_id, end_type: ge.end_type, data: ge.data },
+      });
+    }
+    if (varEvents.length > 0) logEvents(ctx.sessionId, varEvents);
+
     return {
-      success: true,
+      success: rejected.length === 0,
       data: {
+        confirmation: [...confirmationLines, ...rejectionLines].join('\n'),
+        saved_count: saved.length,
+        rejected_count: rejected.length,
         saved_variables: saved,
+        rejected_variables: rejected.length > 0 ? rejected : undefined,
+        still_needed: stillNeeded.length > 0
+          ? `${stillNeeded.length} variables remaining:\n${stillNeeded.join('\n')}`
+          : 'All variables collected! 🎉',
         goal_events: allGoalEvents.length > 0 ? allGoalEvents : undefined,
-        persona_switched: persona_switched ? horizon.suggested_persona : undefined,
-        horizon: persona_switched
-          ? await mcpRepo.getSessionHorizonLean(ctx.sessionId) // re-fetch after persona switch
-          : horizon,
+        persona_switched: persona_switched ? finalHorizon.suggested_persona : undefined,
+        horizon: finalHorizon,
       },
     };
   },
@@ -1424,6 +1665,14 @@ const tools: Record<string, ToolHandler> = {
       properties_after: (args.properties_after as Record<string, unknown>) || {},
       context: (args.context as Record<string, unknown>) || {},
     });
+
+    // Fire visit event
+    logEvent(ctx.sessionId, 'visit', args.nord_id as string, {
+      visit_type: args.visit_type,
+      properties_before: args.properties_before || {},
+      properties_after: args.properties_after || {},
+    });
+
     return { success: true, data: visit };
   },
 
@@ -1432,6 +1681,12 @@ const tools: Record<string, ToolHandler> = {
     if (!session) return { success: false, error: 'Session not found' };
     await mcpRepo.bumpContextVersion(ctx.sessionId);
     const horizon = await mcpRepo.getSessionHorizonLean(ctx.sessionId);
+
+    // Fire persona_switch event
+    logEvent(ctx.sessionId, 'persona_switch', args.persona_id as string || 'none', {
+      persona_id: args.persona_id,
+    });
+
     return {
       success: true,
       data: {

@@ -99,7 +99,7 @@ const REQ = {
 
 // Nord IDs — Subsystems
 const SUB = {
-  sensor: id(), wireless: id(), mobileApp: id(), cloud: id(), applicator: id(),
+  sensor: id(), wireless: id(), mobileApp: id(), cloud: id(), applicator: id(), firmware: id(),
 };
 
 // Nord IDs — Risks
@@ -137,7 +137,7 @@ const CP = {
 
 // Nord IDs — ADRs
 const ADR = {
-  adr001: id(), adr002: id(), adr003: id(), adr004: id(), adr005: id(),
+  adr001: id(), adr002: id(), adr003: id(), adr004: id(), adr005: id(), adr006: id(),
 };
 
 // Collection Group IDs
@@ -346,7 +346,7 @@ async function run() {
       yStages: [],
       propSchema: [
         { name: 'Severity', type: 'select', options: ['Informational', 'Schedule Impact', 'Critical Path'], defaultValue: 'Schedule Impact', description: 'How severely this blocker impacts the project. Critical Path means the project timeline cannot advance until resolved.' },
-        { name: 'Estimated Resolution', type: 'short_text', description: 'Target date or timeframe for resolving this blocker (e.g., "2 weeks", "Q3 2027").' },
+        { name: 'Estimated Resolution', type: 'short_text', description: 'Target date or timeframe for resolving this blocker (e.g., "2 weeks", "Q3 2026").' },
         { name: 'Workaround Available', type: 'select', options: ['Yes', 'No', 'Partial'], defaultValue: 'No', description: 'Whether a temporary workaround exists to proceed despite the blocker.' },
         { name: 'Jira Reference', type: 'short_text', hidden: true, description: 'Link to the Jira ticket tracking this blocker.' },
       ] },
@@ -456,6 +456,7 @@ async function run() {
   await insertNord(SUB.mobileApp, NT.subsystem, 'Mobile Application', 'Companion app for glucose display, alerts, and trend analysis.', { 'Technology Stack': 'React Native, HealthKit/Health Connect integration', 'Risk Class': 'Class II' }, 0.6, 0.5);
   await insertNord(SUB.cloud, NT.subsystem, 'Cloud Analytics Platform', 'Backend data pipeline for historical analysis and physician dashboards.', { 'Technology Stack': 'GCP, HIPAA-compliant data pipeline', 'Risk Class': 'Class I' }, 0.8, 0.5);
   await insertNord(SUB.applicator, NT.subsystem, 'Applicator Assembly', 'Spring-loaded insertion mechanism for sensor deployment.', { 'Technology Stack': 'Spring-loaded insertion mechanism, EO sterilization', 'Risk Class': 'Class II' }, 0.2, 0.65);
+  await insertNord(SUB.firmware, NT.subsystem, 'Firmware', 'Embedded firmware running on the wireless transmitter MCU. Controls sensor sampling, BLE data packaging, power management, and local alarm logic.', { 'Technology Stack': 'C/C++ on Nordic nRF5340, Zephyr RTOS, IEC 62304 Class C', 'Risk Class': 'Class II' }, 0.4, 0.65);
 
   // ── Risks (8) — Risk Score is now computed client-side from Severity × Probability ──
   await insertNord(RISK.h001, NT.risk, 'Inaccurate glucose reading', 'Sensor provides readings outside acceptable accuracy range.', { 'Hazard ID': 'HAZ-001', 'Hazard': 'Inaccurate glucose reading', 'Harm': 'Incorrect insulin dosing → hypoglycemia', 'Severity': 5, 'Probability': 2 }, 0.15, 0.75);
@@ -511,6 +512,7 @@ async function run() {
   await insertNord(ADR.adr003, NT.adr, 'Factory calibration vs. finger-prick calibration', 'Evaluated calibration approach for production CGM.', { 'ADR ID': 'ADR-003', 'Context': 'Traditional CGMs require finger-prick calibration. Factory calibration eliminates this but requires tighter manufacturing controls.', 'Decision': 'Factory calibration — critical for user experience, requires tighter manufacturing controls', 'Alternatives Considered': 'Daily finger-prick calibration, hybrid approach', 'Status': 'Accepted', 'Decided By': 'Dr. Aisha Patel' }, 0.5, 0.6);
   await insertNord(ADR.adr004, NT.adr, 'Cloud platform: GCP vs. AWS for HIPAA workloads', 'Evaluated cloud provider for healthcare data.', { 'ADR ID': 'ADR-004', 'Context': 'Patient glucose data requires HIPAA-compliant cloud infrastructure with BAA.', 'Decision': 'GCP — team expertise, Assured Workloads for HIPAA, competitive pricing', 'Alternatives Considered': 'AWS (GovCloud), Azure (Healthcare API)', 'Status': 'Accepted', 'Decided By': 'Tom Nguyen' }, 0.7, 0.6);
   await insertNord(ADR.adr005, NT.adr, 'Sensor wire material: Platinum vs. gold', 'Evaluate sensing electrode material for accuracy and biocompatibility.', { 'ADR ID': 'ADR-005', 'Context': 'Platinum offers better enzymatic response but higher cost. Gold is cheaper with adequate performance for 14-day wear.', 'Status': 'Proposed' }, 0.9, 0.6); // ⚠️ gap: no decision, no alternatives
+  await insertNord(ADR.adr006, NT.adr, 'Substantial Equivalence Rationale', 'Documents the substantial equivalence argument comparing Pulse Sense CGM to the predicate device (Dexcom G7, K221803) across intended use, technological characteristics, and performance data.', { 'ADR ID': 'ADR-006', 'Context': 'FDA 510(k) submission requires a documented substantial equivalence argument. Key comparison areas: intended use (CGM for diabetes management), sensor technology (electrochemical enzyme electrode), wear duration (14 days vs 10), warmup time (60 min vs 30 min), wireless protocol (BLE 5.3 vs BLE 5.0), and alert thresholds.', 'Status': 'Proposed' }, 0.1, 0.68); // ⚠️ gap: no decision — intentional, needs regulatory team input
 
   // ── Milestones (5) ──
   await insertNord(MS.ms1, NT.milestone, 'Design Input Review', 'Formal design review gate for requirements documentation.', { 'Target Date': '2026-02-01', 'Gate Type': 'Design Review', 'Exit Criteria': 'All user needs documented, design inputs derived, traceability matrix complete' }, 0.15, 0.05);
@@ -756,7 +758,7 @@ async function run() {
     { id: VAR.predicateDevice, name: 'predicate_device', desc: 'The legally marketed device used as the basis for the 510(k) substantial equivalence argument. Must match intended use and technological characteristics. Common predicates for CGMs include the Dexcom G7 (K221803) and FreeStyle Libre 3 (K220326).', type: 'string', groupId: CG.regulatory,
       options: null, required: true, tags: ['regulatory'] },
     { id: VAR.submissionQuarter, name: 'submission_quarter', desc: 'The target quarter for FDA submission — drives the entire project timeline backwards. All verification tests, clinical evidence, and risk analysis must be complete before this date. Submission timing also affects competitive positioning.', type: 'select', groupId: CG.regulatory,
-      options: ['Q1 2027', 'Q2 2027', 'Q3 2027', 'Q4 2027'], required: false, tags: ['regulatory'] },
+      options: ['Q3 2026', 'Q4 2026', 'Q1 2027', 'Q2 2027'], required: false, tags: ['regulatory'] },
     // ── Risk & Safety ──
     { id: VAR.riskTolerance, name: 'risk_tolerance', desc: 'The organization\'s appetite for regulatory timeline risk — conservative means completing all verification before submitting, moderate means parallel-tracking some activities, aggressive means submitting with known gaps and managing FDA questions reactively. This affects resource allocation and milestone scheduling.', type: 'select', groupId: CG.risk,
       options: ['Conservative', 'Moderate', 'Aggressive'], required: true, tags: ['risk'] },

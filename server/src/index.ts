@@ -30,6 +30,7 @@ import { shareChatRouter } from './routes/shareChat.js';
 import shareLinksRoutes from './routes/shareLinksRoutes.js';
 import { variablesRouter } from './routes/variables.js';
 import { uiStringsRouter } from './routes/uiStrings.js';
+import { sessionExplorerRouter } from './routes/sessionExplorer.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -103,6 +104,7 @@ app.use('/api', meRouter);
 app.use('/api', shareLinksRoutes);
 app.use('/api', variablesRouter);
 app.use('/api', uiStringsRouter);
+app.use('/api', sessionExplorerRouter);
 
 // ── Global Error Handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

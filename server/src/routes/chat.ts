@@ -25,6 +25,7 @@ import { dispatchTool, type ToolContext } from '../lib/toolDispatch.js';
 import { buildToolDeclarations } from '../lib/geminiTools.js';
 import * as goalsRepo from '../repositories/goals.js';
 import { query, queryOne } from '../db.js';
+import { logEvent, logEvents } from '../lib/sessionEvents.js';
 
 export const chatRouter = Router();
 
@@ -94,10 +95,20 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
       session = await mcpRepo.createSession(
         projectId,
         project?.default_persona_id || null,
-        project?.default_start_nord_id || null
+        project?.default_start_nord_id || null,
+        null, // userId — TODO: extract from auth middleware
+        null, // tokenId
+        'chat'
       );
       sessionId = session.id;
       isNewSession = true;
+
+      // Fire session_start event
+      logEvent(sessionId, 'session_start', 'source', {
+        source_type: 'chat',
+        persona_id: project?.default_persona_id || null,
+        start_nord_id: project?.default_start_nord_id || null,
+      });
 
       // Initialize session goals based on project mode
       const projectMode = project?.project_mode || 'collect';
@@ -159,6 +170,9 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
       model: null,
       latency_ms: null,
     });
+
+    // Fire user_message event
+    logEvent(sessionId, 'user_message', 'content', { text: message.trim() });
 
     // 3. Build system prompt with persona injection
     const personaId = (session as any)?.persona_id || null;
@@ -292,6 +306,14 @@ Set GEMINI_API_KEY in server/.env or configure GOOGLE_CLOUD_PROJECT for Vertex A
             response: result,
           },
         });
+
+        // Fire tool_call event
+        logEvent(sessionId, 'tool_call', toolName, {
+          args: toolArgs,
+          result_summary: typeof result.data === 'object'
+            ? Object.keys(result.data || {}).join(', ')
+            : String(result.error || 'ok'),
+        });
       }
 
       // Build next turn with model's function calls + our responses
@@ -324,6 +346,16 @@ Set GEMINI_API_KEY in server/.env or configure GOOGLE_CLOUD_PROJECT for Vertex A
       tokens_out: tokensOut,
       model,
       latency_ms: latency,
+    });
+
+    // Fire assistant_message event
+    logEvent(sessionId, 'assistant_message', 'content', {
+      text: finalReply.slice(0, 500),
+      tokens_in: tokensIn,
+      tokens_out: tokensOut,
+      model,
+      latency_ms: latency,
+      tool_call_count: allToolCalls.length,
     });
 
     // 10. Check session completion — only for projects WITHOUT goals.

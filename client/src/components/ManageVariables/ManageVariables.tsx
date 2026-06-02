@@ -21,7 +21,7 @@
  */
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { X, Plus, Trash2, ChevronRight } from 'lucide-react';
+import { X, Plus, Trash2, ChevronRight, Variable } from 'lucide-react';
 import { useVariables, type ProjectVariable } from '../../hooks/useVariables';
 import { useCollectionGroups, type CollectionGroup } from '../../hooks/useCollectionGroups';
 import { ColorIcon } from '../shared/ColorIcon';
@@ -165,7 +165,7 @@ export function ManageVariables({ projectId, open, onClose }: ManageVariablesPro
         {/* ── Header ── */}
         <div className="manage-variables__header">
           <div>
-            <h2 className="manage-variables__title">{UI_STRINGS.collections.title}</h2>
+            <h2 className="manage-variables__title nords-panel-title"><Variable size={18} strokeWidth={1.6} />{UI_STRINGS.collections.title}</h2>
             <p className="manage-variables__subtitle">{UI_STRINGS.collections.subtitle}</p>
           </div>
           <button className="manage-variables__close" onClick={onClose} title="Close">

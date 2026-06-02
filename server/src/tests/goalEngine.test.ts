@@ -7,7 +7,7 @@
  *   - Variable-based completion
  *   - DAG cascading (child activation, join-node logic)
  *   - Structural exclusion (sibling cancellation)
- *   - Terminal goals (session_terminating event)
+ *   - Terminal goals (goal_completed with end_type)
  *   - Implicit goal (collect mode auto-completion)
  *
  * All tests create their own throwaway project and clean up after.
@@ -383,16 +383,14 @@ describe('Terminal Goal', () => {
   });
   afterAll(async () => { await deleteTestProject(projectId); });
 
-  it('fires session_terminating event on completion', async () => {
+  it('fires goal_completed with end_type on completion', async () => {
     await setSessionVariable(sessionId, varId, 'final value');
     const events = await goalsRepo.evaluateGoals(sessionId, projectId);
 
-    expect(events.some(e => e.type === 'goal_completed')).toBe(true);
-
-    const terminating = events.filter(e => e.type === 'session_terminating');
-    expect(terminating.length).toBe(1);
-    expect(terminating[0].end_type).toBe('reset');
-    expect(terminating[0].achieved_prompt).toBe('Session complete. Goodbye!');
+    const completed = events.filter(e => e.type === 'goal_completed');
+    expect(completed.length).toBe(1);
+    expect(completed[0].end_type).toBe('reset');
+    expect(completed[0].achieved_prompt).toBe('Session complete. Goodbye!');
   });
 });
 
@@ -602,12 +600,13 @@ describe('Full DAG Lifecycle (E2E)', () => {
     expect(events.some(e => e.type === 'goal_activated' && e.goal_name === 'E2E Leaf')).toBe(true);
   });
 
-  it('step 4: complete leaf → session_terminating', async () => {
+  it('step 4: complete leaf → goal_completed with end_type', async () => {
     await setSessionVariable(sessionId, varLeaf, 'done');
     const events = await goalsRepo.evaluateGoals(sessionId, projectId);
 
-    expect(events.some(e => e.type === 'goal_completed' && e.goal_name === 'E2E Leaf')).toBe(true);
-    expect(events.some(e => e.type === 'session_terminating' && e.end_type === 'reset')).toBe(true);
+    const leafCompleted = events.find(e => e.type === 'goal_completed' && e.goal_name === 'E2E Leaf');
+    expect(leafCompleted).toBeDefined();
+    expect(leafCompleted!.end_type).toBe('reset');
   });
 
   it('step 5: verify final session goal states', async () => {

@@ -364,7 +364,7 @@ export interface McpSessionGoalEvent {
   id: string;
   session_id: string;
   goal_id: string;
-  event_type: 'goal_completed' | 'goal_activated' | 'goal_cancelled' | 'session_terminating';
+  event_type: 'goal_completed' | 'goal_activated' | 'goal_cancelled';
   persona_id: string | null;
   nord_id: string | null;
   sequence: number;

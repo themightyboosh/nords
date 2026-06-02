@@ -337,3 +337,20 @@
   background: var(--nords-color-bg-hover);
   color: var(--nords-color-text-primary);
 }
+
+/* ── Panel header title (shared across all modal headers) ── */
+.nords-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--nords-font-size-xl);
+  font-weight: var(--nords-font-weight-bold);
+  color: var(--nords-color-text-primary);
+  letter-spacing: var(--nords-letter-spacing-tight);
+}
+
+.nords-panel-title svg {
+  color: var(--nords-color-accent, #6b7aed);
+  flex-shrink: 0;
+}

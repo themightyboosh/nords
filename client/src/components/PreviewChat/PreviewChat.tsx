@@ -6,15 +6,15 @@
  *   - Send messages via Gemini proxy
  *   - Conversation history per session
  *   - Save / Reset / Load sessions
- *   - Dev Mode: tool call timeline, system prompt, horizon state, token metrics
- *   - Session metadata: current_nord, persona, traversal count
+ *   - Dev Mode: real-time session log stream
+ *   - "Dump Horizon" button injects horizon state into log
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Send, RotateCcw, Code2, X, ChevronDown, ChevronRight,
-  Activity, Zap, MessageSquare, Bot, User, Cpu,
-  Wrench, Eye, Map, FileText, AlertTriangle, FlaskConical, Loader2,
+  Zap, Bot, User,
+  Wrench, Eye, Map, FlaskConical, Loader2,
   GripVertical, Play, Pause, SkipForward, FastForward,
 } from 'lucide-react';
 import { api } from '../../api/client';
@@ -39,14 +39,7 @@ interface Message {
   created_at: string;
 }
 
-interface SessionSummary {
-  id: string;
-  status: string;
-  started_at: string;
-  ended_at: string | null;
-  current_nord_id: string | null;
-  persona_id: string | null;
-}
+
 
 interface PreviewChatProps {
   projectId: string;
@@ -60,7 +53,13 @@ interface PreviewChatProps {
   onClearReplay?: () => void;
 }
 
-type DevTab = 'tools' | 'prompt' | 'horizon';
+interface DevLogEntry {
+  id: string;
+  timestamp: string;
+  type: 'tool_call' | 'tool_result' | 'system' | 'horizon' | 'tokens' | 'goal';
+  label: string;
+  detail?: string;
+}
 
 export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayTranscript, replayLabel, onClearReplay }: PreviewChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -68,18 +67,17 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   const [sending, setSending] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [devMode, setDevMode] = useState(false);
-  const [devTab, setDevTab] = useState<DevTab>('tools');
-  const [expandedToolCalls, setExpandedToolCalls] = useState<Set<string>>(new Set());
-  const [sessions, setSessions] = useState<SessionSummary[]>([]);
-  const [showSessions, setShowSessions] = useState(false);
+  const [devLog, setDevLog] = useState<DevLogEntry[]>([]);
+  const [expandedLogEntries, setExpandedLogEntries] = useState<Set<string>>(new Set());
+
   const [model, setModel] = useState(() => localStorage.getItem('nords-preview-model') || 'gemini-2.5-flash');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const devLogEndRef = useRef<HTMLDivElement>(null);
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
 
-  const [lastSystemPrompt, setLastSystemPrompt] = useState<string | null>(null);
   const [lastHorizon, setLastHorizon] = useState<Record<string, unknown> | null>(null);
   const [lastToolCalls, setLastToolCalls] = useState<ToolCall[]>([]);
-  const [lastTokens, setLastTokens] = useState<{ in: number; out: number; latency: number } | null>(null);
+  const [sessionNps, setSessionNps] = useState<number | null>(null);
 
   // ── Replay mode ──
   const isReplayMode = !!replayTranscript;
@@ -223,7 +221,8 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   const [testRunning, setTestRunning] = useState(false);
   const [testProgress, setTestProgress] = useState<{ round: number; maxRounds: number } | null>(null);
   const [testResult, setTestResult] = useState<any>(null);
-  const [sessionNps, setSessionNps] = useState<number | null>(null);
+  // sessionNps already declared above
+  const _sessionNps = sessionNps; // reference to avoid lint warnings
   const testEventSourceRef = useRef<EventSource | null>(null);
 
   // ── Drag / Resize State ──
@@ -318,11 +317,13 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Load previous sessions list + project welcome message
+  // Auto-scroll dev log
   useEffect(() => {
-    api.get<SessionSummary[]>(`/api/projects/${projectId}/mcp-sessions`)
-      .then(setSessions)
-      .catch(() => setSessions([]));
+    if (devMode) devLogEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [devLog, devMode]);
+
+  // Load project welcome message + test scenarios
+  useEffect(() => {
     // Fetch project for welcome message
     api.get<{ mcp_welcome_message?: string | null }>(`/api/projects/${projectId}`)
       .then(p => setWelcomeMessage(p.mcp_welcome_message || null))
@@ -333,38 +334,54 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
       .catch(() => setTestScenarios([]));
   }, [projectId]);
 
-  // Load messages for current session
-  const loadSession = useCallback(async (sid: string) => {
-    try {
-      const data = await api.get<{ messages: Message[] }>(`/api/sessions/${sid}/messages`);
-      setMessages(data.messages || []);
-      setSessionId(sid);
-      setShowSessions(false);
 
-      // Populate dev panel from last assistant message
-      const lastAssistant = [...(data.messages || [])].reverse().find(m => m.role === 'assistant');
-      if (lastAssistant) {
-        if (lastAssistant.tool_calls) setLastToolCalls(lastAssistant.tool_calls);
-        if (lastAssistant.context?.systemPrompt) setLastSystemPrompt(lastAssistant.context.systemPrompt as string);
-        setLastTokens({
-          in: lastAssistant.tokens_in || 0,
-          out: lastAssistant.tokens_out || 0,
-          latency: lastAssistant.latency_ms || 0,
-        });
-      }
-    } catch {
-      console.error('Failed to load session');
-    }
-  }, []);
 
-  // Toggle tool call expansion
-  const toggleToolCall = useCallback((id: string) => {
-    setExpandedToolCalls(prev => {
+  // Toggle log entry expansion
+  const toggleLogEntry = useCallback((id: string) => {
+    setExpandedLogEntries(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   }, []);
+
+  // Append entries to the dev log
+  const appendDevLog = useCallback((entries: DevLogEntry[]) => {
+    setDevLog(prev => [...prev, ...entries]);
+  }, []);
+
+  // Dump horizon into dev log
+  const dumpHorizon = useCallback(async () => {
+    if (lastHorizon) {
+      appendDevLog([{
+        id: `horizon-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        type: 'horizon',
+        label: '📡 Horizon State',
+        detail: JSON.stringify(lastHorizon, null, 2),
+      }]);
+    } else {
+      // Fetch live horizon from the API
+      try {
+        const h = await api.get<Record<string, unknown>>(`/api/projects/${projectId}/horizon`);
+        setLastHorizon(h);
+        appendDevLog([{
+          id: `horizon-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          type: 'horizon',
+          label: '📡 Horizon State (fetched)',
+          detail: JSON.stringify(h, null, 2),
+        }]);
+      } catch {
+        appendDevLog([{
+          id: `horizon-err-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          type: 'system',
+          label: '⚠ Could not fetch horizon — no active session',
+        }]);
+      }
+    }
+  }, [lastHorizon, projectId, appendDevLog]);
 
   // Send message
   const handleSend = useCallback(async () => {
@@ -399,16 +416,26 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
 
       setSessionId(data.sessionId);
 
-      // Update dev panel state
-      if (data.toolCalls?.length) setLastToolCalls(data.toolCalls);
-      if (data.systemPrompt) setLastSystemPrompt(data.systemPrompt);
+      // Update dev log with tool calls & metadata
+      if (data.toolCalls?.length) {
+        setLastToolCalls(data.toolCalls);
+        const toolLogEntries: DevLogEntry[] = data.toolCalls.map((tc, i) => ({
+          id: `tc-${Date.now()}-${i}`,
+          timestamp: new Date().toISOString(),
+          type: 'tool_call' as const,
+          label: `🔧 ${tc.name.replace('nords_', '')}`,
+          detail: JSON.stringify({ arguments: tc.arguments, result: tc.result }, null, 2),
+        }));
+        appendDevLog(toolLogEntries);
+      }
       if (data.horizon) setLastHorizon(data.horizon);
       if (data.message) {
-        setLastTokens({
-          in: data.message.tokens_in || 0,
-          out: data.message.tokens_out || 0,
-          latency: data.message.latency_ms || 0,
-        });
+        appendDevLog([{
+          id: `tokens-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          type: 'tokens',
+          label: `⚡ ${(data.message.tokens_in || 0).toLocaleString()}→${(data.message.tokens_out || 0).toLocaleString()} tokens · ${data.message.latency_ms || 0}ms${data.message.model ? ` · ${data.message.model}` : ''}`,
+        }]);
       }
 
       // Replace temp message with real user + assistant messages
@@ -477,7 +504,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     } finally {
       setSending(false);
     }
-  }, [input, sending, projectId, sessionId, model, onDataChanged]);
+  }, [input, sending, projectId, sessionId, model, onDataChanged, appendDevLog]);
 
   // Reset session
   const handleReset = useCallback(async () => {
@@ -488,14 +515,9 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     }
     setSessionId(null);
     setMessages([]);
-    setLastSystemPrompt(null);
     setLastHorizon(null);
     setLastToolCalls([]);
-    setLastTokens(null);
-    // Refresh sessions list
-    api.get<SessionSummary[]>(`/api/projects/${projectId}/mcp-sessions`)
-      .then(setSessions)
-      .catch(() => {});
+    setDevLog([]);
   }, [sessionId, projectId]);
 
   // ── Live Test Run ──
@@ -591,7 +613,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
 
   function renderToolCallInline(tc: ToolCall, index: number, msgId: string) {
     const key = `${msgId}-tc-${index}`;
-    const isExpanded = expandedToolCalls.has(key);
+    const isExpanded = expandedLogEntries.has(key);
     const isRead = tc.name.includes('get_') || tc.name.includes('query_');
     const isMutate = tc.name.includes('update_') || tc.name.includes('create_') || tc.name.includes('delete_');
     const isNav = tc.name.includes('traverse') || tc.name.includes('switch');
@@ -600,7 +622,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
       <div key={key} className="tool-call-inline">
         <button
           className={`tool-call-inline__header ${isRead ? 'is-read' : isMutate ? 'is-mutate' : isNav ? 'is-nav' : ''}`}
-          onClick={() => toggleToolCall(key)}
+          onClick={() => toggleLogEntry(key)}
         >
           {isExpanded ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
           <Wrench size={10} />
@@ -627,324 +649,81 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     );
   }
 
-  function renderDevPanel() {
+  function renderDevLog() {
+    const iconForType = (type: DevLogEntry['type']) => {
+      switch (type) {
+        case 'tool_call': return <Wrench size={10} />;
+        case 'tool_result': return <ChevronRight size={10} />;
+        case 'horizon': return <Map size={10} />;
+        case 'tokens': return <Zap size={10} />;
+        case 'goal': return <Zap size={10} />;
+        default: return <Eye size={10} />;
+      }
+    };
+
+    const colorForType = (type: DevLogEntry['type']) => {
+      switch (type) {
+        case 'tool_call': return '#f59e0b';
+        case 'horizon': return '#818cf8';
+        case 'tokens': return '#6b7280';
+        case 'goal': return '#10b981';
+        default: return '#9ca3af';
+      }
+    };
+
     return (
       <div className="preview-chat__dev-panel">
-        <div className="preview-chat__dev-tabs">
+        <div className="preview-chat__dev-log-header">
+          <span className="preview-chat__dev-log-title">
+            <Code2 size={11} />
+            Session Log
+            {devLog.length > 0 && <span className="preview-chat__dev-log-count">{devLog.length}</span>}
+          </span>
           <button
-            className={`preview-chat__dev-tab ${devTab === 'tools' ? 'is-active' : ''}`}
-            onClick={() => setDevTab('tools')}
-          >
-            <Wrench size={11} />
-            <span>Tools{lastToolCalls.length > 0 ? ` (${lastToolCalls.length})` : ''}</span>
-          </button>
-          <button
-            className={`preview-chat__dev-tab ${devTab === 'prompt' ? 'is-active' : ''}`}
-            onClick={() => setDevTab('prompt')}
-          >
-            <FileText size={11} />
-            <span>System Prompt</span>
-          </button>
-          <button
-            className={`preview-chat__dev-tab ${devTab === 'horizon' ? 'is-active' : ''}`}
-            onClick={() => setDevTab('horizon')}
+            className="preview-chat__dev-horizon-btn"
+            onClick={dumpHorizon}
+            title="Dump current horizon state into log"
           >
             <Map size={11} />
-            <span>Horizon</span>
+            Horizon
           </button>
         </div>
-
-        {/* Token summary bar */}
-        {lastTokens && (
-          <div className="preview-chat__dev-metrics">
-            <span><Cpu size={10} /> {lastTokens.in.toLocaleString()}→{lastTokens.out.toLocaleString()} tokens</span>
-            <span><Zap size={10} /> {lastTokens.latency}ms</span>
-            {sessionNps != null && (
-              <span className={`preview-chat__nps-badge ${sessionNps >= 9 ? 'nps--promoter' : sessionNps >= 7 ? 'nps--passive' : 'nps--detractor'}`}>
-                NPS: {sessionNps}/10 · {sessionNps >= 9 ? 'Promoter' : sessionNps >= 7 ? 'Passive' : 'Detractor'}
-              </span>
-            )}
-          </div>
-        )}
-
-        <div className="preview-chat__dev-content">
-          {devTab === 'tools' && renderToolsTab()}
-          {devTab === 'prompt' && renderPromptTab()}
-          {devTab === 'horizon' && renderHorizonTab()}
-        </div>
-      </div>
-    );
-  }
-
-  function renderToolsTab() {
-    if (lastToolCalls.length === 0) {
-      return (
-        <div className="preview-chat__dev-empty">
-          <Wrench size={20} strokeWidth={1} />
-          <p>No tool calls yet. Send a message to see the AI's tool chain.</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="preview-chat__tool-timeline">
-        {lastToolCalls.map((tc, i) => {
-          const isRead = tc.name.includes('get_') || tc.name.includes('query_');
-          const isMutate = tc.name.includes('update_') || tc.name.includes('create_') || tc.name.includes('delete_');
-          const isNav = tc.name.includes('traverse') || tc.name.includes('switch');
-          const key = `timeline-${i}`;
-          const isExpanded = expandedToolCalls.has(key);
-
-          return (
-            <div key={key} className="tool-timeline__item">
-              <div className="tool-timeline__connector" />
-              <div
-                className={`tool-timeline__dot ${isRead ? 'is-read' : isMutate ? 'is-mutate' : isNav ? 'is-nav' : ''}`}
-              />
-              <div className="tool-timeline__content">
-                <button className="tool-timeline__header" onClick={() => toggleToolCall(key)}>
-                  {isExpanded ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
-                  <span className="tool-timeline__step">{i + 1}</span>
-                  <span className="tool-timeline__name">{tc.name.replace('nords_', '')}</span>
+        <div className="preview-chat__dev-log-stream">
+          {devLog.length === 0 && (
+            <div className="preview-chat__dev-empty">
+              <Code2 size={20} strokeWidth={1} />
+              <p>Session log will appear here as the AI processes messages.</p>
+            </div>
+          )}
+          {devLog.map(entry => {
+            const isExpanded = expandedLogEntries.has(entry.id);
+            const time = new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            return (
+              <div key={entry.id} className={`dev-log-entry dev-log-entry--${entry.type}`}>
+                <button
+                  className="dev-log-entry__row"
+                  onClick={() => entry.detail && toggleLogEntry(entry.id)}
+                  style={{ cursor: entry.detail ? 'pointer' : 'default' }}
+                >
+                  <span className="dev-log-entry__time">{time}</span>
+                  <span className="dev-log-entry__icon" style={{ color: colorForType(entry.type) }}>
+                    {iconForType(entry.type)}
+                  </span>
+                  <span className="dev-log-entry__label">{entry.label}</span>
+                  {entry.detail && (
+                    <span className="dev-log-entry__chevron">
+                      {isExpanded ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                    </span>
+                  )}
                 </button>
-                {isExpanded && (
-                  <div className="tool-timeline__detail">
-                    <div className="tool-timeline__section">
-                      <span className="tool-timeline__label">→ Arguments</span>
-                      <pre>{JSON.stringify(tc.arguments, null, 2)}</pre>
-                    </div>
-                    {tc.result !== undefined && (
-                      <div className="tool-timeline__section">
-                        <span className="tool-timeline__label">← Result</span>
-                        <pre>{JSON.stringify(tc.result, null, 2)}</pre>
-                      </div>
-                    )}
-                  </div>
+                {isExpanded && entry.detail && (
+                  <pre className="dev-log-entry__detail">{entry.detail}</pre>
                 )}
               </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  function renderPromptTab() {
-    if (!lastSystemPrompt) {
-      return (
-        <div className="preview-chat__dev-empty">
-          <FileText size={20} strokeWidth={1} />
-          <p>System prompt will appear after the first AI response.</p>
+            );
+          })}
+          <div ref={devLogEndRef} />
         </div>
-      );
-    }
-
-    return (
-      <div className="preview-chat__prompt-view">
-        <pre>{lastSystemPrompt}</pre>
-      </div>
-    );
-  }
-
-  function renderHorizonTab() {
-    if (!lastHorizon) {
-      return (
-        <div className="preview-chat__dev-empty">
-          <Map size={20} strokeWidth={1} />
-          <p>Horizon data will appear after the first AI response.</p>
-        </div>
-      );
-    }
-
-    const h = lastHorizon as any;
-    const gaps = h.gaps || {};
-    const hasGaps = (gaps.unvisited_required?.length > 0) || (gaps.orphan_nords?.length > 0);
-
-    return (
-      <div className="preview-chat__horizon-view">
-        {/* Current Nord */}
-        {h.current_nord && (
-          <div className="horizon-section">
-            <div className="horizon-section__title">
-              <Eye size={11} />
-              <span>Current Nord</span>
-            </div>
-            <div className="horizon-card">
-              <strong>{h.current_nord.title}</strong>
-              <span className="horizon-card__type">{h.current_nord.type_name}</span>
-              {h.current_nord.session_progress && (
-                <div className="horizon-card__progress">
-                  <div
-                    className="horizon-card__progress-bar"
-                    style={{
-                      width: `${h.current_nord.session_progress.required > 0
-                        ? (h.current_nord.session_progress.filled / h.current_nord.session_progress.required) * 100
-                        : 100}%`
-                    }}
-                  />
-                  <span>{h.current_nord.session_progress.filled}/{h.current_nord.session_progress.required}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Persona */}
-        {h.persona && (
-          <div className="horizon-section">
-            <div className="horizon-section__title">
-              <User size={11} />
-              <span>Persona: {h.persona.name}</span>
-            </div>
-            <div className="horizon-card">
-              {h.persona.primary_motivation && (
-                <span className="horizon-card__reason">🎯 {h.persona.primary_motivation}</span>
-              )}
-              {h.persona.voice_and_tone && (
-                <span className="horizon-card__reason" style={{ marginTop: 4 }}>🗣 {h.persona.voice_and_tone}</span>
-              )}
-              {h.persona.mental_models?.length > 0 && (
-                <div style={{ marginTop: 6 }}>
-                  <span className="horizon-card__type" style={{ fontWeight: 600 }}>Mental Models</span>
-                  {h.persona.mental_models.map((mm: any, j: number) => (
-                    <div key={j} style={{ fontSize: 10, color: '#9ca3af', marginTop: 3, paddingLeft: 8, borderLeft: '2px solid rgba(99,102,241,0.3)' }}>
-                      <strong style={{ color: '#d1d5db' }}>{mm.name}</strong>: {mm.body}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {h.persona.guardrails?.length > 0 && (
-                <div style={{ marginTop: 6 }}>
-                  <span className="horizon-card__type" style={{ fontWeight: 600 }}>Guardrails</span>
-                  {h.persona.guardrails.map((g: any, j: number) => (
-                    <div key={j} style={{ fontSize: 10, color: g.mode === 'deny' ? '#f87171' : '#fbbf24', marginTop: 2 }}>
-                      [{g.mode.toUpperCase()}] {g.text}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Completion */}
-        <div className="horizon-section">
-          <div className="horizon-section__title">
-            <Activity size={11} />
-            <span>Overall: {h.completion?.percentage ?? 0}%</span>
-          </div>
-          <div className="horizon-card__progress">
-            <div className="horizon-card__progress-bar" style={{ width: `${h.completion?.percentage ?? 0}%` }} />
-            <span>{h.completion?.filled ?? 0}/{h.completion?.required ?? 0} fields</span>
-          </div>
-        </div>
-
-        {/* Remaining Collections */}
-        {h.remaining_variables?.length > 0 && (
-          <div className="horizon-section">
-            <div className="horizon-section__title">
-              <Activity size={11} />
-              <span>Remaining Collections ({h.remaining_variables.length})</span>
-            </div>
-            {h.remaining_variables.map((v: any, i: number) => (
-              <div key={i} className="horizon-neighbor">
-                <span className="horizon-neighbor__title">{v.name}</span>
-                <span className="horizon-neighbor__type">{v.type}</span>
-                {v.required && <span className="horizon-gap__badge" style={{ fontSize: 8, padding: '1px 4px' }}>REQUIRED</span>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Suggested Persona */}
-        {h.suggested_persona && (
-          <div className="horizon-section">
-            <div className="horizon-section__title">
-              <User size={11} />
-              <span>Suggested Persona</span>
-            </div>
-            <div className="horizon-card">
-              <strong>{h.suggested_persona.name}</strong>
-              <span className="horizon-card__reason">{h.suggested_persona.reason}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Goals */}
-        {h.goals?.length > 0 && (
-          <div className="horizon-section">
-            <div className="horizon-section__title">
-              <Zap size={11} />
-              <span>Goals ({h.goals.length})</span>
-            </div>
-            {h.goals.map((g: any, i: number) => (
-              <div key={i} className="horizon-neighbor">
-                <span className="horizon-neighbor__title">{g.name}</span>
-                <span className={`horizon-gap__badge ${g.status === 'completed' ? 'horizon-gap__badge--orphan' : ''}`}
-                      style={{ fontSize: 8, padding: '1px 4px' }}>
-                  {g.status?.toUpperCase() || 'PENDING'}
-                </span>
-                {g.persona_weight != null && (
-                  <span className="horizon-neighbor__bias">{(g.persona_weight * 100).toFixed(0)}%</span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Neighbors */}
-        {h.neighbors?.length > 0 && (
-          <div className="horizon-section">
-            <div className="horizon-section__title">
-              <Map size={11} />
-              <span>Neighbors ({h.neighbors.length})</span>
-            </div>
-            {h.neighbors.slice(0, 8).map((n: any, i: number) => (
-              <div key={i} className="horizon-neighbor">
-                <span className="horizon-neighbor__title">{n.nord.title}</span>
-                <span className="horizon-neighbor__type">{n.nord.type_name}</span>
-                <span className="horizon-neighbor__verb">{n.relationship.verb || n.relationship.type_name}</span>
-                <span className="horizon-neighbor__bias">{(n.persona_bias * 100).toFixed(0)}%</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Gaps */}
-        {hasGaps && (
-          <div className="horizon-section horizon-section--warn">
-            <div className="horizon-section__title">
-              <AlertTriangle size={11} />
-              <span>Gaps</span>
-            </div>
-            {gaps.unvisited_required?.map((g: any, i: number) => (
-              <div key={`uv-${i}`} className="horizon-gap">
-                <span className="horizon-gap__badge">UNVISITED</span>
-                <span>{g.title} ({g.type_name})</span>
-              </div>
-            ))}
-            {gaps.orphan_nords?.map((g: any, i: number) => (
-              <div key={`or-${i}`} className="horizon-gap">
-                <span className="horizon-gap__badge horizon-gap__badge--orphan">ORPHAN</span>
-                <span>{g.title} ({g.type_name})</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Suggested Next */}
-        {h.suggested_next && (
-          <div className="horizon-section">
-            <div className="horizon-section__title">
-              <Zap size={11} />
-              <span>Suggested Next</span>
-            </div>
-            <div className="horizon-card">
-              <strong>{h.suggested_next.title}</strong>
-              <span className="horizon-card__reason">{h.suggested_next.reason}</span>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -979,7 +758,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
       >
         <div className="preview-chat__header-left">
           <GripVertical size={14} className="preview-chat__grip-icon" />
-          <Bot size={16} />
+          <Eye size={16} className="preview-chat__header-icon" />
           <span className="preview-chat__title">{isReplayMode ? '🔁 Replay' : 'Agent Preview'}</span>
           {isReplayMode && replayLabel && (
             <code className="preview-chat__session-id" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa' }}>{replayLabel}</code>
@@ -1009,14 +788,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
               <option key={m.id} value={m.id}>{m.label}</option>
             ))}
           </select>
-          <button
-            className="preview-chat__action-btn"
-            onClick={() => setShowSessions(!showSessions)}
-            title="Session History"
-          >
-            <Activity size={14} />
-            <ChevronDown size={10} />
-          </button>
+
           <button className="preview-chat__action-btn" onClick={handleReset} title="Reset Session">
             <RotateCcw size={14} />
           </button>
@@ -1060,112 +832,9 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
         </div>
       </div>
 
-      {/* Sessions Panel — full chat body replacement */}
-      {showSessions && (
-        <div className="preview-chat__sessions-panel">
-          <div className="preview-chat__sessions-header">
-            <span>Sessions ({sessions.length})</span>
-            <button className="preview-chat__action-btn" onClick={() => setShowSessions(false)} title="Close sessions">
-              <X size={14} />
-            </button>
-          </div>
-          {sessions.length === 0 ? (
-            <div className="preview-chat__dev-empty">
-              <Activity size={20} strokeWidth={1} />
-              <p>No sessions yet. Start a conversation to create one.</p>
-            </div>
-          ) : (
-            <div className="preview-chat__sessions-list">
-              {sessions.map(s => (
-                <div
-                  key={s.id}
-                  className={`preview-chat__session-card ${s.id === sessionId ? 'is-active' : ''}`}
-                >
-                  <div className="preview-chat__session-card-top" onClick={() => loadSession(s.id)}>
-                    <span className="preview-chat__session-status" data-status={s.status} />
-                    <code>{s.id.slice(0, 8)}…</code>
-                    <span className="preview-chat__session-badge">{s.status}</span>
-                    <span className="preview-chat__session-date">
-                      {new Date(s.started_at).toLocaleDateString()} {new Date(s.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                  <div className="preview-chat__session-card-actions">
-                    <button
-                      className="preview-chat__session-action-btn"
-                      onClick={() => loadSession(s.id)}
-                      title="Load session"
-                    >
-                      <MessageSquare size={11} /> Load
-                    </button>
-                    <button
-                      className="preview-chat__session-action-btn"
-                      onClick={async () => {
-                        try {
-                          const data = await api.get<{ messages: Message[] }>(`/api/sessions/${s.id}/messages`);
-                          const transcript = (data.messages || [])
-                            .map(m => `[${m.role}] ${m.content}`)
-                            .join('\n\n');
-                          const blob = new Blob([transcript], { type: 'text/plain' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = `session-${s.id.slice(0, 8)}.txt`;
-                          a.click();
-                          URL.revokeObjectURL(url);
-                        } catch { /* ignore */ }
-                      }}
-                      title="Export transcript"
-                    >
-                      <FileText size={11} /> Export
-                    </button>
-                    <button
-                      className="preview-chat__session-action-btn preview-chat__session-action-btn--danger"
-                      onClick={async () => {
-                        try {
-                          await api.put(`/api/mcp-sessions/${s.id}`, { status: 'abandoned' });
-                          setSessions(prev => prev.map(x => x.id === s.id ? { ...x, status: 'abandoned' } : x));
-                          if (sessionId === s.id) {
-                            setSessionId(null);
-                            setMessages([]);
-                          }
-                        } catch { /* ignore */ }
-                      }}
-                      title="Abandon session"
-                      disabled={s.status === 'abandoned' || s.status === 'completed'}
-                    >
-                      <X size={11} /> Abandon
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* Status Strip — always visible when a session is active */}
-      {sessionId && lastHorizon && (
-        <div className="preview-chat__status-strip">
-          {(lastHorizon as any).current_nord && (
-            <span className="preview-chat__status-item">
-              <Eye size={10} />
-              <strong>{(lastHorizon as any).current_nord.title}</strong>
-              <span className="preview-chat__status-type">{(lastHorizon as any).current_nord.type_name}</span>
-              {(lastHorizon as any).current_nord.session_progress && (
-                <span className="preview-chat__status-progress">
-                  {(lastHorizon as any).current_nord.session_progress.filled}/{(lastHorizon as any).current_nord.session_progress.required}
-                </span>
-              )}
-            </span>
-          )}
-          {(lastHorizon as any).persona && (
-            <span className="preview-chat__status-item">
-              <User size={10} />
-              <strong>{(lastHorizon as any).persona.name}</strong>
-            </span>
-          )}
-        </div>
-      )}
+
+
 
       {/* Main Content: Messages + Dev Panel */}
       <div className="preview-chat__body">
@@ -1277,8 +946,8 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Dev Mode Panel */}
-        {devMode && renderDevPanel()}
+        {/* Dev Mode — Session Log Stream */}
+        {devMode && renderDevLog()}
       </div>
 
       {/* Input */}

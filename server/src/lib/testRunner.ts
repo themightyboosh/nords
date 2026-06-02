@@ -17,6 +17,8 @@ import * as goalsRepo from '../repositories/goals.js';
 import { dispatchTool, type ToolContext } from './toolDispatch.js';
 import { buildToolDeclarations } from './geminiTools.js';
 import { query, queryOne } from '../db.js';
+import { logEvent, logEvents } from './sessionEvents.js';
+import { mcpMessagesRepo } from '../repositories/mcpMessages.js';
 
 // ── Types ──
 
@@ -58,7 +60,7 @@ export interface TestRunRecord {
   synthetic_nps: number | null;
   user_sentiment: string | null;
   passed: boolean | null;
-  transcript: TranscriptRound[];
+  transcript: TranscriptRound[]; // kept in-memory for computeScore, no longer persisted to DB
   critique: unknown | null;
   started_at: string;
   finished_at: string | null;
@@ -268,9 +270,22 @@ export async function executeTestRun(
     const session = await mcpRepo.createSession(
       projectId,
       activePersonaId,
-      project.default_start_nord_id || null
+      project.default_start_nord_id || null,
+      null, // userId — test users are synthetic
+      null, // tokenId
+      'test', // source_type
+      { scenario_id: scenario.id, scenario_name: scenario.name, user_profile: scenario.user_profile }
     );
     const sessionId = session.id;
+
+    // Fire session_start event
+    logEvent(sessionId, 'session_start', 'source', {
+      source_type: 'test',
+      scenario_id: scenario.id,
+      scenario_name: scenario.name,
+      persona_id: activePersonaId,
+      user_profile: scenario.user_profile,
+    });
 
     // Update run with session ID
     await query(
@@ -363,7 +378,15 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         }
 
         const candidate = response.candidates?.[0];
-        if (!candidate?.content?.parts) break;
+        if (!candidate?.content?.parts) {
+          // Retry on empty response (transient Gemini Pro issue)
+          if (loop < MAX_TOOL_LOOPS - 1) {
+            logger.warn(`[TestRunner] Empty response on welcome loop ${loop}, retrying...`);
+            await new Promise(r => setTimeout(r, 1000 * (loop + 1)));
+            continue;
+          }
+          break;
+        }
 
         const functionCalls = candidate.content.parts.filter((p: any) => p.functionCall);
 
@@ -382,11 +405,11 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         // Process tool calls (same pattern as main loop)
         const toolResponseParts: any[] = [];
         for (const fc of functionCalls) {
-          const call = fc.functionCall;
-          const toolResult = await dispatchTool(call.name, call.args || {}, toolCtx);
-          welcomeToolCalls.push({ name: call.name, arguments: call.args || {}, result: toolResult });
+          const call = fc.functionCall!;
+          const toolResult = await dispatchTool(call.name!, toolCtx, call.args || {});
+          welcomeToolCalls.push({ name: call.name!, arguments: call.args || {}, result: toolResult });
           toolResponseParts.push({
-            functionResponse: { name: call.name, response: toolResult },
+            functionResponse: { name: call.name!, response: toolResult },
           });
         }
         totalToolCallCount += functionCalls.length;
@@ -460,6 +483,19 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         content: userMessage,
       });
 
+      // Persist user message to mcp_messages (same as chat.ts)
+      await mcpMessagesRepo.create({
+        session_id: sessionId,
+        role: 'user',
+        content: userMessage,
+        tool_calls: null, context: null,
+        tokens_in: null, tokens_out: null,
+        model: null, latency_ms: null,
+      });
+
+      // Fire user_message event
+      logEvent(sessionId, 'user_message', 'content', { text: userMessage, round });
+
       // ── Step 2: Agent processes the user message ──
       const agentContents = [
         ...agentHistory,
@@ -494,7 +530,15 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         }
 
         const candidate = response.candidates?.[0];
-        if (!candidate?.content?.parts) break;
+        if (!candidate?.content?.parts) {
+          // Retry on empty response (transient Gemini Pro issue)
+          if (loop < MAX_TOOL_LOOPS - 1) {
+            logger.warn(`[TestRunner] Empty response on round loop ${loop}, retrying...`);
+            await new Promise(r => setTimeout(r, 1000 * (loop + 1)));
+            continue;
+          }
+          break;
+        }
 
         const functionCalls = candidate.content.parts.filter((p: any) => p.functionCall);
 
@@ -503,6 +547,12 @@ The briefing contains all the instructions you need. Follow the protocol it prov
             .filter((p: any) => p.text)
             .map((p: any) => p.text)
             .join('');
+          // Retry if text is also empty (model returned parts but no content)
+          if (!agentReply && loop < MAX_TOOL_LOOPS - 1) {
+            logger.warn(`[TestRunner] Empty text response on round loop ${loop}, retrying...`);
+            await new Promise(r => setTimeout(r, 1000 * (loop + 1)));
+            continue;
+          }
           // Update agent history with this exchange
           agentHistory = [
             ...currentContents,
@@ -522,6 +572,15 @@ The briefing contains all the instructions you need. Follow the protocol it prov
           roundToolCalls.push({ name: toolName, arguments: toolArgs, result: result.data ?? result.error });
           toolResponses.push({
             functionResponse: { name: toolName, response: result },
+          });
+
+          // Fire tool_call event (toolDispatch fires traversal/variable/goal events internally)
+          logEvent(sessionId, 'tool_call', toolName, {
+            args: toolArgs,
+            result_summary: typeof result.data === 'object'
+              ? Object.keys(result.data || {}).join(', ')
+              : String(result.error || 'ok'),
+            round,
           });
         }
 
@@ -555,6 +614,31 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         latency_ms: roundLatency,
       };
       transcript.push(roundData);
+
+      // Persist assistant message to mcp_messages (same as chat.ts)
+      await mcpMessagesRepo.create({
+        session_id: sessionId,
+        role: 'assistant',
+        content: agentReply,
+        tool_calls: roundToolCalls.length > 0 ? roundToolCalls : null,
+        context: { round, model: scenario.agent_model },
+        tokens_in: roundTokensIn,
+        tokens_out: roundTokensOut,
+        model: scenario.agent_model,
+        latency_ms: roundLatency,
+      });
+
+      // Fire assistant_message event
+      logEvent(sessionId, 'assistant_message', 'content', {
+        text: agentReply.slice(0, 500),
+        tokens_in: roundTokensIn,
+        tokens_out: roundTokensOut,
+        model: scenario.agent_model,
+        latency_ms: roundLatency,
+        tool_call_count: roundToolCalls.length,
+        round,
+      });
+
       totalTokensIn += roundTokensIn;
       totalTokensOut += roundTokensOut;
       totalLatency += roundLatency;
@@ -576,7 +660,7 @@ The briefing contains all the instructions you need. Follow the protocol it prov
       const agentTriggeredEnd = roundToolCalls.some(tc =>
         tc.result && typeof tc.result === 'object' && 'goal_events' in (tc.result as any) &&
         Array.isArray((tc.result as any).goal_events) &&
-        (tc.result as any).goal_events.some((e: any) => e.event === 'session_terminating')
+        (tc.result as any).goal_events.some((e: any) => e.type === 'goal_completed' && e.end_type)
       );
 
       let goalStatus: string | null = null;
@@ -610,9 +694,9 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         await query(
           `UPDATE test_runs SET rounds_completed = $1, completion_pct = $2,
            total_tokens_in = $3, total_tokens_out = $4, total_latency_ms = $5,
-           tool_call_count = $6, transcript = $7::jsonb WHERE id = $8`,
+           tool_call_count = $6 WHERE id = $7`,
           [round, horizon.completion.percentage, totalTokensIn, totalTokensOut,
-           totalLatency, totalToolCallCount, JSON.stringify(transcript), runId]
+           totalLatency, totalToolCallCount, runId]
         );
       }
     }
@@ -692,7 +776,63 @@ SENTIMENT: [2 sentences]`
       ? true // explore has no completion metric
       : completionPct >= (scenario.min_completion_pct || 0);
 
-    // ── Save final results ──
+    // Fire NPS/sentiment events
+    if (syntheticNps !== null) {
+      logEvent(sessionId, 'nps_score', 'synthetic', {
+        score: syntheticNps,
+        sentiment: userSentiment,
+      });
+    }
+
+    // Store NPS/sentiment in session metadata
+    await mcpRepo.updateSessionMetadata(sessionId, {
+      synthetic_nps: syntheticNps,
+      user_sentiment: userSentiment,
+      scenario_name: scenario.name,
+    });
+
+    // Fire session_end event
+    logEvent(sessionId, 'session_end', stopReason || 'max_rounds', {
+      stop_reason: stopReason,
+      completion_pct: completionPct,
+      rounds: transcript.length,
+      tokens_in: totalTokensIn,
+      tokens_out: totalTokensOut,
+      nps: syntheticNps,
+    });
+
+    // Fire test-specific events — all test data as session entries
+    logEvents(sessionId, [
+      {
+        actionType: 'test_score' as any,
+        key: 'score',
+        value: score,
+      },
+      {
+        actionType: 'test_result' as any,
+        key: passed ? 'passed' : 'failed',
+        value: {
+          passed,
+          completion_pct: completionPct,
+          min_completion_pct: scenario.min_completion_pct,
+          stop_reason: stopReason,
+          rounds: transcript.length,
+          max_rounds: scenario.max_rounds,
+        },
+      },
+      ...(Object.keys(propertiesCollected).length > 0 ? [{
+        actionType: 'test_properties' as any,
+        key: 'collected',
+        value: propertiesCollected,
+      }] : []),
+      ...(coverageGaps.length > 0 ? [{
+        actionType: 'test_coverage_gaps' as any,
+        key: 'gaps',
+        value: { gaps: coverageGaps },
+      }] : []),
+    ]);
+
+    // ── Save final results (no transcript column) ──
     await query(
       `UPDATE test_runs SET
         status = 'completed', stop_reason = $1, rounds_completed = $2,
@@ -700,14 +840,14 @@ SENTIMENT: [2 sentences]`
         total_latency_ms = $6, tool_call_count = $7,
         properties_collected = $8::jsonb, coverage_gaps = $9::jsonb,
         score = $10::jsonb, synthetic_nps = $11, user_sentiment = $12,
-        passed = $13, transcript = $14::jsonb, finished_at = NOW()
-      WHERE id = $15`,
+        passed = $13, finished_at = NOW()
+      WHERE id = $14`,
       [
         stopReason, transcript.length, completionPct,
         totalTokensIn, totalTokensOut, totalLatency, totalToolCallCount,
         JSON.stringify(propertiesCollected), JSON.stringify(coverageGaps),
         JSON.stringify(score), syntheticNps, userSentiment,
-        passed, JSON.stringify(transcript), runId,
+        passed, runId,
       ]
     );
 

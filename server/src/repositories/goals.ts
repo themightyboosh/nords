@@ -452,7 +452,7 @@ export async function initializeSessionGoals(
 // ══════════════════════════════════════════════════════════
 
 export interface GoalEvent {
-  type: 'goal_completed' | 'goal_activated' | 'goal_cancelled' | 'session_terminating';
+  type: 'goal_completed' | 'goal_activated' | 'goal_cancelled';
   goal_id: string;
   goal_name: string;
   achieved_prompt?: string | null;
@@ -469,7 +469,7 @@ export interface GoalEvent {
  * 1. Check if any active goal's required variable bindings are all filled → complete it
  * 2. On completion: activate children (targets of outgoing edges) if ALL parents complete
  * 3. Structural exclusion: cancel sibling goals (other targets of same parent)
- * 4. If completed goal has end_type → fire session_terminating
+ * 4. If completed goal has end_type → include end_type on the goal_completed event
  */
 export async function evaluateGoals(
   sessionId: string,
@@ -544,6 +544,7 @@ export async function evaluateGoals(
       goal_id: goal.id,
       goal_name: goal.name,
       achieved_prompt: goal.achieved_prompt,
+      end_type: goal.end_type || null,
       progress,
     });
 
@@ -648,16 +649,7 @@ export async function evaluateGoals(
       }
     }
 
-    // ── Check end_type ──
-    if (goal.end_type) {
-      events.push({
-        type: 'session_terminating',
-        goal_id: goal.id,
-        goal_name: goal.name,
-        achieved_prompt: goal.achieved_prompt,
-        end_type: goal.end_type,
-      });
-    }
+    // end_type is now carried on the goal_completed event itself
   }
 
   return events;

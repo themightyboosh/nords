@@ -295,8 +295,7 @@ export function TestRunner({ projectId, projectMode, goalsEnabled, open, onClose
         {/* ── Header ── */}
         <div className="test-runner__header">
           <div className="test-runner__header-left">
-            <FlaskConical size={18} />
-            <h2>Test Runner</h2>
+            <h2 className="nords-panel-title"><FlaskConical size={18} strokeWidth={1.6} />Test Runner</h2>
           </div>
           <button className="nords-close-btn" onClick={onClose} aria-label="Close"><X size={18} strokeWidth={2} /></button>
         </div>

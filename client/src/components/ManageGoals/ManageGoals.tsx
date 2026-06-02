@@ -21,7 +21,7 @@
  */
 
 import React, { useState } from 'react';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, Target } from 'lucide-react';
 import { useGoals, type Goal } from '../../hooks/useGoals';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
@@ -73,7 +73,7 @@ export function ManageGoals({ projectId, open, onClose }: ManageGoalsProps) {
         {/* Header */}
         <div className="manage-goals__header">
           <div>
-            <h2 className="manage-goals__title">Goals</h2>
+            <h2 className="manage-goals__title nords-panel-title"><Target size={18} strokeWidth={1.6} />Goals</h2>
             <p className="manage-goals__subtitle">{UI_STRINGS.goals.subtitle}</p>
           </div>
           <button className="manage-goals__close" onClick={onClose} title="Close">

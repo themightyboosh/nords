@@ -33,6 +33,7 @@ import { useVariables } from './hooks/useVariables';
 import { useCollectionGroups } from './hooks/useCollectionGroups';
 import { ShareChat } from './pages/ShareChat/ShareChat';
 import { TestRunner } from './components/TestRunner/TestRunner';
+import { SessionExplorer } from './components/SessionExplorer/SessionExplorer';
 import { UserProfile } from './components/UserProfile/UserProfile';
 
 /**
@@ -109,6 +110,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [profileOpen, setProfileOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [testRunnerOpen, setTestRunnerOpen] = useState(false);
+  const [sessionsOpen, setSessionsOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [personaDrawerOpen, setPersonaDrawerOpen] = useState(true);
   const [projectName, setProjectName] = useState<string>('Loading…');
@@ -269,6 +271,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         onOpenProfile={() => setProfileOpen(true)}
         onOpenPreview={() => setPreviewOpen(p => !p)}
         onOpenTestRunner={() => setTestRunnerOpen(true)}
+        onOpenSessions={() => setSessionsOpen(true)}
         projectName={projectName}
       />
       <UserProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
@@ -416,6 +419,18 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           goalsEnabled={projectMode === 'guided'}
           open={testRunnerOpen}
           onClose={() => setTestRunnerOpen(false)}
+          onReplay={(transcript, label) => {
+            setReplayTranscript(transcript);
+            setReplayLabel(label);
+            setPreviewOpen(true);
+          }}
+        />
+      )}
+      {projectId && (
+        <SessionExplorer
+          projectId={projectId}
+          open={sessionsOpen}
+          onClose={() => setSessionsOpen(false)}
           onReplay={(transcript, label) => {
             setReplayTranscript(transcript);
             setReplayLabel(label);

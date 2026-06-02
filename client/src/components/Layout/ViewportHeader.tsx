@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ChevronDown, Menu, X,
   LogOut, User, Settings,
-  Box, Link2, Users, Eye, Target, FlaskConical, Variable,
+  Box, Link2, Users, Eye, Target, FlaskConical, Variable, Activity,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NordsLogo from '../NordsLogo';
@@ -29,6 +29,7 @@ interface ViewportHeaderProps {
   onOpenProfile?: () => void;
   onOpenPreview?: () => void;
   onOpenTestRunner?: () => void;
+  onOpenSessions?: () => void;
   /** Project name displayed next to the logo */
   projectName?: string;
   /** 'workspace' (default) = full nav; 'dashboard' = logo + title only */
@@ -37,7 +38,7 @@ interface ViewportHeaderProps {
 
 export default function ViewportHeader({
   currentTheme, onThemeChange,
-  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenVariables, onOpenGoals, onOpenSettings, onOpenProfile, onOpenPreview, onOpenTestRunner,
+  onOpenNordTypes, onOpenCategoryTypes, onOpenPersonas, onOpenVariables, onOpenGoals, onOpenSettings, onOpenProfile, onOpenPreview, onOpenTestRunner, onOpenSessions,
   projectName = 'Product Launch Q3',
   mode = 'workspace',
 }: ViewportHeaderProps) {
@@ -221,8 +222,6 @@ export default function ViewportHeader({
               </button>
             )}
 
-            {/* Separator between schema nav and utility nav */}
-            <div className="nords-viewport-header__nav-sep" />
 
             {onOpenSettings && (
               <button
@@ -255,6 +254,17 @@ export default function ViewportHeader({
               >
                 <FlaskConical size={14} strokeWidth={1.6} />
                 <span>Test</span>
+              </button>
+            )}
+            {onOpenSessions && (
+              <button
+                className="nords-viewport-header__nav-item"
+                title="Sessions"
+                onClick={onOpenSessions}
+                data-testid="header-sessions"
+              >
+                <Activity size={14} strokeWidth={1.6} />
+                <span>Sessions</span>
               </button>
             )}
           </nav>

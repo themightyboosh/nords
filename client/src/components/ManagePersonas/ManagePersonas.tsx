@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { X, Plus, Trash2, GripVertical, Shuffle } from 'lucide-react';
+import { X, Plus, Trash2, GripVertical, Shuffle, Users } from 'lucide-react';
 import { usePersonas, type Persona } from '../../hooks/usePersonas';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
@@ -94,7 +94,7 @@ export function ManagePersonas({ projectId, open, onClose, connectionTypes }: Ma
         {/* Header */}
         <div className="manage-personas__header">
           <div>
-            <h2 className="manage-personas__title">{UI_STRINGS.personas.title}</h2>
+            <h2 className="manage-personas__title nords-panel-title"><Users size={18} strokeWidth={1.6} />{UI_STRINGS.personas.title}</h2>
             <p className="manage-personas__subtitle">{UI_STRINGS.personas.subtitle}</p>
           </div>
           <button className="manage-personas__close" onClick={onClose} title="Close">

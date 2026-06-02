@@ -63,8 +63,10 @@ export async function createSession(
   projectId: string,
   personaId?: string | null,
   startNordId?: string | null,
-  _userId?: string | null,
-  _tokenId?: string | null
+  userId?: string | null,
+  _tokenId?: string | null,
+  sourceType: 'chat' | 'test' | 'api' | 'share' = 'chat',
+  metadata: Record<string, unknown> = {}
 ): Promise<McpSession> {
   // Gate on mcp_enabled — admin must enable MCP for this project
   const project = await queryOne<{ mcp_enabled: boolean; mcp_capture_data: boolean }>(`
@@ -87,12 +89,25 @@ export async function createSession(
   }
 
   const session = await queryOne<McpSession>(`
-    INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id)
-    VALUES ($1, $2, $3)
+    INSERT INTO mcp_sessions (project_id, persona_id, current_nord_id, user_id, source_type, metadata)
+    VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *
-  `, [projectId, personaId || null, resolvedStartNord]) as McpSession;
+  `, [projectId, personaId || null, resolvedStartNord, userId || null, sourceType, JSON.stringify(metadata)]) as McpSession;
 
   return session;
+}
+
+/** Update session metadata (NPS, sentiment, scenario info, etc.) */
+export async function updateSessionMetadata(
+  sessionId: string,
+  metadata: Record<string, unknown>
+): Promise<McpSession | null> {
+  return queryOne<McpSession>(`
+    UPDATE mcp_sessions
+    SET metadata = metadata || $2::jsonb
+    WHERE id = $1
+    RETURNING *
+  `, [sessionId, JSON.stringify(metadata)]);
 }
 
 
@@ -297,7 +312,7 @@ export interface SessionHorizon {
   completion: { filled: number; required: number; percentage: number };
   remaining_variables: Array<{
     variable_id: string; name: string; type: string; required: boolean;
-    description: string; tags: string[]; goals: string[];
+    description: string; tags: string[]; goals: string[]; topically_relevant: boolean;
   }>;
   neighbors: HorizonNeighbor[];
   planning_queue: Array<{ nord_id: string; title: string; type_name: string; goal_relevant: boolean }>;
@@ -589,6 +604,27 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     : [];
   const goalIdToName = new Map(goalNameRows.map(r => [r.id, r.name]));
 
+  // 5c. Topical relevance — which goals relate to the current nord position?
+  // A variable is "topically relevant" if its goal connects to the current nord (or its type)
+  let topicalGoalIds = new Set<string>();
+  if (session.current_nord_id) {
+    const currentNordRow = await queryOne<{ type_id: string }>(
+      'SELECT type_id FROM nords WHERE id = $1', [session.current_nord_id]
+    );
+    const topicalGoals = await query<{ goal_id: string }>(`
+      SELECT DISTINCT goal_id FROM (
+        SELECT grn.goal_id FROM goal_relevant_nords grn
+        JOIN mcp_session_goals sg ON sg.goal_id = grn.goal_id
+        WHERE sg.session_id = $1 AND sg.status = 'active' AND grn.nord_id = $2
+        UNION
+        SELECT grnt.goal_id FROM goal_relevant_nord_types grnt
+        JOIN mcp_session_goals sg ON sg.goal_id = grnt.goal_id
+        WHERE sg.session_id = $1 AND sg.status = 'active' AND grnt.nord_type_id = $3
+      ) combined
+    `, [sessionId, session.current_nord_id, currentNordRow?.type_id || '00000000-0000-0000-0000-000000000000']);
+    topicalGoalIds = new Set(topicalGoals.map(r => r.goal_id));
+  }
+
   const remaining_variables = projectVars
     .filter(v => !filledVarIds.has(v.id))
     .filter(v => {
@@ -602,9 +638,12 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       const goalNames = boundGoalIds
         .map(gid => goalIdToName.get(gid))
         .filter((n): n is string => !!n);
+      // Topically relevant if any bound goal connects to the current nord/type
+      const topically_relevant = boundGoalIds.some(gid => topicalGoalIds.has(gid));
       return {
         variable_id: v.id, name: v.name, type: v.type, required: v.required,
         description: v.description, tags: v.tags, goals: goalNames,
+        topically_relevant,
         ...(v.options ? { options: v.options } : {}),
       };
     });
