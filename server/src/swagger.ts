@@ -277,6 +277,39 @@ with physics-based spatial relationships.
           },
         },
 
+        // ── MCP Navigate ──
+        NavigateResult: {
+          type: 'object',
+          description: 'Self-contained response from nords_navigate — includes destination, horizon, and runner-ups.',
+          properties: {
+            navigated: { type: 'boolean', description: 'Whether position was updated (false for fuzzy suggestions)' },
+            method: { type: 'string', enum: ['traversed', 'jumped', 'uuid'], description: 'How the navigation occurred' },
+            destination: { $ref: '#/components/schemas/Nord' },
+            previous_position: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                title: { type: 'string' },
+              },
+            },
+            horizon: { type: 'object', description: 'Fresh horizon from the destination position' },
+            also_considered: {
+              type: 'array',
+              description: 'Runner-up candidates the system considered but did not navigate to',
+              items: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  type_name: { type: 'string' },
+                  source: { type: 'string', enum: ['neighbor', 'search'] },
+                  score: { type: 'number' },
+                },
+              },
+            },
+          },
+        },
+
         // ── Goals ──
         Goal: {
           type: 'object',

@@ -17,8 +17,32 @@ import * as goalsRepo from '../repositories/goals.js';
 import { dispatchTool, type ToolContext } from './toolDispatch.js';
 import { buildToolDeclarations } from './geminiTools.js';
 import { query, queryOne } from '../db.js';
-import { logEvent, logEvents } from './sessionEvents.js';
+import { logEvent, logEvents, getReplayData } from './sessionEvents.js';
 import { mcpMessagesRepo } from '../repositories/mcpMessages.js';
+
+// ── Retry helper for transient Gemini API failures ──
+const MAX_API_RETRIES = 3;
+const INITIAL_RETRY_DELAY_MS = 2000;
+
+async function retryGenerateContent(
+  genai: GoogleGenAI,
+  params: Parameters<GoogleGenAI['models']['generateContent']>[0],
+  label: string
+): Promise<ReturnType<GoogleGenAI['models']['generateContent']>> {
+  for (let attempt = 1; attempt <= MAX_API_RETRIES; attempt++) {
+    try {
+      return await genai.models.generateContent(params);
+    } catch (err: any) {
+      const msg = err?.message || String(err);
+      const isTransient = /fetch failed|ECONNRESET|socket hang up|503|429|DEADLINE_EXCEEDED/i.test(msg);
+      if (!isTransient || attempt === MAX_API_RETRIES) throw err;
+      const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+      logger.warn(`[TestRunner] ${label}: transient error (attempt ${attempt}/${MAX_API_RETRIES}), retrying in ${delay}ms`, { error: msg });
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw new Error('Unreachable');
+}
 
 // ── Types ──
 
@@ -34,10 +58,8 @@ export interface TestScenario {
   agent_model: string;
   user_model: string;
   max_rounds: number;
-  stop_on_completion_pct: number | null;
   stop_on_goal_id: string | null;
   stop_on_session_end: boolean;
-  min_completion_pct: number;
   persona_id: string | null;
 }
 
@@ -60,26 +82,28 @@ export interface TestRunRecord {
   synthetic_nps: number | null;
   user_sentiment: string | null;
   passed: boolean | null;
-  transcript: TranscriptRound[]; // kept in-memory for computeScore, no longer persisted to DB
+  hallucination_score: number | null;
+  hallucination_details: string | null;
   critique: unknown | null;
   started_at: string;
   finished_at: string | null;
   error: string | null;
 }
 
+/** Shape returned by getReplayData — the single transcript source of truth. */
 export interface TranscriptRound {
   round: number;
   user_msg: string;
   agent_msg: string;
-  tool_calls: Array<{ name: string; arguments: Record<string, unknown>; result?: unknown }>;
-  horizon_snapshot: Record<string, unknown> | null;
+  tool_calls: any[];
   tokens_in: number;
   tokens_out: number;
   latency_ms: number;
+  delay_ms: number;
 }
 
 export interface RunProgress {
-  type: 'user_message' | 'agent_response' | 'run_complete' | 'error';
+  type: 'user_message' | 'agent_message' | 'agent_response' | 'run_complete' | 'error';
   round?: number;
   maxRounds?: number;
   content?: string;
@@ -91,6 +115,7 @@ export interface RunProgress {
   score?: Record<string, unknown>;
   nps?: number;
   sentiment?: string;
+  hallucinationScore?: number;
   passed?: boolean;
   stopReason?: string;
   error?: string;
@@ -162,9 +187,7 @@ export interface TerminationCheck {
   maxRounds: number;
   completionPct: number;
   projectMode: string;
-  stopOnCompletionPct: number | null;
-  stopOnGoalId: string | null;
-  goalStatus: string | null;
+  terminatingGoalCompleted: boolean;
   stopOnSessionEnd: boolean;
   agentTriggeredEnd: boolean;
 }
@@ -175,27 +198,14 @@ export function checkTermination(check: TerminationCheck): { stop: boolean; reas
     return { stop: true, reason: 'max_rounds' };
   }
 
-  // b. session end
+  // b. session end (agent-triggered)
   if (check.stopOnSessionEnd && check.agentTriggeredEnd) {
     return { stop: true, reason: 'session_end' };
   }
 
-  // c. completion (collect/guided only)
-  if (
-    check.stopOnCompletionPct != null &&
-    check.projectMode !== 'explore' &&
-    check.completionPct >= check.stopOnCompletionPct
-  ) {
-    return { stop: true, reason: 'completion' };
-  }
-
-  // d. goal (guided only)
-  if (
-    check.stopOnGoalId &&
-    check.projectMode === 'guided' &&
-    check.goalStatus === 'completed'
-  ) {
-    return { stop: true, reason: 'goal' };
+  // c. any terminating goal completed (end_type != 'continue')
+  if (check.terminatingGoalCompleted) {
+    return { stop: true, reason: 'goal_completed' };
   }
 
   return { stop: false, reason: null };
@@ -208,7 +218,16 @@ export function computeScore(
   completionPct: number,
   projectMode: string,
   propertiesCollected: Record<string, unknown>,
-  coverageGaps: unknown[]
+  coverageGaps: unknown[],
+  navigationMetrics?: {
+    traversal_count: number;
+    unique_nords_visited: number;
+    max_chain_depth: number;
+    persona_switches: number;
+    traversal_ratio: number;
+    search_count: number;
+    peek_count: number;
+  }
 ): Record<string, unknown> {
   const rounds = transcript.length;
   const totalToolCalls = transcript.reduce((sum, r) => sum + r.tool_calls.length, 0);
@@ -226,6 +245,14 @@ export function computeScore(
     avg_latency_ms: rounds > 0
       ? Math.round(transcript.reduce((sum, r) => sum + r.latency_ms, 0) / rounds)
       : 0,
+    // Navigation metrics
+    traversal_count: navigationMetrics?.traversal_count ?? 0,
+    unique_nords_visited: navigationMetrics?.unique_nords_visited ?? 0,
+    max_chain_depth: navigationMetrics?.max_chain_depth ?? 0,
+    persona_switches: navigationMetrics?.persona_switches ?? 0,
+    traversal_ratio: navigationMetrics?.traversal_ratio ?? 0,
+    search_count: navigationMetrics?.search_count ?? 0,
+    peek_count: navigationMetrics?.peek_count ?? 0,
   };
 }
 
@@ -351,30 +378,23 @@ The briefing contains all the instructions you need. Follow the protocol it prov
     const toolDeclarations = buildToolDeclarations(false /* never mutable at runtime */, dictionary);
 
     // ── Conversation Loop ──
-    const transcript: TranscriptRound[] = [];
+    // No in-memory transcript — session_events is the single source of truth.
     let agentHistory: any[] = [];   // Agent's conversation context
     let userHistory: any[] = [];    // Synthetic user's conversation context (text only)
-    let totalTokensIn = 0;
-    let totalTokensOut = 0;
-    let totalLatency = 0;
-    let totalToolCallCount = 0;
     let stopReason: string | null = null;
+    let lastCompletedRound = 0;
 
     // ── Agent Welcome (Round 0): Agent goes first to establish context ──
     let welcomeReply = '';
-    const welcomeToolCalls: Array<{ name: string; arguments: Record<string, unknown>; result?: unknown }> = [];
     {
-      // Prompt the agent to introduce itself and set the scene
       const welcomeContents = [
         { role: 'user', parts: [{ text: 'A new participant has joined the session. Greet them, introduce yourself, and set the conversational context based on the project briefing. Call nords_get_briefing to orient yourself first.' }] },
       ];
 
       let currentContents = welcomeContents;
-      let welcomeTokensIn = 0;
-      let welcomeTokensOut = 0;
 
       for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
-        const response = await genai.models.generateContent({
+        const response = await retryGenerateContent(genai, {
           model: scenario.agent_model,
           contents: currentContents,
           config: {
@@ -382,16 +402,10 @@ The briefing contains all the instructions you need. Follow the protocol it prov
             temperature: agentTemperature,
             tools: [{ functionDeclarations: toolDeclarations }],
           },
-        });
-
-        if (response.usageMetadata) {
-          welcomeTokensIn += response.usageMetadata.promptTokenCount || 0;
-          welcomeTokensOut += response.usageMetadata.candidatesTokenCount || 0;
-        }
+        }, `welcome-loop-${loop}`);
 
         const candidate = response.candidates?.[0];
         if (!candidate?.content?.parts) {
-          // Retry on empty response (transient Gemini Pro issue)
           if (loop < MAX_TOOL_LOOPS - 1) {
             logger.warn(`[TestRunner] Empty response on welcome loop ${loop}, retrying...`);
             await new Promise(r => setTimeout(r, 1000 * (loop + 1)));
@@ -414,17 +428,23 @@ The briefing contains all the instructions you need. Follow the protocol it prov
           break;
         }
 
-        // Process tool calls (same pattern as main loop)
+        // Process tool calls
         const toolResponseParts: any[] = [];
         for (const fc of functionCalls) {
           const call = fc.functionCall!;
           const toolResult = await dispatchTool(call.name!, toolCtx, call.args || {});
-          welcomeToolCalls.push({ name: call.name!, arguments: call.args || {}, result: toolResult });
           toolResponseParts.push({
             functionResponse: { name: call.name!, response: toolResult },
           });
+
+          logEvent(sessionId, 'tool_call', call.name!, {
+            args: call.args || {},
+            result_summary: typeof toolResult.data === 'object'
+              ? Object.keys(toolResult.data || {}).join(', ')
+              : String(toolResult.error || 'ok'),
+            round: 0,
+          });
         }
-        totalToolCallCount += functionCalls.length;
 
         currentContents = [
           ...currentContents,
@@ -433,33 +453,23 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         ];
       }
 
-      totalTokensIn += welcomeTokensIn;
-      totalTokensOut += welcomeTokensOut;
+      // Log welcome as an assistant_message event
+      logEvent(sessionId, 'assistant_message', 'content', {
+        text: welcomeReply.slice(0, 2000),
+        round: 0,
+      });
 
       onProgress?.({
         type: 'agent_message',
         round: 0,
         maxRounds: scenario.max_rounds,
         content: welcomeReply,
-        toolCalls: welcomeToolCalls,
       });
 
       // Seed synthetic user history with the agent's welcome
       userHistory = [
         { role: 'user', parts: [{ text: `The assistant greeted you: "${welcomeReply}"` }] },
       ];
-
-      // Record the welcome as round 0 in transcript
-      transcript.push({
-        round: 0,
-        user_msg: '',
-        agent_msg: welcomeReply,
-        tool_calls: welcomeToolCalls,
-        horizon_snapshot: null as any,
-        tokens_in: welcomeTokensIn,
-        tokens_out: welcomeTokensOut,
-        latency_ms: 0,
-      });
     }
 
     for (let round = 1; round <= scenario.max_rounds; round++) {
@@ -474,14 +484,14 @@ The briefing contains all the instructions you need. Follow the protocol it prov
       // ── Step 1: Synthetic User responds to the agent ──
       let userMessage: string;
       {
-        const userResponse = await genai.models.generateContent({
+        const userResponse = await retryGenerateContent(genai, {
           model: scenario.user_model,
           contents: userHistory,
           config: {
             systemInstruction: syntheticUserPrompt,
             temperature: 0.9,
           },
-        });
+        }, `user-round-${round}`);
         userMessage = userResponse.candidates?.[0]?.content?.parts
           ?.filter((p: any) => p.text)
           .map((p: any) => p.text)
@@ -526,7 +536,7 @@ The briefing contains all the instructions you need. Follow the protocol it prov
           break;
         }
 
-        const response = await genai.models.generateContent({
+        const response = await retryGenerateContent(genai, {
           model: scenario.agent_model,
           contents: currentContents,
           config: {
@@ -534,7 +544,7 @@ The briefing contains all the instructions you need. Follow the protocol it prov
             temperature: agentTemperature,
             tools: [{ functionDeclarations: toolDeclarations }],
           },
-        });
+        }, `agent-round-${round}-loop-${loop}`);
 
         if (response.usageMetadata) {
           roundTokensIn += response.usageMetadata.promptTokenCount || 0;
@@ -614,19 +624,6 @@ The briefing contains all the instructions you need. Follow the protocol it prov
       // ── Step 4: Get horizon for this round ──
       const horizon = await mcpRepo.getSessionHorizon(sessionId);
 
-      // Record round
-      const roundData: TranscriptRound = {
-        round,
-        user_msg: userMessage,
-        agent_msg: agentReply,
-        tool_calls: roundToolCalls,
-        horizon_snapshot: horizon as any,
-        tokens_in: roundTokensIn,
-        tokens_out: roundTokensOut,
-        latency_ms: roundLatency,
-      };
-      transcript.push(roundData);
-
       // Persist assistant message to mcp_messages (same as chat.ts)
       await mcpMessagesRepo.create({
         session_id: sessionId,
@@ -640,9 +637,9 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         latency_ms: roundLatency,
       });
 
-      // Fire assistant_message event
+      // Fire assistant_message event — session_events is the source of truth
       logEvent(sessionId, 'assistant_message', 'content', {
-        text: agentReply.slice(0, 500),
+        text: agentReply.slice(0, 2000),
         tokens_in: roundTokensIn,
         tokens_out: roundTokensOut,
         model: scenario.agent_model,
@@ -651,10 +648,7 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         round,
       });
 
-      totalTokensIn += roundTokensIn;
-      totalTokensOut += roundTokensOut;
-      totalLatency += roundLatency;
-      totalToolCallCount += roundToolCalls.length;
+      lastCompletedRound = round;
 
       onProgress?.({
         type: 'agent_response',
@@ -675,13 +669,19 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         (tc.result as any).goal_events.some((e: any) => e.type === 'goal_completed' && e.end_type)
       );
 
-      let goalStatus: string | null = null;
-      if (scenario.stop_on_goal_id && projectMode === 'guided') {
-        const sg = await queryOne<{ status: string }>(
-          'SELECT status FROM mcp_session_goals WHERE session_id = $1 AND goal_id = $2',
-          [sessionId, scenario.stop_on_goal_id]
+      // Check if any terminating goal has been completed
+      // A terminating goal is one with end_type != 'continue' (i.e., 'reset' or null)
+      let terminatingGoalCompleted = false;
+      if (projectMode === 'guided') {
+        const tg = await queryOne<{ goal_id: string }>(
+          `SELECT sg.goal_id FROM mcp_session_goals sg
+           JOIN goals g ON g.id = sg.goal_id
+           WHERE sg.session_id = $1
+             AND sg.status = 'completed'
+             AND (g.end_type IS NULL OR g.end_type != 'continue')`,
+          [sessionId]
         );
-        goalStatus = sg?.status || null;
+        terminatingGoalCompleted = !!tg;
       }
 
       const termCheck = checkTermination({
@@ -689,9 +689,7 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         maxRounds: scenario.max_rounds,
         completionPct: horizon.completion.percentage,
         projectMode,
-        stopOnCompletionPct: scenario.stop_on_completion_pct,
-        stopOnGoalId: scenario.stop_on_goal_id,
-        goalStatus,
+        terminatingGoalCompleted,
         stopOnSessionEnd: scenario.stop_on_session_end,
         agentTriggeredEnd,
       });
@@ -700,194 +698,44 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         stopReason = termCheck.reason;
         break;
       }
-
-      // Update run progress in DB periodically
-      if (round % 5 === 0 || round === scenario.max_rounds) {
-        await query(
-          `UPDATE test_runs SET rounds_completed = $1, completion_pct = $2,
-           total_tokens_in = $3, total_tokens_out = $4, total_latency_ms = $5,
-           tool_call_count = $6 WHERE id = $7`,
-          [round, horizon.completion.percentage, totalTokensIn, totalTokensOut,
-           totalLatency, totalToolCallCount, runId]
-        );
-      }
     }
 
-    // ── Post-run: Get final horizon and compute results ──
-    const finalHorizon = await mcpRepo.getSessionHorizon(sessionId);
-    const completionPct = finalHorizon.completion.percentage;
-
-    // Compute coverage gaps from session variables
-    const sessionVars = await query<{
-      variable_id: string; variable_name: string; value: string | null;
-    }>(
-      `SELECT sv.variable_id, pv.name AS variable_name, sv.value
-       FROM mcp_session_variables sv
-       JOIN project_variables pv ON pv.id = sv.variable_id
-       WHERE sv.session_id = $1`,
-      [sessionId]
-    );
-
-    const propertiesCollected: Record<string, unknown> = {};
-    const coverageGaps: Array<{ variable_id: string; name: string }> = [];
-
-    for (const sv of sessionVars) {
-      if (sv.value != null && sv.value !== '') {
-        propertiesCollected[sv.variable_name] = sv.value;
-      } else {
-        coverageGaps.push({ variable_id: sv.variable_id, name: sv.variable_name });
-      }
-    }
-
-    const score = computeScore(transcript, completionPct, projectMode, propertiesCollected, coverageGaps);
-
-    // ── Post-run: Synthetic NPS + Sentiment ──
-    let syntheticNps: number | null = null;
-    let userSentiment: string | null = null;
-
-    try {
-      const npsResponse = await genai.models.generateContent({
-        model: scenario.user_model,
-        contents: [
-          ...userHistory,
-          {
-            role: 'user',
-            parts: [{
-              text: `The conversation is now over. Based on your experience:
-1. On a scale of 0-10, how likely would you recommend this assistant to a friend? Respond with just the number.
-2. In exactly 2 sentences, describe how the experience felt from your perspective as a user.
-
-Format your response as:
-NPS: [number]
-SENTIMENT: [2 sentences]`
-            }],
-          },
-        ],
-        config: {
-          systemInstruction: syntheticUserPrompt,
-          temperature: 0.5,
-        },
-      });
-
-      const npsText = npsResponse.candidates?.[0]?.content?.parts
-        ?.filter((p: any) => p.text)
-        .map((p: any) => p.text)
-        .join('') || '';
-
-      const npsMatch = npsText.match(/NPS:\s*(\d+)/i);
-      if (npsMatch) syntheticNps = Math.min(10, Math.max(0, parseInt(npsMatch[1])));
-
-      const sentMatch = npsText.match(/SENTIMENT:\s*(.+)/is);
-      if (sentMatch) userSentiment = sentMatch[1].trim().slice(0, 500);
-    } catch (err) {
-      logger.warn('Failed to generate NPS/sentiment', { error: (err as Error).message });
-    }
-
-    // Determine pass/fail
-    const passed = projectMode === 'explore'
-      ? true // explore has no completion metric
-      : completionPct >= (scenario.min_completion_pct || 0);
-
-    // Fire NPS/sentiment events
-    if (syntheticNps !== null) {
-      logEvent(sessionId, 'nps_score', 'synthetic', {
-        score: syntheticNps,
-        sentiment: userSentiment,
-      });
-    }
-
-    // Store NPS/sentiment in session metadata
-    await mcpRepo.updateSessionMetadata(sessionId, {
-      synthetic_nps: syntheticNps,
-      user_sentiment: userSentiment,
-      scenario_name: scenario.name,
-    });
-
-    // Fire session_end event
+    // ── Conversation finished — fire session_end event ──
     logEvent(sessionId, 'session_end', stopReason || 'max_rounds', {
       stop_reason: stopReason,
-      completion_pct: completionPct,
-      rounds: transcript.length,
-      tokens_in: totalTokensIn,
-      tokens_out: totalTokensOut,
-      nps: syntheticNps,
+      rounds: lastCompletedRound,
     });
 
-    // Fire test-specific events — all test data as session entries
-    logEvents(sessionId, [
-      {
-        actionType: 'test_score' as any,
-        key: 'score',
-        value: score,
-      },
-      {
-        actionType: 'test_result' as any,
-        key: passed ? 'passed' : 'failed',
-        value: {
-          passed,
-          completion_pct: completionPct,
-          min_completion_pct: scenario.min_completion_pct,
-          stop_reason: stopReason,
-          rounds: transcript.length,
-          max_rounds: scenario.max_rounds,
-        },
-      },
-      ...(Object.keys(propertiesCollected).length > 0 ? [{
-        actionType: 'test_properties' as any,
-        key: 'collected',
-        value: propertiesCollected,
-      }] : []),
-      ...(coverageGaps.length > 0 ? [{
-        actionType: 'test_coverage_gaps' as any,
-        key: 'gaps',
-        value: { gaps: coverageGaps },
-      }] : []),
-    ]);
-
-    // ── Save final results (no transcript column) ──
+    // Save lean run completion — session_events is the source of truth
     await query(
-      `UPDATE test_runs SET
-        status = 'completed', stop_reason = $1, rounds_completed = $2,
-        completion_pct = $3, total_tokens_in = $4, total_tokens_out = $5,
-        total_latency_ms = $6, tool_call_count = $7,
-        properties_collected = $8::jsonb, coverage_gaps = $9::jsonb,
-        score = $10::jsonb, synthetic_nps = $11, user_sentiment = $12,
-        passed = $13, finished_at = NOW()
-      WHERE id = $14`,
-      [
-        stopReason, transcript.length, completionPct,
-        totalTokensIn, totalTokensOut, totalLatency, totalToolCallCount,
-        JSON.stringify(propertiesCollected), JSON.stringify(coverageGaps),
-        JSON.stringify(score), syntheticNps, userSentiment,
-        passed, runId,
-      ]
+      `UPDATE test_runs SET status = 'scoring', stop_reason = $1,
+       rounds_completed = $2, finished_at = NOW()
+       WHERE id = $3`,
+      [stopReason, lastCompletedRound, runId]
     );
 
+    onProgress?.({ type: 'run_complete', stopReason: stopReason ?? undefined });
+
+    // ── Score the run post-facto from session_events ──
+    const scoreResults = await scoreTestRun(runId, scenario);
+
+    // Send final results via SSE
     onProgress?.({
       type: 'run_complete',
-      score,
-      nps: syntheticNps ?? undefined,
-      sentiment: userSentiment ?? undefined,
-      passed,
+      score: scoreResults.score,
+      nps: scoreResults.syntheticNps ?? undefined,
+      sentiment: scoreResults.userSentiment ?? undefined,
+      hallucinationScore: scoreResults.hallucinationScore ?? undefined,
+      passed: scoreResults.passed,
       stopReason: stopReason ?? undefined,
     });
 
     logger.info('test.run.completed', {
-      runId,
-      sessionId,
-      scenarioName: scenario.name,
-      projectId,
-      rounds: transcript.length,
-      completionPct,
-      passed,
+      runId, sessionId, scenarioName: scenario.name, projectId,
+      rounds: lastCompletedRound,
+      completionPct: scoreResults.completionPct,
+      passed: scoreResults.passed,
       stopReason,
-      syntheticNps,
-      totalTokensIn,
-      totalTokensOut,
-      totalLatencyMs: totalLatency,
-      toolCallCount: totalToolCallCount,
-      propertiesCollected: Object.keys(propertiesCollected).length,
-      coverageGaps: coverageGaps.length,
     });
 
   } catch (err) {
@@ -901,6 +749,389 @@ SENTIMENT: [2 sentences]`
 
     onProgress?.({ type: 'error', error: errorMsg });
   }
+}
+
+// ── Post-facto Scoring (reads from session_events) ──
+
+export interface ScoreResults {
+  score: Record<string, unknown>;
+  completionPct: number;
+  syntheticNps: number | null;
+  userSentiment: string | null;
+  hallucinationScore: number | null;
+  hallucinationDetails: string | null;
+  passed: boolean;
+  propertiesCollected: Record<string, unknown>;
+  coverageGaps: Array<{ variable_id: string; name: string }>;
+}
+
+/**
+ * Score a completed test run entirely from session_events.
+ * Can be called during executeTestRun or independently to re-score.
+ */
+export async function scoreTestRun(
+  runId: string,
+  scenarioOverride?: TestScenario
+): Promise<ScoreResults> {
+  const gcpProject = 'nords-spatial-1776012153';
+  const gcpLocation = process.env.VERTEX_AI_LOCATION || 'us-central1';
+  process.env.GOOGLE_CLOUD_PROJECT = gcpProject;
+
+  let genai: GoogleGenAI;
+  if (process.env.GEMINI_API_KEY) {
+    genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  } else if (gcpProject) {
+    genai = new GoogleGenAI({ vertexai: true, project: gcpProject, location: gcpLocation });
+  } else {
+    throw new Error('No GEMINI_API_KEY or GOOGLE_CLOUD_PROJECT configured');
+  }
+
+  const run = await queryOne<TestRunRecord>(
+    'SELECT * FROM test_runs WHERE id = $1',
+    [runId]
+  );
+  if (!run) throw new Error('Test run not found');
+  if (!run.session_id) throw new Error('Test run has no session');
+
+  const sessionId = run.session_id;
+  const projectId = run.project_id;
+
+  // Get scenario (passed in from executeTestRun, or fetched for re-scoring)
+  const scenario = scenarioOverride || await queryOne<TestScenario>(
+    'SELECT * FROM test_scenarios WHERE id = $1',
+    [run.scenario_id]
+  );
+  if (!scenario) throw new Error('Test scenario not found');
+
+  const project = await projectsRepo.findById(projectId);
+  const projectMode = project?.project_mode || 'collect';
+
+  // ── 1. Reconstruct transcript from session_events ──
+  const transcript = await getReplayData(sessionId);
+
+  // ── 2. Get final horizon + coverage from DB state ──
+  const finalHorizon = await mcpRepo.getSessionHorizon(sessionId);
+  const completionPct = finalHorizon.completion.percentage;
+
+  const sessionVars = await query<{
+    variable_id: string; variable_name: string; value: string | null;
+  }>(
+    `SELECT sv.variable_id, pv.name AS variable_name, sv.value
+     FROM mcp_session_variables sv
+     JOIN project_variables pv ON pv.id = sv.variable_id
+     WHERE sv.session_id = $1`,
+    [sessionId]
+  );
+
+  const propertiesCollected: Record<string, unknown> = {};
+  const coverageGaps: Array<{ variable_id: string; name: string }> = [];
+
+  for (const sv of sessionVars) {
+    if (sv.value != null && sv.value !== '') {
+      propertiesCollected[sv.variable_name] = sv.value;
+    } else {
+      coverageGaps.push({ variable_id: sv.variable_id, name: sv.variable_name });
+    }
+  }
+
+  // ── 3. Navigation Metrics ──
+  const traversalRows = await query<{ source_nord_id: string; target_nord_id: string }>(
+    'SELECT source_nord_id, target_nord_id FROM mcp_traversals WHERE session_id = $1 ORDER BY traversed_at',
+    [sessionId]
+  );
+  const traversalCount = traversalRows.length;
+  const uniqueNordsVisited = new Set([
+    ...traversalRows.map(t => t.source_nord_id),
+    ...traversalRows.map(t => t.target_nord_id),
+  ]).size;
+
+  // Max traversal chain = longest unbroken sequence of connected traversals
+  let maxChainDepth = 0;
+  if (traversalRows.length > 0) {
+    let currentChain = 1;
+    for (let i = 1; i < traversalRows.length; i++) {
+      if (traversalRows[i].source_nord_id === traversalRows[i - 1].target_nord_id) {
+        currentChain++;
+      } else {
+        maxChainDepth = Math.max(maxChainDepth, currentChain);
+        currentChain = 1;
+      }
+    }
+    maxChainDepth = Math.max(maxChainDepth, currentChain);
+  }
+
+  // Persona switches
+  const personaSwitchResult = await queryOne<{ count: string }>(
+    `SELECT COUNT(*) as count FROM session_events
+     WHERE session_id = $1 AND action_type = 'persona_switch'`,
+    [sessionId]
+  );
+  const personaSwitches = parseInt(personaSwitchResult?.count || '0');
+
+  // Traversal vs Search ratio (core positional metric)
+  // Count nords_navigate (new unified tool) + legacy names for backward compat
+  const navToolCounts = await query<{ key: string; count: string }>(
+    `SELECT key, COUNT(*) as count FROM session_events
+     WHERE session_id = $1
+       AND action_type = 'tool_call'
+       AND key IN ('nords_navigate', 'nords_traverse_connection', 'nords_query_nords', 'nords_get_nord')
+     GROUP BY key`,
+    [sessionId]
+  );
+  const navigateCalls = parseInt(navToolCounts.find(r => r.key === 'nords_navigate')?.count || '0');
+  const traverseCalls = parseInt(navToolCounts.find(r => r.key === 'nords_traverse_connection')?.count || '0');
+  const searchCalls = parseInt(navToolCounts.find(r => r.key === 'nords_query_nords')?.count || '0');
+  const peekCalls = parseInt(navToolCounts.find(r => r.key === 'nords_get_nord')?.count || '0');
+  const totalNavCalls = navigateCalls + traverseCalls + searchCalls + peekCalls;
+  const traversalRatio = totalNavCalls > 0 ? +((navigateCalls + traverseCalls) / totalNavCalls).toFixed(2) : 0;
+
+  // ── 4. Compute score from event data ──
+  const score = computeScore(transcript, completionPct, projectMode, propertiesCollected, coverageGaps, {
+    traversal_count: traversalCount,
+    unique_nords_visited: uniqueNordsVisited,
+    max_chain_depth: maxChainDepth,
+    persona_switches: personaSwitches,
+    traversal_ratio: traversalRatio,
+    search_count: searchCalls,
+    peek_count: peekCalls,
+  });
+
+  // ── 4. NPS + Sentiment (LLM judge on reconstructed conversation) ──
+  let syntheticNps: number | null = null;
+  let userSentiment: string | null = null;
+
+  try {
+    const syntheticUserPrompt = buildSyntheticUserPrompt(
+      scenario.user_profile,
+      scenario.user_objective,
+      scenario.user_context as Record<string, unknown>,
+      scenario.user_profile_custom
+    );
+
+    // Reconstruct the conversation for the NPS judge
+    const conversationSummary = transcript
+      .filter(r => r.user_msg || r.agent_msg)
+      .map(r => r.user_msg
+        ? `User: ${r.user_msg}\nAssistant: ${r.agent_msg}`
+        : `Assistant: ${r.agent_msg}`
+      ).join('\n\n');
+
+    const npsResponse = await retryGenerateContent(genai, {
+      model: scenario.user_model,
+      contents: [{
+        role: 'user',
+        parts: [{
+          text: `You just had the following conversation with an AI assistant:
+
+${conversationSummary}
+
+The conversation is now over. Based on your experience:
+1. On a scale of 0-10, how likely would you recommend this assistant to a friend? Respond with just the number.
+2. In exactly 2 sentences, describe how the experience felt from your perspective as a user.
+
+Format your response as:
+NPS: [number]
+SENTIMENT: [2 sentences]`
+        }],
+      }],
+      config: {
+        systemInstruction: syntheticUserPrompt,
+        temperature: 0.5,
+      },
+    }, 'nps-scoring');
+
+    const npsText = npsResponse.candidates?.[0]?.content?.parts
+      ?.filter((p: any) => p.text)
+      .map((p: any) => p.text)
+      .join('') || '';
+
+    const npsMatch = npsText.match(/NPS:\s*(\d+)/i);
+    if (npsMatch) syntheticNps = Math.min(10, Math.max(0, parseInt(npsMatch[1])));
+
+    const sentMatch = npsText.match(/SENTIMENT:\s*(.+)/is);
+    if (sentMatch) userSentiment = sentMatch[1].trim().slice(0, 500);
+  } catch (err) {
+    logger.warn('Failed to generate NPS/sentiment', { error: (err as Error).message });
+  }
+
+  // ── 5. Hallucination Score (LLM judge on transcript vs graph) ──
+  let hallucinationScore: number | null = null;
+  let hallucinationDetails: string | null = null;
+
+  try {
+    const graphNords = await query<{ title: string; type_name: string; properties: Record<string, unknown> }>(`
+      SELECT n.title, nt.name AS type_name, n.properties
+      FROM nords n JOIN nord_types nt ON nt.id = n.type_id
+      WHERE n.project_id = $1 AND n.deleted_at IS NULL
+      ORDER BY nt.name, n.title
+    `, [projectId]);
+
+    const graphConns = await query<{ source_title: string; target_title: string; type_name: string; direction: string }>(`
+      SELECT sn.title AS source_title, tn.title AS target_title, ct.name AS type_name, c.direction
+      FROM connections c
+      JOIN nords sn ON sn.id = c.source_nord_id
+      JOIN nords tn ON tn.id = c.target_nord_id
+      JOIN connection_types ct ON ct.id = c.type_id
+      WHERE c.project_id = $1 AND c.deleted_at IS NULL
+    `, [projectId]);
+
+    const snapshotLines: string[] = ['NORDS:'];
+    for (const n of graphNords) {
+      const propStr = n.properties && typeof n.properties === 'object'
+        ? Object.entries(n.properties).map(([k, v]) => `${k}: ${v}`).join(', ')
+        : '';
+      snapshotLines.push(`- [${n.type_name}] "${n.title}"${propStr ? ` — ${propStr}` : ''}`);
+    }
+    snapshotLines.push('', 'CONNECTIONS:');
+    for (const c of graphConns) {
+      const arrow = c.direction === 'both' ? '<-->' : '-->';
+      snapshotLines.push(`- "${c.source_title}" ${arrow}[${c.type_name}] "${c.target_title}"`);
+    }
+    const graphSnapshot = snapshotLines.join('\n');
+
+    const agentMessages = transcript
+      .map(r => r.agent_msg)
+      .filter(Boolean)
+      .join('\n---\n');
+
+    if (agentMessages.length > 50) {
+      const hallResponse = await retryGenerateContent(genai, {
+        model: scenario.user_model,
+        contents: [{
+          role: 'user',
+          parts: [{
+            text: `You are a grounding auditor. Review the AGENT's responses below and determine whether the factual claims about the project data are supported by the provided graph snapshot.
+
+GRAPH SNAPSHOT:
+${graphSnapshot}
+
+AGENT RESPONSES:
+${agentMessages}
+
+Instructions:
+1. Identify every factual claim the agent made about specific data (names, values, relationships, counts).
+2. Check each claim against the graph snapshot.
+3. A claim is "grounded" if the graph contains supporting data. A claim is "hallucinated" if it cannot be traced to the graph.
+4. Score 0-10 where 10 = every claim is grounded, 0 = every claim is fabricated.
+5. Conversational phrases, suggestions, and questions are NOT claims — ignore them.
+
+Format:
+HALLUCINATION_SCORE: [0-10]
+DETAILS: [Brief list of any hallucinated claims, or "None found" if fully grounded]`
+          }],
+        }],
+        config: { temperature: 0.2 },
+      }, 'hallucination-scoring');
+
+      const hallText = hallResponse.candidates?.[0]?.content?.parts
+        ?.filter((p: any) => p.text).map((p: any) => p.text).join('') || '';
+      const scoreMatch = hallText.match(/HALLUCINATION_SCORE:\s*(\d+)/i);
+      if (scoreMatch) hallucinationScore = Math.min(10, Math.max(0, parseInt(scoreMatch[1])));
+      const detailMatch = hallText.match(/DETAILS:\s*(.+)/is);
+      if (detailMatch) hallucinationDetails = detailMatch[1].trim().slice(0, 1000);
+    }
+  } catch (err) {
+    logger.warn('Failed to generate hallucination score', { error: (err as Error).message });
+  }
+
+  // ── 6. Determine pass/fail ──
+  // Pass if the session ended due to a terminating goal, session_end, or max_rounds.
+  // The key signal is goal_completed — it means the agent successfully navigated
+  // the graph and collected enough data to satisfy a terminating goal's bindings.
+  const passed = run.stop_reason === 'goal_completed'
+    || run.stop_reason === 'session_end'
+    || run.stop_reason === 'max_rounds';
+
+  // ── 7. Write score events to session_events ──
+  if (syntheticNps !== null) {
+    logEvent(sessionId, 'nps_score', 'synthetic', {
+      score: syntheticNps,
+      sentiment: userSentiment,
+    });
+  }
+
+  if (hallucinationScore !== null) {
+    logEvent(sessionId, 'hallucination_score' as any, 'grounding_audit', {
+      score: hallucinationScore,
+      details: hallucinationDetails,
+    });
+  }
+
+  logEvents(sessionId, [
+    {
+      actionType: 'test_score' as any,
+      key: 'score',
+      value: score,
+    },
+    {
+      actionType: 'test_result' as any,
+      key: passed ? 'passed' : 'failed',
+      value: {
+        passed,
+        completion_pct: completionPct,
+        stop_reason: run.stop_reason,
+        rounds: transcript.length,
+        max_rounds: scenario.max_rounds,
+      },
+    },
+    ...(Object.keys(propertiesCollected).length > 0 ? [{
+      actionType: 'test_properties' as any,
+      key: 'collected',
+      value: propertiesCollected,
+    }] : []),
+    ...(coverageGaps.length > 0 ? [{
+      actionType: 'test_coverage_gaps' as any,
+      key: 'gaps',
+      value: { gaps: coverageGaps },
+    }] : []),
+  ]);
+
+  // ── 8. Update session metadata ──
+  await mcpRepo.updateSessionMetadata(sessionId, {
+    synthetic_nps: syntheticNps,
+    user_sentiment: userSentiment,
+    hallucination_score: hallucinationScore,
+    scenario_name: scenario.name,
+  });
+
+  // ── 9. Write final scores to test_runs ──
+  await query(
+    `UPDATE test_runs SET
+      status = 'completed',
+      completion_pct = $1, total_tokens_in = $2, total_tokens_out = $3,
+      total_latency_ms = $4, tool_call_count = $5,
+      properties_collected = $6::jsonb, coverage_gaps = $7::jsonb,
+      score = $8::jsonb, synthetic_nps = $9, user_sentiment = $10,
+      passed = $11, hallucination_score = $12, hallucination_details = $13
+    WHERE id = $14`,
+    [
+      completionPct,
+      score.total_tokens_in, score.total_tokens_out,
+      (score.avg_latency_ms as number) * transcript.length, score.tool_call_count,
+      JSON.stringify(propertiesCollected), JSON.stringify(coverageGaps),
+      JSON.stringify(score), syntheticNps, userSentiment,
+      passed, hallucinationScore, hallucinationDetails,
+      runId,
+    ]
+  );
+
+  logger.info('test.run.scored', {
+    runId, sessionId,
+    completionPct, passed, syntheticNps, hallucinationScore,
+    rounds: transcript.length,
+  });
+
+  return {
+    score,
+    completionPct,
+    syntheticNps,
+    userSentiment,
+    hallucinationScore,
+    hallucinationDetails,
+    passed,
+    propertiesCollected,
+    coverageGaps,
+  };
 }
 
 // ── AI Critique Generator ──
@@ -933,9 +1164,15 @@ export async function generateCritique(
   const project = await projectsRepo.findById(run.project_id);
   const dictionary = await mcpRepo.getProjectDictionary(run.project_id);
 
-  const transcript = typeof run.transcript === 'string'
-    ? JSON.parse(run.transcript)
-    : run.transcript;
+  // Transcript column was dropped (migration 037). Reconstruct from session_events.
+  let transcript: Array<{ round: number; user_msg: string; agent_msg: string; tool_calls: any[] }> = [];
+  if (run.session_id) {
+    try {
+      transcript = await getReplayData(run.session_id);
+    } catch (err: any) {
+      logger.warn('Failed to reconstruct transcript for critique', { error: err.message });
+    }
+  }
 
   // Fetch goals and their session status for this run
   let goalsSection = '';
@@ -984,7 +1221,7 @@ export async function generateCritique(
 - System Instructions: ${project?.mcp_system_prompt?.slice(0, 2000) || 'None'}
 
 ## Schema (Nord Types and Properties)
-${JSON.stringify(dictionary.nord_types.map((t: any) => ({
+${JSON.stringify((dictionary.nord_types || []).map((t: any) => ({
   name: t.name,
   properties: t.properties_schema,
 })), null, 2).slice(0, 3000)}
@@ -998,8 +1235,8 @@ ${connectionTypesSection}${goalsSection}
 - Stop Reason: ${run.stop_reason}
 
 ## Conversation Transcript
-${transcript.map((r: any) =>
-  `Round ${r.round}:\n  User: ${r.user_msg}\n  Agent: ${r.agent_msg}\n  Tools: ${r.tool_calls.map((tc: any) => tc.name).join(', ') || 'none'}`
+${(transcript || []).map((r: any) =>
+  `Round ${r.round}:\n  User: ${r.user_msg}\n  Agent: ${r.agent_msg}\n  Tools: ${(r.tool_calls || []).map((tc: any) => tc.name).join(', ') || 'none'}`
 ).join('\n\n')}
 
 ## Your Task

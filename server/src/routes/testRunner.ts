@@ -197,10 +197,12 @@ import logger from '../lib/logger.js';
 import {
   executeTestRun,
   generateCritique,
+  scoreTestRun,
   type TestScenario,
   type TestRunRecord,
   type RunProgress,
 } from '../lib/testRunner.js';
+import { getReplayData } from '../lib/sessionEvents.js';
 
 export const testRunnerRouter = Router();
 
@@ -261,8 +263,8 @@ testRunnerRouter.post('/projects/:id/test-scenarios', async (req: Request, res: 
   try {
     const { name, description, user_objective, user_profile, user_profile_custom,
       user_context, agent_model, user_model, max_rounds,
-      stop_on_completion_pct, stop_on_goal_id, stop_on_session_end,
-      min_completion_pct, persona_id } = req.body;
+      stop_on_goal_id, stop_on_session_end,
+      persona_id } = req.body;
 
     if (!name || !user_objective) {
       return res.status(400).json({ error: 'name and user_objective are required' });
@@ -272,17 +274,17 @@ testRunnerRouter.post('/projects/:id/test-scenarios', async (req: Request, res: 
       INSERT INTO test_scenarios (
         project_id, name, description, user_objective, user_profile, user_profile_custom,
         user_context, agent_model, user_model, max_rounds,
-        stop_on_completion_pct, stop_on_goal_id, stop_on_session_end, min_completion_pct, persona_id
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+        stop_on_goal_id, stop_on_session_end, persona_id
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
       RETURNING *
     `, [
       req.params.id as string, name, description || null, user_objective,
       user_profile || 'cooperative', user_profile_custom || null,
       JSON.stringify(user_context || {}),
       agent_model || 'gemini-2.5-flash', user_model || 'gemini-2.5-flash-lite',
-      max_rounds || 20, stop_on_completion_pct || null,
+      max_rounds || 20,
       stop_on_goal_id || null, stop_on_session_end ?? true,
-      min_completion_pct ?? 80, persona_id || null,
+      persona_id || null,
     ]);
 
     res.status(201).json(scenario);
@@ -301,8 +303,8 @@ testRunnerRouter.put('/test-scenarios/:id', async (req: Request, res: Response) 
     const allowedKeys = [
       'name', 'description', 'user_objective', 'user_profile', 'user_profile_custom',
       'user_context', 'agent_model', 'user_model', 'max_rounds',
-      'stop_on_completion_pct', 'stop_on_goal_id', 'stop_on_session_end',
-      'min_completion_pct', 'persona_id',
+      'stop_on_goal_id', 'stop_on_session_end',
+      'persona_id',
     ];
 
     const setClauses: string[] = ['updated_at = NOW()'];
@@ -526,6 +528,21 @@ testRunnerRouter.post('/test-runs/:id/critique', async (req: Request, res: Respo
 });
 
 /**
+ * POST /api/test-runs/:id/rescore
+ * Re-score a completed run from session_events.
+ * Useful when scoring logic changes and you want to recalculate.
+ */
+testRunnerRouter.post('/test-runs/:id/rescore', async (req: Request, res: Response) => {
+  try {
+    const results = await scoreTestRun(req.params.id as string);
+    res.json(results);
+  } catch (err: any) {
+    logger.error('Failed to re-score run', { error: err.message });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
  * GET /api/test-runs/:id/export
  * Export a completed run as JSON.
  * Query params: verbose=true|false (default false)
@@ -544,9 +561,7 @@ testRunnerRouter.get('/test-runs/:id/export', async (req: Request, res: Response
     );
 
     const verbose = req.query.verbose === 'true';
-    const transcript = typeof run.transcript === 'string'
-      ? JSON.parse(run.transcript)
-      : run.transcript;
+    const transcript = run.session_id ? await getReplayData(run.session_id) : [];
 
     const conversation = transcript.map((r: any) => {
       const base: any = {
@@ -638,8 +653,7 @@ testRunnerRouter.get('/test-runs/:id/report/conversation', async (req: Request, 
       [run.scenario_id]
     );
 
-    const transcript = typeof run.transcript === 'string'
-      ? JSON.parse(run.transcript) : (run.transcript || []);
+    const transcript = run.session_id ? await getReplayData(run.session_id) : [];
 
     // ── Fetch collected variables ──
     const collectedVars = run.session_id ? await query<{
@@ -744,7 +758,7 @@ testRunnerRouter.get('/test-runs/:id/report/conversation', async (req: Request, 
       const toolCount = round.tool_calls?.length || 0;
       lines.push(`### Round ${round.round}${toolCount ? ` (${toolCount} tool call${toolCount > 1 ? 's' : ''})` : ''}`, '');
       if (round.user_msg) {
-        lines.push(`**🧪 User**: ${round.user_msg}`, '');
+        lines.push(`**🧪 User**:`, '', round.user_msg, '');
       }
       if (round.tool_calls?.length > 0) {
         for (const tc of round.tool_calls) {
@@ -761,7 +775,7 @@ testRunnerRouter.get('/test-runs/:id/report/conversation', async (req: Request, 
         lines.push('');
       }
       if (round.agent_msg) {
-        lines.push(`**🤖 Agent**: ${round.agent_msg}`, '');
+        lines.push(`**🤖 Agent**:`, '', round.agent_msg, '');
       }
     }
 
@@ -789,8 +803,7 @@ testRunnerRouter.get('/test-runs/:id/report/detailed', async (req: Request, res:
       [run.scenario_id]
     );
 
-    const transcript = typeof run.transcript === 'string'
-      ? JSON.parse(run.transcript) : (run.transcript || []);
+    const transcript = run.session_id ? await getReplayData(run.session_id) : [];
     const score = typeof run.score === 'string'
       ? JSON.parse(run.score) : (run.score || {});
 
@@ -871,8 +884,7 @@ testRunnerRouter.get('/test-runs/:id/report/detailed', async (req: Request, res:
       `| **Agent Model** | ${scenario?.agent_model || 'N/A'} |`,
       `| **User Model** | ${scenario?.user_model || 'N/A'} |`,
       `| **Max Rounds** | ${scenario?.max_rounds || 'N/A'} |`,
-      `| **Stop on Completion** | ${scenario?.stop_on_completion_pct ?? 'N/A'}% |`,
-      `| **Pass Threshold** | ${scenario?.min_completion_pct ?? 'N/A'}% |`,
+      `| **Stop on Goal** | ${(scenario as any)?.goal_name || 'None'} |`,
       '',
     );
 
@@ -957,10 +969,10 @@ testRunnerRouter.get('/test-runs/:id/report/detailed', async (req: Request, res:
       lines.push(`### Round ${round.round} (${latency} | ${tokens} | ${tools} tools)`, '');
 
       if (round.user_msg) {
-        lines.push(`**🧪 User**: ${round.user_msg}`, '');
+        lines.push(`**🧪 User**:`, '', round.user_msg, '');
       }
       if (round.agent_msg) {
-        lines.push(`**🤖 Agent**: ${round.agent_msg}`, '');
+        lines.push(`**🤖 Agent**:`, '', round.agent_msg, '');
       }
 
       if (round.tool_calls?.length > 0) {

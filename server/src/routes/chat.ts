@@ -240,7 +240,7 @@ Session ${sessionId.slice(0, 8)}… is active.
 Current nord: ${horizon.current_nord?.title || 'none'}
 Completion: ${horizon.completion.percentage}%
 Neighbors: ${horizon.neighbors.length}
-Suggested next: ${horizon.suggested_next?.title || 'none'}
+Suggested next: ${horizon.suggested_next?.[0]?.title || 'none'}
 
 Set GEMINI_API_KEY in server/.env or configure GOOGLE_CLOUD_PROJECT for Vertex AI.`;
 
@@ -385,7 +385,7 @@ Set GEMINI_API_KEY in server/.env or configure GOOGLE_CLOUD_PROJECT for Vertex A
 
     // Fire assistant_message event
     logEvent(sessionId, 'assistant_message', 'content', {
-      text: finalReply.slice(0, 500),
+      text: finalReply.slice(0, 2000),
       tokens_in: tokensIn,
       tokens_out: tokensOut,
       model,

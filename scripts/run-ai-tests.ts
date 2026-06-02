@@ -22,8 +22,6 @@ interface Scenario {
   max_rounds: number;
   stop_on_goal_id: string | null;
   goal_name: string | null;
-  stop_on_completion_pct: number | null;
-  min_completion_pct: number;
 }
 
 interface RunResult {
@@ -39,6 +37,8 @@ interface RunResult {
   tool_call_count: number;
   synthetic_nps: number | null;
   user_sentiment: string | null;
+  hallucination_score: number | null;
+  hallucination_details: string | null;
   passed: boolean | null;
   properties_collected: Record<string, unknown>;
   coverage_gaps: Array<{ variable_id: string; name: string }>;
@@ -125,6 +125,7 @@ interface RunSummary {
   rounds: number;
   completionPct: number;
   nps: number | null;
+  hallucinationScore: number | null;
   sentiment: string | null;
   stopReason: string | null;
   toolCalls: number;
@@ -150,6 +151,7 @@ function summarizeRun(scenario: Scenario, run: RunResult): RunSummary {
     rounds: run.rounds_completed,
     completionPct: run.completion_pct ?? 0,
     nps: run.synthetic_nps,
+    hallucinationScore: run.hallucination_score,
     sentiment: run.user_sentiment,
     stopReason: run.stop_reason,
     toolCalls: run.tool_call_count,
@@ -179,18 +181,21 @@ function generateReport(summaries: RunSummary[]): string {
 
   // ── Overall Summary Table ──
   lines.push('## Overall Results\n');
-  lines.push('| Scenario | Profile | Runs | Pass Rate | Avg NPS | Avg Completion | Avg Rounds |');
-  lines.push('|----------|---------|------|-----------|---------|----------------|------------|');
+  lines.push('| Scenario | Profile | Runs | Pass Rate | Avg NPS | Avg Grounding | Avg Completion | Avg Rounds |');
+  lines.push('|----------|---------|------|-----------|---------|---------------|----------------|------------|');
   
   for (const [name, runs] of byScenario) {
     const passRate = Math.round((runs.filter(r => r.passed).length / runs.length) * 100);
     const avgNps = runs.filter(r => r.nps != null).length > 0
       ? (runs.reduce((sum, r) => sum + (r.nps || 0), 0) / runs.filter(r => r.nps != null).length).toFixed(1)
       : 'N/A';
+    const avgHall = runs.filter(r => r.hallucinationScore != null).length > 0
+      ? (runs.reduce((sum, r) => sum + (r.hallucinationScore || 0), 0) / runs.filter(r => r.hallucinationScore != null).length).toFixed(1)
+      : 'N/A';
     const avgCompletion = (runs.reduce((sum, r) => sum + r.completionPct, 0) / runs.length).toFixed(1);
     const avgRounds = (runs.reduce((sum, r) => sum + r.rounds, 0) / runs.length).toFixed(1);
     const profile = runs[0].profile;
-    lines.push(`| ${name.slice(0, 40)} | ${profile} | ${runs.length} | ${passRate}% | ${avgNps} | ${avgCompletion}% | ${avgRounds} |`);
+    lines.push(`| ${name.slice(0, 40)} | ${profile} | ${runs.length} | ${passRate}% | ${avgNps} | ${avgHall}/10 | ${avgCompletion}% | ${avgRounds} |`);
   }
 
   // ── Per-Scenario Detail ──
@@ -198,15 +203,16 @@ function generateReport(summaries: RunSummary[]): string {
     lines.push(`\n---\n\n## ${name}\n`);
     lines.push(`**Profile**: ${runs[0].profile} | **Target Goal**: ${runs[0].stopReason || 'N/A'}\n`);
 
-    lines.push('| Run | Status | Completion | NPS | Rounds | Tools | Tokens | Latency | Props | Gaps |');
-    lines.push('|-----|--------|------------|-----|--------|-------|--------|---------|-------|------|');
+    lines.push('| Run | Status | Completion | NPS | Grounding | Rounds | Tools | Tokens | Latency | Props | Gaps |');
+    lines.push('|-----|--------|------------|-----|-----------|--------|-------|--------|---------|-------|------|');
     
     for (let i = 0; i < runs.length; i++) {
       const r = runs[i];
       const statusIcon = r.passed ? '✅' : '❌';
       const tokens = `${((r.tokensIn + r.tokensOut) / 1000).toFixed(0)}K`;
       const latency = `${(r.latencyMs / 1000).toFixed(1)}s`;
-      lines.push(`| ${i + 1} | ${statusIcon} ${r.stopReason || r.status} | ${r.completionPct}% | ${r.nps ?? '-'} | ${r.rounds} | ${r.toolCalls} | ${tokens} | ${latency} | ${r.propertiesCollected} | ${r.coverageGaps.length} |`);
+      const hall = r.hallucinationScore != null ? `${r.hallucinationScore}/10` : '-';
+      lines.push(`| ${i + 1} | ${statusIcon} ${r.stopReason || r.status} | ${r.completionPct}% | ${r.nps ?? '-'} | ${hall} | ${r.rounds} | ${r.toolCalls} | ${tokens} | ${latency} | ${r.propertiesCollected} | ${r.coverageGaps.length} |`);
     }
 
     // Sentiment
@@ -274,15 +280,13 @@ function generateReport(summaries: RunSummary[]): string {
   // ── Goal Achievement Analysis ──
   lines.push('\n---\n\n## Goal Achievement Analysis\n');
   
-  const goalTerminations = summaries.filter(r => r.stopReason === 'goal');
-  const completionTerminations = summaries.filter(r => r.stopReason === 'completion');
+  const goalTerminations = summaries.filter(r => r.stopReason === 'goal_completed');
   const maxRoundsTerminations = summaries.filter(r => r.stopReason === 'max_rounds');
   const sessionEndTerminations = summaries.filter(r => r.stopReason === 'session_end');
   
   lines.push('| Stop Reason | Count | % of Runs |');
   lines.push('|-------------|-------|-----------|');
   lines.push(`| Goal Achieved | ${goalTerminations.length} | ${Math.round(goalTerminations.length / summaries.length * 100)}% |`);
-  lines.push(`| Completion % | ${completionTerminations.length} | ${Math.round(completionTerminations.length / summaries.length * 100)}% |`);
   lines.push(`| Max Rounds | ${maxRoundsTerminations.length} | ${Math.round(maxRoundsTerminations.length / summaries.length * 100)}% |`);
   lines.push(`| Session End | ${sessionEndTerminations.length} | ${Math.round(sessionEndTerminations.length / summaries.length * 100)}% |`);
 
@@ -298,7 +302,7 @@ function generateReport(summaries: RunSummary[]): string {
 
   if (avgPassRate < 0.5) {
     lines.push('> [!WARNING]');
-    lines.push(`> **Low pass rate (${Math.round(avgPassRate * 100)}%)**: The agent is failing to reach minimum completion thresholds in many scenarios. Consider lowering \`min_completion_pct\` or improving the system prompt to be more directive.`);
+    lines.push(`> **Low pass rate (${Math.round(avgPassRate * 100)}%)**: The agent is failing to reach termination conditions. Consider reviewing goal bindings or system prompt.`);
     lines.push('');
   }
   if (avgNps != null && avgNps < 6) {
@@ -411,6 +415,7 @@ async function main() {
           rounds: 0,
           completionPct: 0,
           nps: null,
+          hallucinationScore: null,
           sentiment: null,
           stopReason: 'error',
           toolCalls: 0,

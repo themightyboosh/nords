@@ -454,6 +454,10 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
         {/* Header */}
         <header className="nords-drawer-header">
           <div className="nords-drawer-type-eyebrow" style={{ color: entity.typeColor }}>
+            {(() => {
+              const EyebrowIcon = resolveIcon(entity.typeIcon);
+              return EyebrowIcon ? <EyebrowIcon size={12} strokeWidth={2} /> : null;
+            })()}
             {entity.type}
           </div>
           <button className="nords-close-btn" onClick={onClose} aria-label="Close"><X size={18} strokeWidth={2} /></button>
@@ -462,10 +466,6 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
         <div className="nords-drawer-content">
           {/* Editable Title with type icon */}
           <div className="nords-drawer-title-row">
-            {(() => {
-              const TypeIcon = resolveIcon(entity.typeIcon);
-              return TypeIcon ? <TypeIcon size={20} className="nords-drawer-title-icon" style={{ color: entity.typeColor }} /> : null;
-            })()}
             <h1
               ref={titleRef}
               className="nords-drawer-title"
@@ -691,6 +691,10 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
       <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
         <header className="nords-drawer-header">
           <div className="nords-drawer-type-eyebrow" style={{ color: entity.typeColor }}>
+            {(() => {
+              const ConnIcon = resolveIcon(entity.typeIcon);
+              return ConnIcon ? <ConnIcon size={12} strokeWidth={2} /> : null;
+            })()}
             {entity.type}
           </div>
           <div className="nords-drawer-header-actions">

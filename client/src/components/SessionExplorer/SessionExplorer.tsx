@@ -9,6 +9,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../../api/client';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
+import { ChatMessage } from '../ChatMessage/ChatMessage';
 import {
   X, Download, Play, Filter, MessageSquare, Activity, BarChart3,
   ChevronRight, Clock, ArrowRight, CheckCircle2, XCircle, AlertCircle,
@@ -378,23 +379,13 @@ export function SessionExplorer({ projectId, open, onClose, onReplay }: Props) {
                         <div className="session-explorer__empty">No messages in this session</div>
                       ) : (
                         conversationEvents.map(e => (
-                          <div
+                          <ChatMessage
                             key={e.id}
-                            className={`session-explorer__msg ${e.action_type === 'user_message' ? 'user' : 'assistant'}`}
-                          >
-                            <div className="session-explorer__msg-header">
-                              {e.action_type === 'user_message' ? <User size={12} /> : <Bot size={12} />}
-                              <span className="session-explorer__msg-role">
-                                {e.action_type === 'user_message' ? 'User' : 'Assistant'}
-                              </span>
-                              <span className="session-explorer__msg-time">
-                                {new Date(e.event_at).toLocaleTimeString()}
-                              </span>
-                            </div>
-                            <div className="session-explorer__msg-text">
-                              {e.value?.text || e.key || ''}
-                            </div>
-                          </div>
+                            role={e.action_type === 'user_message' ? 'user' : 'assistant'}
+                            content={e.value?.text || e.key || ''}
+                            timestamp={new Date(e.event_at).toLocaleTimeString()}
+                            compact
+                          />
                         ))
                       )}
                     </div>

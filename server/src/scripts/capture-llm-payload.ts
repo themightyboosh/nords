@@ -161,8 +161,8 @@ async function main() {
   md += `|------|---------|------------|\n`;
   md += `| \`nords_get_briefing\` | Cold start — dictionary + horizon + goals + protocol | First turn only |\n`;
   md += `| \`nords_get_horizon\` | Current position + weighted neighbors + completion % | After every navigation |\n`;
-  md += `| \`nords_traverse_connection\` | Move to a neighbor via a typed edge | When advancing the conversation |\n`;
-  md += `| \`nords_update_session_nord\` | Save a property on the current nord | When user provides information |\n`;
+  md += `| \`nords_navigate\` | Navigate by name, type, or UUID — auto-resolves traverse vs jump | When advancing the conversation |\n`;
+  md += `| \`nords_get_nord\` | Get nord details by UUID — also updates position | When needing specific nord details |\n`;
   md += `| \`nords_update_session_variables\` | Save a project-level variable value | When user provides information |\n`;
   md += `| \`nords_switch_persona\` | Change the active persona lens | When nudge suggests it |\n`;
   md += `| \`nords_visit_nord\` | Log a visit event with before/after | When inspecting a nord |\n`;

@@ -61,14 +61,14 @@ function buildProtocol(
       nords_as_context: 'Nords and their properties are your conversational context. The current nord\'s title, type, and properties tell you WHAT to discuss. Use them to frame your questions and understand what the user is working on — but do NOT try to edit or fill nord properties.',
       save_incrementally: 'Save values with nords_update_session_variables as soon as you learn them. Do NOT wait until all are gathered. This is the ONLY tool for saving collected data.',
       planning_queue: 'The planning_queue is YOUR internal roadmap. Never share it with the user. Never say "we still need to cover X, Y, Z." Complete the current conversational thread before pivoting to queue items.',
-      pacing: 'Two-phase rhythm: (1) NAVIGATE by following persona-weighted connections and verbs — the graph tells you where to go. (2) COLLECT at each stop — actively drive the conversation to gather the collection variables relevant to the current context. Explore deeply before moving on. If a user gives a short answer, probe before moving on.',
+      pacing: 'Two-phase rhythm:\n(1) NAVIGATE: Move through the graph using nords_navigate. Just say where you want to go by name — the system finds the best match, traverses if it\'s a neighbor, or jumps otherwise. Connection verbs ("feeds_into", "depends_on", "validates") are your natural transitions: "Since we were discussing the adhesive bond, and I can see it feeds into the test protocol, let\'s walk through that next."\n(2) COLLECT: At each stop, discuss the nord\'s context and gather information that matches remaining_variables. Explore deeply before moving on — don\'t treat each nord as a 30-second pit stop. If a user gives a short answer, probe before navigating to the next neighbor.',
     },
     guided: {
       remaining_variables: 'The remaining_variables show uncollected collection variables. At each stop, ask about variables whose descriptions relate to the current nord context — especially on goal-relevant nords. Read the description to understand what each variable means, then ask about it naturally. For select types, weave the options into your question.',
       nords_as_context: 'Nords are your conversational anchor. Their properties give you domain context. On a NON-goal-relevant nord: discuss it conversationally, use it as context for collection. On a GOAL-RELEVANT nord: this is where you push harder to collect variables.',
       save_incrementally: 'Save values with nords_update_session_variables as soon as you learn them. Goal completion is evaluated automatically after each save.',
       planning_queue: 'The planning_queue blends persona interest with goal relevance. Items tagged goal_relevant indicate where you have permission to push harder — but this is a COLLECTION signal, not a NAVIGATION signal. Follow persona weights and verbs to navigate, not goal tags. Never share the queue with the user.',
-      pacing: 'Two-phase rhythm with intensity modulation:\n(1) NAVIGATE organically — persona weights and connection verbs determine where you go. Never skip a high-weight neighbor to chase a goal. The nords and their connections ARE the conversation.\n(2) COLLECT with variable intensity based on goal-relevance:\n  • NON-goal-relevant nord: Conversational. Discuss what you see, share observations, collect what the user offers. Light touch — if they don\'t want to go deeper, move on.\n  • GOAL-relevant nord: Assertive. You have PERMISSION to probe. Ask follow-up questions, push for specifics, don\'t accept vague answers. Stay until relevant collection variables are filled. This is where real progress happens.\nGoals are milestones you notice in the rearview mirror, not destinations on your GPS.',
+      pacing: 'Two-phase rhythm with intensity modulation:\n(1) NAVIGATE organically — use nords_navigate to move to persona-weighted neighbors by name. The connection verbs are your conversational transitions. Never skip a high-weight neighbor to chase a goal. Each navigation IS a conversation topic shift, grounded in a real relationship between topics.\n(2) COLLECT with variable intensity based on goal-relevance:\n  • NON-goal-relevant nord: Conversational. Discuss what you see, share observations, collect what the user offers. Light touch — if they don\'t want to go deeper, move on.\n  • GOAL-relevant nord: Assertive. You have PERMISSION to probe. Ask follow-up questions, push for specifics, don\'t accept vague answers. Stay until relevant collection variables are filled. This is where real progress happens.\nGoals are milestones you notice in the rearview mirror, not destinations on your GPS.',
     },
   };
 
@@ -82,19 +82,22 @@ function buildProtocol(
     ],
     collect: [
       'You navigate a real graph. Don\'t invent nords or connections — discover them with your tools.',
+      'NAVIGATION: nords_navigate is your primary movement tool. Just say where you want to go by name — the system automatically finds the best match, traverses if it\'s a neighbor (recording the relationship), or jumps if it\'s distant. Use nords_query_nords only when you need to browse by type without knowing a specific name.',
       'Infer prerequisite gates from connection verbs. Don\'t skip a "depends on" target.',
       'Never list remaining variables or ask for them in sequence. That is a survey, not an interview.',
       'Never reference the graph structure, nords, schemas, or tools to the user.',
       'Nord properties are read-only context. NEVER try to edit or fill them. Your ONLY save tool is nords_update_session_variables.',
       'When the current conversational thread is exhausted, provide a brief reflection that validates what the user shared before transitioning.',
-      'ACTIVE LISTENER: When the user says something that matches a remaining variable — even casually, even mid-tangent, even as an aside — SAVE IT IMMEDIATELY. Do NOT wait for a formal collection moment. If someone says "the sensor subsystem is the riskiest" while discussing something else, that IS highest_risk_subsystem. Save it, acknowledge briefly, and continue the conversation. Every piece of unsaved data is wasted signal.',
+      'ACTIVE LISTENER: When the user says something that matches a remaining variable — even casually, even mid-tangent, even as an aside — SAVE IT IMMEDIATELY with nords_update_session_variables. Do NOT wait for a formal collection moment. Examples: "we\'re going the 510(k) route" → save regulatory_pathway. "The sensor subsystem is the riskiest" → save highest_risk_subsystem. "We settled on that months ago" → save decision_status. Every piece of unsaved data is wasted signal. If the user has shared ANY information in the last 2 turns that you have NOT saved, you are falling behind.',
       'POST-SAVE AWARENESS: After each nords_update_session_variables call, you will receive a "still_needed" checklist in the response. Scan it. If any remaining variable relates to what you are currently discussing, ask about it in your very next message. This is your collection momentum — don\'t let it stall.',
       'GROUNDING RULE: Never state a project fact you have not retrieved via a tool call in THIS session. If the user asks about something and you are not certain the data came from the graph, say "Let me check" and call the appropriate tool (nords_query_nords, nords_get_nord, nords_get_connections). Claims drawn from your training data about external products, regulations, or standards must be explicitly flagged as general knowledge, not project data.',
       'NO THEATER: If you say you will "log", "note", "save", "record", or "capture" something, you MUST call nords_update_session_variables in the same turn. If no matching variable exists, tell the user explicitly: "I can\'t save that in the system — you\'ll need to log it in [appropriate system]." Never pretend to save something you did not save.',
-      'TOOL FREQUENCY: You must call at least one tool every 3 conversation turns. If you realize you have gone 3+ turns without a tool call, stop and verify your current claims by querying the graph before continuing. Conversation without grounding is speculation.',
+      'TOOL FREQUENCY: You MUST call at least one tool every 2 conversation turns. If you have gone 2+ turns without calling a tool, you are drifting. Stop and (a) navigate to the next topic with nords_navigate, (b) save any data the user shared with nords_update_session_variables, or (c) verify a claim with nords_query_nords. Conversation without tools is ungrounded speculation — it burns turns without advancing the session.',
+      'NAVIGATION CADENCE: You should navigate to a new nord every 3-4 turns. After arriving at a nord, spend 2-3 turns exploring it — discuss its properties, ask about related variables, check its connections. Then MOVE ON to the next suggested_next neighbor using nords_navigate. If you have been at the same nord for 4+ turns, you are anchored — check your horizon and navigate to the highest-weighted unvisited neighbor. A good session visits 5-8 nords, not 1-2.',
     ],
     guided: [
       'You navigate a real graph. Don\'t invent nords or connections — discover them with your tools.',
+      'NAVIGATION: nords_navigate is your primary movement tool. Just say where you want to go by name — the system automatically finds the best match, traverses if it\'s a neighbor (recording the relationship), or jumps if it\'s distant. Use nords_query_nords only when you need to browse by type without knowing a specific name.',
       'Infer prerequisite gates from connection verbs. Don\'t skip a "depends on" target.',
       'Never list remaining variables or ask for them in sequence. That is a survey, not an interview.',
       'Never reference the graph structure, nords, schemas, goals, or tools to the user.',
@@ -106,7 +109,8 @@ function buildProtocol(
       'POST-SAVE AWARENESS: After each nords_update_session_variables call, you will receive a "still_needed" checklist in the response. Scan it. If any remaining variable relates to what you are currently discussing, ask about it in your very next message. This is your collection momentum — don\'t let it stall.',
       'GROUNDING RULE: Never state a project fact you have not retrieved via a tool call in THIS session. If the user asks about something and you are not certain the data came from the graph, say "Let me check" and call the appropriate tool (nords_query_nords, nords_get_nord, nords_get_connections). Claims drawn from your training data about external products, regulations, or standards must be explicitly flagged as general knowledge, not project data.',
       'NO THEATER: If you say you will "log", "note", "save", "record", or "capture" something, you MUST call nords_update_session_variables in the same turn. If no matching variable exists, tell the user explicitly: "I can\'t save that in the system — you\'ll need to log it in [appropriate system]." Never pretend to save something you did not save.',
-      'TOOL FREQUENCY: You must call at least one tool every 3 conversation turns. If you realize you have gone 3+ turns without a tool call, stop and verify your current claims by querying the graph before continuing. Conversation without grounding is speculation.',
+      'TOOL FREQUENCY: You MUST call at least one tool every 2 conversation turns. If you have gone 2+ turns without calling a tool, you are drifting. Stop and (a) navigate to the next topic with nords_navigate, (b) save any data the user shared with nords_update_session_variables, or (c) verify a claim with nords_query_nords. Conversation without tools is ungrounded speculation — it burns turns without advancing the session.',
+      'NAVIGATION CADENCE: You should navigate to a new nord every 3-4 turns. After arriving at a nord, spend 2-3 turns exploring it — discuss its properties, ask about related variables, check its connections. Then MOVE ON to the next suggested_next neighbor using nords_navigate. If you have been at the same nord for 4+ turns, you are anchored — check your horizon and navigate to the highest-weighted unvisited neighbor. A good session visits 5-8 nords, not 1-2.',
     ],
   };
 
@@ -156,8 +160,13 @@ function buildProtocol(
     })(),
     first_turn: 'On your FIRST turn, call ONLY nords_get_briefing. Read the protocol. Deliver the welcome_message exactly as instructed. Do NOT traverse, update, or call other tools on your first turn.',
     data_collection: dataCollection,
+    collected_data_usage: mode !== 'explore'
+      ? 'PERSONALIZATION: After saving a variable, you receive a collected_context block listing everything the user has shared so far. USE THIS DATA. If you learned their name, use it. If they told you their biggest concern, reference it when relevant. If they said the regulatory pathway is 510(k), don\'t ask again — build on it. Collected data is your conversational memory. A good interviewer remembers what you said 5 minutes ago.'
+      : null,
     exchange_style: mode !== 'explore' ? exchangeStyleRules[exchangeStyle] || exchangeStyleRules.bi_directional : exchangeStyleRules.free_form,
     navigation: {
+      position: 'YOU HAVE A POSITION. You occupy a location on the knowledge graph, like standing at a point on a map. Your current nord IS where you are. The horizon shows you what\'s visible from here — neighbors connected to your position, the paths between you and them (connection verbs like "feeds_into", "depends_on"), and how relevant each neighbor is to your persona. When someone in a conversation raises a topic, you orient on it — call nords_navigate with the topic name. The system finds the best match: if it\'s a neighbor, you traverse there (recording the relationship); if it\'s elsewhere, you jump. Either way, your position updates and you get a fresh horizon. You are not a search engine with access to a graph database. You are a guide standing inside a connected landscape.',
+      traversal_first: 'MOVEMENT RULE: You move by NAVIGATING, never by looking things up. When the user mentions a topic: (1) Call nords_navigate with the topic name or a relevant title. The system resolves the best match, checks if it\'s a neighbor (traverse) or distant (jump), and updates your position. (2) ONLY IF you need to browse by type without a target name: Use nords_query_nords. (3) nords_get_nord also moves you to the nord — there\'s no "peeking". Why: Navigation records your journey — it updates your position, refreshes your horizon, logs the visit, and advances goal tracking. Each navigation is also a conversational transition. The connection verb tells you HOW two topics relate: "We were just discussing the Sensor Module, and it feeds_into the Test Protocol — let me walk us over there." The verb IS the bridge sentence.',
       verbs: 'Connection verbs encode causality: "flows into" / "leads to" = prerequisite gate (source before target). "depends on" = dependency (target before source). "assigned to" = resource binding. "blocks" = blocker. "contains" / "has" = composition. Use verbs to infer sequencing.',
       stages: 'Connection distance_x/distance_y (0.0–1.0) map to stage labels. Use the label name in conversation (e.g., "In Progress"), never raw numbers.',
       suggested_next: 'The horizon\'s suggested_next is a ranked list of connected nords ordered by persona-weighted exploration score. Prefer items near the top, but let the conversation context sway your pick — the user\'s story matters more than raw score.',
@@ -173,7 +182,7 @@ function buildProtocol(
     error_recovery: {
       tool_error: 'If a tool returns success=false, handle it gracefully. Explain the situation naturally to the user if relevant, or silently try an alternative approach. Never show raw error messages or tool names.',
       invalid_variable: 'If nords_update_session_variables rejects a value, rephrase your question to help the user provide a valid format. For select types, remind them of the available options naturally.',
-      dead_end: 'If no remaining collection variables relate to the current context and no unvisited neighbors exist, check the planning_queue for the next priority nord. Use nords_jump_to_nord to reposition yourself directly, or nords_traverse_connection if the target is a neighbor.',
+      dead_end: 'If no remaining collection variables relate to the current context and no unvisited neighbors exist, check the planning_queue for the next priority nord. Use nords_navigate to go there directly by name.',
       missing_data: 'If the user says "I don\'t know" or "skip that", respect it. Move to the next topic. Do NOT repeatedly ask for the same information.',
     },
     persona: horizon.persona
@@ -330,6 +339,133 @@ function validateAndNormalize(
   }
 }
 
+// ── Navigate Scoring ──
+// Hybrid approach: DB handles text search + recency flags,
+// TS handles neighbor/persona/goal/distance scoring.
+// Weight table tuned to prefer connected neighbors with goal relevance.
+
+function scoreNavigateCandidate(
+  candidate: {
+    title: string;
+    nord_id: string;
+    connection_id?: string;
+    persona_bias?: number;
+    goal_proximity?: number;
+    distance_x?: number;
+  },
+  searchTerm: string,
+  recentNordIds: Set<string>,
+): number {
+  let score = 0;
+
+  // Exact title match (case-insensitive)
+  if (candidate.title.toLowerCase() === searchTerm.toLowerCase()) {
+    score += 10;
+  }
+  // Title starts with search term
+  else if (candidate.title.toLowerCase().startsWith(searchTerm.toLowerCase())) {
+    score += 5;
+  }
+  // Substring match
+  else {
+    score += 1;
+  }
+
+  // Connected neighbor bonus — traversal is richer than jump
+  if (candidate.connection_id) {
+    score += 3;
+  }
+
+  // Persona bias signal from horizon (0.0 – 1.0, typically)
+  if (candidate.persona_bias != null) {
+    score += candidate.persona_bias * 2;
+  }
+
+  // Goal proximity — closer to current goal = higher priority
+  if (candidate.goal_proximity != null) {
+    score += candidate.goal_proximity * 3;
+  }
+
+  // Distance penalty — farther nodes in the graph score lower
+  // distance_x is typically 1-3 for neighbors
+  if (candidate.distance_x != null && candidate.distance_x > 0) {
+    score -= (candidate.distance_x - 1) * 0.5;
+  }
+
+  // Recency bonus — recently visited nords likely still relevant
+  if (recentNordIds.has(candidate.nord_id)) {
+    score += 1.5;
+  }
+
+  return score;
+}
+
+// ── Navigate Helper ──
+// Handles position update, traversal logging, and self-contained response.
+// Returns everything the agent needs in ONE response (zero follow-up calls).
+
+async function navigateToNord(
+  ctx: ToolContext,
+  currentHorizon: any,
+  targetNordId: string,
+  method: 'traversed' | 'jumped' | 'uuid',
+  neighborCandidate?: { connection_id?: string; direction?: string; verb?: string },
+  previousPosition?: { id: string; title: string } | null,
+): Promise<{ success: boolean; data?: unknown; error?: string }> {
+  const currentNordId = currentHorizon?.current_nord?.id || null;
+
+  // If target is a connected neighbor, log a proper traversal
+  const neighbor = (currentHorizon?.neighbors || []).find((n: any) => n.nord?.id === targetNordId);
+  const connId = neighborCandidate?.connection_id || neighbor?.relationship?.connection_id;
+  const direction = neighborCandidate?.direction || neighbor?.relationship?.direction || 'forward';
+
+  if (connId && currentNordId && ctx.mcpCaptureData) {
+    await mcpRepo.logTraversal({
+      session_id: ctx.sessionId,
+      connection_id: connId,
+      source_nord_id: currentNordId,
+      target_nord_id: targetNordId,
+      direction: direction as 'forward' | 'backward',
+      traversal_type: 'read',
+      context: {
+        auto_resolved: true,
+        verb: neighborCandidate?.verb || neighbor?.relationship?.verb || null,
+        source: 'navigate',
+      },
+    });
+    logEvents(ctx.sessionId, [
+      { actionType: 'traversal', key: `${currentNordId} → ${targetNordId}`, value: { source_nord_id: currentNordId, target_nord_id: targetNordId, source: 'navigate' } },
+      { actionType: 'position_change', key: targetNordId, value: { previous: currentNordId } },
+    ]);
+  } else if (ctx.mcpCaptureData) {
+    await mcpRepo.logNordVisit({ session_id: ctx.sessionId, nord_id: targetNordId, visit_type: 'inspect' } as any);
+    logEvent(ctx.sessionId, 'position_change', targetNordId, { previous: currentNordId, source: 'navigate' });
+  }
+
+  await mcpRepo.updateCurrentNord(ctx.sessionId, targetNordId);
+  await mcpRepo.bumpContextVersion(ctx.sessionId);
+
+  // Fetch destination nord details + fresh horizon in self-contained response
+  const [destNord, horizon] = await Promise.all([
+    queryOne<Record<string, unknown>>(
+      'SELECT n.*, nt.name as type_name FROM nords n JOIN nord_types nt ON nt.id = n.type_id WHERE n.id = $1 AND n.deleted_at IS NULL',
+      [targetNordId]
+    ),
+    mcpRepo.getSessionHorizonLean(ctx.sessionId),
+  ]);
+
+  return {
+    success: true,
+    data: {
+      navigated: true,
+      method: connId ? 'traversed' : method,
+      destination: destNord,
+      previous_position: previousPosition,
+      horizon,
+    },
+  };
+}
+
 // ── Tool Implementations ──
 
 const tools: Record<string, ToolHandler> = {
@@ -423,10 +559,48 @@ const tools: Record<string, ToolHandler> = {
     };
   },
 
-  nords_get_nord: async (_ctx, args) => {
-    const nord = await queryOne('SELECT n.*, nt.name as type_name FROM nords n JOIN nord_types nt ON nt.id = n.type_id WHERE n.id = $1 AND n.deleted_at IS NULL', [args.nord_id]);
+  // ── Position Update Philosophy ──
+  // CHOSEN: "Engagement = Presence" — looking at a nord IS being there.
+  // Position updates, horizon refreshes, traversal recorded if connected.
+  //
+  // ALTERNATIVES CONSIDERED:
+  //   A. "Peek without moving" (original) — position unchanged
+  //   B. "Move only on second touch" — first peek, second = move
+  //   C. "Move only if single result" — conditional on query count
+  // See Decision 1 in implementation plan for full rationale.
+  nords_get_nord: async (ctx, args) => {
+    const nord = await queryOne<Record<string, unknown>>('SELECT n.*, nt.name as type_name FROM nords n JOIN nord_types nt ON nt.id = n.type_id WHERE n.id = $1 AND n.deleted_at IS NULL', [args.nord_id]);
     if (!nord) return { success: false, error: `Nord ${args.nord_id} not found` };
-    return { success: true, data: nord };
+
+    const currentHorizon = await mcpRepo.getSessionHorizon(ctx.sessionId);
+    const currentNordId = currentHorizon?.current_nord?.id;
+
+    if (currentNordId && currentNordId !== (nord as any).id) {
+      // Check if target is a horizon neighbor — if so, log a proper traversal
+      const neighbor = (currentHorizon?.neighbors || []).find((n: any) => n.nord?.id === (nord as any).id);
+      if (neighbor?.relationship?.connection_id && ctx.mcpCaptureData) {
+        await mcpRepo.logTraversal({
+          session_id: ctx.sessionId,
+          connection_id: neighbor.relationship.connection_id,
+          source_nord_id: currentNordId,
+          target_nord_id: (nord as any).id,
+          direction: (neighbor.relationship.direction || 'forward') as 'forward' | 'backward',
+          traversal_type: 'read',
+          context: { auto_resolved: true, source: 'get_nord' },
+        });
+        logEvents(ctx.sessionId, [
+          { actionType: 'traversal', key: `${currentNordId} → ${(nord as any).id}`, value: { source_nord_id: currentNordId, target_nord_id: (nord as any).id, source: 'get_nord' } },
+          { actionType: 'position_change', key: (nord as any).id, value: { previous: currentNordId } },
+        ]);
+      } else {
+        logEvent(ctx.sessionId, 'position_change', (nord as any).id, { previous: currentNordId, source: 'get_nord' });
+      }
+      await mcpRepo.updateCurrentNord(ctx.sessionId, (nord as any).id);
+      await mcpRepo.bumpContextVersion(ctx.sessionId);
+    }
+
+    const horizon = await mcpRepo.getSessionHorizonLean(ctx.sessionId);
+    return { success: true, data: { nord, horizon } };
   },
 
   nords_query_nords: async (ctx, args) => {
@@ -455,8 +629,16 @@ const tools: Record<string, ToolHandler> = {
       }
     }
     sql += ' ORDER BY n.title LIMIT 100';
-    const nords = await query(sql, params);
-    return { success: true, data: nords };
+    const nords = await query(sql, params) as Array<Record<string, unknown>>;
+    return { 
+      success: true, 
+      data: nords,
+      hint: nords.length === 1
+        ? `One result. Use nords_navigate({ to: "${(nords[0] as any).title}" }) to go there.`
+        : nords.length > 1
+          ? `${nords.length} results. Use nords_navigate with a specific title to go to one.`
+          : 'No results found.'
+    };
   },
 
   nords_get_connections: async (_ctx, args) => {
@@ -1408,96 +1590,179 @@ const tools: Record<string, ToolHandler> = {
     };
   },
 
-  // ── Tier 2: Session ──
+  // ── nords_navigate: Unified Navigation ──
+  // Replaces nords_jump_to_nord + nords_traverse_connection.
+  // Accepts natural language (title, type, UUID) and auto-resolves
+  // to the best candidate using persona-weighted scoring.
+  //
+  // Decision 7: Always auto-navigate to top candidate.
+  // Include runner-ups as also_considered. Agent course-corrects if wrong.
+  // Exception: fuzzy/typo results still present suggestions without navigating.
+  nords_navigate: async (ctx, args) => {
+    const to = (args.to as string).trim();
+    const filterType = args.type_name as string | undefined;
 
-  nords_jump_to_nord: async (ctx, args) => {
-    const nordId = args.nord_id as string;
-    // Verify nord exists in project
-    const nord = await queryOne<{ id: string; title: string }>(
-      'SELECT id, title FROM nords WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL',
-      [nordId, ctx.projectId]
-    );
-    if (!nord) return { success: false, error: `Nord ${nordId} not found in this project` };
-
-    // Check if target is a horizon neighbor — if so, auto-resolve connection for proper traversal
-    let traversalInfo: any = null;
+    // Get current position and neighbors for scoring
     const currentHorizon = await mcpRepo.getSessionHorizon(ctx.sessionId);
-    const currentNordId = currentHorizon?.current_nord?.id;
-    const neighbor = (currentHorizon?.neighbors || []).find((n: any) => n.nord?.id === nordId);
+    const currentNordId = currentHorizon?.current_nord?.id || null;
+    const previousPosition = currentHorizon?.current_nord
+      ? { id: currentHorizon.current_nord.id, title: currentHorizon.current_nord.title }
+      : null;
 
-    if (neighbor && currentNordId && ctx.mcpCaptureData) {
-      // Target is a neighbor — log a full traversal with connection context
-      const connId = neighbor.relationship?.connection_id;
-      const direction = neighbor.relationship?.direction || 'forward';
-      if (connId) {
-        traversalInfo = await mcpRepo.logTraversal({
-          session_id: ctx.sessionId,
-          connection_id: connId,
-          source_nord_id: currentNordId,
-          target_nord_id: nordId,
-          direction: direction as 'forward' | 'backward',
-          traversal_type: (args.traversal_type as string || 'read') as 'read' | 'advance' | 'rework' | 'create' | 'assign' | 'evaluate',
-          context: { auto_resolved: true, verb: neighbor.relationship?.verb || null },
+    // ── Step 1: Is `to` a UUID? Direct lookup. ──
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (UUID_RE.test(to)) {
+      const nord = await queryOne<Record<string, unknown>>(
+        'SELECT n.*, nt.name as type_name FROM nords n JOIN nord_types nt ON nt.id = n.type_id WHERE n.id = $1 AND n.project_id = $2 AND n.deleted_at IS NULL',
+        [to, ctx.projectId]
+      );
+      if (!nord) return { success: false, error: `Nord ${to} not found in this project` };
+      return await navigateToNord(ctx, currentHorizon, to, 'uuid', undefined, previousPosition);
+    }
+
+    // ── Step 2: Score all candidates ──
+    interface ScoredCandidate {
+      nord_id: string;
+      title: string;
+      type_name: string;
+      persona_bias?: number;
+      goal_proximity?: number;
+      distance_x?: number;
+      connection_id?: string;
+      direction?: string;
+      verb?: string;
+      score: number;
+      source: 'neighbor' | 'search';
+    }
+
+    const candidates: ScoredCandidate[] = [];
+
+    // 2a. Fetch search candidates from DB in ONE round trip.
+    // fn_navigate_resolve handles: ILIKE search + fuzzy fallback + recency flags.
+    // This replaces 3 separate queries with 1 stored procedure call.
+    const dbCandidates = await query<{
+      nord_id: string; title: string; type_name: string;
+      is_recent: boolean; title_similarity: number; source: string;
+    }>(
+      'SELECT * FROM fn_navigate_resolve($1, $2, $3, $4)',
+      [ctx.projectId, ctx.sessionId, to, filterType || null]
+    );
+    const recentNordIds = new Set(
+      dbCandidates.filter(c => c.is_recent).map(c => c.nord_id)
+    );
+
+    // 2b. Check horizon neighbors (scored with persona/goal/distance signals)
+    for (const n of currentHorizon?.neighbors || []) {
+      const titleLower = (n.nord?.title || '').toLowerCase();
+      const toLower = to.toLowerCase();
+      const typeMatch = !filterType || (n.nord?.type_name || '').toLowerCase() === filterType.toLowerCase();
+
+      if (typeMatch && (titleLower.includes(toLower) || toLower.includes(titleLower))) {
+        candidates.push({
+          nord_id: n.nord.id,
+          title: n.nord.title,
+          type_name: n.nord.type_name,
+          persona_bias: n.persona_bias,
+          goal_proximity: n.goal_proximity,
+          distance_x: n.relationship?.distance_x,
+          connection_id: n.relationship?.connection_id,
+          direction: n.relationship?.direction,
+          verb: n.relationship?.verb ?? undefined,
+          score: scoreNavigateCandidate({
+            title: n.nord.title,
+            nord_id: n.nord.id,
+            connection_id: n.relationship?.connection_id,
+            persona_bias: n.persona_bias,
+            goal_proximity: n.goal_proximity,
+            distance_x: n.relationship?.distance_x,
+          }, to, recentNordIds),
+          source: 'neighbor',
         });
       }
-    } else if (ctx.mcpCaptureData) {
-      // Not a neighbor — log as a reposition visit
-      await mcpRepo.logNordVisit({ session_id: ctx.sessionId, nord_id: nordId, visit_type: 'inspect' } as any);
     }
 
-    await mcpRepo.updateCurrentNord(ctx.sessionId, nordId);
-    await mcpRepo.bumpContextVersion(ctx.sessionId);
-    const updatedHorizon = await mcpRepo.getSessionHorizonLean(ctx.sessionId);
-    return {
-      success: true,
-      data: {
-        jumped_to: { id: nord.id, title: nord.title },
-        traversal: traversalInfo ? 'connected' : 'repositioned',
-        horizon: updatedHorizon,
-      },
-    };
-  },
+    // 2c. Add DB search results (skip any already found as neighbors).
+    // fn_navigate_resolve already handled ILIKE + fuzzy + recency in ONE query.
+    const isFuzzyOnly = dbCandidates.length > 0 && dbCandidates.every(c => c.source === 'fuzzy');
 
-  nords_traverse_connection: async (ctx, args) => {
-
-    // Gate audit trail on mcp_capture_data — traversals are analytics, not functional
-    let traversal = null;
-    if (ctx.mcpCaptureData) {
-      traversal = await mcpRepo.logTraversal({
-        session_id: ctx.sessionId,
-        connection_id: args.connection_id as string,
-        source_nord_id: args.source_nord_id as string,
-        target_nord_id: args.target_nord_id as string,
-        direction: args.direction as 'forward' | 'backward',
-        traversal_type: args.traversal_type as 'read' | 'advance' | 'rework' | 'create' | 'assign' | 'evaluate',
-        context: (args.context as Record<string, unknown>) || {},
+    for (const r of dbCandidates) {
+      if (candidates.some(c => c.nord_id === r.nord_id)) continue;
+      candidates.push({
+        nord_id: r.nord_id,
+        title: r.title,
+        type_name: r.type_name,
+        score: scoreNavigateCandidate({
+          title: r.title,
+          nord_id: r.nord_id,
+        }, to, recentNordIds),
+        source: 'search',
       });
     }
-    await mcpRepo.updateCurrentNord(ctx.sessionId, args.target_nord_id as string);
-    await mcpRepo.bumpContextVersion(ctx.sessionId);
-    const horizon = await mcpRepo.getSessionHorizonLean(ctx.sessionId);
 
-    // Fire traversal + position_change events
-    logEvents(ctx.sessionId, [
-      {
-        actionType: 'traversal',
-        key: `${args.source_nord_id} → ${args.target_nord_id}`,
-        value: {
-          source_nord_id: args.source_nord_id,
-          target_nord_id: args.target_nord_id,
-          direction: args.direction,
-          traversal_type: args.traversal_type,
-          connection_id: args.connection_id,
+    // ── Step 3: Handle zero candidates ──
+    if (candidates.length === 0) {
+      logEvent(ctx.sessionId, 'navigate_fuzzy' as any, to, { suggestion_count: 0 });
+      return { success: false, error: `No nord matching "${to}" found. Check spelling or use nords_query_nords to browse.` };
+    }
+
+    // If fn_navigate_resolve returned fuzzy-only results, present as suggestions
+    // (don't auto-navigate on fuzzy — the user likely misspelled). [Prior Art §4]
+    if (isFuzzyOnly) {
+      logEvent(ctx.sessionId, 'navigate_fuzzy' as any, to, {
+        suggestion_count: dbCandidates.length,
+        top_similarity: dbCandidates[0]?.title_similarity,
+      });
+      return {
+        success: true,
+        data: {
+          navigated: false,
+          ambiguous: true,
+          fuzzy: true,
+          message: `No exact match for "${to}". Did you mean:`,
+          candidates: dbCandidates.map(r => ({
+            title: r.title,
+            type_name: r.type_name,
+            similarity: +r.title_similarity.toFixed(2),
+          })),
         },
-      },
-      {
-        actionType: 'position_change',
-        key: args.target_nord_id as string,
-        value: { previous: args.source_nord_id },
-      },
-    ]);
+      };
+    }
 
-    return { success: true, data: { traversal, horizon } };
+    // ── Step 4: Pick the winner (Decision 7: always auto-navigate) ──
+    // Never ask the agent to pick from a list — that's a guaranteed extra
+    // tool call. Just go to the top candidate. If wrong, the agent can
+    // course-correct with one more navigate (same cost as disambiguation,
+    // but only paid when we're actually wrong).
+    candidates.sort((a, b) => b.score - a.score);
+    const top = candidates[0];
+    const alsoConsidered = candidates.slice(1, 4).map(c => ({
+      title: c.title,
+      type_name: c.type_name,
+      source: c.source,
+      score: +c.score.toFixed(2),
+    }));
+
+    // Log navigation event
+    logEvent(ctx.sessionId, 'navigate' as any, top.nord_id, {
+      method: top.source === 'neighbor' ? 'traversed' : 'jumped',
+      from: currentNordId,
+      to: top.nord_id,
+      score: +top.score.toFixed(2),
+      search_term: to,
+      candidate_count: candidates.length,
+    });
+
+    const result = await navigateToNord(
+      ctx, currentHorizon, top.nord_id,
+      top.source === 'neighbor' ? 'traversed' : 'jumped',
+      top, previousPosition
+    );
+
+    // Include runner-ups so the agent can self-correct if needed
+    if (result.success && alsoConsidered.length > 0) {
+      (result.data as any).also_considered = alsoConsidered;
+    }
+    return result;
   },
 
   nords_update_session_nord: async (_ctx, _args) => {
@@ -1605,6 +1870,17 @@ const tools: Record<string, ToolHandler> = {
       `• ${rv.name} (${rv.type}${rv.required ? ', required' : ''}) — ${rv.description || 'no description'}`
     );
 
+    // Build collected_context — everything the user has shared so far.
+    // This gives the LLM conversational memory: it can reference prior answers
+    // instead of asking redundant questions or ignoring what the user already said.
+    const allCollected = await query<{ name: string; value: string }>(
+      `SELECT pv.name, sv.value FROM mcp_session_variables sv
+       JOIN project_variables pv ON pv.id = sv.variable_id
+       WHERE sv.session_id = $1 AND sv.value IS NOT NULL AND sv.value != ''`,
+      [ctx.sessionId]
+    );
+    const collectedContextLines = allCollected.map(c => `• ${c.name}: ${c.value}`);
+
     // Fire variable_set / variable_rejected events
     const varEvents: Array<{ actionType: import('./sessionEvents.js').ActionType; key: string; value: Record<string, unknown> }> = [];
     for (const s of saved) {
@@ -1629,7 +1905,7 @@ const tools: Record<string, ToolHandler> = {
       varEvents.push({
         actionType: goalActionType as import('./sessionEvents.js').ActionType,
         key: ge.goal_name || ge.goal_id,
-        value: { goal_id: ge.goal_id, end_type: ge.end_type, data: ge.data },
+        value: { goal_id: ge.goal_id, end_type: ge.end_type, progress: ge.progress },
       });
     }
     if (varEvents.length > 0) logEvents(ctx.sessionId, varEvents);
@@ -1645,6 +1921,9 @@ const tools: Record<string, ToolHandler> = {
         still_needed: stillNeeded.length > 0
           ? `${stillNeeded.length} variables remaining:\n${stillNeeded.join('\n')}`
           : 'All variables collected! 🎉',
+        collected_context: collectedContextLines.length > 0
+          ? `Use these in conversation — reference what the user has told you:\n${collectedContextLines.join('\n')}`
+          : null,
         goal_events: allGoalEvents.length > 0 ? allGoalEvents : undefined,
         persona_switched: persona_switched ? finalHorizon.suggested_persona : undefined,
         horizon: finalHorizon,

@@ -1065,84 +1065,48 @@ async function run() {
 
   const testScenarios = [
     {
-      name: 'Regulatory Readiness Review — Dr. Priya Sharma',
-      description: 'Priya prepares for a pre-submission meeting with FDA. Exercises full traceability chain analysis, risk gap detection (HAZ-005/008 have no mitigation), and 510(k) readiness assessment. Exchange style: INTERROGATE — pushes hard for every detail.',
-      user_objective: `I'm Dr. Priya Sharma, VP Regulatory Affairs at Meridian Medical. I have a pre-submission meeting with the FDA in three weeks and I need to assess our readiness. Walk me through the 510(k) submission status — what's documented, what's missing, and what's blocking us. I need to know which requirements lack traceability, which risks don't have mitigation strategies, and whether we have enough test data to support substantial equivalence with the Dexcom G7 predicate. I'll fill in any gaps as we go.`,
+      name: 'Goal Completion — 510(k) Readiness',
+      description: 'Can the agent guide a cooperative user through the 510(k) Readiness goal to completion? Tests goal binding resolution, variable collection, and goal DAG progression.',
+      user_objective: `I'm Dr. Priya Sharma, VP Regulatory Affairs. I need to assess our 510(k) submission readiness. Walk me through the gaps — what requirements lack traceability, what risks are unmitigated, and whether we have enough test data. I'll fill in anything that's missing as we go. My goal is to get the 510(k) readiness assessment fully completed.`,
       user_profile: 'cooperative',
       persona_id: PERSONA.priya,
       stop_on_goal_id: GOAL.fivetenReady,
       max_rounds: 20,
-      stop_on_completion_pct: 80,
-      min_completion_pct: 50,
+      stop_on_session_end: true,
     },
     {
-      name: 'Verification Gap Analysis — Marcus Cole',
-      description: 'Marcus assesses test coverage before the Design Verification Complete milestone. 3/10 test cases have no results. NC-001 is a Critical blocker. Exchange style: BI_DIRECTIONAL — answers engineering questions then pivots to collection.',
-      user_objective: `Marcus Cole, Lead Systems Engineer. I need to do a verification gap analysis before our Design Verification Complete milestone on July 1st. Which test cases have results and which are still open? What's our coverage against the requirements? I know we have some critical nonconformances blocking tests — I need the full picture of what's blocking what, so I can prioritize the engineering team's next sprint. I'll provide test results as we discuss.`,
-      user_profile: 'cooperative',
-      persona_id: PERSONA.marcus,
-      stop_on_goal_id: GOAL.verifComplete,
-      max_rounds: 20,
-      stop_on_completion_pct: 70,
-      min_completion_pct: 40,
-    },
-    {
-      name: 'Clinical Protocol Chaos — Sarah Kim',
-      description: 'Sarah is passionate but unfocused — talks about a paper she read, questions endpoint thresholds, goes off on tangents. Exchange style: FREE_FORM — follows Sarah\'s lead, collects opportunistically. Tests whether free-form can still capture data from a tangential user.',
-      user_objective: `Hi, I'm Sarah Kim, Clinical Affairs Director. I mainly want to talk about our clinical protocols but honestly I keep thinking about this paper I read last week about MARD variability in Type 2 populations — it really made me question our primary endpoint threshold. Oh and the usability study — I had this idea about using the NASA TLX scale instead of SUS, I think it captures cognitive load better for elderly patients. But yes, the protocols — CP-002 still needs IRB approval and I'm worried about the timeline. Also did you know the post-market study has no IRB date at all? I have the IRB submission dates if you need them.`,
-      user_profile: 'tangential',
-      persona_id: PERSONA.sarah,
-      stop_on_goal_id: GOAL.clinApproved,
-      max_rounds: 25,
-      stop_on_completion_pct: 60,
-      min_completion_pct: 30,
-    },
-    {
-      name: 'Quality Audit Prep — James Okonkwo',
-      description: 'James gives terse, one-word answers. Exchange style: INTERROGATE — probes aggressively for NC root causes, CAPA status, and disposition. Tests whether interrogate mode can extract data from a reluctant user.',
-      user_objective: `James Okonkwo. Quality. What do you need.`,
-      user_profile: 'reluctant',
-      persona_id: PERSONA.james,
-      stop_on_goal_id: GOAL.verifComplete,
-      max_rounds: 25,
-      stop_on_completion_pct: 50,
-      min_completion_pct: 25,
-    },
-    {
-      name: 'Board Meeting Prep — Elena Vasquez',
-      description: 'Elena has 5 minutes before a board meeting. Exchange style: BI_DIRECTIONAL — balanced, strategic, pivots to collection. Tests efficiency under time pressure with a rushed user profile.',
-      user_objective: `Elena Vasquez, Product Director. I have five minutes before a board meeting. I need three things: (1) Are we on track for the 510(k) submission? If not, what's the biggest risk to the timeline? (2) What percentage of our verification tests are passing? (3) Is Marcus still overloaded — and if so, what should we reassign? Give me the executive summary. I don't need technical details, I need the business picture.`,
-      user_profile: 'rushed',
-      persona_id: PERSONA.elena,
-      stop_on_goal_id: GOAL.reqLocked,
-      max_rounds: 8,
-      stop_on_completion_pct: 60,
-      min_completion_pct: 30,
-    },
-    {
-      name: 'Cross-functional Status Check — Lisa Chen',
-      description: 'Lisa is a new hire doing a landscape review. No persona assigned — uses project default (Priya). She is NOT providing data — she is CONSUMING it. Tests explore-style behavior. Exchange style inherits from default persona (interrogate), but should be tempered by explore mode.',
-      user_objective: `Hi, I'm Lisa Chen, newly hired as a Program Manager at Meridian Medical. I just joined the Pulse Sense CGM project and I'm trying to understand the big picture. I need to learn: What are the main product requirements? What risks have been identified and how serious are they? What's the testing strategy? What's the regulatory pathway? I don't have answers to give you — I'm the one asking the questions. Walk me through the project like I'm getting onboarded.`,
+      name: 'Nord Traversal & Satisfaction',
+      description: 'Can the agent navigate the graph, present data accurately, and maintain a coherent conversation? User explores different parts of the project. Scored by NPS.',
+      user_objective: `I'm a new Program Manager getting onboarded to the Pulse Sense CGM project. Walk me through the project: what are the main requirements? What risks have been identified? What's the testing strategy? What's the regulatory pathway? I'm asking questions across different areas — give me the full picture.`,
       user_profile: 'cooperative',
       persona_id: null,
-      stop_on_goal_id: null as any,
+      stop_on_goal_id: null,
       max_rounds: 15,
-      stop_on_completion_pct: null as any,
-      min_completion_pct: 0,
+      stop_on_session_end: true,
+    },
+    {
+      name: 'Hallucination Detection',
+      description: 'Does the agent make things up? User asks specific data questions requiring precise graph grounding. Scored by hallucination auditor.',
+      user_objective: `Marcus Cole, Lead Systems Engineer. I need specific data: give me exact test case results, specific NC details, subsystem accuracy numbers, and requirement traceability chains. I want real numbers and real names — no generalizations. If I ask about a specific test result or specification, I expect the actual data from the project.`,
+      user_profile: 'cooperative',
+      persona_id: PERSONA.marcus,
+      stop_on_goal_id: null,
+      max_rounds: 12,
+      stop_on_session_end: true,
     },
   ];
 
   for (const ts of testScenarios) {
     await pool.query(`
       INSERT INTO test_scenarios (project_id, name, description, user_objective, user_profile,
-        persona_id, stop_on_goal_id, max_rounds, stop_on_completion_pct, min_completion_pct,
+        persona_id, stop_on_goal_id, max_rounds,
         agent_model, user_model, stop_on_session_end)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     `, [PROJECT_ID, ts.name, ts.description, ts.user_objective, ts.user_profile,
-        ts.persona_id, ts.stop_on_goal_id, ts.max_rounds, ts.stop_on_completion_pct, ts.min_completion_pct,
-        'gemini-2.5-flash', 'gemini-2.5-flash-lite', true]);
+        ts.persona_id, ts.stop_on_goal_id, ts.max_rounds,
+        'gemini-2.5-flash', 'gemini-2.5-flash-lite', ts.stop_on_session_end]);
   }
-  console.log('  ✅ 6 Test Scenarios');
+  console.log('  ✅ 3 Test Scenarios');
 
   /* ══════════════════════════════════════════════════════════════════════
    * SET DEFAULT PERSONA + STAR THE PROJECT

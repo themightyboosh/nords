@@ -85,7 +85,7 @@ export function buildToolDeclarations(
     },
     {
       name: 'nords_get_nord',
-      description: 'Get a single nord by ID with all its properties.',
+      description: 'Get a single nord by ID with all its properties. Also updates your position to this nord and returns the horizon from there.',
       parameters: {
         type: 'OBJECT' as Type,
         properties: { nord_id: { type: 'STRING' as Type, description: 'The UUID of the nord to retrieve' } },
@@ -138,30 +138,15 @@ export function buildToolDeclarations(
 
   const session: FunctionDeclaration[] = [
     {
-      name: 'nords_jump_to_nord',
-      description: `Jump directly to any nord by its ID. Use this to reposition yourself when you need to explore a specific node (e.g. from query results or the planning_queue). This updates your position and returns the updated horizon with neighbors. Use nords_traverse_connection for connected moves and this for direct jumps.${ctx}`,
+      name: 'nords_navigate',
+      description: `Navigate to any nord by name, type, or ID. The system finds the best match: if it's a neighbor, you traverse there (recording the relationship). If it's elsewhere, you jump. Either way, your position updates and you get a fresh horizon. Just say where you want to go.${ctx}`,
       parameters: {
         type: 'OBJECT' as Type,
         properties: {
-          nord_id: { type: 'STRING' as Type, description: 'UUID of the nord to jump to' },
+          to: { type: 'STRING' as Type, description: 'Where to go — a nord title (e.g. "Sensor Module"), type name (e.g. "Requirement"), or UUID. Partial matches work.' },
+          type_name: { type: 'STRING' as Type, description: '(Optional) Filter by nord type to disambiguate (e.g. "Subsystem", "Test Case")' },
         },
-        required: ['nord_id'],
-      },
-    },
-    {
-      name: 'nords_traverse_connection',
-      description: `Move to a connected neighbor by traversing a connection. Get the connection_id from neighbors[].relationship.connection_id in the horizon. The source_nord_id is your current position (horizon.current_nord.id) and target_nord_id is neighbors[].nord.id. direction should match neighbors[].relationship.direction. This updates your position and automatically returns the updated horizon. Prefer this over nords_jump_to_nord when the target is a neighbor — traversal records the relationship context.${ctx}`,
-      parameters: {
-        type: 'OBJECT' as Type,
-        properties: {
-          connection_id: { type: 'STRING' as Type, description: 'UUID of the connection to traverse' },
-          source_nord_id: { type: 'STRING' as Type, description: 'UUID of the nord you are leaving' },
-          target_nord_id: { type: 'STRING' as Type, description: 'UUID of the nord you are moving to' },
-          direction: { type: 'STRING' as Type, description: 'Direction of traversal: forward or backward' },
-          traversal_type: { type: 'STRING' as Type, description: 'Why: read, advance, rework, create, assign, evaluate' },
-          context: { type: 'OBJECT' as Type, description: 'Optional JSON context for why you traversed', properties: {} },
-        },
-        required: ['connection_id', 'source_nord_id', 'target_nord_id', 'direction', 'traversal_type'],
+        required: ['to'],
       },
     },
     {

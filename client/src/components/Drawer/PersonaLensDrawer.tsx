@@ -58,10 +58,10 @@ export function PersonaLensDrawer({
         <div className="persona-lens-drawer__header">
           <div style={{ flex: 1 }}>
             <div className="nords-drawer-type-eyebrow" style={{ color: persona.accent_color || '#a78bfa' }}>
+              <User size={12} strokeWidth={2} />
               Persona
             </div>
             <div className="persona-lens-drawer__identity">
-              <User size={20} className="nords-drawer-title-icon" style={{ color: persona.accent_color || '#a78bfa' }} />
               <h2 className="persona-lens-drawer__name">{persona.name}</h2>
             </div>
           </div>

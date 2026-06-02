@@ -15,16 +15,14 @@ import {
   Send, RotateCcw, Code2, X, ChevronDown, ChevronRight,
   Zap, Bot, User,
   Wrench, Eye, Map, FlaskConical, Loader2,
-  GripVertical, Play, Pause, SkipForward, FastForward,
+  GripVertical, Play,
 } from 'lucide-react';
 import { api } from '../../api/client';
+import { ChatMessage } from '../ChatMessage/ChatMessage';
+import type { ToolCall } from '../ChatMessage/ChatMessage';
 import './PreviewChat.css';
 
-interface ToolCall {
-  name: string;
-  arguments: Record<string, unknown>;
-  result?: unknown;
-}
+// ToolCall type imported from ChatMessage
 
 interface Message {
   id: string;
@@ -48,7 +46,7 @@ interface PreviewChatProps {
   /** Called after AI updates data (properties, goals) so the canvas can refetch */
   onDataChanged?: () => void;
   /** When set, renders in read-only replay mode showing a test run transcript */
-  replayTranscript?: Array<{ round: number; user_msg: string; agent_msg: string; tool_calls?: any[]; tokens_in?: number; tokens_out?: number; latency_ms?: number }> | null;
+  replayTranscript?: Array<{ round: number; user_msg: string; agent_msg: string; tool_calls?: any[]; tokens_in?: number; tokens_out?: number; latency_ms?: number; delay_ms?: number }> | null;
   replayLabel?: string | null;
   onClearReplay?: () => void;
 }
@@ -78,142 +76,149 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   const [lastHorizon, setLastHorizon] = useState<Record<string, unknown> | null>(null);
   const [lastToolCalls, setLastToolCalls] = useState<ToolCall[]>([]);
   const [sessionNps, setSessionNps] = useState<number | null>(null);
+  const [lastTokens, setLastTokens] = useState<{ in: number; out: number; latency: number } | null>(null);
 
   // ── Replay mode ──
   const isReplayMode = !!replayTranscript;
-  const [replayIndex, setReplayIndex] = useState(0); // index into flattened messages
-  const [replayPlaying, setReplayPlaying] = useState(false);
-  const [replaySpeed, setReplaySpeed] = useState(1); // 1x, 2x, 4x
-  const [replayTyping, setReplayTyping] = useState(false);
+  const [replaySpeed, setReplaySpeed] = useState(2); // 0=instant, 1=1×, 2=2×, 5=5×
+  const [replayIndex, setReplayIndex] = useState(0); // how many rounds have been revealed
+  const [replayTyping, setReplayTyping] = useState(false); // show typing indicator between rounds
   const replayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const MAX_DELAY_MS = 5000; // cap per-round delay
 
-  // Build the flat message list from transcript (only once when transcript changes)
-  const replayMessages = useRef<Message[]>([]);
+  // Cleanup replay timers on unmount
   useEffect(() => {
-    if (!replayTranscript) {
-      replayMessages.current = [];
-      setReplayIndex(0);
-      setReplayPlaying(false);
-      setReplayTyping(false);
-      return;
-    }
-    const msgs: Message[] = [];
-    for (const r of replayTranscript) {
-      if (r.agent_msg && r.round === 0) {
-        // Round 0 = agent welcome (no user message)
-        msgs.push({
-          id: `replay-agent-${r.round}`,
-          role: 'assistant',
-          content: r.agent_msg,
-          tool_calls: r.tool_calls || null,
-          tokens_in: r.tokens_in,
-          tokens_out: r.tokens_out,
-          latency_ms: r.latency_ms,
-          created_at: new Date().toISOString(),
-        });
-        continue;
-      }
-      if (r.user_msg) {
-        msgs.push({
-          id: `replay-user-${r.round}`,
-          role: 'user',
-          content: r.user_msg,
-          created_at: new Date().toISOString(),
-        });
-      }
-      if (r.agent_msg) {
-        msgs.push({
-          id: `replay-agent-${r.round}`,
-          role: 'assistant',
-          content: r.agent_msg,
-          tool_calls: r.tool_calls || null,
-          tokens_in: r.tokens_in,
-          tokens_out: r.tokens_out,
-          latency_ms: r.latency_ms,
-          created_at: new Date().toISOString(),
-        });
-      }
-    }
-    replayMessages.current = msgs;
-    // Start with empty messages, auto-play
-    setMessages([]);
-    setReplayIndex(0);
-    setReplayPlaying(true);
-    setReplayTyping(false);
-  }, [replayTranscript]);
-
-  // Replay tick — adds one message at a time with a typing delay
-  useEffect(() => {
-    if (!isReplayMode || !replayPlaying) return;
-    if (replayIndex >= replayMessages.current.length) {
-      setReplayPlaying(false);
-      setReplayTyping(false);
-      // Populate dev panel from last agent message
-      const lastAgent = replayTranscript![replayTranscript!.length - 1];
-      if (lastAgent) {
-        if (lastAgent.tool_calls) setLastToolCalls(lastAgent.tool_calls);
-        setLastTokens({
-          in: lastAgent.tokens_in || 0,
-          out: lastAgent.tokens_out || 0,
-          latency: lastAgent.latency_ms || 0,
-        });
-      }
-      return;
-    }
-
-    const nextMsg = replayMessages.current[replayIndex];
-    const isAgent = nextMsg.role === 'assistant';
-    // Typing delay: agent takes longer (simulates thinking), user is quick
-    const typingDelay = isAgent ? Math.max(800, 1500 / replaySpeed) : Math.max(400, 800 / replaySpeed);
-    // Message display delay after typing
-    const displayDelay = Math.max(200, 400 / replaySpeed);
-
-    // Show typing indicator
-    setReplayTyping(true);
-
-    replayTimerRef.current = setTimeout(() => {
-      // Add the message
-      setMessages(prev => [...prev, nextMsg]);
-      setReplayTyping(false);
-
-      // Update dev panel for agent messages
-      if (isAgent && nextMsg.tool_calls) {
-        setLastToolCalls(nextMsg.tool_calls);
-        setLastTokens({
-          in: nextMsg.tokens_in || 0,
-          out: nextMsg.tokens_out || 0,
-          latency: nextMsg.latency_ms || 0,
-        });
-      }
-
-      // Brief pause before next message
-      replayTimerRef.current = setTimeout(() => {
-        setReplayIndex(prev => prev + 1);
-      }, displayDelay);
-    }, typingDelay);
-
     return () => {
       if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
     };
-  }, [isReplayMode, replayPlaying, replayIndex, replaySpeed, replayTranscript]);
+  }, []);
 
-  // Skip to end (show all messages instantly)
-  const replaySkipToEnd = useCallback(() => {
-    if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
-    setMessages(replayMessages.current);
-    setReplayIndex(replayMessages.current.length);
-    setReplayPlaying(false);
+  // Paced replay engine — drips messages using delay_ms
+  useEffect(() => {
+    if (!replayTranscript || replayTranscript.length === 0) return;
+
+    // Reset state when transcript changes
+    setMessages([]);
+    setDevLog([]);
+    setDevMode(true);
+    setReplayIndex(0);
     setReplayTyping(false);
-    const lastAgent = replayTranscript?.[replayTranscript.length - 1];
-    if (lastAgent) {
-      if (lastAgent.tool_calls) setLastToolCalls(lastAgent.tool_calls);
-      setLastTokens({
-        in: lastAgent.tokens_in || 0,
-        out: lastAgent.tokens_out || 0,
-        latency: lastAgent.latency_ms || 0,
-      });
+    if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+
+    // Instant mode (speed=0): load everything at once
+    if (replaySpeed === 0) {
+      loadAllReplayMessages(replayTranscript);
+      return;
     }
+
+    // Paced mode: start the chain
+    driveReplayRound(0, replayTranscript, replaySpeed);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [replayTranscript]);
+
+  // Re-pace when speed changes mid-replay
+  useEffect(() => {
+    if (!replayTranscript || !isReplayMode) return;
+    if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+
+    if (replaySpeed === 0) {
+      // Switch to instant: load remaining
+      loadAllReplayMessages(replayTranscript);
+    } else if (replayIndex < replayTranscript.length) {
+      // Continue from current position
+      driveReplayRound(replayIndex, replayTranscript, replaySpeed);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [replaySpeed]);
+
+  function loadAllReplayMessages(transcript: NonNullable<typeof replayTranscript>) {
+    const msgs: Message[] = [];
+    const logEntries: DevLogEntry[] = [];
+    for (const r of transcript) {
+      if (r.agent_msg && r.round === 0) {
+        msgs.push({ id: `replay-agent-${r.round}`, role: 'assistant', content: r.agent_msg, tool_calls: r.tool_calls || null, tokens_in: r.tokens_in, tokens_out: r.tokens_out, latency_ms: r.latency_ms, created_at: new Date().toISOString() });
+        r.tool_calls?.forEach(tc => logEntries.push({ id: `replay-tc-${r.round}-${tc.name}`, timestamp: new Date().toISOString(), type: 'tool_call', label: `🔧 ${tc.name.replace('nords_', '')}`, detail: JSON.stringify({ arguments: tc.arguments, result: tc.result }, null, 2) }));
+        continue;
+      }
+      if (r.user_msg) msgs.push({ id: `replay-user-${r.round}`, role: 'user', content: r.user_msg, created_at: new Date().toISOString() });
+      if (r.agent_msg) {
+        msgs.push({ id: `replay-agent-${r.round}`, role: 'assistant', content: r.agent_msg, tool_calls: r.tool_calls || null, tokens_in: r.tokens_in, tokens_out: r.tokens_out, latency_ms: r.latency_ms, created_at: new Date().toISOString() });
+        r.tool_calls?.forEach(tc => logEntries.push({ id: `replay-tc-${r.round}-${tc.name}`, timestamp: new Date().toISOString(), type: 'tool_call', label: `🔧 ${tc.name.replace('nords_', '')}`, detail: JSON.stringify({ arguments: tc.arguments, result: tc.result }, null, 2) }));
+        if (r.tokens_in) logEntries.push({ id: `replay-tokens-${r.round}`, timestamp: new Date().toISOString(), type: 'tokens', label: `⚡ ${(r.tokens_in || 0).toLocaleString()}→${(r.tokens_out || 0).toLocaleString()} tokens · ${r.latency_ms || 0}ms` });
+      }
+    }
+    setMessages(msgs);
+    setDevLog(logEntries);
+    setReplayIndex(transcript.length);
+    setReplayTyping(false);
+    const lastAgent = transcript[transcript.length - 1];
+    if (lastAgent?.tool_calls) setLastToolCalls(lastAgent.tool_calls);
+  }
+
+  function driveReplayRound(roundIdx: number, transcript: NonNullable<typeof replayTranscript>, speed: number) {
+    if (roundIdx >= transcript.length) {
+      setReplayTyping(false);
+      return;
+    }
+    const r = transcript[roundIdx];
+    const rawDelay = Math.min(r.delay_ms || 1000, MAX_DELAY_MS);
+    const scaledDelay = Math.max(rawDelay / speed, 200); // minimum 200ms
+
+    // Step 1: show user message
+    if (r.user_msg && r.round !== 0) {
+      setMessages(prev => [...prev, {
+        id: `replay-user-${r.round}`, role: 'user', content: r.user_msg, created_at: new Date().toISOString(),
+      }]);
+    }
+
+    // Step 2: show typing indicator, then agent message after agent latency
+    const agentLatency = Math.min(r.latency_ms || 800, 3000);
+    const typingDelay = Math.max(agentLatency / speed, 300);
+
+    setReplayTyping(true);
+    replayTimerRef.current = setTimeout(() => {
+      setReplayTyping(false);
+      if (r.agent_msg) {
+        setMessages(prev => [...prev, {
+          id: `replay-agent-${r.round}`, role: 'assistant', content: r.agent_msg,
+          tool_calls: r.tool_calls || null, tokens_in: r.tokens_in, tokens_out: r.tokens_out, latency_ms: r.latency_ms,
+          created_at: new Date().toISOString(),
+        }]);
+        // Add dev log entries for tool calls
+        if (r.tool_calls) {
+          setDevLog(prev => [
+            ...prev,
+            ...r.tool_calls!.map(tc => ({
+              id: `replay-tc-${r.round}-${tc.name}`,
+              timestamp: new Date().toISOString(),
+              type: 'tool_call' as const,
+              label: `🔧 ${tc.name.replace('nords_', '')}`,
+              detail: JSON.stringify({ arguments: tc.arguments, result: tc.result }, null, 2),
+            })),
+          ]);
+        }
+        if (r.tokens_in) {
+          setDevLog(prev => [...prev, {
+            id: `replay-tokens-${r.round}`, timestamp: new Date().toISOString(),
+            type: 'tokens' as const, label: `⚡ ${(r.tokens_in || 0).toLocaleString()}→${(r.tokens_out || 0).toLocaleString()} tokens · ${r.latency_ms || 0}ms`,
+          }]);
+        }
+        if (r.tool_calls) setLastToolCalls(r.tool_calls);
+      }
+      setReplayIndex(roundIdx + 1);
+
+      // Schedule next round
+      const nextDelay = roundIdx + 1 < transcript.length
+        ? Math.max(Math.min(transcript[roundIdx + 1].delay_ms || 1000, MAX_DELAY_MS) / speed, 200)
+        : 0;
+      if (roundIdx + 1 < transcript.length) {
+        replayTimerRef.current = setTimeout(() => {
+          driveReplayRound(roundIdx + 1, transcript, speed);
+        }, nextDelay);
+      }
+    }, r.round === 0 ? 500 : typingDelay); // first round gets a short delay
+  }
 
   // ── Test Runner state ──
   const [testScenarios, setTestScenarios] = useState<Array<{ id: string; name: string; user_profile: string }>>([]);
@@ -857,61 +862,31 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
             </div>
           )}
           {messages.map(msg => (
-            <div
+            <ChatMessage
               key={msg.id}
-              className={`preview-chat__message preview-chat__message--${msg.role}`}
-            >
-              <div className="preview-chat__message-avatar">
-                {msg.role === 'user' ? <User size={14} /> : msg.role === 'assistant' ? <Bot size={14} /> : <Zap size={14} />}
-              </div>
-              <div className="preview-chat__message-content">
-                <span className="preview-chat__message-role">{msg.role}</span>
-                <p>{msg.content}</p>
-
-                {/* Dev mode: inline tool calls under assistant messages */}
-                {devMode && msg.role === 'assistant' && msg.tool_calls && msg.tool_calls.length > 0 && (
-                  <div className="preview-chat__message-tools">
-                    <span className="preview-chat__message-tools-label">
-                      <Wrench size={10} /> {msg.tool_calls.length} tool call{msg.tool_calls.length > 1 ? 's' : ''}
-                    </span>
-                    {msg.tool_calls.map((tc, i) => renderToolCallInline(tc, i, msg.id))}
-                  </div>
-                )}
-
-                {/* Dev mode: metadata footer */}
-                {devMode && msg.latency_ms != null && (
-                  <span className="preview-chat__message-meta">
-                    {msg.model} · {msg.latency_ms}ms
-                    {msg.tokens_in != null && ` · ${msg.tokens_in.toLocaleString()}→${msg.tokens_out?.toLocaleString()} tokens`}
-                  </span>
-                )}
-              </div>
-            </div>
+              role={msg.role as 'user' | 'assistant' | 'system'}
+              content={msg.content}
+              toolCalls={msg.tool_calls}
+              showToolCalls={devMode}
+              model={msg.model}
+              latencyMs={msg.latency_ms}
+              tokensIn={msg.tokens_in}
+              tokensOut={msg.tokens_out}
+              showMeta={devMode}
+            />
           ))}
-          {sending && (
-            <div className="preview-chat__message preview-chat__message--assistant">
-              <div className="preview-chat__message-avatar"><Bot size={14} /></div>
-              <div className="preview-chat__message-content">
-                <span className="preview-chat__message-role">assistant</span>
+          {(sending || replayTyping) && (
+            <div className="chat-msg chat-msg--assistant">
+              <div className="chat-msg__avatar"><Bot size={14} /></div>
+              <div className="chat-msg__content">
+                <span className="chat-msg__role">Assistant</span>
                 <p className="preview-chat__typing">
                   <span /><span /><span />
                 </p>
               </div>
             </div>
           )}
-          {/* Replay typing indicator */}
-          {isReplayMode && replayTyping && (
-            <div className={`preview-chat__message preview-chat__message--${replayIndex < replayMessages.current.length && replayMessages.current[replayIndex].role === 'user' ? 'user' : 'assistant'}`}>
-              <div className="preview-chat__message-avatar">
-                {replayIndex < replayMessages.current.length && replayMessages.current[replayIndex].role === 'user' ? <User size={14} /> : <Bot size={14} />}
-              </div>
-              <div className="preview-chat__message-content">
-                <p className="preview-chat__typing">
-                  <span /><span /><span />
-                </p>
-              </div>
-            </div>
-          )}
+
           {/* Test Progress Bar */}
           {testRunning && testProgress && (
             <div className="preview-chat__test-progress">
@@ -953,60 +928,34 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
       {/* Input */}
       {isReplayMode ? (
         <div className="preview-chat__input-area preview-chat__replay-controls">
-          {/* Progress info */}
           <span className="preview-chat__replay-progress">
-            {replayIndex >= replayMessages.current.length
-              ? `✅ Replay complete (${messages.length} messages)`
-              : `${messages.length} / ${replayMessages.current.length}`
-            }
+            🔁 {replayIndex}/{replayTranscript?.length || 0} rounds
           </span>
-
-          {/* Progress bar */}
-          <div className="preview-chat__replay-bar">
-            <div
-              className="preview-chat__replay-bar-fill"
-              style={{ width: `${replayMessages.current.length > 0 ? (replayIndex / replayMessages.current.length) * 100 : 0}%` }}
-            />
+          <div className="preview-chat__replay-speed">
+            {([1, 2, 5, 0] as const).map(s => (
+              <button
+                key={s}
+                className={`preview-chat__speed-pill${replaySpeed === s ? ' active' : ''}`}
+                onClick={() => setReplaySpeed(s)}
+              >
+                {s === 0 ? '⏩' : `${s}×`}
+              </button>
+            ))}
           </div>
-
-          {/* Playback controls */}
-          <div className="preview-chat__replay-buttons">
-            <button
-              className="preview-chat__replay-btn"
-              onClick={() => setReplayPlaying(p => !p)}
-              title={replayPlaying ? 'Pause' : 'Play'}
-              disabled={replayIndex >= replayMessages.current.length}
-            >
-              {replayPlaying ? <Pause size={14} /> : <Play size={14} />}
-            </button>
-            <button
-              className="preview-chat__replay-btn"
-              onClick={() => setReplaySpeed(s => s >= 4 ? 1 : s * 2)}
-              title={`Speed: ${replaySpeed}x`}
-            >
-              <FastForward size={12} />
-              <span>{replaySpeed}x</span>
-            </button>
-            <button
-              className="preview-chat__replay-btn"
-              onClick={replaySkipToEnd}
-              title="Skip to end"
-            >
-              <SkipForward size={14} />
-            </button>
-            <button
-              className="preview-chat__replay-btn preview-chat__replay-btn--exit"
-              onClick={() => {
-                if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
-                onClearReplay?.();
-                setMessages([]);
-                setReplayPlaying(false);
-                setReplayTyping(false);
-              }}
-            >
-              <X size={14} /> Exit
-            </button>
-          </div>
+          <button
+            className="preview-chat__replay-btn preview-chat__replay-btn--exit"
+            onClick={() => {
+              if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+              onClearReplay?.();
+              setMessages([]);
+              setDevLog([]);
+              setDevMode(false);
+              setReplayIndex(0);
+              setReplayTyping(false);
+            }}
+          >
+            <X size={14} /> Exit
+          </button>
         </div>
       ) : (
         <div className="preview-chat__input-area">

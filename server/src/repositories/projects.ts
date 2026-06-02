@@ -25,7 +25,7 @@ export async function create(project: Omit<Project, 'id' | 'created_at' | 'updat
     project.purpose,
     project.icon,
     project.created_by,
-    project.mcp_enabled ?? false,
+    project.mcp_enabled ?? true,
     project.mcp_capture_data ?? false,
     project.mcp_mutable ?? false,
     project.goals_enabled ?? false,

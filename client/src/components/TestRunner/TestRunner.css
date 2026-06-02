@@ -16,6 +16,12 @@
   font-size: var(--nords-font-size-sm, 13px);
 }
 
+.test-runner__form-top-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--nords-space-lg);
+}
+
 /* ── Header (matches manage-types__header) ── */
 
 .test-runner__header {

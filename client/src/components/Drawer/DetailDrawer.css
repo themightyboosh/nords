@@ -19,6 +19,9 @@
 }
 
 .nords-drawer-type-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;

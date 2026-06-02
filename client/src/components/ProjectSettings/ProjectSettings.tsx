@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, AlertTriangle, Save, Copy, Trash2, Plus, Key, Link, ExternalLink, ChevronDown, ChevronUp, Compass, ClipboardList, Target, Settings as SettingsIcon } from 'lucide-react';
+import { X, AlertTriangle, Save, Copy, Trash2, Plus, Key, Link, ExternalLink, ChevronDown, ChevronUp, Settings as SettingsIcon } from 'lucide-react';
 import { api } from '../../api/client';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { IconPicker } from '../shared/IconPicker';
@@ -25,9 +25,12 @@ import './ProjectSettings.css';
 interface ProjectSettingsProps {
   isOpen: boolean;
   onClose: () => void;
-  projectId: string;
+  projectId?: string;
+  mode?: 'create' | 'edit';
   /** Called after save so the header can update */
   onProjectNameChange?: (name: string) => void;
+  /** Called after a successful create */
+  onCreate?: () => void;
 }
 
 interface ProjectData {
@@ -37,7 +40,7 @@ interface ProjectData {
   purpose: string | null;
   icon: string | null;
   accent_color: string | null;
-  mcp_enabled: boolean;
+
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
   goals_enabled: boolean;
@@ -69,7 +72,8 @@ interface NordTypeSummary {
   accent_color?: string | null;
 }
 
-export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChange }: ProjectSettingsProps) {
+export function ProjectSettings({ isOpen, onClose, projectId, mode = 'edit', onProjectNameChange, onCreate }: ProjectSettingsProps) {
+  const isCreate = mode === 'create';
   const [_project, setProject] = useState<ProjectData | null>(null);
   const [form, setForm] = useState<Partial<ProjectData>>({});
   const [errors, setErrors] = useState<string[]>([]);
@@ -110,7 +114,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
 
   // Load project data + reference data for dropdowns
   useEffect(() => {
-    if (!isOpen || !projectId) return;
+    if (!isOpen || !projectId || isCreate) return;
 
     // Load project
     api.get<ProjectData>(`/api/projects/${projectId}`)
@@ -122,7 +126,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           purpose: data.purpose || '',
           icon: data.icon || 'Folder',
           accent_color: data.accent_color || '#6b7aed',
-          mcp_enabled: data.mcp_enabled,
+
           mcp_capture_data: data.mcp_capture_data,
           mcp_mutable: data.mcp_mutable,
           goals_enabled: (data as any).goals_enabled ?? false,
@@ -147,7 +151,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
         setNordTypes(data.nord_types || []);
       })
       .catch(() => { setNords([]); setNordTypes([]); });
-  }, [isOpen, projectId]);
+  }, [isOpen, projectId, isCreate]);
 
   // When project data loads, set the category filter to match the current default nord
   useEffect(() => {
@@ -167,19 +171,19 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
 
   // Load access tokens
   useEffect(() => {
-    if (!isOpen || !projectId) return;
+    if (!isOpen || !projectId || isCreate) return;
     api.get<TokenInfo[]>(`/api/projects/${projectId}/tokens`)
       .then(setTokens)
       .catch(() => setTokens([]));
-  }, [isOpen, projectId]);
+  }, [isOpen, projectId, isCreate]);
 
   // Load share links
   useEffect(() => {
-    if (!isOpen || !projectId) return;
+    if (!isOpen || !projectId || isCreate) return;
     api.get<ShareLinkInfo[]>(`/api/projects/${projectId}/share-links`)
       .then(setShareLinks)
       .catch(() => setShareLinks([]));
-  }, [isOpen, projectId]);
+  }, [isOpen, projectId, isCreate]);
 
   // Nords filtered by the selected category
   const filteredNords = useMemo(() => {
@@ -202,34 +206,53 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
     setSaving(true);
     setErrors([]);
     try {
-      const updated = await api.put<ProjectData>(`/api/projects/${projectId}`, {
-        name: form.name!.trim(),
-        description: form.description!.trim(),
-        purpose: form.purpose!.trim(),
-        icon: form.icon,
-        accent_color: form.accent_color,
-        mcp_enabled: form.mcp_enabled,
-        mcp_mutable: form.mcp_mutable,
-        graph_only: form.graph_only,
-        project_mode: form.mcp_enabled ? form.project_mode : 'explore',
-        mcp_system_prompt: form.mcp_system_prompt?.trim() || null,
-        default_persona_id: form.default_persona_id || null,
-        default_start_nord_id: form.default_start_nord_id || null,
-        default_end_nord_id: form.default_end_nord_id || null,
-      });
-      setProject(updated);
-      onProjectNameChange?.(updated.name);
-      setSaved(true);
-      setTimeout(() => {
-        setSaved(false);
-        onClose();
-      }, 600);
+      if (isCreate) {
+        // Create mode: POST new project
+        await api.post('/api/projects', {
+          name: form.name!.trim(),
+          description: form.description!.trim(),
+          purpose: form.purpose!.trim(),
+          icon: form.icon || 'Folder',
+          accent_color: form.accent_color || '#6b7aed',
+          project_mode: 'guided',
+          graph_only: form.graph_only || false,
+        });
+        setSaved(true);
+        setTimeout(() => {
+          setSaved(false);
+          onCreate?.();
+          onClose();
+        }, 400);
+      } else {
+        // Edit mode: PUT existing project
+        const updated = await api.put<ProjectData>(`/api/projects/${projectId}`, {
+          name: form.name!.trim(),
+          description: form.description!.trim(),
+          purpose: form.purpose!.trim(),
+          icon: form.icon,
+          accent_color: form.accent_color,
+          project_mode: form.project_mode,
+          mcp_mutable: form.mcp_mutable,
+          graph_only: form.graph_only,
+          mcp_system_prompt: form.mcp_system_prompt?.trim() || null,
+          default_persona_id: form.default_persona_id || null,
+          default_start_nord_id: form.default_start_nord_id || null,
+          default_end_nord_id: form.default_end_nord_id || null,
+        });
+        setProject(updated);
+        onProjectNameChange?.(updated.name);
+        setSaved(true);
+        setTimeout(() => {
+          setSaved(false);
+          onClose();
+        }, 600);
+      }
     } catch (err: any) {
       setErrors([err.message || 'Failed to save']);
     } finally {
       setSaving(false);
     }
-  }, [form, projectId, onProjectNameChange]);
+  }, [form, projectId, isCreate, onProjectNameChange, onCreate]);
 
   if (!isOpen) return null;
 
@@ -239,8 +262,8 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
         {/* Header */}
         <div className="nords-project-settings__header">
           <div>
-            <h2 className="nords-project-settings__title nords-panel-title"><SettingsIcon size={18} strokeWidth={1.6} />Project Settings</h2>
-            <p className="nords-project-settings__subtitle">Configure project details and integrations.</p>
+            <h2 className="nords-project-settings__title nords-panel-title"><SettingsIcon size={18} strokeWidth={1.6} />{isCreate ? 'New Project' : 'Project Settings'}</h2>
+            <p className="nords-project-settings__subtitle">{isCreate ? 'Create a new project workspace.' : 'Configure project details and integrations.'}</p>
           </div>
           <button className="nords-project-settings__close" onClick={onClose} title="Close">
             <X size={18} />
@@ -330,6 +353,9 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
             />
           </div>
 
+          {/* ── Settings-only sections (hidden in create mode) ── */}
+          {!isCreate && (
+          <>
           <div className="nords-form__divider" />
 
           {/* ── Default Persona ── */}
@@ -738,40 +764,8 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
 
           <div className="nords-form__divider" />
 
-          {/* ── MCP Toggles ── */}
-          <label className="nords-form__checkbox">
-            <input
-              type="checkbox"
-              checked={form.mcp_enabled || false}
-              onChange={e => setForm({ ...form, mcp_enabled: e.target.checked })}
-            />
-            <span>Enable Agent (MCP)</span>
-          </label>
-
-          {form.mcp_enabled && (
-            <div className="nords-form__indent">
-              {/* ── Project Mode Selector ── */}
-              <div className="nords-modal__mode-selector" style={{ marginBottom: '16px' }}>
-                <span className="nords-form__label">Project Mode</span>
-                <div className="nords-modal__mode-cards">
-                  {[
-                    { key: 'explore' as const, icon: <Compass size={20} strokeWidth={1.4} />, name: 'Explore', desc: 'Open-ended discovery. No data collection or session goals.' },
-                    { key: 'collect' as const, icon: <ClipboardList size={20} strokeWidth={1.4} />, name: 'Collect', desc: 'Opportunistic data capture. The agent collects properties as they surface.' },
-                    { key: 'guided' as const, icon: <Target size={20} strokeWidth={1.4} />, name: 'Guided', desc: 'Goal-directed sessions. The agent steers toward completing defined objectives.' },
-                  ].map(mode => (
-                    <button
-                      key={mode.key}
-                      type="button"
-                      className={`nords-modal__mode-card ${form.project_mode === mode.key ? 'is-active' : ''}`}
-                      onClick={() => setForm({ ...form, project_mode: mode.key })}
-                    >
-                      <span className="nords-modal__mode-card-icon">{mode.icon}</span>
-                      <span className="nords-modal__mode-card-name">{mode.name}</span>
-                      <span className="nords-modal__mode-card-desc">{mode.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+          {/* ── Agent Settings ── */}
+          <div className="nords-form__indent">
 
               {/* Graph Only Toggle */}
               <label className="nords-form__checkbox">
@@ -808,6 +802,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
                 </span>
               </div>
             </div>
+          </>
           )}
         </div>
 
@@ -817,7 +812,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, onProjectNameChang
           <button className="nords-form__btn nords-form__btn--secondary" onClick={onClose}>Cancel</button>
           <button className="nords-form__btn nords-form__btn--primary" onClick={handleSave} disabled={saving}>
             <Save size={14} />
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? (isCreate ? 'Creating…' : 'Saving…') : (isCreate ? 'Create Project' : 'Save')}
           </button>
         </div>
       </div>

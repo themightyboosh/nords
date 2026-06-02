@@ -125,10 +125,10 @@ export function GoalDetailDrawer({
         <div className="goal-detail-drawer__header">
           <div style={{ flex: 1 }}>
             <div className="nords-drawer-type-eyebrow" style={{ color: goal.accent_color || '#6366f1' }}>
+              <GoalIcon size={12} strokeWidth={2} />
               Goal
             </div>
             <div className="goal-detail-drawer__identity">
-              <GoalIcon size={20} strokeWidth={1.6} className="nords-drawer-title-icon" style={{ color: goal.accent_color || '#6366f1' }} />
               <h2 className="goal-detail-drawer__name">{goal.name}</h2>
             </div>
           </div>

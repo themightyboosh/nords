@@ -45,6 +45,7 @@ export interface ConnectionEntity {
   verb: string | null;
   prepositions: { forward: string; reverse: string; both: string };
   typeColor: string;
+  typeIcon: string | null;
   typeId: string;
   direction: string;
   distanceX: number;
@@ -149,6 +150,7 @@ export function useDrawerEntity(
           both: 'together',
         },
         typeColor: connType?.accent_color || '#888',
+        typeIcon: connType?.icon || null,
         typeId: conn.type_id,
         direction: visualDirection,
         distanceX: conn.distance_x ?? 0.5,

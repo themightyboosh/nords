@@ -225,7 +225,7 @@ sessionExplorerRouter.get('/sessions/:id/events', async (req: Request, res: Resp
       ? (actions as string).split(',').map(a => a.trim())
       : undefined;
 
-    const events = await getSessionEvents(sessionId, actionTypes);
+    const events = await getSessionEvents(sessionId as string, actionTypes);
 
     res.json({ session_id: sessionId, events });
   } catch (err: any) {
@@ -237,7 +237,7 @@ sessionExplorerRouter.get('/sessions/:id/events', async (req: Request, res: Resp
 sessionExplorerRouter.get('/sessions/:id/replay', async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.id;
-    const rounds = await getReplayData(sessionId);
+    const rounds = await getReplayData(sessionId as string);
     res.json({ session_id: sessionId, rounds });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -250,7 +250,7 @@ sessionExplorerRouter.get('/sessions/:id/metrics', async (req: Request, res: Res
     const sessionId = req.params.id;
 
     const [counts, session] = await Promise.all([
-      getSessionEventCounts(sessionId),
+      getSessionEventCounts(sessionId as string),
       queryOne<any>(`
         SELECT id, status, started_at, ended_at, metadata, source_type
         FROM mcp_sessions WHERE id = $1
@@ -286,7 +286,7 @@ sessionExplorerRouter.get('/sessions/:id/export', async (req: Request, res: Resp
       : undefined;
 
     const [events, session] = await Promise.all([
-      getSessionEvents(sessionId, actions),
+      getSessionEvents(sessionId as string, actions),
       queryOne<any>(`
         SELECT s.*, p.name AS persona_name
         FROM mcp_sessions s

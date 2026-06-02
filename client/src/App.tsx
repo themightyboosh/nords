@@ -419,11 +419,6 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           goalsEnabled={projectMode === 'guided'}
           open={testRunnerOpen}
           onClose={() => setTestRunnerOpen(false)}
-          onReplay={(transcript, label) => {
-            setReplayTranscript(transcript);
-            setReplayLabel(label);
-            setPreviewOpen(true);
-          }}
         />
       )}
       {projectId && (

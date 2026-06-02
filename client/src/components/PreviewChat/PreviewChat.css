@@ -497,46 +497,44 @@
 
 /* ── Replay Controls ── */
 .preview-chat__replay-controls {
-  flex-direction: column; gap: 8px; padding: 10px 16px;
-  align-items: stretch;
+  flex-direction: row; gap: 12px; padding: 10px 16px;
+  align-items: center; justify-content: space-between;
 }
 .preview-chat__replay-progress {
-  font-size: 11px; color: #9ca3af; text-align: center;
+  font-size: 11px; color: #9ca3af;
   font-family: var(--nords-font-mono, monospace);
-}
-.preview-chat__replay-bar {
-  height: 4px; border-radius: 2px;
-  background: rgba(255,255,255,0.08); overflow: hidden;
-}
-.preview-chat__replay-bar-fill {
-  height: 100%; border-radius: 2px;
-  background: linear-gradient(90deg, #818cf8, #a78bfa);
-  transition: width 0.3s ease;
-}
-.preview-chat__replay-buttons {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .preview-chat__replay-btn {
   display: flex; align-items: center; gap: 4px;
-  padding: 6px 10px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+  padding: 6px 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
   background: rgba(255,255,255,0.04); color: #9ca3af;
   cursor: pointer; font-size: 11px; font-family: inherit;
   transition: all 0.15s;
 }
-.preview-chat__replay-btn:hover:not(:disabled) {
+.preview-chat__replay-btn:hover {
   background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.3); color: #c4b5fd;
 }
-.preview-chat__replay-btn:disabled {
-  opacity: 0.35; cursor: not-allowed;
-}
-.preview-chat__replay-btn span {
-  font-weight: 600; font-size: 10px;
-  font-family: var(--nords-font-mono, monospace);
-}
 .preview-chat__replay-btn--exit {
-  margin-left: auto;
   background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.15); color: #f87171;
 }
 .preview-chat__replay-btn--exit:hover {
   background: rgba(239, 68, 68, 0.18) !important; border-color: rgba(239, 68, 68, 0.3) !important; color: #fca5a5 !important;
+}
+
+/* Speed pills */
+.preview-chat__replay-speed {
+  display: flex; gap: 4px; align-items: center;
+}
+.preview-chat__speed-pill {
+  padding: 4px 10px; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px;
+  background: rgba(255,255,255,0.04); color: #6b7280;
+  cursor: pointer; font-size: 11px; font-family: var(--nords-font-mono, monospace);
+  transition: all 0.15s;
+}
+.preview-chat__speed-pill:hover {
+  background: rgba(139, 92, 246, 0.12); color: #a78bfa;
+}
+.preview-chat__speed-pill.active {
+  background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd;
+  font-weight: 600;
 }

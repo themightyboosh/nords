@@ -84,20 +84,21 @@
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 999px;
-  border: 1px solid var(--nords-color-border-subtle);
-  background: transparent;
-  color: var(--nords-color-text-tertiary);
+  border: 1px solid var(--nords-color-border-default);
+  background: var(--nords-color-bg-subtle);
+  color: var(--nords-color-text-secondary);
   cursor: pointer;
   transition: all 0.15s;
   font-weight: 500;
 }
 .session-explorer__filter-pill:hover {
-  border-color: var(--nords-color-text-secondary);
-  color: var(--nords-color-text-secondary);
+  border-color: var(--nords-color-accent, #818cf8);
+  color: var(--nords-color-text-primary);
+  background: color-mix(in oklch, var(--nords-color-accent) 10%, var(--nords-color-bg-subtle));
 }
 .session-explorer__filter-pill.active {
-  background: var(--nords-color-text-primary);
-  color: var(--nords-color-bg-base);
+  background: var(--nords-color-accent, #818cf8);
+  color: #fff;
   border-color: transparent;
 }
 
@@ -254,9 +255,10 @@
   color: var(--nords-color-text-secondary);
 }
 .session-explorer__tab.active {
-  background: var(--nords-color-bg-subtle);
+  background: transparent;
   color: var(--nords-color-text-primary);
   font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--nords-color-accent, #818cf8);
 }
 
 .session-explorer__action-btns {
@@ -269,9 +271,9 @@
   align-items: center;
   gap: 5px;
   padding: 5px 10px;
-  border: 1px solid var(--nords-color-border-subtle);
-  background: transparent;
-  color: var(--nords-color-text-secondary);
+  border: 1px solid var(--nords-color-border-default);
+  background: var(--nords-color-bg-subtle);
+  color: var(--nords-color-text-primary);
   cursor: pointer;
   border-radius: var(--nords-radius-sm);
   font-size: 11px;
@@ -279,8 +281,8 @@
   transition: all 0.15s;
 }
 .session-explorer__action-btn:hover {
-  background: var(--nords-color-bg-subtle);
-  border-color: var(--nords-color-text-tertiary);
+  background: color-mix(in oklch, var(--nords-color-accent) 12%, var(--nords-color-bg-subtle));
+  border-color: var(--nords-color-accent, #818cf8);
 }
 
 .session-explorer__export-dropdown {
@@ -677,26 +679,30 @@
 }
 
 .session-explorer__var-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--nords-color-text-primary);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .session-explorer__var-value {
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--nords-font-mono, monospace);
-  color: #818cf8;
-  font-weight: 500;
-  max-width: 200px;
+  color: #f1f5f9;
+  font-weight: 700;
+  max-width: 240px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: right;
+  letter-spacing: -0.01em;
 }
 
 .session-explorer__var-desc {
   font-size: 10px;
-  color: var(--nords-color-text-tertiary);
+  color: rgba(255, 255, 255, 0.12);
   margin-top: 3px;
   line-height: 1.4;
 }
@@ -709,19 +715,19 @@
 }
 
 .session-explorer__var-type {
-  font-size: 9px;
+  font-size: 8px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   font-weight: 600;
-  color: var(--nords-color-text-tertiary);
-  padding: 1px 5px;
+  color: rgba(255, 255, 255, 0.12);
+  padding: 1px 4px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.015);
 }
 
 .session-explorer__var-nord {
-  font-size: 9px;
-  color: var(--nords-color-text-tertiary);
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.10);
   font-style: italic;
 }
 

@@ -174,7 +174,7 @@ function GoalCanvasInner({
     return m;
   }, [variables]);
 
-  // Build nodes
+  // Build nodes — exclude selectedGoalId from deps to prevent re-layout on click
   const initialNodes: Node<GoalNodeData>[] = useMemo(() => {
     return explicit.map(g => {
       const pos = layout.get(g.id) || { x: 0, y: 0 };
@@ -194,12 +194,12 @@ function GoalCanvasInner({
           prerequisiteGate: g.prerequisite_gate || 'all',
           forkType: g.fork_type || 'parallel',
           isRoot: rootSet.has(g.id),
-          isSelected: g.id === selectedGoalId,
+          isSelected: false, // Updated separately to avoid re-layout
           collectionItems,
         },
       };
     });
-  }, [explicit, layout, selectedGoalId, rootSet, varNameMap]);
+  }, [explicit, layout, rootSet, varNameMap]);
 
   // Build ReactFlow edges from goal_edges
   const initialEdges: Edge[] = useMemo(() => {
@@ -228,10 +228,12 @@ function GoalCanvasInner({
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { fitView } = useReactFlow();
 
-  // Block position/dimension changes — always auto-layout
+  // Block position dragging — always auto-layout.
+  // IMPORTANT: Allow 'dimensions' changes so ReactFlow can measure nodes
+  // internally (needed for fitView to calculate correct bounds on first render).
   const handleNodesChange = useCallback(
     (changes: Parameters<typeof onNodesChange>[0]) => {
-      const filtered = changes.filter(c => c.type !== 'position' && c.type !== 'dimensions');
+      const filtered = changes.filter(c => c.type !== 'position');
       if (filtered.length > 0) onNodesChange(filtered);
     },
     [onNodesChange]
@@ -241,10 +243,22 @@ function GoalCanvasInner({
   useEffect(() => { setNodes(initialNodes); }, [initialNodes, setNodes]);
   useEffect(() => { setRfEdges(initialEdges); }, [initialEdges, setRfEdges]);
 
-  // Fit view on mount + when edges change (auto-layout recalculates positions)
+  // Update selection highlight without triggering re-layout
   useEffect(() => {
-    setTimeout(() => fitView({ padding: 0.3, duration: 300 }), 100);
-  }, [fitView, goals.length, goalEdges.length]);
+    setNodes(nds =>
+      nds.map(n => ({
+        ...n,
+        data: { ...n.data, isSelected: n.id === selectedGoalId },
+      }))
+    );
+  }, [selectedGoalId, setNodes]);
+
+  // Fit view after nodes are mounted and measured.
+  // Only triggers on structural changes (edges), not selection.
+  useEffect(() => {
+    const timer = setTimeout(() => fitView({ padding: 0.3, duration: 300 }), 350);
+    return () => clearTimeout(timer);
+  }, [fitView, initialEdges]);
 
   // ── Interactive edge drawing ──
   const handleConnect: OnConnect = useCallback((connection: Connection) => {

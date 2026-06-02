@@ -177,7 +177,7 @@ server.tool('nords_get_graph',
 );
 
 server.tool('nords_get_nord',
-  'Get a single nord by ID with all its properties.',
+  'Get a single nord by ID with all its properties. Also updates your position to this nord and returns the horizon from there.',
   { nord_id: z.string().describe('UUID of the nord') },
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
@@ -273,31 +273,19 @@ server.tool('nords_get_analytics',
 
 // ── Tier 2: Session Tools ──
 
-server.tool('nords_jump_to_nord',
-  `Jump directly to any nord by its ID. Use this to reposition yourself when you need to explore a specific node (e.g. from query results or the planning_queue). Returns updated horizon with neighbors.${projectContext}`,
+server.tool('nords_navigate',
+  `Navigate to any nord by name, type, or ID. Traverses if target is a neighbor, jumps otherwise. Always updates position and returns horizon.${projectContext}`,
   {
-    nord_id: z.string().describe('UUID of the nord to jump to'),
+    to: z.string().describe('Nord title, type name, or UUID'),
+    type_name: z.string().optional().describe('Filter by nord type to disambiguate'),
   },
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
-    const result = await dispatchTool('nords_jump_to_nord', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
-  }
-);
-
-server.tool('nords_traverse_connection',
-  `Move to a connected nord. Get connection_id from the horizon's neighbors[].relationship.connection_id. source_nord_id is your current position, target_nord_id is neighbors[].nord.id. Returns updated horizon.${projectContext}`,
-  {
-    connection_id: z.string().describe('UUID of the connection (from horizon neighbors[].relationship.connection_id)'),
-    source_nord_id: z.string().describe('UUID of the source nord (your current position)'),
-    target_nord_id: z.string().describe('UUID of the target nord (from horizon neighbors[].nord.id)'),
-    direction: z.enum(['forward', 'backward']).describe('Direction of traversal'),
-    traversal_type: z.enum(['read', 'advance', 'rework', 'create', 'assign', 'evaluate']).describe('Why you are traversing'),
-  },
-  async (args) => {
-    const sid = await ensureSession(process.env.PROJECT_ID!);
-    const result = await dispatchTool('nords_traverse_connection', getToolContext(sid), args);
-    return { content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], isError: !result.success };
+    const result = await dispatchTool('nords_navigate', getToolContext(sid), args);
+    return { 
+      content: [{ type: 'text' as const, text: toJson(result.data ?? result.error) }], 
+      isError: !result.success 
+    };
   }
 );
 

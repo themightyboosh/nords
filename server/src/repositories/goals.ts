@@ -3,6 +3,7 @@ import type {
   Goal, GoalEdge, GoalVariableBinding, GoalRelevantNord,
   GoalRelevantNordType, PersonaGoalWeight,
 } from '../types/entities.js';
+import logger from '../lib/logger.js';
 
 // ══════════════════════════════════════════════════════════
 // Goals CRUD
@@ -548,6 +549,12 @@ export async function evaluateGoals(
       progress,
     });
 
+    logger.info('goal.completed', {
+      sessionId, projectId, goalId: goal.id,
+      goalName: goal.name, endType: goal.end_type || null,
+      progress,
+    });
+
     // ── Structural exclusion: cancel sibling branches (opt-in per parent) ──
     // Only cancel siblings if the parent's fork_type is 'exclusive'.
     // Default (parallel) means all children coexist.
@@ -642,6 +649,12 @@ export async function evaluateGoals(
               type: 'goal_activated',
               goal_id: p.goal_id,
               goal_name: promotedGoal?.name || 'Unknown',
+              reason: 'prerequisites_met',
+            });
+
+            logger.info('goal.activated', {
+              sessionId, projectId, goalId: p.goal_id,
+              goalName: promotedGoal?.name || 'Unknown',
               reason: 'prerequisites_met',
             });
           }

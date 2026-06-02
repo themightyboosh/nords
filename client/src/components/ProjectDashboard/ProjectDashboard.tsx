@@ -17,16 +17,13 @@ import {
   Star, Users, Type,
   Trash2, Download, Settings, X, AlertTriangle, BookOpen,
   ShieldCheck, BarChart3, CreditCard, Settings2,
-  Compass, ClipboardList, Target,
+
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import ViewportHeader from '../Layout/ViewportHeader';
-import { IconPicker } from '../shared/IconPicker';
 import { ColorIcon } from '../shared/ColorIcon';
-import { resolveIcon } from '../../utils/iconRegistry';
 import { ProjectSettings } from '../ProjectSettings/ProjectSettings';
-import { HueSlider } from '../shared/HueSlider';
 import { useAuth } from '../../context/AuthContext';
 import UserAdmin from '../Admin/UserAdmin';
 import ManageUIStrings from '../Admin/ManageUIStrings';
@@ -41,7 +38,7 @@ interface Project {
   description: string | null;
   purpose: string | null;
   project_mode: 'explore' | 'collect' | 'guided';
-  mcp_enabled: boolean;
+
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
   goals_enabled: boolean;
@@ -59,23 +56,6 @@ export default function ProjectDashboard() {
 
   // Create modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [createForm, setCreateForm] = useState({
-    name: '',
-    description: '',
-    purpose: '',
-    icon: 'Folder',
-    accent_color: '#6b7aed',
-    mcp_enabled: false,
-    graph_only: false,
-    project_mode: 'explore' as 'explore' | 'collect' | 'guided',
-  });
-  const [createErrors, setCreateErrors] = useState<string[]>([]);
-  const [creating, setCreating] = useState(false);
-
-  // Delete modal state
-  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [showCreateIconPicker, setShowCreateIconPicker] = useState(false);
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{ projectId: string; x: number; y: number } | null>(null);
@@ -104,40 +84,10 @@ export default function ProjectDashboard() {
     loadProjects();
   }, [loadProjects]);
 
-  // ── Create Project ──
-  const handleCreate = async () => {
-    const errors: string[] = [];
-    if (!createForm.name.trim()) errors.push('Name is required');
-    if (!createForm.description.trim()) errors.push('Description is required');
-    if (!createForm.purpose.trim()) errors.push('Purpose is required');
-    if (errors.length > 0) {
-      setCreateErrors(errors);
-      return;
-    }
+  // Delete modal state
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-    setCreating(true);
-    setCreateErrors([]);
-    try {
-      await api.post('/api/projects', {
-        name: createForm.name.trim(),
-        description: createForm.description.trim(),
-        purpose: createForm.purpose.trim(),
-        icon: createForm.icon || 'Folder',
-        accent_color: createForm.accent_color || '#6b7aed',
-        mcp_enabled: createForm.mcp_enabled,
-        graph_only: createForm.graph_only,
-        project_mode: createForm.mcp_enabled ? createForm.project_mode : 'explore',
-      });
-      setShowCreateModal(false);
-      setShowCreateIconPicker(false);
-      setCreateForm({ name: '', description: '', purpose: '', icon: 'Folder', accent_color: '#6b7aed', mcp_enabled: false, graph_only: false, project_mode: 'explore' });
-      await loadProjects();
-    } catch (err: any) {
-      setCreateErrors([err.message || 'Failed to create project']);
-    } finally {
-      setCreating(false);
-    }
-  };
 
   // ── Delete Project ──
   const handleDelete = async () => {
@@ -467,154 +417,14 @@ export default function ProjectDashboard() {
         </>
       )}
 
-      {/* ── Create Project Modal ── */}
+      {/* ── Create Project (via unified ProjectSettings) ── */}
       {showCreateModal && (
-        <div className="nords-modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="nords-modal" onClick={e => e.stopPropagation()}>
-            <div className="nords-modal__header">
-              <h2>Create Project</h2>
-              <button className="nords-modal__close" onClick={() => setShowCreateModal(false)}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="nords-modal__body">
-              {createErrors.length > 0 && (
-                <div className="nords-modal__errors">
-                  {createErrors.map((e, i) => <div key={i} className="nords-modal__error"><AlertTriangle size={12} /> {e}</div>)}
-                </div>
-              )}
-
-              <label className="nords-modal__label">
-                Name <span className="nords-modal__required">*</span>
-                <div className="nords-form__icon-name-row">
-                  {(() => {
-                    const CreateIcon = resolveIcon(createForm.icon || 'Folder');
-                    return (
-                      <button
-                        type="button"
-                        className="nords-form__icon-btn"
-                        onClick={() => setShowCreateIconPicker(!showCreateIconPicker)}
-                        title="Choose project icon"
-                        data-testid="create-project-icon-btn"
-                      >
-                        <CreateIcon size={20} strokeWidth={1.6} />
-                      </button>
-                    );
-                  })()}
-                  <input
-                    className="nords-modal__input"
-                    value={createForm.name}
-                    onChange={e => setCreateForm({ ...createForm, name: e.target.value })}
-                    placeholder="Product Launch Q3"
-                    autoFocus
-                  />
-                </div>
-                {showCreateIconPicker && (
-                  <div style={{ marginTop: '8px' }}>
-                    <IconPicker
-                      currentIcon={createForm.icon || 'Folder'}
-                      accentColor={createForm.accent_color || '#6b7aed'}
-                      onSelect={(iconName) => {
-                        setCreateForm({ ...createForm, icon: iconName });
-                        setShowCreateIconPicker(false);
-                      }}
-                    />
-                    <div style={{ marginTop: '12px', padding: '0 8px' }}>
-                      <label className="nords-form__label" style={{ marginBottom: '6px' }}>Color</label>
-                      <HueSlider
-                        color={createForm.accent_color || '#6b7aed'}
-                        onChange={(hex) => setCreateForm({ ...createForm, accent_color: hex })}
-                        saturation={55}
-                        lightness={50}
-                      />
-                    </div>
-                  </div>
-                )}
-              </label>
-
-              <label className="nords-modal__label">
-                Description <span className="nords-modal__required">*</span>
-                <textarea
-                  className="nords-modal__textarea"
-                  value={createForm.description}
-                  onChange={e => setCreateForm({ ...createForm, description: e.target.value })}
-                  placeholder="End-to-end planning for the Q3 product release cycle."
-                  rows={3}
-                />
-              </label>
-
-              <label className="nords-modal__label">
-                Purpose <span className="nords-modal__required">*</span>
-                <textarea
-                  className="nords-modal__textarea"
-                  value={createForm.purpose}
-                  onChange={e => setCreateForm({ ...createForm, purpose: e.target.value })}
-                  placeholder="Track dependencies, milestones, and team assignments."
-                  rows={2}
-                />
-              </label>
-
-              <div className="nords-modal__divider" />
-
-              <label className="nords-modal__checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={createForm.mcp_enabled}
-                  onChange={e => setCreateForm({ ...createForm, mcp_enabled: e.target.checked })}
-                />
-                <span>Enable Agent (MCP)</span>
-              </label>
-
-              {createForm.mcp_enabled && (
-                <div style={{ marginLeft: 26, paddingLeft: 12, borderLeft: '2px solid var(--nords-color-border-subtle)', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <label className="nords-modal__checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={createForm.graph_only}
-                      onChange={e => setCreateForm({ ...createForm, graph_only: e.target.checked })}
-                    />
-                    <span>Graph Only</span>
-                  </label>
-                  <span style={{ fontSize: '10px', color: 'var(--nords-color-text-disabled)', fontStyle: 'italic', marginTop: '-6px', marginLeft: '26px' }}>
-                    {createForm.graph_only
-                      ? 'No variables or goals — the agent explores the graph only.'
-                      : 'Mode is auto-detected: add variables for data collection, add goals for guided sessions.'}
-                  </span>
-                </div>
-              )}
-
-              <div className="nords-modal__mode-selector">
-                <span className="nords-modal__mode-label">Project Mode</span>
-                <div className="nords-modal__mode-cards">
-                  {[
-                    { key: 'explore' as const, icon: <Compass size={20} strokeWidth={1.4} />, name: 'Explore', desc: 'Open-ended discovery. No data collection or session goals.' },
-                    { key: 'collect' as const, icon: <ClipboardList size={20} strokeWidth={1.4} />, name: 'Collect', desc: 'Opportunistic data capture. The agent collects properties as they surface.' },
-                    { key: 'guided' as const, icon: <Target size={20} strokeWidth={1.4} />, name: 'Guided', desc: 'Goal-directed sessions. The agent steers toward completing defined objectives.' },
-                  ].map(mode => (
-                    <button
-                      key={mode.key}
-                      type="button"
-                      className={`nords-modal__mode-card ${createForm.project_mode === mode.key ? 'is-active' : ''}`}
-                      onClick={() => setCreateForm({ ...createForm, project_mode: mode.key })}
-                    >
-                      <span className="nords-modal__mode-card-icon">{mode.icon}</span>
-                      <span className="nords-modal__mode-card-name">{mode.name}</span>
-                      <span className="nords-modal__mode-card-desc">{mode.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="nords-modal__footer">
-              <button className="nords-modal__btn nords-modal__btn--secondary" onClick={() => setShowCreateModal(false)}>Cancel</button>
-              <button className="nords-modal__btn nords-modal__btn--primary" onClick={handleCreate} disabled={creating}>
-                {creating ? 'Creating…' : 'Create Project'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ProjectSettings
+          isOpen={true}
+          mode="create"
+          onClose={() => setShowCreateModal(false)}
+          onCreate={() => { setShowCreateModal(false); loadProjects(); }}
+        />
       )}
 
       {/* ── Delete Confirmation Modal ── */}

@@ -2,6 +2,7 @@ import { query, queryOne } from '../db.js';
 import type { McpSession, McpTraversal, McpNordVisit, Project, ProjectVariable } from '../types/entities.js';
 import * as goalsRepo from './goals.js';
 import * as variablesRepo from './variables.js';
+import logger from '../lib/logger.js';
 
 // ── Null Stripping Utility ──
 
@@ -68,13 +69,14 @@ export async function createSession(
   sourceType: 'chat' | 'test' | 'api' | 'share' = 'chat',
   metadata: Record<string, unknown> = {}
 ): Promise<McpSession> {
-  // Gate on mcp_enabled — admin must enable MCP for this project
-  const project = await queryOne<{ mcp_enabled: boolean; mcp_capture_data: boolean }>(`
-    SELECT mcp_enabled, mcp_capture_data FROM projects WHERE id = $1
+  // Fetch project settings
+  const project = await queryOne<{ mcp_capture_data: boolean }>(`
+    SELECT mcp_capture_data FROM projects WHERE id = $1
   `, [projectId]);
-  if (!project?.mcp_enabled) {
-    throw new Error('MCP is not enabled for this project. Enable it in Project Settings.');
+  if (!project) {
+    throw new Error('Project not found.');
   }
+
 
   // Resolve start position: explicit → default_start_nord_id → oldest nord in project
   let resolvedStartNord = startNordId || null;
@@ -93,6 +95,12 @@ export async function createSession(
     VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *
   `, [projectId, personaId || null, resolvedStartNord, userId || null, sourceType, JSON.stringify(metadata)]) as McpSession;
+
+  logger.info('session.created', {
+    sessionId: session.id, projectId, sourceType,
+    personaId: personaId || null,
+    startNordId: resolvedStartNord,
+  });
 
   return session;
 }
@@ -119,12 +127,25 @@ export async function updateCurrentNord(sessionId: string, nordId: string | null
 }
 
 export async function endSession(id: string, status: 'completed' | 'abandoned', summary?: string): Promise<McpSession | null> {
-  return queryOne<McpSession>(`
+  const session = await queryOne<McpSession>(`
     UPDATE mcp_sessions
     SET ended_at = NOW(), status = $2, summary = $3
     WHERE id = $1
     RETURNING *
   `, [id, status, summary || null]);
+
+  if (session) {
+    const durationMs = session.ended_at && session.started_at
+      ? new Date(session.ended_at as any).getTime() - new Date(session.started_at as any).getTime()
+      : null;
+    logger.info('session.ended', {
+      sessionId: id, status, summary: summary?.slice(0, 200),
+      projectId: session.project_id,
+      durationMs,
+    });
+  }
+
+  return session;
 }
 
 /** List all sessions for a project, most recent first */
@@ -313,6 +334,7 @@ export interface SessionHorizon {
   remaining_variables: Array<{
     variable_id: string; name: string; type: string; required: boolean;
     description: string; tags: string[]; goals: string[]; topically_relevant: boolean;
+    format_hint?: string; example_value?: string;
   }>;
   neighbors: HorizonNeighbor[];
   planning_queue: Array<{ nord_id: string; title: string; type_name: string; goal_relevant: boolean }>;
@@ -343,6 +365,7 @@ export interface SessionHorizon {
     end_nord: { id: string; title: string } | null;
     session_status: string;
   };
+  collected_so_far?: Record<string, unknown>;
 }
 
 /**
@@ -640,11 +663,72 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
         .filter((n): n is string => !!n);
       // Topically relevant if any bound goal connects to the current nord/type
       const topically_relevant = boundGoalIds.some(gid => topicalGoalIds.has(gid));
+
+      // Generate format_hint and example_value from variable type
+      let format_hint: string | undefined;
+      let example_value: string | undefined;
+      const opts = v.options;
+      let optionsList: string[] = [];
+      if (Array.isArray(opts)) {
+        optionsList = opts.map(String);
+      } else if (typeof opts === 'string') {
+        try { optionsList = JSON.parse(opts); } catch { /* ignore */ }
+      }
+
+      switch (v.type) {
+        case 'boolean':
+          format_hint = 'true or false';
+          example_value = 'true';
+          break;
+        case 'select':
+          format_hint = optionsList.length > 0 ? `One of: [${optionsList.join(', ')}]` : 'Free text';
+          example_value = optionsList[0] || undefined;
+          break;
+        case 'multi_select':
+          format_hint = optionsList.length > 0 ? `One or more of: [${optionsList.join(', ')}]` : 'Comma-separated values';
+          example_value = optionsList.length >= 2 ? `${optionsList[0]}, ${optionsList[1]}` : optionsList[0] || undefined;
+          break;
+        case 'number':
+          format_hint = 'Numeric value';
+          example_value = '42';
+          break;
+        case 'currency':
+          format_hint = 'Numeric value (USD)';
+          example_value = '15000';
+          break;
+        case 'percentage':
+          format_hint = 'Numeric percentage (0-100)';
+          example_value = '75';
+          break;
+        case 'date':
+          format_hint = 'Date in YYYY-MM-DD format';
+          example_value = '2025-06-15';
+          break;
+        case 'date_range':
+          format_hint = 'Date range: start to end (YYYY-MM-DD)';
+          example_value = '2025-01-01 to 2025-06-30';
+          break;
+        case 'url':
+          format_hint = 'Valid URL';
+          example_value = 'https://example.com';
+          break;
+        case 'email':
+          format_hint = 'Email address';
+          example_value = 'user@example.com';
+          break;
+        default:
+          // text, long_text, etc.
+          format_hint = 'Free text';
+          break;
+      }
+
       return {
         variable_id: v.id, name: v.name, type: v.type, required: v.required,
         description: v.description, tags: v.tags, goals: goalNames,
         topically_relevant,
         ...(v.options ? { options: v.options } : {}),
+        ...(format_hint ? { format_hint } : {}),
+        ...(example_value ? { example_value } : {}),
       };
     });
 
@@ -893,11 +977,20 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     session_status: session.status || 'active',
   };
 
+  // Build collected_so_far — what the user has already shared
+  const collected_so_far: Record<string, unknown> = {};
+  for (const sv of sessionVarRows) {
+    if (sv.value != null && sv.value !== '') {
+      collected_so_far[sv.name] = sv.value;
+    }
+  }
+
   return {
     current_nord: currentNord, persona, completion, remaining_variables,
     neighbors, planning_queue: planningQueue, traversal_history,
     suggested_next, predicted_path,
     goals, suggested_persona, session_meta,
+    collected_so_far: Object.keys(collected_so_far).length > 0 ? collected_so_far : undefined,
   };
 }
 

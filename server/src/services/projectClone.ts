@@ -246,16 +246,15 @@ export async function cloneProject(sourceProjectId: string, createdBy: string | 
         INSERT INTO test_scenarios (
           id, project_id, name, description, user_objective, user_profile, user_profile_custom,
           user_context, agent_model, user_model, max_rounds,
-          stop_on_completion_pct, stop_on_goal_id, stop_on_session_end, min_completion_pct
-        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+          stop_on_goal_id, stop_on_session_end
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
       `, [
         randomUUID(), newProjectId, ts.name, ts.description, ts.user_objective,
         ts.user_profile, ts.user_profile_custom,
         JSON.stringify(ts.user_context || {}),
         ts.agent_model, ts.user_model, ts.max_rounds,
-        ts.stop_on_completion_pct,
         ts.stop_on_goal_id ? (goalMap.get(ts.stop_on_goal_id) || null) : null,
-        ts.stop_on_session_end, ts.min_completion_pct,
+        ts.stop_on_session_end,
       ]);
       testScenariosCount++;
     }
