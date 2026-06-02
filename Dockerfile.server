@@ -46,6 +46,9 @@ COPY --from=builder /app/server/dist ./server/dist
 COPY server/migrations ./server/migrations
 COPY server/functions ./server/functions
 
+# Overlay compiled shared JS onto workspace source so pnpm symlinks resolve to JS at runtime
+COPY --from=builder /app/server/dist/shared/ ./shared/
+
 WORKDIR /app/server
 
 # Cloud Run sets PORT dynamically (default 8080)
