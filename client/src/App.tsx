@@ -111,6 +111,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const [projectIcon, setProjectIcon] = useState<string | null>(null);
   const [projectColor, setProjectColor] = useState<string | null>(null);
   const [projectMode, setProjectMode] = useState<'explore' | 'collect' | 'guided'>('explore');
+  const [graphOnly, setGraphOnly] = useState(false);
 
   // Replay state — shared between TestRunner and PreviewChat
   const [replayTranscript, setReplayTranscript] = useState<any[] | null>(null);
@@ -128,12 +129,13 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   // Fetch project name + mode
   useEffect(() => {
     if (!projectId) return;
-    api.get<{ name: string; icon?: string | null; accent_color?: string | null; project_mode?: 'explore' | 'collect' | 'guided' }>(`/api/projects/${projectId}`)
+    api.get<{ name: string; icon?: string | null; accent_color?: string | null; project_mode?: 'explore' | 'collect' | 'guided'; graph_only?: boolean }>(`/api/projects/${projectId}`)
       .then(p => {
         setProjectName(p.name);
         setProjectIcon(p.icon || null);
         setProjectColor(p.accent_color || null);
         setProjectMode(p.project_mode || 'explore');
+        setGraphOnly(p.graph_only ?? false);
       })
       .catch(() => setProjectName('Project'));
   }, [projectId]);
@@ -256,6 +258,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         projectName={projectName}
         projectIcon={projectIcon}
         projectColor={projectColor}
+        graphOnly={graphOnly}
       />
       <UserProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
       {projectId && (
@@ -266,12 +269,13 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
             setPreviewOpen(false);
             // Re-fetch project to pick up mode changes
             if (projectId) {
-              api.get<{ name: string; icon?: string | null; accent_color?: string | null; project_mode?: 'explore' | 'collect' | 'guided' }>(`/api/projects/${projectId}`)
+              api.get<{ name: string; icon?: string | null; accent_color?: string | null; project_mode?: 'explore' | 'collect' | 'guided'; graph_only?: boolean }>(`/api/projects/${projectId}`)
                 .then(p => {
                   setProjectName(p.name);
                   setProjectIcon(p.icon || null);
                   setProjectColor(p.accent_color || null);
                   setProjectMode(p.project_mode || 'explore');
+                  setGraphOnly(p.graph_only ?? false);
                 })
                 .catch(() => {});
             }
@@ -280,7 +284,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
           onProjectNameChange={setProjectName}
         />
       )}
-      <GlobalDock projectId={projectId} refetchGraph={refetch} graph={graph} personas={personas} projectMode={projectMode} />
+      <GlobalDock projectId={projectId} refetchGraph={refetch} graph={graph} personas={personas} graphOnly={graphOnly} />
       <CanvasEngine
         onNordClick={lens === 'persona' ? () => {} : handleNordClick}
         onEdgeDoubleClick={lens === 'persona' ? () => {} : handleEdgeDoubleClick}
@@ -410,7 +414,7 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
         <TestRunner
           projectId={projectId}
           projectMode={projectMode}
-          goalsEnabled={projectMode === 'guided'}
+          goalsEnabled={!graphOnly}
           open={testRunnerOpen}
           onClose={() => setTestRunnerOpen(false)}
         />

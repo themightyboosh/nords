@@ -19,6 +19,8 @@ export const CreateProjectSchema = z.object({
   accent_color: z.string().max(20).optional().nullable()
     .describe('Hex color string for the project accent (e.g., "#6b7aed")'),
 
+  project_mode: z.enum(['explore', 'collect', 'guided']).default('explore')
+    .describe('Project mode: explore (freeform), collect (capture data), guided (goals + capture)'),
   mcp_capture_data: z.boolean().default(false)
     .describe('Whether MCP interactions capture data into the graph'),
   mcp_mutable: z.boolean().default(false)
@@ -47,6 +49,8 @@ export const UpdateProjectSchema = z.object({
   accent_color: z.string().max(20).optional().nullable()
     .describe('Hex color string for the project accent (e.g., "#6b7aed")'),
 
+  project_mode: z.enum(['explore', 'collect', 'guided']).optional()
+    .describe('Project mode: explore (freeform), collect (capture data), guided (goals + capture)'),
   mcp_capture_data: z.boolean().optional()
     .describe('Whether MCP captures data into the graph'),
   mcp_mutable: z.boolean().optional()

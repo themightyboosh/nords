@@ -892,6 +892,141 @@ describe('Parallel Fork (fork_type=parallel, default)', () => {
   });
 });
 
+// ══════════════════════════════════════════════════════════
+// REGRESSION: graph_only Toggle Simplification
+// ══════════════════════════════════════════════════════════
+
+describe('Regression: graph_only is the single toggle for goals', () => {
+  let projectId: string;
+  let goalId: string;
+  let varId: string;
+
+  beforeAll(async () => {
+    projectId = await createTestProject('GraphOnlyRegression');
+    varId = await createTestVariable(projectId, 'Reg Var', { required: true });
+    goalId = await createTestGoal(projectId, 'Reg Goal');
+    await bindVariable(goalId, varId);
+  });
+  afterAll(async () => { await deleteTestProject(projectId); });
+
+  it('goals initialize when graph_only=false, even with project_mode=explore', async () => {
+    // Set project_mode to explore but graph_only stays false
+    await query("UPDATE projects SET project_mode = 'explore', graph_only = false WHERE id = $1", [projectId]);
+    const sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'explore');
+
+    const sessionGoals = await query<{ goal_id: string; status: string }>(`
+      SELECT goal_id, status FROM mcp_session_goals WHERE session_id = $1
+    `, [sessionId]);
+    expect(sessionGoals.length).toBeGreaterThanOrEqual(1);
+    expect(sessionGoals.some(sg => sg.goal_id === goalId && sg.status === 'active')).toBe(true);
+  });
+
+  it('goals initialize when graph_only=false, with project_mode=collect', async () => {
+    await query("UPDATE projects SET project_mode = 'collect', graph_only = false WHERE id = $1", [projectId]);
+    const sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'collect');
+
+    const sessionGoals = await query<{ goal_id: string; status: string }>(`
+      SELECT goal_id, status FROM mcp_session_goals WHERE session_id = $1
+    `, [sessionId]);
+    expect(sessionGoals.length).toBeGreaterThanOrEqual(1);
+    expect(sessionGoals.some(sg => sg.goal_id === goalId && sg.status === 'active')).toBe(true);
+  });
+
+  it('goals do NOT initialize when graph_only=true, regardless of project_mode', async () => {
+    await query("UPDATE projects SET project_mode = 'guided', graph_only = true WHERE id = $1", [projectId]);
+    const sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'guided');
+
+    const sessionGoals = await query<{ id: string }>(`
+      SELECT id FROM mcp_session_goals WHERE session_id = $1
+    `, [sessionId]);
+    expect(sessionGoals.length).toBe(0);
+
+    // Reset for other tests
+    await query("UPDATE projects SET graph_only = false WHERE id = $1", [projectId]);
+  });
+
+  it('goal status uses "complete" not "completed" (regression)', async () => {
+    await query("UPDATE projects SET graph_only = false WHERE id = $1", [projectId]);
+    const sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'guided');
+
+    await setSessionVariable(sessionId, varId, 'done');
+    await goalsRepo.evaluateGoals(sessionId, projectId);
+
+    // Verify the status stored is 'complete' (not 'completed')
+    const completedGoal = await queryOne<{ status: string }>(`
+      SELECT status FROM mcp_session_goals
+      WHERE session_id = $1 AND goal_id = $2
+    `, [sessionId, goalId]);
+    expect(completedGoal?.status).toBe('complete');
+  });
+
+  it('termination query finds goals with status="complete"', async () => {
+    // Create a session with a completed terminating goal
+    await query("UPDATE projects SET graph_only = false WHERE id = $1", [projectId]);
+    const termGoalId = await createTestGoal(projectId, 'TermReg Goal', { end_type: 'reset' });
+    const termVarId = await createTestVariable(projectId, 'TermReg Var', { required: true });
+    await bindVariable(termGoalId, termVarId);
+
+    const sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'collect');
+
+    // Complete the terminating goal
+    await setSessionVariable(sessionId, termVarId, 'final');
+    await goalsRepo.evaluateGoals(sessionId, projectId);
+
+    // Verify the termination query works with 'complete'
+    const tg = await queryOne<{ goal_id: string }>(`
+      SELECT sg.goal_id FROM mcp_session_goals sg
+      JOIN goals g ON g.id = sg.goal_id
+      WHERE sg.session_id = $1
+        AND sg.status = 'complete'
+        AND (g.end_type IS NULL OR g.end_type != 'continue')
+    `, [sessionId]);
+    expect(tg).toBeDefined();
+    expect(tg!.goal_id).toBe(termGoalId);
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// UNIT: computeScore includes goal metrics
+// ══════════════════════════════════════════════════════════
+
+describe('computeScore includes goal metrics', () => {
+  // Import computeScore — it's a pure function, no DB needed
+  let computeScore: typeof import('../lib/testRunner.js')['computeScore'];
+
+  beforeAll(async () => {
+    const mod = await import('../lib/testRunner.js');
+    computeScore = mod.computeScore;
+  });
+
+  it('returns goals_completed and goals_total when provided', () => {
+    const score = computeScore(
+      [], // empty transcript
+      50,
+      'collect',
+      { pet_name: 'Whiskers' },
+      [],
+      undefined,
+      { goals_completed: 3, goals_total: 5 }
+    );
+
+    expect(score.goals_completed).toBe(3);
+    expect(score.goals_total).toBe(5);
+  });
+
+  it('defaults goal metrics to 0 when not provided', () => {
+    const score = computeScore([], 0, 'explore', {}, []);
+
+    expect(score.goals_completed).toBe(0);
+    expect(score.goals_total).toBe(0);
+  });
+});
+
 // ── Close pool after all tests ──
 afterAll(async () => {
   await closePool();

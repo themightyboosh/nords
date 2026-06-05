@@ -416,7 +416,7 @@ with physics-based spatial relationships.
             persona_id: { type: 'string', format: 'uuid', nullable: true },
             system_prompt_override: { type: 'string', nullable: true },
             max_turns: { type: 'integer', example: 15 },
-            temperature: { type: 'number', format: 'float', example: 0.9 },
+
             tags: { type: 'array', items: { type: 'string' }, nullable: true },
             sort_order: { type: 'integer' },
             created_at: { type: 'string', format: 'date-time' },

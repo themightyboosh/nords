@@ -35,7 +35,7 @@ export interface Persona {
   primary_motivation: string;
   voice_and_tone: string;
   guardrails: Array<{ mode: 'always' | 'never'; text: string }>;
-  temperature: number;
+
   behavioral_nudge_threshold: number;
   behavioral_nudge_window: number;
   exchange_style?: 'free_form' | 'bi_directional' | 'interrogate';
@@ -76,7 +76,7 @@ export function usePersonas(projectId: string | null) {
 
   const updatePersona = useCallback(async (
     id: string,
-    fields: Partial<Pick<Persona, 'name' | 'avatar_seed' | 'accent_color' | 'background' | 'primary_motivation' | 'voice_and_tone' | 'guardrails' | 'temperature' | 'behavioral_nudge_threshold' | 'behavioral_nudge_window' | 'exchange_style' | 'sort_order'>>
+    fields: Partial<Pick<Persona, 'name' | 'avatar_seed' | 'accent_color' | 'background' | 'primary_motivation' | 'voice_and_tone' | 'guardrails' | 'behavioral_nudge_threshold' | 'behavioral_nudge_window' | 'exchange_style' | 'sort_order'>>
   ) => {
     try {
       const data = await api.put<Persona>(`/api/personas/${id}`, fields);

@@ -20,7 +20,7 @@ export interface Persona {
   primary_motivation: string;
   voice_and_tone: string;
   guardrails: Array<{ mode: 'always' | 'never'; text: string }>;
-  temperature: number;
+
   behavioral_nudge_threshold: number;
   behavioral_nudge_window: number;
   exchange_style: 'free_form' | 'bi_directional' | 'interrogate';
@@ -126,7 +126,7 @@ export const personasRepo = {
   },
 
   async update(id: string, data: Partial<Pick<Persona,
-    'name' | 'avatar_seed' | 'accent_color' | 'background' | 'primary_motivation' | 'voice_and_tone' | 'guardrails' | 'temperature' | 'behavioral_nudge_threshold' | 'behavioral_nudge_window' | 'exchange_style' | 'sort_order'
+    'name' | 'avatar_seed' | 'accent_color' | 'background' | 'primary_motivation' | 'voice_and_tone' | 'guardrails' | 'behavioral_nudge_threshold' | 'behavioral_nudge_window' | 'exchange_style' | 'sort_order'
   >>): Promise<Persona | null> {
     const setClauses: string[] = [];
     const values: any[] = [];
@@ -140,7 +140,7 @@ export const personasRepo = {
       ['primary_motivation', data.primary_motivation],
       ['voice_and_tone', data.voice_and_tone],
       ['guardrails', data.guardrails ? JSON.stringify(data.guardrails) : undefined],
-      ['temperature', data.temperature],
+
       ['behavioral_nudge_threshold', data.behavioral_nudge_threshold],
       ['behavioral_nudge_window', data.behavioral_nudge_window],
       ['exchange_style', data.exchange_style],

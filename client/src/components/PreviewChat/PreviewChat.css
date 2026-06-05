@@ -495,10 +495,16 @@
   background: rgba(99, 102, 241, 0.12); color: #a78bfa;
 }
 
-/* ── Replay Controls ── */
+/* ── Replay Footer (controls bar + simulated input) ── */
+.preview-chat__replay-footer {
+  display: flex; flex-direction: column; flex-shrink: 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
 .preview-chat__replay-controls {
-  flex-direction: row; gap: 12px; padding: 10px 16px;
+  display: flex; flex-direction: row; gap: 12px; padding: 8px 16px;
   align-items: center; justify-content: space-between;
+  background: rgba(139, 92, 246, 0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .preview-chat__replay-progress {
   font-size: 11px; color: #9ca3af;
@@ -538,3 +544,20 @@
   background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd;
   font-weight: 600;
 }
+
+/* ── Send button flash on replay "submit" ── */
+.preview-chat__send-btn.is-flash {
+  opacity: 1 !important;
+  animation: replaySendFlash 0.4s ease;
+}
+@keyframes replaySendFlash {
+  0% { transform: scale(1); box-shadow: none; }
+  40% { transform: scale(1.12); box-shadow: 0 0 12px rgba(99, 102, 241, 0.5); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+/* Remove double border when input-area is inside replay footer */
+.preview-chat__replay-footer .preview-chat__input-area {
+  border-top: none;
+}
+

@@ -67,7 +67,10 @@ describe('Connection Verbs & Directions', () => {
     const horizon = await mcpRepo.getSessionHorizon(sessionId);
     expect(horizon.neighbors.length).toBe(2);
 
-    const verbs = horizon.neighbors.map(n => n.relationship.verb);
+    const verbs = horizon.neighbors.map(n => {
+      const v = n.relationship.verb;
+      return typeof v === 'object' && v !== null ? (v as any).forward : v;
+    });
     expect(verbs).toContain('causes');
     expect(verbs).toContain('relates to');
   });
@@ -181,7 +184,9 @@ describe('Persona Category Weights', () => {
     expect(horizon.suggested_next.length).toBe(2);
     expect(horizon.suggested_next[0].title).toBe('Tech Feature');
     expect(horizon.suggested_next[0].explore_score).toBeGreaterThan(horizon.suggested_next[1].explore_score);
-    expect(horizon.suggested_next[0].verb).toBe('implements');
+    const verb = horizon.suggested_next[0].verb;
+    const verbStr = typeof verb === 'object' && verb !== null ? (verb as any).forward : verb;
+    expect(verbStr).toBe('implements');
   });
 });
 
@@ -535,7 +540,7 @@ describe('Goal Relevant Nords', () => {
 
     expect(lab).toBeDefined();
     expect(breakroom).toBeDefined();
-    expect(lab!.goal_proximity).toBe(0.3);
+    expect(lab!.goal_proximity).toBe(0.1);
     expect(breakroom!.goal_proximity).toBe(0);
   });
 

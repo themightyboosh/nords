@@ -181,6 +181,7 @@
   },
   "active": "8956f02c52f4c68a",
   "lastOpenFiles": [
+    "demo-script.md",
     "stories/01_sprint_zero.md",
     "Untitled.md",
     "Untitled 1.md",
@@ -206,7 +207,6 @@
     "stories/05_matrix_lenses.md",
     "stories/04_data_persistence.md",
     "stories/03_crdt_multiplayer.md",
-    "stories/02_spatial_engine.md",
     "stories",
     "Pasted image 20260412004520.png"
   ]

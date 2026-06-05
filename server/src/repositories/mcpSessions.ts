@@ -264,10 +264,19 @@ export async function updateSessionPersona(sessionId: string, personaId: string 
 // ── Session Horizon (Sliding-Window Context) ──
 
 /** Resolve a distance value to the nearest stage label */
-function resolveStageLabel(distance: number, labels: Array<{ label: string; position: number }>): string | null {
+function resolveStageLabel(distance: number, labels: Array<{ label: string; position: number } | string>): string | null {
   if (!labels?.length) return null;
-  let closest = labels[0];
-  for (const label of labels) {
+
+  // Normalize: flat strings get evenly distributed across [0, 1]
+  const normalized = labels.map((l, i) => {
+    if (typeof l === 'string') {
+      return { label: l, position: labels.length === 1 ? 0.5 : i / (labels.length - 1) };
+    }
+    return l as { label: string; position: number };
+  });
+
+  let closest = normalized[0];
+  for (const label of normalized) {
     if (Math.abs(label.position - distance) < Math.abs(closest.position - distance)) {
       closest = label;
     }
@@ -303,7 +312,8 @@ export interface HorizonNeighbor {
     connection_id: string;
     type_name: string;
     verb: string | null;
-    direction: string;
+    direction: string;           // Semantic: the edge's inherent flow ('forward','backward','both','none')
+    traversal_direction: 'outgoing' | 'incoming'; // Movement: which way you'd walk (source→target = outgoing)
     direction_prepositions: { forward: string; reverse: string; both: string } | null;
     measurement_mode: string;
     stage: string | null;
@@ -343,7 +353,16 @@ export interface SessionHorizon {
     target_id: string; target_title: string;
     traversal_type: string; connection_id: string;
   }>;
-  suggested_next: Array<{ nord_id: string; title: string; type_name: string; verb: string | null; explore_score: number }>;
+  suggested_next: Array<{
+    nord_id: string; title: string; type_name: string;
+    verb: string | null;
+    direction: string;                    // Semantic edge direction
+    traversal_direction: 'outgoing' | 'incoming'; // Your movement direction
+    stage: string | null;                 // Resolved spectrum label
+    connection_id: string;
+    explore_score: number;
+    reason: string;                       // Human-readable why this is suggested
+  }>;
   predicted_path: Array<{ nord_id: string; title: string; type_name: string }>;
   goals: Array<{
     goal_id: string; goal_name: string; icon: string;
@@ -483,6 +502,7 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       conn_x_stage_labels: string; conn_direction_prepositions: string | null;
       conn_properties: string;
       distance_x: number; distance_y: number; direction: string;
+      is_outgoing: boolean; // true = current nord is source, false = current nord is target
       neighbor_id: string; neighbor_title: string; neighbor_type_id: string;
       neighbor_type_name: string; neighbor_properties: Record<string, unknown>;
       conn_properties_schema: string;
@@ -495,6 +515,7 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
         c.properties::text AS conn_properties,
         ct.properties_schema::text AS conn_properties_schema,
         c.distance_x, c.distance_y, c.direction,
+        (c.source_nord_id = $1) AS is_outgoing,
         n.id AS neighbor_id, n.title AS neighbor_title, n.type_id AS neighbor_type_id,
         nt.name AS neighbor_type_name, n.properties AS neighbor_properties
       FROM connections c
@@ -526,7 +547,9 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
         },
         relationship: {
           connection_id: row.conn_id, type_name: row.conn_type_name, verb: row.conn_verb,
-          direction: row.direction, direction_prepositions: dirPreps,
+          direction: row.direction,
+          traversal_direction: row.is_outgoing ? 'outgoing' : 'incoming',
+          direction_prepositions: dirPreps,
           measurement_mode: row.conn_measurement_mode, stage,
           distance_x: row.distance_x, distance_y: row.distance_y,
           connection_properties: safeParseJSON(row.conn_properties, {}), // #3
@@ -760,17 +783,68 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     connection_id: r.connection_id || '',
   }));
 
-  // 7. Suggested next — ranked list of connected nords by persona-weighted exploration score
-  // Score = persona_bias × (1 - distance_x) — closer nords on high-weight connections score higher.
-  // The LLM sees the full palette in preference order; conversation context sways the pick.
+  // 7. Suggested next — ranked by semantic signals; persona applied as lens
+  //
+  // Scoring hierarchy (additive base, persona as modifier):
+  //   1. Goal proximity   — the system has explicit goals, these matter most
+  //   2. Urgency          — connection properties that signal attention needed
+  //   3. Direction flow   — outgoing = natural progression, incoming = investigation
+  //   4. Spectrum position — earlier/closer on spectrum = more immediate
+  //   5. Persona lens     — adjusts final score ±30% based on persona weights
+  //
   const suggested_next: SessionHorizon['suggested_next'] = neighbors
-    .map(n => ({
-      nord_id: n.nord.id,
-      title: n.nord.title,
-      type_name: n.nord.type_name,
-      verb: n.relationship.verb,
-      explore_score: Math.round(n.persona_bias * (1 - n.spectrum_position) * 100) / 100,
-    }))
+    .map(n => {
+      // Start from spectrum position (0.0–1.0, lower = earlier/closer)
+      let score = 1 - n.spectrum_position; // Range: 0.0 to 1.0
+
+      // Goal proximity: +0.5 for goal-bound nords (biggest additive signal)
+      if (n.goal_proximity > 0) score += 0.5;
+
+      // Direction flow: outgoing = following natural flow (+0.2)
+      if (n.relationship.traversal_direction === 'outgoing') score += 0.2;
+
+      // Urgency from connection properties: critical signals add +0.4
+      const props = n.relationship.connection_properties || {};
+      const urgentValues = ['Failed', 'Critical Path', 'No', 'Rejected', 'Critical Blocker'];
+      const hasUrgency = Object.values(props).some(v =>
+        typeof v === 'string' && urgentValues.some(u => v.includes(u))
+      );
+      if (hasUrgency) score += 0.4;
+
+      // Persona lens: adjusts score ±30% (persona_bias ranges 0–1, centered at 0.5)
+      // persona_bias=0.5 → ×1.0 (no change), persona_bias=1.0 → ×1.3, persona_bias=0.0 → ×0.7
+      const personaModifier = 0.7 + (n.persona_bias * 0.6);
+      score *= personaModifier;
+
+      // Build reason string
+      const parts: string[] = [];
+      if (n.relationship.verb) {
+        const verbPhrase = n.relationship.traversal_direction === 'outgoing'
+          ? `${n.relationship.verb}` // "verifies", "mitigates"
+          : `is ${n.relationship.verb} by`; // "is verified by", "is mitigated by"  (approximate)
+        parts.push(verbPhrase);
+      }
+      if (n.relationship.stage) parts.push(`stage: ${n.relationship.stage}`);
+      if (hasUrgency) {
+        const urgentEntries = Object.entries(props)
+          .filter(([, v]) => typeof v === 'string' && urgentValues.some(u => (v as string).includes(u)));
+        parts.push(urgentEntries.map(([k, v]) => `${k}: ${v}`).join(', '));
+      }
+      if (n.goal_proximity > 0) parts.push('goal-relevant');
+
+      return {
+        nord_id: n.nord.id,
+        title: n.nord.title,
+        type_name: n.nord.type_name,
+        verb: n.relationship.verb,
+        direction: n.relationship.direction,
+        traversal_direction: n.relationship.traversal_direction,
+        stage: n.relationship.stage,
+        connection_id: n.relationship.connection_id,
+        explore_score: Math.round(score * 100) / 100,
+        reason: parts.join(' · ') || 'connected neighbor',
+      };
+    })
     .sort((a, b) => b.explore_score - a.explore_score);
 
   // 8. Predicted path — 2-hop lookahead from top suggested (predictive)
@@ -1004,8 +1078,11 @@ export interface LeanHorizonNeighbor {
     connection_id: string;
     type_name: string;
     verb: string | null;
-    direction: string;
+    direction: string;           // Semantic: edge flow ('forward','backward','both','none')
+    traversal_direction: 'outgoing' | 'incoming'; // Movement: source→target = outgoing
+    stage: string | null;        // Resolved spectrum label (e.g. "Protocol Ready")
     distance_x: number;
+    properties?: Record<string, unknown>; // Non-hidden connection instance properties (e.g. Verification Status, Severity)
   };
   persona_bias: number;
   goal_proximity: number;
@@ -1019,7 +1096,16 @@ export interface LeanSessionHorizon {
   } | null;
   completion: { filled: number; required: number; percentage: number };
   neighbors: LeanHorizonNeighbor[];
-  suggested_next: Array<{ nord_id: string; title: string; type_name: string; verb: string | null; explore_score: number }>;
+  suggested_next: Array<{
+    nord_id: string; title: string; type_name: string;
+    verb: string | null;
+    direction: string;
+    traversal_direction: 'outgoing' | 'incoming';
+    stage: string | null;
+    connection_id: string;
+    explore_score: number;
+    reason: string;
+  }>;
   predicted_path: Array<{ nord_id: string; title: string; type_name: string }>;
   traversal_history: Array<{
     source_id: string; source_title: string;
@@ -1082,7 +1168,27 @@ export async function getSessionHorizonLean(sessionId: string): Promise<LeanSess
     reason = 'context_changed';
   }
 
-  // Slim neighbors — strip schemas, connection properties, prepositions
+  /** Filter connection properties: exclude hidden fields and empty values for lean horizon */
+  function filterConnectionProps(
+    props: Record<string, unknown>,
+    schema: unknown[],
+  ): { properties: Record<string, unknown> } | Record<string, never> {
+    if (!props || typeof props !== 'object') return {};
+    const hiddenNames = new Set(
+      (schema as Array<{ name: string; hidden?: boolean }>)
+        .filter(s => s.hidden)
+        .map(s => s.name)
+    );
+    const filtered: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(props)) {
+      if (hiddenNames.has(key)) continue;
+      if (value === null || value === undefined || value === '') continue;
+      filtered[key] = value;
+    }
+    return Object.keys(filtered).length > 0 ? { properties: filtered } : {};
+  }
+
+  // Slim neighbors — include non-hidden connection properties + enriched direction/stage
   const leanNeighbors: LeanHorizonNeighbor[] = full.neighbors.map(n => ({
     nord: {
       id: n.nord.id,
@@ -1094,7 +1200,11 @@ export async function getSessionHorizonLean(sessionId: string): Promise<LeanSess
       type_name: n.relationship.type_name,
       verb: n.relationship.verb,
       direction: n.relationship.direction,
+      traversal_direction: n.relationship.traversal_direction,
+      stage: n.relationship.stage,
       distance_x: n.relationship.distance_x,
+      // Include non-hidden connection properties if any exist
+      ...filterConnectionProps(n.relationship.connection_properties, n.relationship.connection_schema),
     },
     persona_bias: n.persona_bias,
     goal_proximity: n.goal_proximity,
@@ -1574,13 +1684,50 @@ export async function upsertSessionVariable(
   `, [sessionId]);
   const sequence = parseInt(seqRow?.seq || '1', 10);
 
-  const variable = await queryOne<McpSessionVariable>(`
-    INSERT INTO mcp_session_variables (session_id, variable_id, value, nord_id, persona_id, sequence)
-    VALUES ($1, $2, $3, $4, $5, $6)
-    ON CONFLICT (session_id, variable_id) DO UPDATE SET
-      value = $3, nord_id = $4, persona_id = $5, sequence = $6, collected_at = NOW()
-    RETURNING *
-  `, [sessionId, variableId, JSON.stringify(value), nordId, personaId, sequence]) as McpSessionVariable;
+  // ── Normalize value for JSONB storage ──
+  // The pg driver sends parameterized values as-is to Postgres.
+  // For a JSONB column, Postgres expects a valid JSON string.
+  // JSON.stringify handles this correctly for all types:
+  //   string "510(k)" → '"510(k)"' (valid JSON string literal)
+  //   number 42       → '42'       (valid JSON number)
+  //   object {a:1}    → '{"a":1}'  (valid JSON object)
+  // The key invariant: never double-stringify. If value is already
+  // a JSON string representation, parse it first.
+  let jsonValue: string;
+  if (typeof value === 'string') {
+    // Check if the string is already valid JSON (e.g. model sent pre-serialized)
+    try {
+      JSON.parse(value);
+      // It's already valid JSON — use it directly
+      jsonValue = value;
+    } catch {
+      // It's a plain string — wrap it as a JSON string literal
+      jsonValue = JSON.stringify(value);
+    }
+  } else {
+    jsonValue = JSON.stringify(value);
+  }
+
+  let variable: McpSessionVariable;
+  try {
+    variable = await queryOne<McpSessionVariable>(`
+      INSERT INTO mcp_session_variables (session_id, variable_id, value, nord_id, persona_id, sequence)
+      VALUES ($1, $2, $3::jsonb, $4, $5, $6)
+      ON CONFLICT (session_id, variable_id) DO UPDATE SET
+        value = $3::jsonb, nord_id = $4, persona_id = $5, sequence = $6, collected_at = NOW()
+      RETURNING *
+    `, [sessionId, variableId, jsonValue, nordId, personaId, sequence]) as McpSessionVariable;
+  } catch (insertErr: any) {
+    logger.error('upsertSessionVariable INSERT failed', {
+      sessionId, variableId,
+      rawValue: value,
+      rawValueType: typeof value,
+      jsonValue,
+      jsonValueLength: jsonValue?.length,
+      error: insertErr.message,
+    });
+    throw insertErr;
+  }
 
   // Get project_id from session
   const session = await queryOne<McpSession>('SELECT * FROM mcp_sessions WHERE id = $1', [sessionId]);

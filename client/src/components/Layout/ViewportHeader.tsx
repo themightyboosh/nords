@@ -41,6 +41,7 @@ interface ViewportHeaderProps {
   projectName?: string;
   projectIcon?: string | null;
   projectColor?: string | null;
+  graphOnly?: boolean;
   mode?: 'workspace' | 'dashboard';
 }
 
@@ -59,6 +60,7 @@ export default function ViewportHeader({
   projectName = 'Product Launch Q3',
   projectIcon = null,
   projectColor = null,
+  graphOnly = false,
   mode = 'workspace',
 }: ViewportHeaderProps) {
   const isDashboard = mode === 'dashboard';
@@ -116,8 +118,10 @@ export default function ViewportHeader({
       key: 'behavior', label: 'Behavior', icon: Brain,
       items: [
         { label: 'Personas', icon: Users, onClick: onOpenPersonas, testId: 'header-personas' },
-        { label: 'Goals', icon: Target, onClick: onOpenGoals, testId: 'header-goals' },
-        { label: 'Collections', icon: Variable, onClick: onOpenVariables, testId: 'header-variables' },
+        ...(!graphOnly ? [
+          { label: 'Goals', icon: Target, onClick: onOpenGoals, testId: 'header-goals' },
+          { label: 'Collections', icon: Variable, onClick: onOpenVariables, testId: 'header-variables' },
+        ] : []),
       ],
     },
     {

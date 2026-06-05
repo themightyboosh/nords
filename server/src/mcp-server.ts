@@ -1,9 +1,9 @@
 /**
- * mcp-server.ts — Native MCP adapter for external clients.
+ * mcp-server.ts — Standard MCP adapter for any LLM client.
  *
- * Wraps the Nords MCP tools using the @modelcontextprotocol/sdk
- * so external AI clients (Claude Desktop, Cursor, etc.) can connect
- * via stdio transport.
+ * Exposes the Nords knowledge graph as MCP tools over stdio transport.
+ * Compatible with any client that implements the Model Context Protocol:
+ * Claude Desktop, Cursor, Antigravity, OpenAI-compatible clients, etc.
  *
  * Configuration (env vars):
  *   DATABASE_URL  — Postgres connection string (required)
@@ -14,7 +14,7 @@
  * Usage:
  *   npx tsx src/mcp-server.ts
  *
- * Claude Desktop config (claude_desktop_config.json):
+ * Generic MCP client config:
  *   {
  *     "mcpServers": {
  *       "nords": {
@@ -55,7 +55,7 @@ const mcpLogger = createLogger({
 
 // ── Project Context for Tool Descriptions ──
 // Built at startup and injected into key tool descriptions so external
-// LLM clients (Claude, GPT, Cursor) get zero-shot orientation.
+// LLM clients get zero-shot orientation from project vocabulary.
 
 let projectContext = '';
 
@@ -134,7 +134,7 @@ server.tool('nords_get_dictionary',
 );
 
 server.tool('nords_get_horizon',
-  `Get lean horizon — current position, neighbors (no schemas), suggested path, completion %. Check context_hint.stale — if true, call nords_get_context next.${projectContext}`,
+  `Get lean horizon — current position, neighbors with directional context (verb, direction, traversal_direction, stage, connection properties), suggested_next ranked by goals/urgency/flow with reasons, completion %. Each neighbor shows how it relates to you: verb ("verifies"), traversal_direction (outgoing = follow flow, incoming = trace back), stage ("Tested"), and properties ("Verification Status: Failed"). Check context_hint.stale — if true, call nords_get_context next.${projectContext}`,
   {},
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
@@ -211,7 +211,7 @@ server.tool('nords_query_nords',
 );
 
 server.tool('nords_get_connections',
-  'Get all connections to/from a specific nord.',
+  'Get all connections to/from a specific nord. Returns full connection rows including type_name, verb, direction, distance_x/y, and connection instance properties (e.g. Verification Status, Severity, Allocation %). Use when you need to see all relationships beyond what the horizon neighbors show.',
   { nord_id: z.string().describe('UUID of the nord') },
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
@@ -274,7 +274,7 @@ server.tool('nords_get_analytics',
 // ── Tier 2: Session Tools ──
 
 server.tool('nords_navigate',
-  `Navigate to any nord by name, type, or ID. Traverses if target is a neighbor, jumps otherwise. Always updates position and returns horizon.${projectContext}`,
+  `Navigate to any nord by name, type, or ID. Traverses if target is a neighbor, jumps otherwise. Returns: destination nord, fresh horizon, and — if traversed — a traversed_via block with the edge metadata (type_name, verb, traversal_direction, stage, connection properties) of the path just walked. Use traversed_via to bridge your conversation naturally.${projectContext}`,
   {
     to: z.string().describe('Nord title, type name, or UUID'),
     type_name: z.string().optional().describe('Filter by nord type to disambiguate'),

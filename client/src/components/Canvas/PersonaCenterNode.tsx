@@ -21,8 +21,8 @@ export type PersonaCenterNodeType = Node<PersonaCenterData, 'personaCenter'>;
 
 export const PersonaCenterNode = memo(({ data }: NodeProps<PersonaCenterNodeType>) => {
   const avatarUri = useMemo(() => {
-    return generateAvatarUri(data.avatarSeed || 'default', 240, data.accentColor);
-  }, [data.avatarSeed, data.accentColor]);
+    return generateAvatarUri(data.avatarSeed || data.name, 240, data.accentColor);
+  }, [data.avatarSeed, data.accentColor, data.name]);
 
   return (
     <div className="persona-center-node">

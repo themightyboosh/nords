@@ -187,9 +187,8 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
         [link.id, sessionId]
       );
 
-      // Initialize session goals
-      const projectMode = project?.project_mode || 'collect';
-      await goalsRepo.initializeSessionGoals(sessionId, projectId, projectMode);
+      // Initialize session goals (skips internally if graph_only)
+      await goalsRepo.initializeSessionGoals(sessionId, projectId, 'collect');
 
       // Apply collection variable pre-fills to the session
       if (link.prefills.length > 0) {

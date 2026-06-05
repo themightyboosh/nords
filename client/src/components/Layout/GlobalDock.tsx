@@ -30,7 +30,7 @@ interface GlobalDockProps {
   refetchGraph?: () => Promise<void>;
   graph?: ProjectGraph | null;
   personas?: Persona[];
-  projectMode?: 'explore' | 'collect' | 'guided';
+  graphOnly?: boolean;
 }
 
 // Direction filter rows — consistent across board and graph
@@ -42,7 +42,7 @@ const DIRECTION_ROWS: { key: DirectionKey; label: string; icon: React.ReactNode 
   { key: 'unconnected', label: 'No Connection',  icon: <Unlink size={13} /> },
 ];
 
-export default function GlobalDock({ graph, personas = [], projectMode }: GlobalDockProps) {
+export default function GlobalDock({ graph, personas = [], graphOnly = false }: GlobalDockProps) {
   const { lens, setLens, activeConnectionTypeId, setActiveConnectionTypeId, activePersonaId, setActivePersonaId, activeLine, setActiveLine, showContext, setShowContext, personaTypeFilter, cyclePersonaTypeFilter, personaEngagementFilter, cyclePersonaEngagementFilter } = useLens();
   const [openPanel, setOpenPanel] = useState<string | null>(null);
 
@@ -135,7 +135,7 @@ export default function GlobalDock({ graph, personas = [], projectMode }: Global
               <span>Persona</span>
             </button>
             )}
-            {projectMode === 'guided' && (
+            {!graphOnly && (
             <button
               className={`nords-lens-toggle__btn ${lens === 'goals' ? 'is-active' : ''}`}
               onClick={() => {

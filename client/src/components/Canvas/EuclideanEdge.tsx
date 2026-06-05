@@ -465,25 +465,50 @@ const ActiveEdge = React.memo(function ActiveEdge({
     return verbPhrase;
   }, [resolvedLabel, resolvedYLabel, edgeData?._verb, edgeData?._prepositions, edgeData?.direction]);
 
-  // ── Path geometry (for label positioning) ──
-  const perpX = (-dy / len) * offset;
-  const perpY = (dx / len) * offset;
-  const midX = (sx + tx) / 2;
-  const midY = (sy + ty) / 2;
-  const cpX = midX + perpX * 2;
-  const cpY = midY + perpY * 2;
-
   // Use cablePathD from parent (cable physics computed there)
   const pathD = cablePathD;
 
+  // ── Label position — derived from the actual cable path geometry ──
+  // Parse the cablePathD to get the actual control points,
+  // then evaluate at t=0.5 so the label sits on the real curve.
+  const { labelX: computedLabelX, labelY: computedLabelY } = useMemo(() => {
+    // cablePathD is either "M sx sy Q cx cy, tx ty" or "M sx sy C c1x c1y, c2x c2y, tx ty"
+    const isQuadratic = cablePathD.includes('Q ');
+    if (isQuadratic) {
+      // Quadratic bezier: B(0.5) = 0.25*P0 + 0.5*P1 + 0.25*P2
+      const qMatch = cablePathD.match(/Q\s+([\d.e+-]+)\s+([\d.e+-]+)/);
+      if (qMatch) {
+        const qcx = parseFloat(qMatch[1]);
+        const qcy = parseFloat(qMatch[2]);
+        return {
+          labelX: 0.25 * sx + 0.5 * qcx + 0.25 * tx,
+          labelY: 0.25 * sy + 0.5 * qcy + 0.25 * ty,
+        };
+      }
+    } else {
+      // Cubic bezier: B(0.5) = 0.125*P0 + 0.375*P1 + 0.375*P2 + 0.125*P3
+      const cMatch = cablePathD.match(/C\s+([\d.e+-]+)\s+([\d.e+-]+),\s*([\d.e+-]+)\s+([\d.e+-]+)/);
+      if (cMatch) {
+        const c1x = parseFloat(cMatch[1]);
+        const c1y = parseFloat(cMatch[2]);
+        const c2x = parseFloat(cMatch[3]);
+        const c2y = parseFloat(cMatch[4]);
+        return {
+          labelX: 0.125 * sx + 0.375 * c1x + 0.375 * c2x + 0.125 * tx,
+          labelY: 0.125 * sy + 0.375 * c1y + 0.375 * c2y + 0.125 * ty,
+        };
+      }
+    }
+    // Fallback: simple midpoint
+    return { labelX: (sx + tx) / 2, labelY: (sy + ty) / 2 };
+  }, [cablePathD, sx, sy, tx, ty]);
 
-
-  // Label position
+  // Stagger for ribbon (multiple edges between same node pair)
   const stagger = ribbonConfig.count > 1
     ? (ribbonConfig.index - (ribbonConfig.count - 1) / 2) * 20
     : 0;
-  const labelX = cpX + (dx / len) * stagger;
-  const labelY = cpY + (dy / len) * stagger;
+  const labelX = computedLabelX + (dx / len) * stagger;
+  const labelY = computedLabelY + (dy / len) * stagger;
 
   // ── Label Angle ──
   let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);

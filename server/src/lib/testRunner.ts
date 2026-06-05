@@ -227,6 +227,10 @@ export function computeScore(
     traversal_ratio: number;
     search_count: number;
     peek_count: number;
+  },
+  goalMetrics?: {
+    goals_completed: number;
+    goals_total: number;
   }
 ): Record<string, unknown> {
   const rounds = transcript.length;
@@ -253,6 +257,9 @@ export function computeScore(
     traversal_ratio: navigationMetrics?.traversal_ratio ?? 0,
     search_count: navigationMetrics?.search_count ?? 0,
     peek_count: navigationMetrics?.peek_count ?? 0,
+    // Goal metrics
+    goals_completed: goalMetrics?.goals_completed ?? 0,
+    goals_total: goalMetrics?.goals_total ?? 0,
   };
 }
 
@@ -332,10 +339,8 @@ export async function executeTestRun(
       [sessionId, runId]
     );
 
-    // Initialize goals if guided mode
-    if (projectMode === 'guided') {
-      await goalsRepo.initializeSessionGoals(sessionId, projectId, projectMode);
-    }
+    // Initialize session goals (skips internally if graph_only)
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, projectMode);
 
     // 3. Build tool context (same as chat.ts)
     const toolCtx: ToolContext = {
@@ -354,13 +359,7 @@ Call nords_get_briefing as your first action to receive your full orientation: t
 The briefing contains all the instructions you need. Follow the protocol it provides.
 `;
 
-    if (activePersonaId) {
-      const persona = await queryOne<{ temperature: number }>(
-        'SELECT temperature FROM personas WHERE id = $1 AND deleted_at IS NULL',
-        [activePersonaId]
-      );
-      if (persona) agentTemperature = persona.temperature ?? 0.7;
-    }
+
 
     // 5. Build synthetic user prompt (completely separate)
     const syntheticUserPrompt = buildSyntheticUserPrompt(
@@ -432,16 +431,35 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         const toolResponseParts: any[] = [];
         for (const fc of functionCalls) {
           const call = fc.functionCall!;
+          const toolStart = Date.now();
           const toolResult = await dispatchTool(call.name!, toolCtx, call.args || {});
+          const toolLatency = Date.now() - toolStart;
           toolResponseParts.push({
             functionResponse: { name: call.name!, response: toolResult },
           });
 
+          // Structured winston log for every tool call
+          logger.info('test.tool_call', {
+            runId, sessionId, round: 0,
+            tool: call.name!,
+            success: toolResult.success !== false,
+            latency_ms: toolLatency,
+            error: toolResult.error || null,
+          });
+
+          // Rich event: full result data (truncated) + error details
+          const resultData = toolResult.data
+            ? JSON.stringify(toolResult.data).slice(0, 500)
+            : null;
           logEvent(sessionId, 'tool_call', call.name!, {
             args: call.args || {},
+            success: toolResult.success !== false,
             result_summary: typeof toolResult.data === 'object'
               ? Object.keys(toolResult.data || {}).join(', ')
               : String(toolResult.error || 'ok'),
+            result_data: resultData,
+            error: toolResult.error || null,
+            latency_ms: toolLatency,
             round: 0,
           });
         }
@@ -590,18 +608,36 @@ The briefing contains all the instructions you need. Follow the protocol it prov
           const toolName = (fc as any).name as string;
           const toolArgs = ((fc as any).args || {}) as Record<string, unknown>;
 
+          const toolStart = Date.now();
           const result = await dispatchTool(toolName, toolCtx, toolArgs);
+          const toolLatency = Date.now() - toolStart;
           roundToolCalls.push({ name: toolName, arguments: toolArgs, result: result.data ?? result.error });
           toolResponses.push({
             functionResponse: { name: toolName, response: result },
           });
 
-          // Fire tool_call event (toolDispatch fires traversal/variable/goal events internally)
+          // Structured winston log for every tool call
+          logger.info('test.tool_call', {
+            runId, sessionId, round,
+            tool: toolName,
+            success: result.success !== false,
+            latency_ms: toolLatency,
+            error: result.error || null,
+          });
+
+          // Rich event: full result data (truncated) + error details
+          const resultData = result.data
+            ? JSON.stringify(result.data).slice(0, 500)
+            : null;
           logEvent(sessionId, 'tool_call', toolName, {
             args: toolArgs,
+            success: result.success !== false,
             result_summary: typeof result.data === 'object'
               ? Object.keys(result.data || {}).join(', ')
               : String(result.error || 'ok'),
+            result_data: resultData,
+            error: result.error || null,
+            latency_ms: toolLatency,
             round,
           });
         }
@@ -650,6 +686,19 @@ The briefing contains all the instructions you need. Follow the protocol it prov
 
       lastCompletedRound = round;
 
+      // Structured winston round summary
+      logger.info('test.round.completed', {
+        runId, sessionId, round,
+        maxRounds: scenario.max_rounds,
+        tool_calls: roundToolCalls.length,
+        completion_pct: horizon.completion.percentage,
+        tokens_in: roundTokensIn,
+        tokens_out: roundTokensOut,
+        latency_ms: roundLatency,
+        agent_reply_len: agentReply.length,
+        user_msg_len: userMessage.length,
+      });
+
       onProgress?.({
         type: 'agent_response',
         round,
@@ -669,18 +718,27 @@ The briefing contains all the instructions you need. Follow the protocol it prov
         (tc.result as any).goal_events.some((e: any) => e.type === 'goal_completed' && e.end_type)
       );
 
-      // Check if any terminating goal has been completed
-      // A terminating goal is one with end_type != 'continue' (i.e., 'reset' or null)
+      // Check if we should stop based on goal completion
+      // When stop_on_goal_id is set: only that specific goal triggers termination
+      // When not set: only goals with an explicit end_type (like 'reset') trigger termination
+      //   — NULL end_type goals are milestones, not session-enders
       let terminatingGoalCompleted = false;
-      if (projectMode === 'guided') {
-        const tg = await queryOne<{ goal_id: string }>(
-          `SELECT sg.goal_id FROM mcp_session_goals sg
-           JOIN goals g ON g.id = sg.goal_id
-           WHERE sg.session_id = $1
-             AND sg.status = 'completed'
-             AND (g.end_type IS NULL OR g.end_type != 'continue')`,
-          [sessionId]
-        );
+      {
+        const goalQuery = scenario.stop_on_goal_id
+          ? `SELECT sg.goal_id FROM mcp_session_goals sg
+             WHERE sg.session_id = $1
+               AND sg.goal_id = $2
+               AND sg.status = 'complete'`
+          : `SELECT sg.goal_id FROM mcp_session_goals sg
+             JOIN goals g ON g.id = sg.goal_id
+             WHERE sg.session_id = $1
+               AND sg.status = 'complete'
+               AND g.end_type IS NOT NULL
+               AND g.end_type != 'continue'`;
+        const queryParams = scenario.stop_on_goal_id
+          ? [sessionId, scenario.stop_on_goal_id]
+          : [sessionId];
+        const tg = await queryOne<{ goal_id: string }>(goalQuery, queryParams);
         terminatingGoalCompleted = !!tg;
       }
 
@@ -835,22 +893,45 @@ export async function scoreTestRun(
   }
 
   // ── 3. Navigation Metrics ──
-  const traversalRows = await query<{ source_nord_id: string; target_nord_id: string }>(
-    'SELECT source_nord_id, target_nord_id FROM mcp_traversals WHERE session_id = $1 ORDER BY traversed_at',
+  // Use session_events (navigate + position_change) as the source of truth.
+  // mcp_traversals only captures neighbor-to-neighbor traversals, missing jumps.
+  // session_events captures ALL intentional navigation (traverse + jump).
+  const navEvents = await query<{ key: string; value: { from?: string; previous?: string; method?: string } }>(
+    `SELECT key, value FROM session_events
+     WHERE session_id = $1 AND action_type = 'navigate'
+     ORDER BY event_at`,
     [sessionId]
   );
-  const traversalCount = traversalRows.length;
-  const uniqueNordsVisited = new Set([
-    ...traversalRows.map(t => t.source_nord_id),
-    ...traversalRows.map(t => t.target_nord_id),
-  ]).size;
+  // Also count position_change events for unique nords visited
+  const posEvents = await query<{ key: string; value: { previous?: string } }>(
+    `SELECT key, value FROM session_events
+     WHERE session_id = $1 AND action_type = 'position_change'
+     ORDER BY event_at`,
+    [sessionId]
+  );
 
-  // Max traversal chain = longest unbroken sequence of connected traversals
+  // Traversal count = number of navigate events (both traversed + jumped)
+  const traversalCount = navEvents.length;
+
+  // Unique nords visited = union of all navigate targets + position_change keys
+  const visitedNordIds = new Set<string>();
+  for (const e of navEvents) {
+    visitedNordIds.add(e.key); // target nord
+    if (e.value?.from) visitedNordIds.add(e.value.from);
+  }
+  for (const e of posEvents) {
+    visitedNordIds.add(e.key);
+    if (e.value?.previous) visitedNordIds.add(e.value.previous);
+  }
+  const uniqueNordsVisited = visitedNordIds.size;
+
+  // Max chain depth = longest unbroken sequence of connected navigations
   let maxChainDepth = 0;
-  if (traversalRows.length > 0) {
+  if (navEvents.length > 0) {
     let currentChain = 1;
-    for (let i = 1; i < traversalRows.length; i++) {
-      if (traversalRows[i].source_nord_id === traversalRows[i - 1].target_nord_id) {
+    for (let i = 1; i < navEvents.length; i++) {
+      // If the source of this navigation is the target of the previous one
+      if (navEvents[i].value?.from === navEvents[i - 1].key) {
         currentChain++;
       } else {
         maxChainDepth = Math.max(maxChainDepth, currentChain);
@@ -885,6 +966,17 @@ export async function scoreTestRun(
   const totalNavCalls = navigateCalls + traverseCalls + searchCalls + peekCalls;
   const traversalRatio = totalNavCalls > 0 ? +((navigateCalls + traverseCalls) / totalNavCalls).toFixed(2) : 0;
 
+  // ── 3b. Goal Metrics ──
+  const goalCounts = await queryOne<{ total: string; completed: string }>(
+    `SELECT COUNT(*)::text AS total,
+            COUNT(*) FILTER (WHERE status = 'complete')::text AS completed
+     FROM mcp_session_goals
+     WHERE session_id = $1`,
+    [sessionId]
+  );
+  const goalsTotal = parseInt(goalCounts?.total || '0');
+  const goalsCompleted = parseInt(goalCounts?.completed || '0');
+
   // ── 4. Compute score from event data ──
   const score = computeScore(transcript, completionPct, projectMode, propertiesCollected, coverageGaps, {
     traversal_count: traversalCount,
@@ -894,6 +986,9 @@ export async function scoreTestRun(
     traversal_ratio: traversalRatio,
     search_count: searchCalls,
     peek_count: peekCalls,
+  }, {
+    goals_completed: goalsCompleted,
+    goals_total: goalsTotal,
   });
 
   // ── 4. NPS + Sentiment (LLM judge on reconstructed conversation) ──

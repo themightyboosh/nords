@@ -35,8 +35,7 @@ export const UpdatePersonaSchema = z.object({
     text: z.string().max(500),
   })).optional().nullable()
     .describe('Behavioral guardrails — always/never rules for AI responses'),
-  temperature: z.number().min(0).max(2).optional()
-    .describe('AI response temperature (0.0 = deterministic, 1.0 = balanced/Gemini default, 2.0 = maximum creativity)'),
+
   sort_order: z.number().int().min(0).optional()
     .describe('Display order in the persona list'),
 });

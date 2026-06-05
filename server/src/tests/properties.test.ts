@@ -238,7 +238,7 @@ describe('Connection Type — Property Schema (Category)', () => {
     const connType = await connectionTypesRepo.create({
       project_id: projectId,
       name: 'Influences',
-      verb: 'influences',
+      verb: JSON.stringify({ forward: 'influences', backward: 'is influenced by' }),
       properties_schema: [
         { name: 'Weight', type: 'number', required: true, card_row: 1 },
         { name: 'Notes', type: 'long_text', required: false, card_row: 2 },

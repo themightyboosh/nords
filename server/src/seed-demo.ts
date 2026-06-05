@@ -1158,9 +1158,9 @@ async function run() {
   for (let i = 0; i < personas.length; i++) {
     const p = personas[i];
     await pool.query(`
-      INSERT INTO personas (id, project_id, name, accent_color, background, primary_motivation, voice_and_tone, temperature, guardrails, behavioral_nudge_threshold, behavioral_nudge_window, exchange_style, sort_order)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 2, 4, $10, $11)
-    `, [p.id, PROJECT_ID, p.name, p.color, p.bg, p.motivation, p.voice, p.temp, JSON.stringify(p.guardrails || []), p.exchangeStyle, i + 1]);
+      INSERT INTO personas (id, project_id, name, accent_color, background, primary_motivation, voice_and_tone, temperature, guardrails, sort_order)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `, [p.id, PROJECT_ID, p.name, p.color, p.bg, p.motivation, p.voice, p.temp, JSON.stringify(p.guardrails || []), i + 1]);
 
     // Mental Models
     for (let j = 0; j < p.mentalModels.length; j++) {
@@ -1201,7 +1201,7 @@ async function run() {
       user_profile: 'cooperative',
       persona_id: PERSONA.priya,
       stop_on_goal_id: GOAL.fivetenReady,
-      max_rounds: 20,
+      max_rounds: 18,
       stop_on_session_end: true,
     },
     {
@@ -1224,6 +1224,26 @@ async function run() {
       max_rounds: 12,
       stop_on_session_end: true,
     },
+    {
+      name: 'Goal Chain — Clinical Protocol Approved',
+      description: 'Tests goal DAG chain: Clinical Protocol Approved requires Requirements Locked as a prerequisite. The user arrives with answers for all 6 variables across both goals (regulatory_pathway, target_population, predicate_device → irb_status, primary_endpoint_met, enrollment_target). Validates that the agent collects variables for ReqLocked first, triggers that goal, then proceeds to collect ClinApproved variables.',
+      user_objective: `I'm Dr. Sarah Kim, Clinical Affairs Director. I need to get our clinical protocol finalized and I have all the decisions ready. On the regulatory side: we're pursuing a 510(k) pathway with substantial equivalence to the Dexcom G7 (K221803), targeting the Type 2 Diabetes population. For the clinical protocol: our IRB status is Approved as of last week, the primary endpoint has been met — our MARD came in at 8.7% which beats the 10% threshold, and we're targeting 350 subjects for enrollment based on our power analysis. Let's lock all of this in so we can move forward. I'll answer any follow-up questions you have.`,
+      user_profile: 'cooperative',
+      persona_id: PERSONA.priya,
+      stop_on_goal_id: GOAL.clinApproved,
+      max_rounds: 14,
+      stop_on_session_end: true,
+    },
+    {
+      name: 'User Satisfaction — Risk Review',
+      description: 'Primary metric: NPS. A domain expert has a natural conversation about risk analysis. They will organically share the information needed for "Risk Analysis Complete" (risk_tolerance + highest_risk_subsystem) during the discussion. Success = NPS ≥ 8 AND goal fires. Tests whether the agent can collect variables through genuine dialogue without feeling like a form.',
+      user_objective: `I'm Marcus Cole, Lead Systems Engineer. I've been digging into our FMEA results and I'm worried about the sensor signal processing subsystem — the failure modes there cascade into almost every downstream risk. I need to talk through our risk posture with someone who knows the project graph. Specifically: I think we should be conservative on timeline risk given where we are with the analog front-end redesign, but I want to pressure-test that thinking. The sensor signal processing path is clearly our highest-risk subsystem based on the FMEA severity scores. Walk me through what the project data says about our risk landscape and help me think about whether conservative is the right call.`,
+      user_profile: 'cooperative',
+      persona_id: PERSONA.marcus,
+      stop_on_goal_id: GOAL.riskComplete,
+      max_rounds: 12,
+      stop_on_session_end: true,
+    },
   ];
 
   for (const ts of testScenarios) {
@@ -1236,7 +1256,7 @@ async function run() {
         ts.persona_id, ts.stop_on_goal_id, ts.max_rounds,
         'gemini-2.5-flash', 'gemini-2.5-flash-lite', ts.stop_on_session_end]);
   }
-  console.log('  ✅ 3 Test Scenarios');
+  console.log('  ✅ 5 Test Scenarios');
 
   /* ══════════════════════════════════════════════════════════════════════
    * SET DEFAULT PERSONA + STAR THE PROJECT
@@ -1246,6 +1266,65 @@ async function run() {
 
   console.log('\n⭐ Default persona: Dr. Priya Sharma');
   console.log('⭐ Project starred for dev user');
+
+  /* ══════════════════════════════════════════════════════════════════════
+   * SHOWCASE PROJECTS (smoke-test — dashboard filler for demos)
+   * ══════════════════════════════════════════════════════════════════════ */
+  const showcaseProjects = [
+    {
+      name: 'Meridian Wealth — Chen Family Office',
+      description: 'Ultra-high-net-worth estate and portfolio planning for a $47M multi-generational wealth transfer across three jurisdictions. Coordinates tax strategy, asset allocation, regulatory compliance, and family governance through four specialist lenses.',
+      purpose: 'Orchestrate the complete wealth transfer lifecycle — from entity structuring and tax optimization through beneficiary planning and client approval — for a multi-entity, multi-jurisdiction family office.',
+      icon: 'Landmark',
+      accent_color: '#10B981',
+      project_mode: 'guided',
+    },
+    {
+      name: 'Puma Canyon Complex — Incident Command',
+      description: 'Type 1 wildfire incident command for a 47,000-acre fire threatening Pine Ridge (pop. 12,400). Manages real-time resource allocation, fire behavior analysis, evacuation sequencing, and multi-agency coordination across three divisions.',
+      purpose: 'Coordinate wildfire suppression operations, evacuation planning, and resource deployment across 14 agencies — with AI personas that think like an Incident Commander, Fire Behavior Analyst, Evacuation Coordinator, and Operations Chief.',
+      icon: 'Flame',
+      accent_color: '#F97316',
+      project_mode: 'guided',
+    },
+    {
+      name: 'Ironclad Partners — Cascade Precision Turnaround',
+      description: 'Private equity value creation playbook for a $280M precision machining acquisition. EBITDA bridge from 11.2% to 18% across pricing optimization, procurement consolidation, aftermarket launch, and organizational restructuring over a 24-month hold.',
+      purpose: 'Execute a PE portfolio company turnaround — from commercial and operational diagnostics through pricing optimization, talent restructuring, and EBITDA bridge validation — coordinating operating partner, CFO, commercial lead, and talent strategist perspectives.',
+      icon: 'TrendingUp',
+      accent_color: '#6366F1',
+      project_mode: 'guided',
+    },
+    {
+      name: 'Artemis VII — Crewed Mars Orbit Mission',
+      description: 'Interplanetary mission architecture for a 4-crew, 847-day Mars orbit reconnaissance. Balances mass budgets, trajectory design, nuclear thermal propulsion, closed-loop life support, and technology readiness across a conjunction-class flight profile.',
+      purpose: 'Close the mission architecture — from mass budget allocation and trajectory baselining through technology maturation and crew certification — navigating the tradeoffs between propulsion, life support, and programmatic risk that define deep-space exploration.',
+      icon: 'Rocket',
+      accent_color: '#0EA5E9',
+      project_mode: 'guided',
+    },
+    {
+      name: 'Apex Autonomy — Haul-1 L4 Certification',
+      description: 'Level 4 autonomous truck safety certification program for I-10 hub-to-hub freight. 340 perception tickets, 12 unresolved hazard scenarios, 900M simulation miles, and three field test campaigns flowing into FMVSS exemption and commercial launch authority.',
+      purpose: 'Drive an autonomous vehicle program from engineering backlog through safety case submission — coordinating perception engineering, safety certification, simulation validation, and field operations into a single regulatory-ready deployment argument.',
+      icon: 'Truck',
+      accent_color: '#8B5CF6',
+      project_mode: 'guided',
+    },
+  ];
+
+  for (const sp of showcaseProjects) {
+    await pool.query(`
+      INSERT INTO projects (id, name, description, purpose, icon, accent_color,
+        mcp_enabled, mcp_capture_data, mcp_mutable, project_mode, goals_enabled,
+        graph_only, is_demo, created_by)
+      VALUES ($1, $2, $3, $4, $5, $6,
+        false, false, false, $7, false,
+        false, false, $8)
+    `, [id(), sp.name, sp.description, sp.purpose, sp.icon, sp.accent_color,
+        sp.project_mode, userId]);
+  }
+  console.log('  ✅ 5 showcase projects (dashboard filler)');
 
   /* ══════════════════════════════════════════════════════════════════════
    * SUMMARY
@@ -1262,6 +1341,7 @@ async function run() {
 ║  12 Goals (complex DAG + bindings + relevant)    ║
 ║  15 Project Variables (5 groups, 3 boolean)      ║
 ║   3 Test Scenarios (persona-aligned)             ║
+║   5 Showcase Projects (dashboard filler)         ║
 ║                                                  ║
 ║  Mode: Guided | Goals: Enabled                   ║
 ║  Default Persona: Dr. Priya Sharma               ║

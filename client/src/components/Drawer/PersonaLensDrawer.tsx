@@ -71,7 +71,7 @@ export function PersonaLensDrawer({
         {/* ── Avatar (larger, standalone) ── */}
         <div style={{ padding: '12px 20px 0', display: 'flex', justifyContent: 'center' }}>
           <PersonaAvatar
-            seed={persona.avatar_seed || 'default'}
+            seed={persona.avatar_seed || persona.id}
             size={80}
             className="persona-lens-drawer__avatar"
             bgColor={persona.accent_color}

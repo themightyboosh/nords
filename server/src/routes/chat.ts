@@ -145,9 +145,8 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
         start_nord_id: project?.default_start_nord_id || null,
       });
 
-      // Initialize session goals based on project mode
-      const projectMode = project?.project_mode || 'collect';
-      await goalsRepo.initializeSessionGoals(sessionId, projectId, projectMode);
+      // Initialize session goals (skips internally if graph_only)
+      await goalsRepo.initializeSessionGoals(sessionId, projectId, 'collect');
     } else {
       session = await queryOne<any>('SELECT * FROM mcp_sessions WHERE id = $1', [sessionId]);
 
@@ -168,8 +167,7 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
         sessionId = session.id;
         isNewSession = true;
 
-        const projectMode = project?.project_mode || 'collect';
-        await goalsRepo.initializeSessionGoals(sessionId, projectId, projectMode);
+        await goalsRepo.initializeSessionGoals(sessionId, projectId, 'collect');
 
         // If 'continue', carry over completed goals from old session
         if (endType === 'continue') {

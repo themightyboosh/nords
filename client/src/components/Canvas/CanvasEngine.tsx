@@ -240,7 +240,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
           draggable: false,
           selectable: false,
           data: {
-            avatarSeed: activePersona.avatar_seed,
+            avatarSeed: activePersona.avatar_seed || activePersona.id,
             accentColor: activePersona.accent_color,
             name: activePersona.name,
           },

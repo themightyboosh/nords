@@ -63,7 +63,7 @@ export function buildToolDeclarations(
     },
     {
       name: 'nords_get_horizon',
-      description: `Get the Session Horizon — your full situational awareness. Returns current position (with type and properties for context), persona-weighted neighbors, remaining collection variables, overall completion %, traversal breadcrumbs, suggested next nord, predicted 2-hop path, and planning_queue.${ctx}`,
+      description: `Get the Session Horizon — your full situational awareness. Returns: current position (type + properties), neighbors with relationship metadata (verb, semantic direction, traversal_direction outgoing/incoming, stage label, connection properties like 'Verification Status: Failed'), completion %, remaining collection variables, traversal breadcrumbs, suggested_next ranked by goals/urgency/direction with reasons, predicted 2-hop path, and goal progress.${ctx}`,
       parameters: { type: 'OBJECT' as Type, properties: {}, required: [] },
     },
     {
@@ -107,7 +107,7 @@ export function buildToolDeclarations(
     },
     {
       name: 'nords_get_connections',
-      description: 'Get all connections to/from a specific nord.',
+      description: 'Get all connections to/from a specific nord. Returns full connection rows including type_name, verb, direction, distance_x/y, and connection properties (e.g. Verification Status, Severity, Allocation %). Use when you need to see all relationships for a specific nord beyond what the horizon neighbors show.',
       parameters: {
         type: 'OBJECT' as Type,
         properties: { nord_id: { type: 'STRING' as Type, description: 'The UUID of the nord' } },
@@ -139,7 +139,7 @@ export function buildToolDeclarations(
   const session: FunctionDeclaration[] = [
     {
       name: 'nords_navigate',
-      description: `Navigate to any nord by name, type, or ID. The system finds the best match: if it's a neighbor, you traverse there (recording the relationship). If it's elsewhere, you jump. Either way, your position updates and you get a fresh horizon. Just say where you want to go.${ctx}`,
+      description: `Navigate to any nord by name, type, or ID. The system finds the best match: if it's a neighbor, you traverse there (recording the relationship). If it's elsewhere, you jump. Returns: destination nord, fresh horizon, and — if traversed — a traversed_via block with the edge metadata (type_name, verb, traversal_direction, stage, connection properties) of the path you just walked. Use traversed_via to naturally bridge your conversation: 'This test case verifies that requirement, and the verification is currently at the Tested stage.'${ctx}`,
       parameters: {
         type: 'OBJECT' as Type,
         properties: {

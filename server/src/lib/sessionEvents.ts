@@ -125,6 +125,10 @@ export async function getSessionEvents(
 /**
  * Get replay data — user_message + assistant_message events grouped into rounds.
  * Returns the TranscriptRound[] format that PreviewChat expects.
+ *
+ * Round 0 = agent welcome (assistant_message before any user_message).
+ * Subsequent rounds = user_message → tool_calls → assistant_message.
+ * Tool calls now include result_summary for debugging.
  */
 export async function getReplayData(sessionId: string): Promise<Array<{
   round: number;
@@ -174,7 +178,42 @@ export async function getReplayData(sessionId: string): Promise<Array<{
 
   let prevEventAt: Date | null = null;
 
+  // ── Round 0: Capture welcome phase (tool_calls + assistant_message before any user_message) ──
+  let seenFirstUserMessage = false;
+  const round0ToolCalls: any[] = [];
+
   for (const evt of events) {
+    if (!seenFirstUserMessage && evt.action_type === 'user_message') {
+      seenFirstUserMessage = true;
+    }
+
+    // Collect round 0 events (before any user_message)
+    if (!seenFirstUserMessage) {
+      if (evt.action_type === 'tool_call') {
+        round0ToolCalls.push({
+          name: evt.key,
+          arguments: evt.value?.args || {},
+          result: evt.value?.result_summary || evt.value?.result_data || null,
+          error: evt.value?.error || null,
+        });
+      } else if (evt.action_type === 'assistant_message') {
+        // Push round 0 with the welcome message
+        rounds.push({
+          round: 0,
+          user_msg: '',
+          agent_msg: evt.value?.text || evt.key || '',
+          tool_calls: round0ToolCalls,
+          tokens_in: evt.value?.tokens_in || 0,
+          tokens_out: evt.value?.tokens_out || 0,
+          latency_ms: evt.value?.latency_ms || 0,
+          delay_ms: 1000,
+        });
+        prevEventAt = new Date(evt.event_at);
+      }
+      continue;
+    }
+
+    // ── Standard rounds (1+) ──
     if (evt.action_type === 'user_message') {
       // Start a new round
       currentRound = {
@@ -190,6 +229,8 @@ export async function getReplayData(sessionId: string): Promise<Array<{
       currentRound.tool_calls.push({
         name: evt.key,
         arguments: evt.value?.args || {},
+        result: evt.value?.result_summary || evt.value?.result_data || null,
+        error: evt.value?.error || null,
       });
     } else if (evt.action_type === 'assistant_message' && currentRound) {
       currentRound.agent_msg = evt.value?.text || evt.key || '';
@@ -203,7 +244,7 @@ export async function getReplayData(sessionId: string): Promise<Array<{
         : 1000; // default 1s for first round
 
       rounds.push({
-        round: rounds.length + 1,
+        round: rounds.length,
         user_msg: currentRound.user_msg,
         agent_msg: currentRound.agent_msg,
         tool_calls: currentRound.tool_calls,
