@@ -583,6 +583,24 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
 
   // Reset session
   const handleReset = useCallback(async () => {
+    if (isReplayMode && replayTranscript) {
+      // In replay mode: restart the replay from the beginning
+      if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+      if (replayTypeTimerRef.current) clearTimeout(replayTypeTimerRef.current);
+      setMessages([]);
+      setDevLog([]);
+      setReplayIndex(0);
+      setReplayTyping(false);
+      setReplayInputText('');
+      setReplayInputDone(false);
+      // Re-trigger the replay by starting from round 0
+      if (replaySpeed === 0) {
+        loadAllReplayMessages(replayTranscript);
+      } else {
+        requestAnimationFrame(() => driveReplayRound(0, replayTranscript, replaySpeed));
+      }
+      return;
+    }
     if (sessionId) {
       try {
         await api.put(`/api/mcp-sessions/${sessionId}`, { status: 'abandoned' });
@@ -593,7 +611,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     setLastHorizon(null);
     setLastToolCalls([]);
     setDevLog([]);
-  }, [sessionId, projectId]);
+  }, [sessionId, projectId, isReplayMode, replayTranscript, replaySpeed]);
 
   // ── Live Test Run ──
   const startLiveTest = useCallback(async (scenarioId: string) => {
@@ -935,7 +953,23 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
               {replayDemoMode ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           )}
-          <button className="preview-chat__action-btn" onClick={onClose} title="Close">
+          <button className="preview-chat__action-btn" onClick={() => {
+            if (isReplayMode) {
+              // Clean exit from replay mode
+              if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+              if (replayTypeTimerRef.current) clearTimeout(replayTypeTimerRef.current);
+              onClearReplay?.();
+              setMessages([]);
+              setDevLog([]);
+              setDevMode(false);
+              setReplayIndex(0);
+              setReplayTyping(false);
+              setReplayInputText('');
+              setReplayInputDone(false);
+              setReplayDemoMode(false);
+            }
+            onClose();
+          }} title="Close">
             <X size={14} />
           </button>
         </div>
@@ -1030,33 +1064,26 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
               🔁 {replayIndex}/{replayTranscript?.length || 0} rounds
             </span>
             <div className="preview-chat__replay-speed">
-              {([1, 2, 5, 0] as const).map(s => (
+              {([1, 2, 5] as const).map(s => (
                 <button
                   key={s}
                   className={`preview-chat__speed-pill${replaySpeed === s ? ' active' : ''}`}
                   onClick={() => setReplaySpeed(s)}
                 >
-                  {s === 0 ? '⏩' : `${s}×`}
+                  {`${s}×`}
                 </button>
               ))}
+              <button
+                className={`preview-chat__speed-pill${replaySpeed === 0 ? ' active' : ''}`}
+                onClick={() => {
+                  setReplaySpeed(0);
+                  if (replayTranscript) loadAllReplayMessages(replayTranscript);
+                }}
+                title="Skip typing — load entire session instantly"
+              >
+                ⏩
+              </button>
             </div>
-            <button
-              className="preview-chat__replay-btn preview-chat__replay-btn--exit"
-              onClick={() => {
-                if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
-                if (replayTypeTimerRef.current) clearTimeout(replayTypeTimerRef.current);
-                onClearReplay?.();
-                setMessages([]);
-                setDevLog([]);
-                setDevMode(false);
-                setReplayIndex(0);
-                setReplayTyping(false);
-                setReplayInputText('');
-                setReplayInputDone(false);
-              }}
-            >
-              <X size={14} /> Exit
-            </button>
           </div>
           )}
           {/* Simulated input field — shows typewriter text */}
