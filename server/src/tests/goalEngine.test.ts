@@ -1027,6 +1027,155 @@ describe('computeScore includes goal metrics', () => {
   });
 });
 
+// ══════════════════════════════════════════════════════════
+// UNIT: isValueSatisfied — Boolean Gate Logic
+// ══════════════════════════════════════════════════════════
+
+describe('isValueSatisfied (pure function)', () => {
+  it('boolean false is NOT satisfied', () => {
+    expect(goalsRepo.isValueSatisfied(false, 'boolean')).toBe(false);
+  });
+
+  it('boolean true IS satisfied', () => {
+    expect(goalsRepo.isValueSatisfied(true, 'boolean')).toBe(true);
+  });
+
+  it('null is NOT satisfied', () => {
+    expect(goalsRepo.isValueSatisfied(null, 'string')).toBe(false);
+    expect(goalsRepo.isValueSatisfied(null, 'boolean')).toBe(false);
+  });
+
+  it('undefined is NOT satisfied', () => {
+    expect(goalsRepo.isValueSatisfied(undefined, 'string')).toBe(false);
+  });
+
+  it('empty string is NOT satisfied', () => {
+    expect(goalsRepo.isValueSatisfied('', 'string')).toBe(false);
+    expect(goalsRepo.isValueSatisfied('', 'select')).toBe(false);
+  });
+
+  it('non-empty string IS satisfied', () => {
+    expect(goalsRepo.isValueSatisfied('510(k)', 'string')).toBe(true);
+    expect(goalsRepo.isValueSatisfied('510(k)', 'select')).toBe(true);
+  });
+
+  it('number 0 IS satisfied', () => {
+    expect(goalsRepo.isValueSatisfied(0, 'number')).toBe(true);
+  });
+
+  it('positive number IS satisfied', () => {
+    expect(goalsRepo.isValueSatisfied(42, 'number')).toBe(true);
+  });
+
+  it('infers boolean type from value when variableType not provided', () => {
+    expect(goalsRepo.isValueSatisfied(false)).toBe(false);
+    expect(goalsRepo.isValueSatisfied(true)).toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// INTEGRATION: Boolean Gate — false does NOT complete goals
+// ══════════════════════════════════════════════════════════
+
+describe('Boolean Gate — Goal Completion', () => {
+  let projectId: string;
+  let boolVarId: string;
+  let stringVarId: string;
+  let goalId: string;
+  let sessionId: string;
+
+  beforeAll(async () => {
+    projectId = await createTestProject('BoolGate');
+    boolVarId = await createTestVariable(projectId, 'all_tests_executed', { type: 'boolean', required: true });
+    stringVarId = await createTestVariable(projectId, 'predicate_device', { type: 'string', required: true });
+    goalId = await createTestGoal(projectId, 'Verification Complete');
+    await bindVariable(goalId, boolVarId, true);   // required
+    await bindVariable(goalId, stringVarId, true);  // required
+
+    sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'guided');
+  });
+  afterAll(async () => { await deleteTestProject(projectId); });
+
+  it('boolean false does NOT complete the goal', async () => {
+    // Fill string binding — satisfied
+    await setSessionVariable(sessionId, stringVarId, 'Dexcom G7');
+    // Fill boolean binding with false — NOT satisfied
+    await setSessionVariable(sessionId, boolVarId, false);
+    const events = await goalsRepo.evaluateGoals(sessionId, projectId);
+    const completed = events.filter(e => e.type === 'goal_completed');
+    expect(completed.length).toBe(0);
+  });
+
+  it('boolean true DOES complete the goal', async () => {
+    // Update boolean to true — now satisfied
+    await setSessionVariable(sessionId, boolVarId, true);
+    const events = await goalsRepo.evaluateGoals(sessionId, projectId);
+    const completed = events.filter(e => e.type === 'goal_completed');
+    expect(completed.length).toBe(1);
+    expect(completed[0].goal_name).toBe('Verification Complete');
+  });
+});
+
+describe('Boolean Gate — findSessionGoals collected flag', () => {
+  let projectId: string;
+  let boolVarId: string;
+  let goalId: string;
+  let sessionId: string;
+
+  beforeAll(async () => {
+    projectId = await createTestProject('BoolCollected');
+    boolVarId = await createTestVariable(projectId, 'endpoint_met', { type: 'boolean', required: true });
+    goalId = await createTestGoal(projectId, 'Protocol Approved');
+    await bindVariable(goalId, boolVarId, true);
+
+    sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'guided');
+  });
+  afterAll(async () => { await deleteTestProject(projectId); });
+
+  it('boolean false shows collected=true (user DID answer)', async () => {
+    await setSessionVariable(sessionId, boolVarId, false);
+    const states = await goalsRepo.findSessionGoals(sessionId, projectId);
+    const goalState = states.find(g => g.goal_name === 'Protocol Approved');
+    expect(goalState).toBeDefined();
+    expect(goalState!.variables[0].collected).toBe(true);
+    expect(goalState!.variables[0].value).toBe(false);
+    // BUT the goal should still be active (not completed)
+    expect(goalState!.status).toBe('active');
+  });
+});
+
+describe('Boolean Gate — Implicit Goal', () => {
+  let projectId: string;
+  let boolVarId: string;
+  let stringVarId: string;
+  let sessionId: string;
+
+  beforeAll(async () => {
+    projectId = await createTestProject('BoolImplicit');
+    boolVarId = await createTestVariable(projectId, 'confirmed', { type: 'boolean', required: true });
+    stringVarId = await createTestVariable(projectId, 'device_name', { type: 'string', required: true });
+    // No explicit goals — will use implicit goal
+    sessionId = await createTestSession(projectId);
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'collect');
+  });
+  afterAll(async () => { await deleteTestProject(projectId); });
+
+  it('implicit goal does NOT complete when boolean is false', async () => {
+    await setSessionVariable(sessionId, stringVarId, 'Pulse Sense');
+    await setSessionVariable(sessionId, boolVarId, false);
+    const events = await goalsRepo.evaluateGoals(sessionId, projectId);
+    expect(events.some(e => e.type === 'goal_completed')).toBe(false);
+  });
+
+  it('implicit goal completes when boolean is true', async () => {
+    await setSessionVariable(sessionId, boolVarId, true);
+    const events = await goalsRepo.evaluateGoals(sessionId, projectId);
+    expect(events.some(e => e.type === 'goal_completed')).toBe(true);
+  });
+});
+
 // ── Close pool after all tests ──
 afterAll(async () => {
   await closePool();

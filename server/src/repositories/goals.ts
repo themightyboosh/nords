@@ -452,6 +452,39 @@ export async function initializeSessionGoals(
 // Goal Evaluation Engine — Variable-based with DAG sequencing
 // ══════════════════════════════════════════════════════════
 
+/**
+ * Determines whether a session variable value satisfies a goal binding.
+ *
+ * This is DIFFERENT from "collected" (has any value been stored).
+ * A boolean `false` is collected but NOT satisfied — the gate hasn't been met.
+ *
+ * Satisfaction rules by type:
+ *   boolean  → only `true` satisfies
+ *   string   → non-null, non-empty
+ *   number   → any non-null number (including 0)
+ *   select   → non-null, non-empty
+ *   fallback → non-null, non-empty-string
+ */
+export function isValueSatisfied(value: unknown, variableType?: string): boolean {
+  if (value === undefined || value === null) return false;
+
+  // Boolean gates: only `true` satisfies
+  if (variableType === 'boolean' || typeof value === 'boolean') {
+    return value === true;
+  }
+
+  // Strings/selects: non-empty
+  if (typeof value === 'string') {
+    return value !== '';
+  }
+
+  // Numbers: any non-null number is satisfied (including 0)
+  if (typeof value === 'number') return true;
+
+  // Fallback: non-null/non-empty-string
+  return value !== '';
+}
+
 export interface GoalEvent {
   type: 'goal_completed' | 'goal_activated' | 'goal_cancelled';
   goal_id: string;
@@ -498,13 +531,17 @@ export async function evaluateGoals(
   // Load all edges for the project
   const edges = await findEdgesByProject(projectId);
 
-  // Load session variable values
-  const sessionVars = await query<{ variable_id: string; value: unknown }>(`
-    SELECT variable_id, value FROM mcp_session_variables WHERE session_id = $1
+  // Load session variable values WITH their types for satisfaction checks.
+  // Boolean `false` is "collected" but NOT "satisfied" — the gate hasn't been met.
+  const sessionVars = await query<{ variable_id: string; value: unknown; variable_type: string }>(`
+    SELECT sv.variable_id, sv.value, pv.type AS variable_type
+    FROM mcp_session_variables sv
+    JOIN project_variables pv ON pv.id = sv.variable_id
+    WHERE sv.session_id = $1
   `, [sessionId]);
   const filledVarIds = new Set(
     sessionVars
-      .filter(sv => sv.value !== undefined && sv.value !== null && sv.value !== '')
+      .filter(sv => isValueSatisfied(sv.value, sv.variable_type))
       .map(sv => sv.variable_id)
   );
 
@@ -713,11 +750,16 @@ async function evaluateImplicitGoal(
     return { complete: false, data: {}, progress: { filled: 0, required: 0, total: 0 } };
   }
 
+  // Boolean `false` is NOT satisfied — the gate hasn't been met.
+  // Empty strings are also not satisfied.
   const filledVars = await query<{ variable_id: string }>(`
     SELECT variable_id FROM mcp_session_variables
     WHERE session_id = $1
       AND variable_id = ANY($2)
-      AND value IS NOT NULL AND value != 'null'::jsonb
+      AND value IS NOT NULL
+      AND value != 'null'::jsonb
+      AND value != 'false'::jsonb
+      AND value != '""'::jsonb
   `, [sessionId, requiredVars.map(v => v.id)]);
 
   const filledSet = new Set(filledVars.map(f => f.variable_id));
