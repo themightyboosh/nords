@@ -214,6 +214,15 @@ const cancelledRuns = new Set<string>();
 // ══════════════════════════════════════════════════════════
 // Test Scenarios — CRUD
 // ══════════════════════════════════════════════════════════
+//
+// ⚠️  IMPORTANT: Test scenario subjects (the synthetic users defined in
+// user_objective / user_context) must NOT overlap with the project's
+// Personas/Lenses. Personas are the agent's perspective lenses — they
+// define *how* the agent speaks (e.g. "Marcus Cole, Lead Systems Engineer").
+// Test subjects are the *simulated users* who interact with the agent
+// during test runs. Using the same character for both creates confusion
+// about who is who in the conversation.
+//
 
 /**
  * GET /api/projects/:id/test-scenarios

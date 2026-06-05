@@ -7,6 +7,12 @@
  *
  * Context isolation: the synthetic user only sees conversation text.
  * It never sees tool calls, horizon data, or internal state.
+ *
+ * ⚠️  DESIGN NOTE: Test scenario subjects (user_objective / user_context)
+ * must be DIFFERENT characters from the project's Personas/Lenses.
+ * Personas define the agent's perspective (e.g. "Marcus Cole, Lead Systems Engineer").
+ * Test subjects are the simulated users who interact WITH the agent.
+ * Reusing the same names creates confusion about who is speaking.
  */
 
 import { GoogleGenAI } from '@google/genai';

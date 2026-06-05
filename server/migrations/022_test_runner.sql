@@ -44,7 +44,12 @@ CREATE INDEX idx_test_scenarios_project ON test_scenarios(project_id);
 COMMENT ON TABLE test_scenarios IS
   'Reusable test definitions for the synthetic user test runner.
    Each scenario defines a user objective, behavior profile, and termination conditions.
-   Multiple runs can be executed against a single scenario.';
+   Multiple runs can be executed against a single scenario.
+
+   DESIGN NOTE: The user_objective and user_context fields define the test SUBJECT
+   (the simulated user). These must be DIFFERENT characters from the project Personas/Lenses.
+   Personas are the agent perspective (how the AI speaks). Test subjects interact WITH the agent.
+   Reusing the same names creates confusion about who is who in the conversation.';
 
 -- ─────────────────────────────────────────────────────────
 -- 2. Test Runs — one execution of a scenario
