@@ -125,7 +125,7 @@ export default function ViewportHeader({
       ],
     },
     {
-      key: 'test', label: 'Test', icon: Microscope,
+      key: 'test', label: 'Tests', icon: Microscope,
       items: [
         { label: 'Preview', icon: Eye, onClick: onOpenPreview, testId: 'header-preview' },
         { label: 'Test', icon: FlaskConical, onClick: onOpenTestRunner, testId: 'header-test-runner' },
