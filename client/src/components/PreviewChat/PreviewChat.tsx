@@ -90,6 +90,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   const [replayDemoMode, setReplayDemoMode] = useState(false); // hides replay chrome for clean demo
   const replayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const replayTypeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const replayInputRef = useRef<HTMLTextAreaElement>(null);
   const MAX_DELAY_MS = 5000; // cap per-round delay
 
   // Cleanup replay timers on unmount
@@ -703,6 +704,14 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     el.style.height = Math.min(el.scrollHeight, 200) + 'px';
   }, [input]);
 
+  // Auto-resize replay textarea when typewriter text changes
+  useEffect(() => {
+    const el = replayInputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+  }, [replayInputText]);
+
   /** Reset textarea height after sending */
   const resetInputHeight = useCallback(() => {
     const el = inputRef.current;
@@ -1089,11 +1098,12 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
           {/* Simulated input field — shows typewriter text */}
           <div className="preview-chat__input-area">
             <textarea
+              ref={replayInputRef}
               className="preview-chat__input"
               value={replayInputText}
               readOnly
               placeholder=""
-              rows={1}
+              rows={2}
               style={{ caretColor: replayInputText ? 'var(--text-primary, #e2e8f0)' : 'transparent' }}
             />
             <button
@@ -1113,7 +1123,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Send a message…"
-            rows={1}
+            rows={2}
             disabled={sending}
           />
           <button
