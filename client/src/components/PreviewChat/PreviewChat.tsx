@@ -334,27 +334,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     localStorage.setItem(STORAGE_KEY, JSON.stringify(rect));
   }, [rect]);
 
-  // ResizeObserver to track user-resize via CSS resize
-  // Delay observation to avoid the "shrink to size" animation on mount:
-  // The browser fires several resize events when the element first mounts,
-  // which thrashes between the default CSS size and the stored rect dimensions.
-  useEffect(() => {
-    const el = chatRef.current;
-    if (!el) return;
-    let armed = false;
-    const armTimer = setTimeout(() => { armed = true; }, 150);
-    const ro = new ResizeObserver((entries) => {
-      if (!armed) return; // Ignore all events during initial layout
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        if (width > 0 && height > 0) {
-          setRect(prev => ({ ...prev, w: width, h: height }));
-        }
-      }
-    });
-    requestAnimationFrame(() => ro.observe(el));
-    return () => { clearTimeout(armTimer); ro.disconnect(); };
-  }, [isOpen]);
+
 
   // Drag handlers
   const handleDragStart = useCallback((e: React.MouseEvent) => {
@@ -697,13 +677,13 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   }, []);
 
   // Keyboard shortcut
-  /** Auto-resize textarea to fit content */
-  const autoResizeInput = useCallback(() => {
+  /** Auto-resize textarea to fit content — runs after React commits the new value */
+  useEffect(() => {
     const el = inputRef.current;
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 200) + 'px';
-  }, []);
+  }, [input]);
 
   /** Reset textarea height after sending */
   const resetInputHeight = useCallback(() => {
@@ -1103,7 +1083,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
             ref={inputRef}
             className="preview-chat__input"
             value={input}
-            onChange={e => { setInput(e.target.value); autoResizeInput(); }}
+            onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Send a message…"
             rows={1}
