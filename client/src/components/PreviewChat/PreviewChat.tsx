@@ -71,6 +71,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   const [model, setModel] = useState(() => localStorage.getItem('nords-preview-model') || 'gemini-2.5-flash');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const devLogEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('');
 
@@ -696,12 +697,27 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   }, []);
 
   // Keyboard shortcut
+  /** Auto-resize textarea to fit content */
+  const autoResizeInput = useCallback(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+  }, []);
+
+  /** Reset textarea height after sending */
+  const resetInputHeight = useCallback(() => {
+    const el = inputRef.current;
+    if (el) el.style.height = '';
+  }, []);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+      resetInputHeight();
     }
-  }, [handleSend]);
+  }, [handleSend, resetInputHeight]);
 
   // ── Render Helpers ──
 
@@ -1084,9 +1100,10 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
       ) : (
         <div className="preview-chat__input-area">
           <textarea
+            ref={inputRef}
             className="preview-chat__input"
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={e => { setInput(e.target.value); autoResizeInput(); }}
             onKeyDown={handleKeyDown}
             placeholder="Send a message…"
             rows={1}
@@ -1094,7 +1111,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
           />
           <button
             className="preview-chat__send-btn"
-            onClick={handleSend}
+            onClick={() => { handleSend(); resetInputHeight(); }}
             disabled={!input.trim() || sending}
           >
             <Send size={14} />
