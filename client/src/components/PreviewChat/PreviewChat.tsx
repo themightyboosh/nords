@@ -900,7 +900,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
                 <>
                   <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setShowTestMenu(false)} />
                   <div className="preview-chat__test-menu">
-                    <div className="preview-chat__test-menu-title">Run Test Scenario</div>
+                    <div className="preview-chat__test-menu-title">Test Scenarios<span className="preview-chat__test-menu-count">{testScenarios.length} defined</span></div>
                     {testScenarios.map(s => (
                       <button
                         key={s.id}
@@ -910,8 +910,8 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
                           startLiveTest(s.id);
                         }}
                       >
-                        <span>{s.name}</span>
-                        <span className="preview-chat__test-profile">{s.user_profile}</span>
+                        <span className="preview-chat__test-menu-name">{s.name}</span>
+                        <Play size={12} className="preview-chat__test-menu-play" />
                       </button>
                     ))}
                   </div>
