@@ -260,15 +260,13 @@ export function TestRunner({ projectId, projectMode, goalsEnabled, open, onClose
                   className={`test-runner__scenario-item ${s.id === selectedId ? 'active' : ''}`}
                   onClick={() => setSelectedId(s.id)}
                 >
-                  <div className="test-runner__scenario-name">
+                  <span className="test-runner__scenario-status">
                     {s.latest_run?.passed === true && <CheckCircle2 size={12} className="test-runner__pass" />}
                     {s.latest_run?.passed === false && <XCircle size={12} className="test-runner__fail" />}
                     {s.latest_run?.status === 'running' && <Loader2 size={12} className="test-runner__running" />}
-                    <span>{s.name}</span>
-                  </div>
-                  <div className="test-runner__scenario-meta">
-                    <span className="test-runner__profile-badge">{s.user_profile}</span>
-                  </div>
+                  </span>
+                  <span className="test-runner__scenario-name">{s.name}</span>
+                  <span className="test-runner__profile-badge">{s.user_profile}</span>
                 </button>
               ))}
               {scenarios.length === 0 && (

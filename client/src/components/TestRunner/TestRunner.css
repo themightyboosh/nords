@@ -126,9 +126,9 @@
 
 .test-runner__scenario-item {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: var(--nords-space-sm) var(--nords-space-lg);
+  align-items: center;
+  gap: 6px;
+  padding: 7px var(--nords-space-lg);
   cursor: pointer;
   border: none;
   background: none;
@@ -138,6 +138,7 @@
   font-size: var(--nords-font-size-sm);
   transition: all 0.12s ease;
   border-left: 3px solid transparent;
+  white-space: nowrap;
 }
 
 .test-runner__scenario-item:hover {
@@ -151,29 +152,32 @@
   border-left-color: var(--nords-color-accent);
 }
 
-.test-runner__scenario-name {
+.test-runner__scenario-status {
+  flex-shrink: 0;
+  width: 14px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+}
+
+.test-runner__scenario-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-weight: 500;
   font-size: var(--nords-font-size-sm);
 }
 
-.test-runner__scenario-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--nords-color-text-tertiary);
-  padding-left: 17px;
-}
-
 .test-runner__profile-badge {
+  flex-shrink: 0;
   background: var(--nords-color-bg-hover);
   padding: 1px 6px;
   border-radius: 8px;
   font-size: 10px;
   text-transform: capitalize;
+  color: var(--nords-color-text-tertiary);
+  margin-left: auto;
 }
 
 .test-runner__run-count {
