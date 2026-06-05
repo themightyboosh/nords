@@ -72,6 +72,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const devLogEndRef = useRef<HTMLDivElement>(null);
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState<string>('');
 
   const [lastHorizon, setLastHorizon] = useState<Record<string, unknown> | null>(null);
   const [lastToolCalls, setLastToolCalls] = useState<ToolCall[]>([]);
@@ -401,11 +402,12 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
 
   // Load project welcome message + test scenarios
   useEffect(() => {
-    // Fetch project for welcome message
-    api.get<{ mcp_welcome_message?: string | null }>(`/api/projects/${projectId}`)
+    // Fetch project for welcome message + name
+    api.get<{ mcp_welcome_message?: string | null; name?: string | null }>(`/api/projects/${projectId}`)
       .then(p => {
         const wm = p.mcp_welcome_message || null;
         setWelcomeMessage(wm);
+        setProjectName(p.name || 'Agent Preview');
         // Seed the welcome as the first assistant bubble so the user can respond naturally
         if (wm) {
           setMessages(prev => {
@@ -850,7 +852,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
       >
         <div className="preview-chat__header-left">
           <GripVertical size={14} className="preview-chat__grip-icon" />
-          {!(isReplayMode && replayDemoMode) && (
+          {!(isReplayMode && replayDemoMode) ? (
             <>
               <Eye size={16} className="preview-chat__header-icon" />
               <span className="preview-chat__title">{isReplayMode ? '🔁 Replay' : 'Agent Preview'}</span>
@@ -861,6 +863,8 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
                 <code className="preview-chat__session-id">{sessionId.slice(0, 8)}…</code>
               )}
             </>
+          ) : (
+            <span className="preview-chat__title">{projectName || 'Agent Preview'}</span>
           )}
         </div>
         <div className="preview-chat__header-actions">
