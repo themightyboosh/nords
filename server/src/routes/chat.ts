@@ -145,6 +145,22 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
         start_nord_id: project?.default_start_nord_id || null,
       });
 
+      // Seed welcome message as first assistant message so the LLM sees it in history
+      // and won't repeat it (the client pre-renders this as a chat bubble)
+      if (project?.mcp_welcome_message) {
+        await mcpMessagesRepo.create({
+          session_id: sessionId,
+          role: 'assistant',
+          content: project.mcp_welcome_message,
+          tool_calls: null,
+          context: { synthetic: true, source: 'welcome_message' },
+          tokens_in: null,
+          tokens_out: null,
+          model: null,
+          latency_ms: 0,
+        });
+      }
+
       // Initialize session goals (skips internally if graph_only)
       await goalsRepo.initializeSessionGoals(sessionId, projectId, 'collect');
     } else {

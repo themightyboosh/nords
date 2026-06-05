@@ -403,7 +403,22 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   useEffect(() => {
     // Fetch project for welcome message
     api.get<{ mcp_welcome_message?: string | null }>(`/api/projects/${projectId}`)
-      .then(p => setWelcomeMessage(p.mcp_welcome_message || null))
+      .then(p => {
+        const wm = p.mcp_welcome_message || null;
+        setWelcomeMessage(wm);
+        // Seed the welcome as the first assistant bubble so the user can respond naturally
+        if (wm) {
+          setMessages(prev => {
+            if (prev.length > 0) return prev; // don't overwrite existing messages
+            return [{
+              id: 'welcome-msg',
+              role: 'assistant' as const,
+              content: wm,
+              created_at: new Date().toISOString(),
+            }];
+          });
+        }
+      })
       .catch(() => {});
     // Load test scenarios
     api.get<Array<{ id: string; name: string; user_profile: string }>>(`/api/projects/${projectId}/test-scenarios`)
@@ -931,10 +946,8 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
           {messages.length === 0 && (
             <div className="preview-chat__empty">
               <Bot size={32} strokeWidth={1} />
-              <p>{welcomeMessage || "Start a conversation with your project's agent."}</p>
-              {!welcomeMessage && (
-                <p className="preview-chat__hint">Messages are logged and visible in Dev Mode.</p>
-              )}
+              <p>Start a conversation with your project's agent.</p>
+              <p className="preview-chat__hint">Messages are logged and visible in Dev Mode.</p>
             </div>
           )}
           {messages.map(msg => (

@@ -169,12 +169,6 @@
 }
 .preview-chat__empty p { font-size: 13px; margin: 0; }
 .preview-chat__hint { font-size: 11px !important; opacity: 0.6; }
-.preview-chat__welcome {
-  font-size: 13px !important; line-height: 1.6; max-width: 340px;
-  color: #d1d5db !important; font-style: italic;
-  padding: 12px 16px; border-radius: 12px;
-  background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.12);
-}
 
 /* ── Message Bubbles ── */
 .preview-chat__message { display: flex; gap: 10px; max-width: 720px; animation: pcFadeIn 0.25s ease; }
