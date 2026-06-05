@@ -843,21 +843,24 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
         visibility: mounted ? 'visible' : 'hidden',
       }}
     >
-      {/* Header — doubles as drag handle; hidden in demo mode */}
-      {!(isReplayMode && replayDemoMode) && (
+      {/* Header — doubles as drag handle */}
       <div
         className="preview-chat__header preview-chat__drag-handle"
         onMouseDown={handleDragStart}
       >
         <div className="preview-chat__header-left">
           <GripVertical size={14} className="preview-chat__grip-icon" />
-          <Eye size={16} className="preview-chat__header-icon" />
-          <span className="preview-chat__title">{isReplayMode ? '🔁 Replay' : 'Agent Preview'}</span>
-          {isReplayMode && replayLabel && (
-            <code className="preview-chat__session-id" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa' }}>{replayLabel}</code>
-          )}
-          {!isReplayMode && sessionId && (
-            <code className="preview-chat__session-id">{sessionId.slice(0, 8)}…</code>
+          {!(isReplayMode && replayDemoMode) && (
+            <>
+              <Eye size={16} className="preview-chat__header-icon" />
+              <span className="preview-chat__title">{isReplayMode ? '🔁 Replay' : 'Agent Preview'}</span>
+              {isReplayMode && replayLabel && (
+                <code className="preview-chat__session-id" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa' }}>{replayLabel}</code>
+              )}
+              {!isReplayMode && sessionId && (
+                <code className="preview-chat__session-id">{sessionId.slice(0, 8)}…</code>
+              )}
+            </>
           )}
         </div>
         <div className="preview-chat__header-actions">
@@ -868,24 +871,28 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
           >
             <Code2 size={14} />
           </button>
-          <select
-            className="preview-chat__model-select"
-            value={model}
-            onChange={e => {
-              setModel(e.target.value);
-              localStorage.setItem('nords-preview-model', e.target.value);
-            }}
-            title="Select model"
-          >
-            {MODELS.map(m => (
-              <option key={m.id} value={m.id}>{m.label}</option>
-            ))}
-          </select>
+          {!(isReplayMode && replayDemoMode) && (
+            <>
+              <select
+                className="preview-chat__model-select"
+                value={model}
+                onChange={e => {
+                  setModel(e.target.value);
+                  localStorage.setItem('nords-preview-model', e.target.value);
+                }}
+                title="Select model"
+              >
+                {MODELS.map(m => (
+                  <option key={m.id} value={m.id}>{m.label}</option>
+                ))}
+              </select>
+            </>
+          )}
 
           <button className="preview-chat__action-btn" onClick={handleReset} title="Reset Session">
             <RotateCcw size={14} />
           </button>
-          {testScenarios.length > 0 && (
+          {!(isReplayMode && replayDemoMode) && testScenarios.length > 0 && (
             <div style={{ position: 'relative' }}>
               <button
                 className="preview-chat__action-btn"
@@ -933,7 +940,6 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
           </button>
         </div>
       </div>
-      )}
 
 
 
