@@ -372,6 +372,27 @@
 
 /* ── Responsive ── */
 
+/* Mobile-first: full-screen chat experience */
+@media (max-width: 599px) {
+  .share-chat {
+    height: 100dvh; /* dynamic viewport height — adjusts for virtual keyboard */
+    border-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .share-chat__input-bar {
+    padding-bottom: calc(var(--nords-space-sm, 8px) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Ensure touch targets meet 44×44px minimum */
+  .share-chat__send-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
 @media (min-width: 600px) {
   .share-chat {
     max-width: 500px;

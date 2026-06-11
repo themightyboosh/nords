@@ -97,6 +97,7 @@
   --nords-header-height: 52px;
   --nords-dock-height: 56px;
   --nords-drawer-width: 400px;
+  --nords-palette-width: 280px;
 
   /* ── Glass ── */
   --nords-glass-bg: rgba(12, 14, 22, 0.8);

@@ -99,6 +99,10 @@
   --nords-header-height: 48px;
   --nords-dock-height: 52px;
   --nords-drawer-width: 380px;
+  --nords-palette-width: 280px;
+
+  /* ── Breakpoints (reference — @media can't use var(), use raw values) ── */
+  /* Tablet portrait: 768px  |  Small laptop: 1024px  |  Desktop: 1440px */
 
   /* ── Glass ── */
   --nords-glass-bg: rgba(19, 22, 27, 0.85);
