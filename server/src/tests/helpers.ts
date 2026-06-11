@@ -245,7 +245,7 @@ export async function setSessionCurrentNord(sessionId: string, nordId: string | 
 export async function deleteTestProject(projectId: string): Promise<void> {
   // Delete entities that may not have ON DELETE CASCADE FK constraints
   // Use DO $$ to handle tables that may not exist yet
-  await query(`DELETE FROM goal_properties WHERE goal_id IN (SELECT id FROM goals WHERE project_id = $1)`, [projectId]).catch(() => {});
+  // goal_properties was dropped in migration 029 — goal_variable_bindings has CASCADE on goals
   await query('DELETE FROM goal_variable_bindings WHERE goal_id IN (SELECT id FROM goals WHERE project_id = $1)', [projectId]).catch(() => {});
   await query('DELETE FROM mcp_traversals WHERE session_id IN (SELECT id FROM mcp_sessions WHERE project_id = $1)', [projectId]).catch(() => {});
   await query('DELETE FROM mcp_session_variables WHERE session_id IN (SELECT id FROM mcp_sessions WHERE project_id = $1)', [projectId]).catch(() => {});

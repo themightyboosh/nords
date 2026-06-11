@@ -6,7 +6,7 @@
  *   - 10 nord types, 8 connection types
  *   - 64 nords, ~85 connections
  *   - 5 personas with category weights, mental models, goal weights
- *   - 6 goals with DAG edges and property bindings
+ *   - 6 goals with DAG edges and variable bindings
  *
  * Usage:
  *   npx tsx --env-file=.env scripts/seed-meridian.ts
@@ -324,18 +324,15 @@ async function main() {
   console.log('\n🏥 Seeding Meridian Medical — Pulse Sense CGM Demo\n');
 
   // ── 1. Create / update project ──
-  // Use existing org — "Nords Team"
-  const ORG_ID = '77dc5572-6e5a-4026-978c-13f7f80192ed';
 
   await q(`
-    INSERT INTO projects (id, org_id, name, description, purpose, project_mode, mcp_enabled, mcp_capture_data, mcp_mutable, goals_enabled, is_demo)
-    VALUES ($1, $2, $3, $4, $5, 'guided', true, true, true, true, true)
+    INSERT INTO projects (id, name, description, purpose, project_mode, mcp_enabled, mcp_capture_data, mcp_mutable, goals_enabled, is_demo)
+    VALUES ($1, $2, $3, $4, 'guided', true, true, true, true, true)
     ON CONFLICT (id) DO UPDATE SET
       name = EXCLUDED.name, description = EXCLUDED.description, purpose = EXCLUDED.purpose,
       project_mode = 'guided', mcp_enabled = true, mcp_capture_data = true, mcp_mutable = true, goals_enabled = true
   `, [
     PROJECT_ID,
-    ORG_ID,
     'Pulse Sense CGM — Design Control',
     'Design control and regulatory pathway management for the Pulse Sense continuous glucose monitor.',
     'Track the complete design control lifecycle of a Class II medical device from user needs through FDA 510(k) clearance.',
@@ -659,57 +656,70 @@ async function main() {
     `, [PROJECT_ID, goalIds[e.src], goalIds[e.tgt]]);
   }
 
-  // Goal property bindings
-  await q(`DELETE FROM goal_properties WHERE goal_id IN (SELECT id FROM goals WHERE project_id = $1)`, [PROJECT_ID]);
+  // Goal variable bindings — bind goals to project-level variables
+  // First, ensure project_variables exist (migration 029 auto-migrates source:'mcp' props,
+  // but we need named entries for the bindings below)
+  const GOAL_VARIABLES = [
+    // Requirements Locked variables
+    'priority', 'verification_method', 'trace_status',
+    // Risk Analysis Complete variables
+    'severity', 'probability', 'mitigation', 'residual_risk',
+    // Verification Complete variables
+    'pass_fail', 'actual_result',
+    // Clinical Protocol Approved variables
+    'irb_approval_date', 'status',
+    // 510(k) Ready variables
+    'predicate_device', 'substantial_equivalence',
+    // FDA Submission variables
+    'target_date',  // 'status' already listed above
+  ];
+  const uniqueVarNames = [...new Set(GOAL_VARIABLES)];
+  for (const varName of uniqueVarNames) {
+    await q(`
+      INSERT INTO project_variables (project_id, name, type)
+      VALUES ($1, $2, 'string')
+      ON CONFLICT (project_id, name) DO NOTHING
+    `, [PROJECT_ID, varName]);
+  }
 
-  // Requirements Locked: all 8 requirements need priority, verification_method, trace_status
-  for (const r of REQUIREMENTS) {
-    const nid = nordIds[r.title];
-    for (const prop of ['priority', 'verification_method', 'trace_status']) {
-      await q(`INSERT INTO goal_properties (goal_id, nord_id, property_name) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
-        [goalIds['Requirements Locked'], nid, prop]);
+  // Look up variable IDs by name
+  const varRows = await q<{ id: string; name: string }>(
+    'SELECT id, name FROM project_variables WHERE project_id = $1',
+    [PROJECT_ID]
+  );
+  const varIdByName: Record<string, string> = {};
+  for (const v of varRows) varIdByName[v.name] = v.id;
+
+  // Clean up old bindings
+  await q(`DELETE FROM goal_variable_bindings WHERE goal_id IN (SELECT id FROM goals WHERE project_id = $1)`, [PROJECT_ID]);
+
+  // Helper to bind a goal to a set of variables
+  async function bindGoalVars(goalName: string, varNames: string[]) {
+    for (const vn of varNames) {
+      const vid = varIdByName[vn];
+      if (!vid) { console.warn(`  ⚠️ Variable "${vn}" not found for goal "${goalName}"`); continue; }
+      await q(`INSERT INTO goal_variable_bindings (goal_id, variable_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+        [goalIds[goalName], vid]);
     }
   }
 
-  // Risk Analysis Complete: all 8 risks need severity, probability, mitigation, residual_risk
-  for (const r of RISKS) {
-    const nid = nordIds[r.title];
-    for (const prop of ['severity', 'probability', 'mitigation', 'residual_risk']) {
-      await q(`INSERT INTO goal_properties (goal_id, nord_id, property_name) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
-        [goalIds['Risk Analysis Complete'], nid, prop]);
-    }
-  }
+  // Requirements Locked: priority, verification_method, trace_status
+  await bindGoalVars('Requirements Locked', ['priority', 'verification_method', 'trace_status']);
 
-  // Verification Complete: all 10 test cases need pass_fail, actual_result
-  for (const tc of TEST_CASES) {
-    const nid = nordIds[tc.title];
-    for (const prop of ['pass_fail', 'actual_result']) {
-      await q(`INSERT INTO goal_properties (goal_id, nord_id, property_name) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
-        [goalIds['Verification Complete'], nid, prop]);
-    }
-  }
+  // Risk Analysis Complete: severity, probability, mitigation, residual_risk
+  await bindGoalVars('Risk Analysis Complete', ['severity', 'probability', 'mitigation', 'residual_risk']);
 
-  // Clinical Protocol Approved: all 3 protocols need irb_approval_date, status
-  for (const cp of CLINICAL_PROTOCOLS) {
-    const nid = nordIds[cp.title];
-    for (const prop of ['irb_approval_date', 'status']) {
-      await q(`INSERT INTO goal_properties (goal_id, nord_id, property_name) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
-        [goalIds['Clinical Protocol Approved'], nid, prop]);
-    }
-  }
+  // Verification Complete: pass_fail, actual_result
+  await bindGoalVars('Verification Complete', ['pass_fail', 'actual_result']);
 
-  // 510(k) Ready: the 510(k) submission needs predicate_device, substantial_equivalence
-  const fivetenNid = nordIds['510(k) Submission'];
-  for (const prop of ['predicate_device', 'substantial_equivalence']) {
-    await q(`INSERT INTO goal_properties (goal_id, nord_id, property_name) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
-      [goalIds['510(k) Ready'], fivetenNid, prop]);
-  }
+  // Clinical Protocol Approved: irb_approval_date, status
+  await bindGoalVars('Clinical Protocol Approved', ['irb_approval_date', 'status']);
 
-  // FDA Submission: the 510(k) submission needs status, target_date
-  for (const prop of ['status', 'target_date']) {
-    await q(`INSERT INTO goal_properties (goal_id, nord_id, property_name) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
-      [goalIds['FDA Submission'], fivetenNid, prop]);
-  }
+  // 510(k) Ready: predicate_device, substantial_equivalence
+  await bindGoalVars('510(k) Ready', ['predicate_device', 'substantial_equivalence']);
+
+  // FDA Submission: status, target_date
+  await bindGoalVars('FDA Submission', ['status', 'target_date']);
 
   console.log(`  ✅ ${GOALS.length} goals with DAG and property bindings`);
 

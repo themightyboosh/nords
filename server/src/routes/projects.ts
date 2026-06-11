@@ -5,6 +5,7 @@ import { validate } from '../middleware/validate.js';
 import { CreateProjectSchema, UpdateProjectSchema } from '../schemas/projects.js';
 import { resolveUserId, isAdmin } from '../lib/resolveUser.js';
 import { requireProjectOwner } from '../middleware/projectOwnership.js';
+import { invalidateProtocolCache } from '../lib/toolDispatch.js';
 
 export const projectsRouter = Router();
 
@@ -233,6 +234,8 @@ projectsRouter.put('/projects/:id', requireProjectOwner, async (req: Request, re
       return;
     }
     res.json(project);
+    // Invalidate protocol cache on project settings change (mode affects cache key)
+    invalidateProtocolCache(req.params.id as string);
   } catch (err: any) {
     logger.error('Failed to update project', { error: err.message, projectId: req.params.id });
     res.status(500).json({ error: 'Failed to update project' });

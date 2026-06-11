@@ -111,6 +111,7 @@ function getToolContext(sessionId: string): ToolContext {
     projectId: process.env.PROJECT_ID || '',
     mcpMutable: process.env.MCP_MUTABLE === 'true',
     mcpCaptureData: process.env.MCP_CAPTURE_DATA !== 'false', // default true
+    sourceType: 'mcp',
   };
 }
 
@@ -134,7 +135,7 @@ server.tool('nords_get_dictionary',
 );
 
 server.tool('nords_get_horizon',
-  `Get lean horizon — current position, neighbors with directional context (verb, direction, traversal_direction, stage, connection properties), suggested_next ranked by goals/urgency/flow with reasons, completion %. Each neighbor shows how it relates to you: verb ("verifies"), traversal_direction (outgoing = follow flow, incoming = trace back), stage ("Tested"), and properties ("Verification Status: Failed"). Check context_hint.stale — if true, call nords_get_context next.${projectContext}`,
+  `Lean horizon — current position, directional neighbors (verb, stage, traversal_direction), suggested_next ranked by goals, completion %. Check context_hint.stale to know if nords_get_context is needed.${projectContext}`,
   {},
   async () => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
@@ -211,7 +212,7 @@ server.tool('nords_query_nords',
 );
 
 server.tool('nords_get_connections',
-  'Get all connections to/from a specific nord. Returns full connection rows including type_name, verb, direction, distance_x/y, and connection instance properties (e.g. Verification Status, Severity, Allocation %). Use when you need to see all relationships beyond what the horizon neighbors show.',
+  'All connections to/from a nord with type, verb, direction, distance, and instance properties. Use when you need full relationship detail beyond horizon neighbors.',
   { nord_id: z.string().describe('UUID of the nord') },
   async (args) => {
     const sid = await ensureSession(process.env.PROJECT_ID!);
@@ -274,7 +275,7 @@ server.tool('nords_get_analytics',
 // ── Tier 2: Session Tools ──
 
 server.tool('nords_navigate',
-  `Navigate to any nord by name, type, or ID. Traverses if target is a neighbor, jumps otherwise. Returns: destination nord, fresh horizon, and — if traversed — a traversed_via block with the edge metadata (type_name, verb, traversal_direction, stage, connection properties) of the path just walked. Use traversed_via to bridge your conversation naturally.${projectContext}`,
+  `Navigate to a nord by name, type, or ID. Traverses if neighbor, jumps otherwise. Returns destination, fresh horizon, and traversed_via edge metadata for conversational bridging.${projectContext}`,
   {
     to: z.string().describe('Nord title, type name, or UUID'),
     type_name: z.string().optional().describe('Filter by nord type to disambiguate'),
@@ -303,7 +304,7 @@ server.tool('nords_update_session_nord',
 );
 
 server.tool('nords_update_session_variables',
-  'Save collected project variable values. Variables are project-level data points. Pass variable_id from remaining_variables in the horizon. Evaluates goal completion and returns goal events + updated horizon.',
+  'Save project variable values by variable_id. Evaluates goal completion and returns goal events + updated horizon.',
   {
     variables: z.array(z.object({
       variable_id: z.string().describe('UUID of the project variable'),
@@ -467,7 +468,7 @@ server.resource(
     );
     const goals = await query(
       `SELECT g.name, g.end_type,
-              (SELECT COUNT(*) FROM goal_properties gp WHERE gp.goal_id = g.id) as bound_properties
+              (SELECT COUNT(*) FROM goal_variable_bindings gvb WHERE gvb.goal_id = g.id) as bound_variables
        FROM goals g WHERE g.project_id = $1 ORDER BY g.sort_order`,
       [projectId]
     );
@@ -491,7 +492,7 @@ server.resource(
       `\n## Goals (${goals.length})`,
       ...goals.map((g: any) => {
         const end = g.end_type ? ` [${g.end_type.toUpperCase()}]` : '';
-        return `- **${g.name}**${end} — ${g.bound_properties} bound properties`;
+        return `- **${g.name}**${end} — ${g.bound_variables} bound variables`;
       }),
       `\n## Goal Edges (${edges.length})`,
       ...edges.map((e: any) => `- ${e.source_goal} → ${e.target_goal}`),

@@ -251,6 +251,7 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
       projectId,
       mcpMutable,
       mcpCaptureData: project?.mcp_capture_data ?? true,
+      sourceType: 'share',
     };
 
     let finalReply = '';

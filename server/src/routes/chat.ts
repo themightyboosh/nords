@@ -233,7 +233,7 @@ chatRouter.post('/projects/:id/chat', async (req: Request, res: Response) => {
     const mcpCaptureData = project?.mcp_capture_data ?? true;
 
      // 5. Build tool context
-    const toolCtx: ToolContext = { sessionId, projectId, mcpMutable, mcpCaptureData };
+    const toolCtx: ToolContext = { sessionId, projectId, mcpMutable, mcpCaptureData, sourceType: 'chat' };
 
     // 6. Initialize Gemini — API key or Vertex AI (Application Default Credentials)
     const gcpProject = 'nords-spatial-1776012153';

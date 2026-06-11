@@ -16,6 +16,7 @@
 import { Router, Request, Response } from 'express';
 import { personasRepo } from '../repositories/personas.js';
 import { invalidateDictionaryCache } from '../repositories/mcpSessions.js';
+import { invalidateProtocolCache } from '../lib/toolDispatch.js';
 import logger from '../lib/logger.js';
 import { validate } from '../middleware/validate.js';
 import {
@@ -101,6 +102,7 @@ personasRouter.post('/projects/:id/personas', validate(CreatePersonaSchema), asy
       avatar_seed: req.body.avatar_seed,
     });
     invalidateDictionaryCache(req.params.id as string);
+    invalidateProtocolCache(req.params.id as string);
     res.status(201).json(persona);
   } catch (err: any) {
     logger.error('Failed to create persona', { error: err.message });
@@ -131,7 +133,10 @@ personasRouter.put('/personas/:id', validate(UpdatePersonaSchema), async (req: R
   try {
     const persona = await personasRepo.update(req.params.id as string, req.body);
     if (!persona) return res.status(404).json({ error: 'Persona not found' });
-    if (persona.project_id) invalidateDictionaryCache(persona.project_id);
+    if (persona.project_id) {
+      invalidateDictionaryCache(persona.project_id);
+      invalidateProtocolCache(persona.project_id);
+    }
     res.json(persona);
   } catch (err: any) {
     logger.error('Failed to update persona', { error: err.message, id: req.params.id });
@@ -162,7 +167,10 @@ personasRouter.delete('/personas/:id', async (req: Request, res: Response) => {
     // Look up project before deleting
     const persona = await personasRepo.findById(req.params.id as string);
     await personasRepo.delete(req.params.id as string);
-    if (persona?.project_id) invalidateDictionaryCache(persona.project_id);
+    if (persona?.project_id) {
+      invalidateDictionaryCache(persona.project_id);
+      invalidateProtocolCache(persona.project_id);
+    }
     res.json({ success: true });
   } catch (err: any) {
     logger.error('Failed to delete persona', { error: err.message, id: req.params.id });
@@ -335,7 +343,10 @@ personasRouter.put('/personas/:id/weights/:connectionTypeId', validate(UpsertCat
     );
     // Weights affect the dictionary, invalidate cache
     const persona = await personasRepo.findById(req.params.id as string);
-    if (persona?.project_id) invalidateDictionaryCache(persona.project_id);
+    if (persona?.project_id) {
+      invalidateDictionaryCache(persona.project_id);
+      invalidateProtocolCache(persona.project_id);
+    }
     res.json(result);
   } catch (err: any) {
     logger.error('Failed to update category weight', { error: err.message });

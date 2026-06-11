@@ -14,12 +14,16 @@ import { queryOne, query } from '../db.js';
 import logger from './logger.js';
 import { logEvent, logEvents } from './sessionEvents.js';
 
+// Protocol cache: key => { protocol, version }
+const protocolCache = new Map<string, { protocol: Record<string, unknown>; version: number }>();
+
 
 export interface ToolContext {
   sessionId: string;
   projectId: string;
   mcpMutable: boolean;
   mcpCaptureData: boolean;
+  sourceType?: string;
 }
 
 export interface ToolResult {
@@ -355,6 +359,17 @@ function validateAndNormalize(
 // TS handles neighbor/persona/goal/distance scoring.
 // Weight table tuned to prefer connected neighbors with goal relevance.
 
+const NAV_SCORE = {
+  EXACT_MATCH:     10,
+  PREFIX_MATCH:     5,
+  SUBSTRING_MATCH:  1,
+  NEIGHBOR_BONUS:   3,
+  PERSONA_WEIGHT:   2,   // multiplied by persona_bias (0.0–1.0)
+  GOAL_WEIGHT:      3,   // multiplied by goal_proximity (0.0–1.0)
+  DISTANCE_PENALTY: 0.5, // per hop beyond 1
+  RECENCY_BONUS:    1.5,
+} as const;
+
 function scoreNavigateCandidate(
   candidate: {
     title: string;
@@ -371,41 +386,41 @@ function scoreNavigateCandidate(
 
   // Exact title match (case-insensitive)
   if (candidate.title.toLowerCase() === searchTerm.toLowerCase()) {
-    score += 10;
+    score += NAV_SCORE.EXACT_MATCH;
   }
   // Title starts with search term
   else if (candidate.title.toLowerCase().startsWith(searchTerm.toLowerCase())) {
-    score += 5;
+    score += NAV_SCORE.PREFIX_MATCH;
   }
   // Substring match
   else {
-    score += 1;
+    score += NAV_SCORE.SUBSTRING_MATCH;
   }
 
   // Connected neighbor bonus — traversal is richer than jump
   if (candidate.connection_id) {
-    score += 3;
+    score += NAV_SCORE.NEIGHBOR_BONUS;
   }
 
   // Persona bias signal from horizon (0.0 – 1.0, typically)
   if (candidate.persona_bias != null) {
-    score += candidate.persona_bias * 2;
+    score += candidate.persona_bias * NAV_SCORE.PERSONA_WEIGHT;
   }
 
   // Goal proximity — closer to current goal = higher priority
   if (candidate.goal_proximity != null) {
-    score += candidate.goal_proximity * 3;
+    score += candidate.goal_proximity * NAV_SCORE.GOAL_WEIGHT;
   }
 
   // Distance penalty — farther nodes in the graph score lower
   // distance_x is typically 1-3 for neighbors
   if (candidate.distance_x != null && candidate.distance_x > 0) {
-    score -= (candidate.distance_x - 1) * 0.5;
+    score -= (candidate.distance_x - 1) * NAV_SCORE.DISTANCE_PENALTY;
   }
 
   // Recency bonus — recently visited nords likely still relevant
   if (recentNordIds.has(candidate.nord_id)) {
-    score += 1.5;
+    score += NAV_SCORE.RECENCY_BONUS;
   }
 
   return score;
@@ -760,8 +775,30 @@ const tools: Record<string, ToolHandler> = {
       );
     }
 
-    // Briefing embeds full horizon + context so the LLM has everything on turn 1.
-    // The lean horizon + context_hint pattern kicks in on subsequent turns.
+    // Protocol caching: keyed by (projectId, personaId, mode).
+    // Pacing suffix is session-specific and appended dynamically.
+    const personaId = fullHorizon.persona?.id || 'none';
+    const mode = project?.project_mode || 'collect';
+    const cacheKey = `${ctx.projectId}:${personaId}:${mode}`;
+    let protocol: Record<string, unknown>;
+
+    const cached = protocolCache.get(cacheKey);
+    if (cached) {
+      protocol = cached.protocol;
+    } else {
+      // Build and cache (excluding pacing which is session-specific)
+      protocol = buildProtocol(project, fullHorizon);
+      protocolCache.set(cacheKey, { protocol, version: Date.now() });
+    }
+
+    // Append dynamic pacing suffix based on this session's traversal velocity
+    const pacingHint = (fullHorizon as any).pacing_hint;
+    const pacingSuffix = pacingHint?.velocity === 'rushed'
+      ? 'PACING OVERRIDE: The user is moving quickly through the graph with minimal collection. Adapt: batch 2-3 related questions into a single turn. Prioritize required fields over optional ones. If they skip, acknowledge and move on — don\'t probe. Match their energy.'
+      : pacingHint?.velocity === 'thorough'
+      ? 'PACING OVERRIDE: The user is engaging deeply and providing detailed answers. Adapt: ask one question at a time. Probe for nuance and depth. Offer to explore tangential connections. Don\'t rush — this is where quality data lives.'
+      : null;
+
     return {
       success: true,
       data: {
@@ -769,7 +806,7 @@ const tools: Record<string, ToolHandler> = {
         horizon: fullHorizon,
         context,
         goals,
-        protocol: buildProtocol(project, fullHorizon),
+        protocol: { ...protocol, pacing: pacingSuffix },
       },
     };
   },
@@ -2184,4 +2221,19 @@ export async function dispatchTool(
 /** Get all tool names (for building Gemini function declarations) */
 export function getToolNames(): string[] {
   return Object.keys(tools);
+}
+
+/**
+ * Invalidate cached protocol entries for a project.
+ * Call this when project settings, persona config, or mode changes.
+ * Uses prefix-match deletion: all cache keys starting with the projectId are removed.
+ */
+export function invalidateProtocolCache(projectId: string): void {
+  const prefix = `${projectId}:`;
+  for (const key of protocolCache.keys()) {
+    if (key.startsWith(prefix)) {
+      protocolCache.delete(key);
+    }
+  }
+  logger.debug('Protocol cache invalidated', { projectId, remainingEntries: protocolCache.size });
 }

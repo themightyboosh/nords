@@ -8,7 +8,7 @@
  *   4. Personas (remapped) + mental models + category weights + goal weights
  *   5. Nords (remapped type_id)
  *   6. Connections (remapped type_id, source, target)
- *   7. Goals + goal edges + goal properties (remapped)
+ *   7. Goals + goal edges + goal variable bindings (remapped)
  *   8. Test scenarios (remapped project + goal refs)
  *
  * All in a single transaction for consistency.
@@ -165,21 +165,37 @@ export async function cloneProject(sourceProjectId: string, createdBy: string | 
           goalMap.get(ge.target_goal_id) || ge.target_goal_id]);
     }
 
-    // ── 8. Clone Goal Properties (bind goals to specific nord properties) ──
-    let goalPropsCount = 0;
+    // ── 7b. Clone Project Variables ──
+    const variableMap = new Map<string, string>();
+    const { rows: projectVars } = await client.query(
+      'SELECT * FROM project_variables WHERE project_id = $1',
+      [sourceProjectId]
+    );
+    for (const pv of projectVars) {
+      const newId = randomUUID();
+      variableMap.set(pv.id, newId);
+      await client.query(`
+        INSERT INTO project_variables (id, project_id, name, description, type, options, required, tags, hint, priority, depends_on, sort_order)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `, [newId, newProjectId, pv.name, pv.description, pv.type, JSON.stringify(pv.options),
+          pv.required, pv.tags, pv.hint, pv.priority, pv.depends_on, pv.sort_order]);
+    }
+
+    // ── 8. Clone Goal Variable Bindings (replaces old goal_properties) ──
+    let goalBindingsCount = 0;
     for (const [oldGoalId, newGoalId] of goalMap) {
-      const { rows: goalProps } = await client.query(
-        'SELECT * FROM goal_properties WHERE goal_id = $1',
+      const { rows: bindings } = await client.query(
+        'SELECT * FROM goal_variable_bindings WHERE goal_id = $1',
         [oldGoalId]
       );
-      for (const gp of goalProps) {
-        const newNordId = nordMap.get(gp.nord_id);
-        if (!newNordId) continue; // skip if nord wasn't cloned
+      for (const b of bindings) {
+        const newVariableId = variableMap.get(b.variable_id);
+        if (!newVariableId) continue; // skip if variable wasn't cloned
         await client.query(`
-          INSERT INTO goal_properties (id, goal_id, nord_id, property_name)
+          INSERT INTO goal_variable_bindings (id, goal_id, variable_id, required)
           VALUES ($1, $2, $3, $4)
-        `, [randomUUID(), newGoalId, newNordId, gp.property_name]);
-        goalPropsCount++;
+        `, [randomUUID(), newGoalId, newVariableId, b.required]);
+        goalBindingsCount++;
       }
     }
 
@@ -270,7 +286,7 @@ export async function cloneProject(sourceProjectId: string, createdBy: string | 
       nords: nordMap.size,
       connections: connections.length,
       goals: goalMap.size,
-      goalProperties: goalPropsCount,
+      goalVariableBindings: goalBindingsCount,
       mentalModels: mentalModelsCount,
       categoryWeights: categoryWeightsCount,
       goalWeights: goalWeightsCount,
