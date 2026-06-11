@@ -6,11 +6,12 @@ if (!process.env.DATABASE_URL) {
   throw new Error('[db] DATABASE_URL is not set. Cloud DB connection is required.');
 }
 
-// Connection limits strict for serverless/Cloud Run environments
+// Connection limits — reduced during tests to avoid exhausting Cloud SQL slots
+const isTest = process.env.VITEST === 'true' || process.env.NODE_ENV === 'test';
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 20,
-  idleTimeoutMillis: 10000,
+  max: isTest ? 5 : 20,
+  idleTimeoutMillis: isTest ? 5000 : 10000,
   connectionTimeoutMillis: 20000,
 });
 
