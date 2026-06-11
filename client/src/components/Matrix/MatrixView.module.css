@@ -1,0 +1,192 @@
+/* CSS Module — classes are :global until incrementally scoped */
+:global {
+/**
+ * MatrixView.css — Multi-swimlane board styling.
+ *
+ * Each connection type is a collapsible lane row.
+ * Columns within each lane use the same card-column pattern.
+ */
+
+/* ── Container ── */
+.nords-matrix {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; position: relative;
+  background: var(--nords-color-bg-base, #0d0f13);
+}
+
+/* ── Lanes Container ── */
+.nords-matrix__lanes {
+  flex: 1; overflow: auto;
+  display: flex; flex-direction: column; gap: 0;
+  padding-top: 36px; /* clear ViewportHeader */
+}
+
+/* ── Lane ── */
+.nords-matrix__lane {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── Lane Header ── */
+.nords-matrix__lane-header {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 10px 16px;
+  border: none; background: var(--nords-color-bg-base, #0d0f13);
+  color: var(--nords-color-text-primary, #e8e8ec);
+  cursor: pointer; font-size: 13px; font-weight: 500;
+  text-align: left; transition: background 0.12s;
+  position: sticky; top: 0; z-index: 5;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.nords-matrix__lane-header:hover {
+  background: rgba(255,255,255,0.06);
+}
+.nords-matrix__lane-chevron {
+  color: var(--nords-color-text-tertiary, #6b7280);
+  display: flex; align-items: center;
+}
+.nords-matrix__lane-color {
+  width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0;
+}
+.nords-matrix__lane-name {
+  font-weight: 600;
+}
+.nords-matrix__lane-verb {
+  font-size: 11px; font-style: italic;
+  color: var(--nords-color-text-tertiary, #6b7280);
+}
+.nords-matrix__lane-count {
+  margin-left: auto;
+  font-size: 11px; font-weight: 600;
+  padding: 1px 7px; border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  color: var(--nords-color-text-tertiary, #6b7280);
+}
+
+/* ── Lane Body ── */
+.nords-matrix__lane-body {
+  padding: 0 8px 12px;
+  animation: laneSlideIn 0.2s ease;
+}
+@keyframes laneSlideIn {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 2000px; }
+}
+.nords-matrix__lane.is-collapsed .nords-matrix__lane-body {
+  display: none;
+}
+
+/* ── Columns (within a lane) ── */
+.nords-matrix__columns {
+  display: flex; gap: 8px;
+  padding: 4px 0;
+  min-height: 80px;
+  flex-shrink: 0;
+}
+
+.nords-matrix__column {
+  width: 290px; min-width: 290px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* Orphan column variant */
+.nords-matrix__column--orphans {
+  border-style: dashed;
+  opacity: 0.7;
+}
+.nords-matrix__column-label--muted {
+  display: flex; align-items: center; gap: 4px;
+  color: var(--nords-color-text-tertiary, #6b7280) !important;
+}
+
+/* ── Column Header ── */
+.nords-matrix__column-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.nords-matrix__column-label {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.nords-matrix__column-count {
+  font-size: 10px; font-weight: 600;
+  padding: 1px 6px; border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  color: var(--nords-color-text-tertiary, #6b7280);
+}
+
+/* ── Column Body ── */
+.nords-matrix__column-body {
+  flex: 1; padding: 6px 8px;
+  display: flex; flex-direction: column; gap: 6px;
+  min-height: 60px;
+}
+.nords-matrix__column-empty {
+  display: flex; align-items: center; justify-content: center;
+  flex: 1; font-size: 11px;
+  color: var(--nords-color-text-tertiary, #4b5563);
+  opacity: 0.5;
+}
+
+/* ── Card Wrapper ── */
+.nords-matrix__card-wrapper {
+  cursor: grab; transition: opacity 0.15s, transform 0.15s;
+  position: relative;
+}
+.nords-matrix__card-wrapper:hover {
+  transform: translateY(-1px);
+}
+.nords-matrix__card-wrapper.is-dragging {
+  opacity: 0.35; transform: scale(0.97);
+}
+.nords-matrix__card-wrapper.is-dimmed {
+  opacity: 0.3; filter: saturate(0.3);
+}
+
+/* ── Undo Toast ── */
+.nords-matrix__undo-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 300;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px; border-radius: 10px;
+  background: rgba(30,30,40,0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #e8e8ec; font-size: 13px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  animation: toastIn 0.25s ease;
+  backdrop-filter: blur(12px);
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.nords-matrix__undo-toast button {
+  padding: 4px 12px; border: none; border-radius: 6px;
+  background: #6366f1; color: white;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: opacity 0.12s;
+}
+.nords-matrix__undo-toast button:hover { opacity: 0.85; }
+
+/* ── Empty State ── */
+.nords-matrix-empty {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex: 1; gap: 12px;
+  color: var(--nords-color-text-tertiary, #6b7280);
+  text-align: center; padding: 40px;
+}
+.nords-matrix-empty__icon {
+  font-size: 48px; opacity: 0.3;
+}
+.nords-matrix-empty__title {
+  font-size: 18px; font-weight: 600; margin: 0;
+  color: var(--nords-color-text-primary, #e8e8ec);
+}
+.nords-matrix-empty__desc {
+  font-size: 13px; margin: 0; max-width: 360px; line-height: 1.5;
+}
+}

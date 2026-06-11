@@ -20,7 +20,7 @@ import { useAuth } from '../../context/AuthContext';
 import { resolveIcon } from '../../utils/iconRegistry';
 import NordsLogo from '../NordsLogo';
 import ThemeSwitcher from '../ThemeSwitcher/ThemeSwitcher';
-import './ViewportHeader.css';
+import styles from './ViewportHeader.module.css';
 
 type NavGroup = 'design' | 'behavior' | 'test' | 'publish';
 

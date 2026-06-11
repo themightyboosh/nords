@@ -14,7 +14,7 @@ import { resolveIcon } from '../../utils/iconRegistry';
 import type { Goal, GoalVariableBinding, GoalEdge } from '../../hooks/useGoals';
 import type { ProjectVariable } from '../../hooks/useVariables';
 import type { CollectionGroup } from '../../hooks/useCollectionGroups';
-import './GoalDetailDrawer.css';
+import styles from './GoalDetailDrawer.module.css';
 
 /**
  * Client-side BFS cycle detection — mirrors server logic.

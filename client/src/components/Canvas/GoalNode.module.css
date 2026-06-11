@@ -1,0 +1,143 @@
+/* CSS Module — classes are :global until incrementally scoped */
+:global {
+/* GoalCanvas.css — Goal-canvas-specific styles.
+ *
+ * Card rendering is handled by NordNode/NordCard.
+ * This file contains goal-canvas chrome: step badges, gate nodes, edge overrides.
+ */
+
+/* ── Step Badge (column header) ── */
+.goal-step-badge {
+  display: flex;
+  align-items: center;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  backdrop-filter: blur(8px);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.goal-step-badge__label {
+  color: var(--nords-color-text-secondary, #8b949e);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Gate Node (AND/OR/XOR circle connector) ── */
+.goal-gate-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid;
+  backdrop-filter: blur(8px);
+  user-select: none;
+  cursor: default;
+  box-shadow:
+    0 0 12px rgba(0, 0, 0, 0.4),
+    0 0 24px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.goal-gate-node:hover {
+  transform: scale(1.1);
+}
+
+.goal-gate-node__label {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+/* AND gate — indigo */
+.goal-gate-node--all {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+.goal-gate-node--all .goal-gate-node__label {
+  color: #c7d2fe;
+}
+
+/* OR gate — amber */
+.goal-gate-node--or {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.5);
+}
+.goal-gate-node--or .goal-gate-node__label {
+  color: #fde68a;
+}
+
+/* XOR gate — red */
+.goal-gate-node--xor {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+.goal-gate-node--xor .goal-gate-node__label {
+  color: #fecaca;
+}
+
+/* Hide gate node handles visually but keep them functional */
+.goal-gate-handle {
+  width: 6px !important;
+  height: 6px !important;
+  background: transparent !important;
+  border: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* ── Edge path overrides ── */
+.goal-canvas .react-flow__edge-path {
+  stroke-linecap: round;
+}
+
+/* ── Auto-Layout Toggle ── */
+.goal-canvas__layout-toggle {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 10;
+}
+
+.goal-canvas__layout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid var(--nords-color-border, rgba(255, 255, 255, 0.1));
+  border-radius: 6px;
+  background: var(--nords-color-bg-deep, #0d1117);
+  color: var(--nords-color-text-secondary, #8b949e);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.goal-canvas__layout-btn:hover {
+  background: var(--nords-color-bg-card, #161b22);
+  color: var(--nords-color-text-primary, #e6edf3);
+  border-color: var(--nords-color-border-hover, rgba(255, 255, 255, 0.2));
+}
+
+.goal-canvas__layout-btn--active {
+  background: rgba(99, 102, 241, 0.12);
+  color: #818cf8;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.goal-canvas__layout-btn--active:hover {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+}

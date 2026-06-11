@@ -6,7 +6,7 @@
  */
 
 import { Sun, Moon } from 'lucide-react';
-import './ThemeSwitcher.css';
+import styles from './ThemeSwitcher.module.css';
 
 interface ThemeSwitcherProps {
   currentTheme: string;

@@ -33,7 +33,8 @@ import { useSemanticZoom } from '../../hooks/useSemanticZoom';
 import ZoomControls from './ZoomControls';
 import type { Goal, GoalEdge } from '../../hooks/useGoals';
 import type { ProjectVariable } from '../../hooks/useVariables';
-import './GoalNode.css';
+import styles from './GoalNode.module.css';
+import './CanvasEngine.css';
 
 const goalNodeTypes = {
   nordNode: NordNode,
@@ -392,12 +393,16 @@ function GoalCanvasInner({
     );
   }, [selectedGoalId, setNodes]);
 
-  // Fit view after nodes are mounted and measured
+  // Fit view INSTANTLY behind loading screen, then reveal
+  const [ready, setReady] = React.useState(false);
   const nodeCount = initialNodes.length;
   const edgeCount = initialEdges.length;
   useEffect(() => {
     if (nodeCount === 0) return;
-    const timer = setTimeout(() => fitView({ padding: 0.3, duration: 300 }), 350);
+    const timer = setTimeout(() => {
+      fitView({ padding: 0.3, duration: 0 });
+      requestAnimationFrame(() => setReady(true));
+    }, 150);
     return () => clearTimeout(timer);
   }, [fitView, nodeCount, edgeCount]);
 
@@ -457,6 +462,20 @@ function GoalCanvasInner({
   }, [onGoalClick]);
 
   return (
+    <>
+      {/* Loading overlay — visible while fitView calculates behind the scenes */}
+      {!ready && (
+        <div className="nords-canvas-loading" style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
+          <div className="nords-canvas-loading__spinner" />
+          <span>Loading goals…</span>
+        </div>
+      )}
+      <div style={{
+        width: '100%', height: '100%',
+        visibility: ready ? 'visible' : 'hidden',
+        opacity: ready ? 1 : 0,
+        transition: 'opacity 0.2s ease-in',
+      }}>
     <ReactFlow
       nodes={nodes}
       edges={rfEdges}
@@ -467,8 +486,6 @@ function GoalCanvasInner({
       onConnect={handleConnect}
       onEdgeClick={handleEdgeClick}
       nodesDraggable={false}
-      fitView
-      fitViewOptions={{ padding: 0.3 }}
       minZoom={0.3}
       maxZoom={2}
       proOptions={{ hideAttribution: true }}
@@ -478,6 +495,8 @@ function GoalCanvasInner({
       <Background variant={BackgroundVariant.Dots} gap={10} size={1} color="rgba(0, 160, 180, 0.35)" />
       <ZoomControls />
     </ReactFlow>
+    </div>
+    </>
   );
 }
 

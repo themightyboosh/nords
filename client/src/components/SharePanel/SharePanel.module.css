@@ -1,0 +1,87 @@
+/* CSS Module — classes are :global until incrementally scoped */
+:global {
+/**
+ * SharePanel.css — Styles for the Share panel.
+ * Extends nords-form__* primitives from forms.css.
+ */
+
+.share-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 80vh;
+}
+
+.share-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--nords-color-border);
+}
+
+.share-panel__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.share-panel__subtitle {
+  font-size: 12px;
+  color: var(--nords-color-text-secondary);
+  margin: 4px 0 0;
+}
+
+.share-panel__body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Prefill rows ── */
+
+.share-panel__prefills {
+  margin-top: 4px;
+}
+
+.share-panel__prefills .nords-form__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.share-panel__prefill-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: var(--nords-color-primary);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.share-panel__prefill-add:hover {
+  background: var(--nords-color-surface-hover);
+}
+
+.share-panel__prefill-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.share-panel__prefill-row .nords-form__select,
+.share-panel__prefill-row .nords-form__input {
+  font-size: 12px;
+  padding: 5px 8px;
+}
+}

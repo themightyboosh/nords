@@ -19,7 +19,7 @@
  */
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import './FloatingPanel.css';
+import styles from './FloatingPanel.module.css';
 
 interface FloatingPanelProps {
   /** "panel" = right-edge side panel, "modal" = center overlay with scrim */

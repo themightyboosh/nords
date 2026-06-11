@@ -1,0 +1,284 @@
+/* CSS Module — classes are :global until incrementally scoped */
+:global {
+/* ═══════════════════════════════════════════════════════════
+ * ProjectSettings.css — Project-level settings panel
+ *
+ * Uses FloatingPanel for chrome. Form elements use shared
+ * nords-form__* classes from styles/forms.css.
+ * This file only holds panel-specific layout overrides.
+ * ═══════════════════════════════════════════════════════════ */
+
+/* ── Panel ── */
+.nords-project-settings {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+/* ── Header (matches ManageTypes / ManagePersonas chrome) ── */
+.nords-project-settings__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--nords-space-xl) var(--nords-space-xl) var(--nords-space-lg);
+  border-bottom: 1px solid var(--nords-color-border-subtle);
+}
+
+.nords-project-settings__title {
+  font-size: var(--nords-font-size-xl);
+  font-weight: var(--nords-font-weight-bold);
+  color: var(--nords-color-text-primary);
+  margin: 0;
+  letter-spacing: var(--nords-letter-spacing-tight);
+}
+
+.nords-project-settings__subtitle {
+  font-size: var(--nords-font-size-sm);
+  color: var(--nords-color-text-tertiary);
+  margin: 4px 0 0;
+}
+
+.nords-project-settings__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--nords-radius-md);
+  background: transparent;
+  color: var(--nords-color-text-secondary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.nords-project-settings__close:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+
+/* ── Body ── */
+.nords-project-settings__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--nords-space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--nords-space-lg);
+}
+
+/* ── MCP System Prompt textarea ── */
+.nords-form__textarea--mono {
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: var(--nords-font-size-sm);
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 120px;
+  max-height: 400px;
+}
+
+.nords-form__char-count {
+  float: right;
+  font-size: 11px;
+  font-weight: var(--nords-font-weight-normal);
+  color: var(--nords-color-text-tertiary);
+}
+
+.nords-form__hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--nords-color-text-tertiary);
+  line-height: 1.4;
+}
+
+/* ── Icon + Name Row ── */
+.nords-form__icon-name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-sm);
+}
+
+.nords-form__icon-name-row .nords-form__input,
+.nords-form__icon-name-row .nords-modal__input {
+  flex: 1;
+}
+
+.nords-form__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: var(--nords-radius-md);
+  background: var(--nords-color-bg-surface);
+  color: var(--nords-color-text-secondary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.nords-form__icon-btn:hover {
+  border-color: var(--nords-color-accent);
+  color: var(--nords-color-text-primary);
+  background: var(--nords-color-bg-hover);
+}
+
+/* ── Access Token Styles ── */
+.nords-form__token-reveal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--nords-radius-md);
+  background: var(--nords-color-bg-surface);
+  border: 1px solid var(--nords-color-accent);
+  margin-bottom: 10px;
+}
+
+.nords-form__token-reveal code {
+  font-size: 11px;
+  font-family: var(--nords-font-mono);
+  color: var(--nords-color-accent);
+  word-break: break-all;
+  flex: 1;
+  min-width: 200px;
+}
+
+.nords-form__token-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nords-form__token-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--nords-radius-sm);
+  background: var(--nords-color-bg-surface);
+  border: 1px solid var(--nords-color-border-default);
+  font-size: 12px;
+}
+
+.nords-form__token-prefix {
+  font-family: var(--nords-font-mono);
+  font-size: 11px;
+  color: var(--nords-color-text-secondary);
+  flex-shrink: 0;
+}
+
+.nords-form__token-label {
+  flex: 1;
+  color: var(--nords-color-text-primary);
+}
+
+.nords-form__token-scopes {
+  font-size: 10px;
+  color: var(--nords-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Disabled / Gray-out States ── */
+.nords-form__select--disabled,
+.nords-form__select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.nords-form__cascade-group--disabled {
+  opacity: 0.5;
+}
+
+.nords-form__cascade-group--disabled .nords-form__cascade-title {
+  color: var(--nords-color-text-disabled);
+}
+
+/* ── Share Link Styles ── */
+.nords-form__share-link-card {
+  border-radius: var(--nords-radius-md);
+  border: 1px solid var(--nords-color-border-default);
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.nords-form__share-link-card:hover {
+  border-color: var(--nords-color-border-emphasis);
+}
+
+.nords-form__share-link-card .nords-form__token-row {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.nords-form__share-link-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px 10px;
+  border-top: 1px solid var(--nords-color-border-subtle);
+  background: var(--nords-color-bg-base, rgba(0, 0, 0, 0.15));
+  animation: shareDetailsFadeIn 0.15s ease;
+}
+
+@keyframes shareDetailsFadeIn {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 200px; }
+}
+
+.nords-form__share-link-detail {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  align-items: baseline;
+}
+
+.nords-form__share-link-detail-label {
+  flex-shrink: 0;
+  width: 90px;
+  color: var(--nords-color-text-tertiary);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.nords-form__share-link-url {
+  font-family: var(--nords-font-mono);
+  font-size: 10px;
+  color: var(--nords-color-accent);
+  word-break: break-all;
+}
+
+.nords-form__share-link-create {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--nords-radius-md);
+  border: 1px dashed var(--nords-color-border-emphasis);
+  background: var(--nords-color-bg-surface);
+  animation: shareCreateSlideIn 0.2s ease;
+}
+
+@keyframes shareCreateSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nords-form__share-link-create .nords-form__field {
+  margin-bottom: 0;
+}
+
+.nords-form__share-link-create .nords-form__textarea {
+  min-height: 48px;
+  resize: vertical;
+}
+}

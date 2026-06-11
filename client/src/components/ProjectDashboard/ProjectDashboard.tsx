@@ -28,7 +28,7 @@ import { useAuth } from '../../context/AuthContext';
 import UserAdmin from '../Admin/UserAdmin';
 import ManageUIStrings from '../Admin/ManageUIStrings';
 import '../Admin/UserAdmin.css';
-import './ProjectDashboard.css';
+import styles from './ProjectDashboard.module.css';
 
 interface Project {
   id: string;

@@ -11,7 +11,7 @@ import { useRef, useCallback } from 'react';
 import { ZoomIn, ZoomOut, Maximize, Minimize2 } from 'lucide-react';
 import { useReactFlow } from '@xyflow/react';
 import { useLens } from '../../context/LensContext';
-import './ZoomControls.css';
+import styles from './ZoomControls.module.css';
 
 export default function ZoomControls() {
   const { zoomIn, zoomOut, fitView, getNodes, getEdges } = useReactFlow();

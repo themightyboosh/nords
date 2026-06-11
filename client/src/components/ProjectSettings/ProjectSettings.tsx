@@ -20,7 +20,7 @@ import { resolveIcon } from '../../utils/iconRegistry';
 import { HueSlider } from '../shared/HueSlider';
 import { CustomSelect } from '../shared/CustomSelect';
 import type { CustomSelectOption } from '../shared/CustomSelect';
-import './ProjectSettings.css';
+import styles from './ProjectSettings.module.css';
 
 interface ProjectSettingsProps {
   isOpen: boolean;

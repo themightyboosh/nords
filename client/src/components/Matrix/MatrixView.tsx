@@ -27,7 +27,7 @@ import { useConnectionMutations, useBoardPositionMutations } from '../../hooks/u
 import { NordCard } from '../shared/NordCard';
 import { ChevronDown, ChevronRight, Unlink } from 'lucide-react';
 import '../Canvas/CanvasEngine.css';
-import './MatrixView.css';
+import styles from './MatrixView.module.css';
 
 interface MatrixViewProps {
   graph: ProjectGraph | null;
@@ -428,9 +428,28 @@ export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: Matr
     await refetchGraph();
   }, [graph, connectionTypes, upsertPosition, createConnection, deleteConnection, refetchGraph]);
 
-  // ── Render ──
+  // Loading state — consistent spinner pattern across all views
+  const [boardReady, setBoardReady] = useState(false);
+  useEffect(() => {
+    if (swimlanes.length > 0 && !boardReady) {
+      // Micro-tick to let layout paint, then reveal
+      requestAnimationFrame(() => setBoardReady(true));
+    }
+  }, [swimlanes.length, boardReady]);
 
-  if (!graph || swimlanes.length === 0) {
+  // Reset readiness when graph changes (e.g. switching projects)
+  useEffect(() => { setBoardReady(false); }, [graph]);
+
+  if (!graph) {
+    return (
+      <div className="nords-canvas-loading">
+        <div className="nords-canvas-loading__spinner" />
+        <span>Loading board…</span>
+      </div>
+    );
+  }
+
+  if (swimlanes.length === 0) {
     return (
       <div className="nords-matrix-empty">
         <div className="nords-matrix-empty__icon">⊞</div>
@@ -443,7 +462,10 @@ export function MatrixView({ graph, onNordClick, projectId, refetchGraph }: Matr
   }
 
   return (
-    <div className="nords-matrix">
+    <div className="nords-matrix" style={{
+      opacity: boardReady ? 1 : 0,
+      transition: 'opacity 0.2s ease-in',
+    }}>
       {/* Undo toast */}
       {undoToast && (
         <div className="nords-matrix__undo-toast">

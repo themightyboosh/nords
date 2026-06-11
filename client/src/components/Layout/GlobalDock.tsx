@@ -22,7 +22,7 @@ import { useBoardSettingsContext } from '../../context/BoardSettingsContext';
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import type { Persona } from '../../hooks/usePersonas';
 import type { DirectionKey } from '../../hooks/useBoardSettings';
-import './GlobalDock.css';
+import styles from './GlobalDock.module.css';
 
 interface GlobalDockProps {
   projectId?: string;

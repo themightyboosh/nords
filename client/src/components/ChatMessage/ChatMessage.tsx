@@ -15,7 +15,7 @@ import React, { useState } from 'react';
 import {
   Bot, User, Zap, Wrench, ChevronDown, ChevronRight,
 } from 'lucide-react';
-import './ChatMessage.css';
+import styles from './ChatMessage.module.css';
 
 export interface ToolCall {
   name: string;

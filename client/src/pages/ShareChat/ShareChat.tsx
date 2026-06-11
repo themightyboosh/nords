@@ -9,7 +9,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Send, Bot, Loader2, RotateCcw } from 'lucide-react';
-import './ShareChat.css';
+import styles from './ShareChat.module.css';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 

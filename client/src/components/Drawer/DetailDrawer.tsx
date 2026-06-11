@@ -24,7 +24,7 @@ import { PropertyField } from './PropertyField';
 
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import type { Goal } from '../../hooks/useGoals';
-import './DetailDrawer.css';
+import styles from './DetailDrawer.module.css';
 import './PropertyField.css';
 
 interface DetailDrawerProps {

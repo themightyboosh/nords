@@ -1,0 +1,169 @@
+/* CSS Module — classes are :global until incrementally scoped */
+:global {
+/* ═══════════════════════════════════════════════════════════
+ * FloatingPanel.css — Unified panel/modal wrapper
+ *
+ * Two variants:
+ *   - "panel"  → Side panel (right edge, like DetailDrawer)
+ *   - "modal"  → Center overlay (like ManageTypes)
+ *
+ * Both collapse to bottom sheet below 768px.
+ * ═══════════════════════════════════════════════════════════ */
+
+/* ── Scrim (overlay backdrop — used by both variants) ── */
+.nords-floating-panel__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  /* No animation — instant appear */
+}
+
+@keyframes nords-panel-scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Panel variant — right-edge side panel ── */
+.nords-floating-panel--panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: var(--nords-drawer-width, 380px);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+  /* No animation — instant appear */
+  will-change: transform; /* pre-promote — prevents canvas jerk on mount */
+}
+
+.nords-floating-panel--panel-left {
+  right: auto;
+  left: 16px;
+  /* No animation — instant appear */
+}
+
+@keyframes nords-panel-slide-in {
+  from { transform: translateX(110%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes nords-panel-slide-in-left {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(0); }
+}
+
+/* ── Modal variant — center overlay ── */
+.nords-floating-panel--modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 200;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--nords-radius-xl, 16px);
+  background: var(--nords-color-bg-surface);
+  border: 1px solid var(--nords-color-border-subtle);
+  box-shadow: var(--nords-shadow-lg);
+  animation: nords-panel-modal-in 0.25s ease;
+}
+
+@keyframes nords-panel-modal-in {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ── Shared header slot ── */
+.nords-floating-panel__header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--nords-border-color, var(--nords-color-border-subtle));
+  flex-shrink: 0;
+}
+
+.nords-floating-panel__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--nords-radius-md, 8px);
+  background: transparent;
+  color: var(--nords-color-text-secondary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+}
+
+.nords-floating-panel__close:hover {
+  background: var(--nords-color-bg-hover);
+  color: var(--nords-color-text-primary);
+}
+
+/* ── Shared body slot ── */
+.nords-floating-panel__body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * RESPONSIVE — Both variants collapse to bottom sheet
+ * ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .nords-floating-panel--panel,
+  .nords-floating-panel--panel-left {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 75vh;
+    border-radius: 16px 16px 0 0;
+    animation: nords-panel-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .nords-floating-panel--modal {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 85vh;
+    transform: none;
+    border-radius: 16px 16px 0 0;
+    animation: nords-panel-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes nords-panel-slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  /* Drag handle affordance for bottom sheet */
+  .nords-floating-panel--panel::before,
+  .nords-floating-panel--modal::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--nords-color-text-disabled, rgba(128, 128, 128, 0.3));
+    margin: 8px auto 4px;
+    flex-shrink: 0;
+  }
+}
+}

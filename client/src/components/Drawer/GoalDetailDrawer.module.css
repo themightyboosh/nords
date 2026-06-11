@@ -1,0 +1,463 @@
+/* CSS Module — classes are :global until incrementally scoped */
+:global {
+/* GoalDetailDrawer.css — Side panel for goal flow config */
+
+.goal-detail-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* ── Header ── uses .nords-drawer-header from DetailDrawer.css */
+.goal-detail-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 0;
+  flex-shrink: 0;
+}
+
+.goal-detail-drawer__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goal-detail-drawer__identity {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-detail-drawer__name {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--nords-color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goal-detail-drawer__eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nords-color-text-tertiary);
+}
+
+/* ── Content ── */
+.goal-detail-drawer__content {
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Tab bar spacing within the goal drawer */
+.goal-detail-drawer .nords-drawer-tabs {
+  padding: 0 20px;
+}
+
+.goal-detail-drawer__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.goal-detail-drawer__label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nords-color-text-tertiary);
+}
+
+.goal-detail-drawer__text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--nords-color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Sections ── */
+.goal-detail-drawer__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.goal-detail-drawer__section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nords-color-text-tertiary);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--nords-color-border);
+}
+
+/* ── Flow Rows ── */
+.goal-detail-drawer__flow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.goal-detail-drawer__flow-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--nords-color-text-secondary);
+  white-space: nowrap;
+}
+
+.goal-detail-drawer__select {
+  flex: 1;
+  max-width: 200px;
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--nords-color-border);
+  border-radius: 6px;
+  background: var(--nords-color-bg-deep);
+  color: var(--nords-color-text-primary);
+  outline: none;
+}
+.goal-detail-drawer__select:focus {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+.goal-detail-drawer__select--small {
+  max-width: none;
+  flex: 1;
+}
+
+/* ── Hint text ── */
+.goal-detail-drawer__hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--nords-color-text-tertiary);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── End Type Radio Group ── */
+.goal-detail-drawer__end-type-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.goal-detail-drawer__end-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--nords-color-border);
+  border-radius: 8px;
+  background: var(--nords-color-bg-deep);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: left;
+}
+
+.goal-detail-drawer__end-option:hover {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+
+.goal-detail-drawer__end-option.is-active {
+  border-color: var(--nords-color-accent, #6366f1);
+  background: color-mix(in srgb, var(--nords-color-accent, #6366f1) 10%, var(--nords-color-bg-deep));
+}
+
+.goal-detail-drawer__end-option-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--nords-color-text-primary);
+  min-width: 80px;
+}
+
+.goal-detail-drawer__end-option-sub {
+  font-size: 11px;
+  color: var(--nords-color-text-tertiary);
+}
+
+/* ── Property Binding Rows ── */
+.goal-detail-drawer__binding-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--nords-color-surface);
+  font-size: 12px;
+}
+
+.goal-detail-drawer__binding-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+}
+
+.goal-detail-drawer__binding-group {
+  color: var(--nords-color-text-tertiary);
+  font-size: 11px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.goal-detail-drawer__binding-nord {
+  font-weight: 500;
+  color: var(--nords-color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-detail-drawer__binding-arrow {
+  color: var(--nords-color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.goal-detail-drawer__binding-prop {
+  color: var(--nords-color-accent, #6366f1);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-detail-drawer__binding-remove {
+  margin-left: auto;
+  padding: 3px;
+  border: none;
+  background: transparent;
+  color: var(--nords-color-text-tertiary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.goal-detail-drawer__binding-remove:hover {
+  color: #ef4444;
+}
+
+/* ── Add Binding ── */
+.goal-detail-drawer__add-binding {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Cascade variant — two selects side by side */
+.goal-detail-drawer__add-binding--cascade {
+  flex-wrap: wrap;
+}
+.goal-detail-drawer__add-binding--cascade .goal-detail-drawer__select {
+  flex: 1 1 40%;
+  min-width: 100px;
+}
+
+.goal-detail-drawer__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: 1px dashed var(--nords-color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--nords-color-text-tertiary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.goal-detail-drawer__add-btn:hover:not(:disabled) {
+  border-color: var(--nords-color-accent, #6366f1);
+  color: var(--nords-color-accent, #6366f1);
+}
+.goal-detail-drawer__add-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Textarea (Achieved Prompt) ── */
+.goal-detail-drawer__textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 10px;
+  border: 1px solid var(--nords-color-border, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  background: var(--nords-color-bg-deep, #12141a);
+  color: var(--nords-color-text-primary, #e8e8ed);
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.goal-detail-drawer__textarea:focus {
+  border-color: var(--nords-color-accent, #6366f1);
+}
+.goal-detail-drawer__textarea::placeholder {
+  color: var(--nords-color-text-tertiary, #555);
+  font-style: italic;
+}
+.goal-detail-drawer__textarea--empty {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+.goal-detail-drawer__textarea--empty:focus {
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+/* ── Binding badges ── */
+.goal-detail-drawer__binding-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  color: var(--nords-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.goal-detail-drawer__binding-badge.is-required {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.goal-detail-drawer__binding-type {
+  font-size: 10px;
+  color: var(--nords-color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.goal-detail-drawer__binding-toggle {
+  padding: 2px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.goal-detail-drawer__toggle-on {
+  color: var(--nords-color-accent, #6366f1);
+}
+.goal-detail-drawer__toggle-off {
+  color: var(--nords-color-text-tertiary);
+}
+
+/* ── Edge arrow in DAG rows ── */
+.goal-detail-drawer__edge-arrow {
+  color: var(--nords-color-text-tertiary);
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* ── Gate badge (AND/OR pill next to prerequisites header) ── */
+.goal-detail-drawer__gate-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: auto;
+  text-transform: uppercase;
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+}
+
+/* ── Read-only binding row (Unlocks section) ── */
+.goal-detail-drawer__binding-row--readonly {
+  opacity: 0.7;
+  cursor: default;
+}
+
+/* ── Continue / End toggle ── */
+.goal-detail-drawer__end-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--nords-color-border, rgba(255,255,255,0.1));
+}
+
+.goal-detail-drawer__end-toggle-btn {
+  flex: 1;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: var(--nords-color-bg-deep, #12141a);
+  color: var(--nords-color-text-tertiary, #6b7280);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.goal-detail-drawer__end-toggle-btn + .goal-detail-drawer__end-toggle-btn {
+  border-left: 1px solid var(--nords-color-border, rgba(255,255,255,0.1));
+}
+
+.goal-detail-drawer__end-toggle-btn:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--nords-color-text-secondary);
+}
+
+.goal-detail-drawer__end-toggle-btn.is-active {
+  background: color-mix(in srgb, var(--nords-color-accent, #6366f1) 15%, var(--nords-color-bg-deep, #12141a));
+  color: var(--nords-color-accent, #6366f1);
+}
+
+.goal-detail-drawer__end-toggle-btn.is-active.is-end {
+  background: color-mix(in srgb, #ef4444 12%, var(--nords-color-bg-deep, #12141a));
+  color: #f87171;
+}
+
+/* ── Reset checkbox ── */
+.goal-detail-drawer__reset-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--nords-color-text-secondary, #a1a1aa);
+  cursor: pointer;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.02);
+  transition: background 0.12s;
+  animation: goalResetFadeIn 0.2s ease;
+}
+
+.goal-detail-drawer__reset-checkbox:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.goal-detail-drawer__reset-checkbox input[type="checkbox"] {
+  accent-color: #ef4444;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+@keyframes goalResetFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+}

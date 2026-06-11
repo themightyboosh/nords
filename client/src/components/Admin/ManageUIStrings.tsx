@@ -11,7 +11,7 @@ import { ChevronDown, ChevronRight, RotateCcw, Save, Check, Type, Users, Target,
 import { api } from '../../api/client';
 import { useUIStrings } from '../../hooks/useUIStrings';
 import { UI_STRINGS_DEFAULTS, type UIStrings, type UIStringsSection } from '@nords/shared/uiStringsDefaults';
-import './ManageUIStrings.css';
+import styles from './ManageUIStrings.module.css';
 
 /** Section metadata for display */
 const SECTION_META: Record<UIStringsSection, { label: string; icon: typeof Type; description: string }> = {

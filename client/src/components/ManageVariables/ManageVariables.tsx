@@ -34,7 +34,7 @@ import {
 } from '@nords/shared/propertyTypes';
 import { PropertyTable } from '../shared/PropertyTable';
 import { useUIStrings } from '../../hooks/useUIStrings';
-import './ManageVariables.css';
+import styles from './ManageVariables.module.css';
 
 // ── Snake-case utility ──
 

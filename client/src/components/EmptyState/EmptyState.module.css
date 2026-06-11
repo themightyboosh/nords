@@ -1,0 +1,145 @@
+/* CSS Module — classes are :global until incrementally scoped */
+:global {
+/* ── EmptyState.css — Zero-state onboarding screen ── */
+
+.nords-empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nords-space-xl);
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Faint grid background for spatial continuity */
+.nords-empty-state__grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--nords-color-border-subtle) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.3;
+}
+
+/* Hero section */
+.nords-empty-state__hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--nords-space-md);
+  text-align: center;
+  max-width: 480px;
+  z-index: 1;
+}
+
+/* Ambient glow behind hero */
+.nords-empty-state__glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--nords-color-accent) 0%, transparent 70%);
+  opacity: 0.06;
+  filter: blur(60px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: empty-glow-pulse 4s ease-in-out infinite;
+}
+
+@keyframes empty-glow-pulse {
+  0%, 100% { opacity: 0.04; transform: translate(-50%, -50%) scale(0.9); }
+  50% { opacity: 0.08; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.nords-empty-state__icon {
+  color: var(--nords-color-accent);
+  opacity: 0.6;
+}
+
+.nords-empty-state__title {
+  font-size: 1.8rem;
+  font-weight: var(--nords-font-weight-bold);
+  color: var(--nords-color-text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.nords-empty-state__subtitle {
+  font-size: var(--nords-font-size-md);
+  color: var(--nords-color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 400px;
+}
+
+.nords-empty-state__cta {
+  display: flex;
+  align-items: center;
+  gap: var(--nords-space-sm);
+  padding: 12px 28px;
+  font-size: var(--nords-font-size-md);
+  font-weight: var(--nords-font-weight-semibold);
+  color: white;
+  background: var(--nords-color-accent);
+  border: none;
+  border-radius: var(--nords-radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: var(--nords-space-sm);
+}
+
+.nords-empty-state__cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -4px color-mix(in srgb, var(--nords-color-accent) 40%, transparent);
+}
+
+/* Action cards row */
+.nords-empty-state__actions {
+  display: flex;
+  gap: var(--nords-space-lg);
+  z-index: 1;
+}
+
+.nords-empty-state__action-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nords-space-xs);
+  padding: var(--nords-space-lg);
+  width: 200px;
+  background: color-mix(in srgb, var(--nords-color-bg-surface) 80%, transparent);
+  border: 1px solid var(--nords-color-border-subtle);
+  border-radius: var(--nords-radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.nords-empty-state__action-card:hover {
+  border-color: var(--nords-color-accent);
+  transform: translateY(-2px);
+  box-shadow: var(--nords-shadow-lg);
+}
+
+.nords-empty-state__action-card svg {
+  color: var(--nords-color-accent);
+  opacity: 0.7;
+}
+
+.nords-empty-state__action-card h3 {
+  font-size: var(--nords-font-size-sm);
+  font-weight: var(--nords-font-weight-semibold);
+  color: var(--nords-color-text-primary);
+  margin: var(--nords-space-xs) 0 0;
+}
+
+.nords-empty-state__action-card p {
+  font-size: var(--nords-font-size-xs);
+  color: var(--nords-color-text-tertiary);
+  line-height: 1.4;
+  margin: 0;
+}
+}
