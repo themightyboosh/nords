@@ -124,7 +124,14 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
 
   // Center-on-nord callback — set by CanvasEngine when InteractiveCanvas is mounted
   const centerOnNordRef = useRef<CenterOnNordFn | null>(null);
-  const { lens, activePersonaId } = useLens();
+  const { lens, activePersonaId, setActivePersonaId } = useLens();
+
+  // Auto-select first persona when entering persona lens with none selected
+  useEffect(() => {
+    if (lens === 'persona' && !activePersonaId && personas.length > 0) {
+      setActivePersonaId(personas[0].id);
+    }
+  }, [lens, activePersonaId, personas, setActivePersonaId]);
 
   // Fetch project name + mode
   useEffect(() => {
@@ -144,7 +151,6 @@ function WorkspaceContent({ projectId, graph, refetch, personas, updateCategoryW
   const activePersona = useMemo(() => {
     return personas.find(p => p.id === activePersonaId) || null;
   }, [personas, activePersonaId]);
-
 
 
 

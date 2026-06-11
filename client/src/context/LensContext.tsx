@@ -125,7 +125,7 @@ export function LensProvider({ children, projectId }: LensProviderProps) {
     () => projectId ? getStoredTypeId(projectId) : null
   );
   const [activePersonaId, setActivePersonaIdState] = useState<string | null>(
-    null // Don't auto-restore persona — let user click to activate (issue #34)
+    () => projectId ? getStoredPersonaId(projectId) : null
   );
 
   // Persist active type to localStorage when it changes
