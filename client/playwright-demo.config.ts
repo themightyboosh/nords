@@ -10,14 +10,20 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:5174',
-    viewport: { width: 1920, height: 1080 },
+    viewport: null,             // no constraint — fill the screen
     video: {
       mode: 'on',
       size: { width: 1920, height: 1080 },
     },
     colorScheme: 'dark',
+    headless: false,            // OBS needs to see the window
     launchOptions: {
-      slowMo: 120,            // human-paced interactions
+      slowMo: 120,              // human-paced interactions
+      args: [
+        '--start-maximized',    // fill the screen
+        '--disable-infobars',   // hide "controlled by automation" bar
+        '--kiosk',              // true fullscreen — no URL bar, no chrome
+      ],
     },
     // No screenshots / traces — we only want video
     screenshot: 'off',
@@ -29,7 +35,6 @@ export default defineConfig({
       name: 'demo-recording',
       use: {
         channel: 'chromium',
-        deviceScaleFactor: 2,   // retina quality
       },
     },
   ],
@@ -38,7 +43,7 @@ export default defineConfig({
   webServer: {
     command: 'VITE_SKIP_AUTH=true npx vite --port 5174',
     url: 'http://localhost:5174',
-    reuseExistingServer: false,
+    reuseExistingServer: true,
     timeout: 30_000,
     env: {
       VITE_SKIP_AUTH: 'true',

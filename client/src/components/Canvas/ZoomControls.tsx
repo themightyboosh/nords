@@ -11,7 +11,7 @@ import { useRef, useCallback } from 'react';
 import { ZoomIn, ZoomOut, Maximize, Minimize2 } from 'lucide-react';
 import { useReactFlow } from '@xyflow/react';
 import { useLens } from '../../context/LensContext';
-import styles from './ZoomControls.module.css';
+import './ZoomControls.css';
 
 export default function ZoomControls() {
   const { zoomIn, zoomOut, fitView, getNodes, getEdges } = useReactFlow();
@@ -65,11 +65,12 @@ export default function ZoomControls() {
   }
 
   return (
-    <div className="nords-zoom-controls nords-glass" data-testid="zoom-controls">
+    <div className="nords-zoom-controls nords-glass" data-testid="zoom-controls" role="toolbar" aria-label="Zoom controls">
       <button 
         className="nords-zoom-controls__btn" 
         onClick={() => zoomOut({ duration: 200 })} 
         title="Zoom out" 
+        aria-label="Zoom out"
         data-testid="zoom-out"
       >
         <ZoomOut size={14} strokeWidth={1.6} />
@@ -78,15 +79,17 @@ export default function ZoomControls() {
         className="nords-zoom-controls__btn" 
         onClick={() => zoomIn({ duration: 200 })} 
         title="Zoom in" 
+        aria-label="Zoom in"
         data-testid="zoom-in"
       >
         <ZoomIn size={14} strokeWidth={1.6} />
       </button>
-      <div className="nords-zoom-controls__sep" />
+      <div className="nords-zoom-controls__sep" role="separator" />
       <button 
         className="nords-zoom-controls__btn" 
         onClick={handleFit} 
         title={lastFitWasCategory.current ? 'Fit all nords' : (activeConnectionTypeId ? 'Fit active category' : 'Fit to view')}
+        aria-label={lastFitWasCategory.current ? 'Fit all nords' : (activeConnectionTypeId ? 'Fit active category' : 'Fit to view')}
         data-testid="zoom-fit"
       >
         {lastFitWasCategory.current ? <Minimize2 size={14} strokeWidth={1.6} /> : <Maximize size={14} strokeWidth={1.6} />}

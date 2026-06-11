@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* ═══════════════════════════════════════════════ */
 /* VIEWPORT HEADER — Single-row, icon-flyout nav    */
 /*                                                  */
@@ -391,5 +389,4 @@
   .nords-viewport-header__project-title {
     max-width: 180px;
   }
-}
 }

@@ -28,7 +28,7 @@ import { HueSlider } from '../shared/HueSlider';
 import { IconPicker } from '../shared/IconPicker';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { useUIStrings } from '../../hooks/useUIStrings';
-import styles from './ManageGoals.module.css';
+import './ManageGoals.css';
 
 // ── Types ──
 

@@ -24,7 +24,7 @@ import { PropertyField } from './PropertyField';
 
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import type { Goal } from '../../hooks/useGoals';
-import styles from './DetailDrawer.module.css';
+import './DetailDrawer.css';
 import './PropertyField.css';
 
 interface DetailDrawerProps {
@@ -452,7 +452,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
   // ── Nord Mode ──
   if (entity?.kind === 'nord') {
     return (
-      <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
+      <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose} aria-label={`Nord detail: ${entity.title}`}>
         {/* Header */}
         <header className="nords-drawer-header">
           <div className="nords-drawer-type-eyebrow" style={{ color: entity.typeColor }}>
@@ -480,10 +480,12 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
           </div>
 
           {/* Tab Bar */}
-          <div className="nords-drawer-tabs">
+          <div className="nords-drawer-tabs" role="tablist" aria-label="Detail sections">
             <button
               className={`nords-drawer-tab ${activeTab === 'properties' ? 'is-active' : ''}`}
               onClick={() => setActiveTab('properties')}
+              role="tab"
+              aria-selected={activeTab === 'properties'}
             >
               Properties
               {/* Count badge hidden — see issue #61
@@ -495,6 +497,8 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
             <button
               className={`nords-drawer-tab ${activeTab === 'connections' ? 'is-active' : ''}`}
               onClick={() => setActiveTab('connections')}
+              role="tab"
+              aria-selected={activeTab === 'connections'}
             >
               Categories
               {/* Count badge hidden — see issue #61
@@ -512,6 +516,8 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
                 <button
                   className={`nords-drawer-tab ${activeTab === 'goals' ? 'is-active' : ''}`}
                   onClick={() => setActiveTab('goals')}
+                  role="tab"
+                  aria-selected={activeTab === 'goals'}
                 >
                   Goals
                   {/* Count badge hidden — see issue #61
@@ -690,7 +696,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
 
 
     return (
-      <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
+      <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose} aria-label={`Connection detail: ${entity.sourceName} ${entity.verb || '→'} ${entity.targetName}`}>
         <header className="nords-drawer-header">
           <div className="nords-drawer-type-eyebrow" style={{ color: entity.typeColor }}>
             {(() => {
@@ -803,7 +809,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
 
   // Entity not found (loading or stale ID)
   return (
-    <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose}>
+    <FloatingPanel variant="panel" isOpen={isOpen} onClose={onClose} aria-label="Detail drawer">
       <header className="nords-drawer-header">
         <div className="nords-drawer-type">Loading…</div>
         <button className="nords-close-btn" onClick={onClose} aria-label="Close"><X size={18} strokeWidth={2} /></button>

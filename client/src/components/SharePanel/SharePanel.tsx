@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { api } from '../../api/client';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
-import styles from './SharePanel.module.css';
+import './SharePanel.css';
 
 // ── Types ──
 

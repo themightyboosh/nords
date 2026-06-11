@@ -67,6 +67,8 @@ export const NordCard: React.FC<NordCardProps> = ({
         ...style,
       }}
       data-testid={rest['data-testid']}
+      role="article"
+      aria-label={`${typeName}: ${title}`}
     >
       <div className="nords-node__titlebar">
         <div className="nords-node__header">

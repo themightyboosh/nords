@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* ═══════════════════════════════════════════════════════════
    TestRunner — Styles for the synthetic user test panel
    Aligned with ManageTypes / ManagePersonas design patterns.
@@ -676,5 +674,4 @@
   font-size: 12px;
   font-weight: 500;
   color: var(--nords-color-accent);
-}
 }

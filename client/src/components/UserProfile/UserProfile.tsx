@@ -11,7 +11,7 @@ import { X, Save, User, Mail, Shield, CheckCircle2 } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { useAuth } from '../../context/AuthContext';
-import styles from './UserProfile.module.css';
+import './UserProfile.css';
 
 interface UserProfileProps {
   isOpen: boolean;

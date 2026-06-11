@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* ManageGoals.css — Simple goal CRUD panel (mirrors ManagePersonas)
  * Only: sidebar list + editor with name/icon/color/description/prompt.
  * Flow config lives in the Goal DetailDrawer on the Goal Canvas.
@@ -288,5 +286,4 @@
 }
 .manage-goals__textarea::placeholder {
   color: var(--nords-color-text-tertiary);
-}
 }

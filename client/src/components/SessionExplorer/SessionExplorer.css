@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /**
  * SessionExplorer.css — Session browsing, replay, and export UI
  */
@@ -744,5 +742,4 @@
     border-right: none;
     border-bottom: 1px solid var(--nords-color-border-subtle);
   }
-}
 }

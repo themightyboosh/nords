@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* ── ProjectDashboard.css — Workspace Switcher / Project List ── */
 
 .nords-dashboard {
@@ -775,5 +773,4 @@
   background: rgba(16, 185, 129, 0.12);
   color: #10b981;
   letter-spacing: 0.3px;
-}
 }

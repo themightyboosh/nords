@@ -17,7 +17,7 @@
 
 import React, { useCallback, useRef, useState } from 'react';
 import type { StageLabel } from '../../hooks/useProjectGraph';
-import styles from './SpectrumEditor.module.css';
+import './SpectrumEditor.css';
 
 interface SpectrumEditorProps {
   labels: StageLabel[];

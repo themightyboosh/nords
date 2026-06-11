@@ -4,136 +4,147 @@
  * This is the HERO scene. Live AI interaction via Gemini.
  *
  * Script lines to capture:
+ *   - Open Test Runner. Show the test scenarios.
+ *   - Select a test — scroll down to show all editable details.
  *   - Open Preview Chat. Dr. Sharma persona. Guided mode.
- *   - New Session — AI greeting with full context awareness.
+ *   - Type a message — AI responds with full context awareness.
  *   - Type: "What's blocking verification?"
  *   - AI responds, traverses graph, identifies gap.
- *   - AI navigates to Risk #5 (adhesive dermatitis), asks about mitigation.
  *   - Type a mitigation answer. AI fills property. Goal progress updates.
  *   - Toggle Dev Mode ON. Show tool call timeline.
- *   - Flash the system prompt tab. Flash the tool call sequence.
+ *   - Flash the system prompt tab.
  *   - Switch back to Canvas. Show the Risk card has animated to a new position.
  *
  * NOTE: This scene uses LIVE GEMINI. The AI responses are non-deterministic.
- * The selectors target UI elements that appear regardless of AI wording.
- * You may need to re-record this scene if the AI takes an unexpected path.
  */
 
 import { test, expect } from '@playwright/test';
-import { openProject, breathe, fitToView, typeSlowly } from './helpers';
+import { openProject, breathe, fitToView } from './helpers';
 
 test('Scene 5 — AI Session (Live)', async ({ page }) => {
   test.setTimeout(180_000); // AI round-trips can be slow
 
   await openProject(page);
 
-  // ── Step 1: Set persona to Dr. Sharma before opening chat ──
-  const personaDockItem = page.locator('[data-testid="dock-personas"], .nords-dock__item').filter({ hasText: /persona/i });
-  if (await personaDockItem.isVisible()) {
-    await personaDockItem.click();
-    await page.waitForTimeout(800);
+  // ── Step 1: Open Test Runner to show test scenarios and form details ──
+  const testsGroupBtn = page.locator('[data-testid="header-group-test"]');
+  if (await testsGroupBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await testsGroupBtn.click();
+    await page.waitForTimeout(500);
 
-    const priya = page.locator('.nords-flyout__row--selectable').filter({ hasText: /Priya Sharma/ }).first();
-    if (await priya.isVisible()) {
-      await priya.click();
-      await page.waitForTimeout(1200);
+    const testRunnerBtn = page.locator('[data-testid="header-test-runner"]');
+    if (await testRunnerBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await testRunnerBtn.click();
+      await page.waitForTimeout(1500);
     }
   }
 
-  // ── Step 2: Open Preview Chat ──
-  const chatButton = page.locator('[data-testid="dock-preview"], .nords-dock__item').filter({ hasText: /preview|chat|test/i }).first();
-  await chatButton.click();
-  await page.waitForTimeout(1500);
+  // Wait for the test runner panel
+  const testRunner = page.locator('.test-runner');
+  if (await testRunner.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await breathe(page, 2000);
 
-  // Wait for the chat panel to appear
-  await expect(page.locator('.preview-chat')).toBeVisible({ timeout: 5_000 });
-  await breathe(page, 1000);
+    // Click first scenario
+    const firstScenario = page.locator('.test-runner__scenario-item').first();
+    if (await firstScenario.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await firstScenario.click();
+      await page.waitForTimeout(1000);
+      await breathe(page, 2000);
 
-  // ── Step 3: Start new session — AI greeting will show context awareness ──
-  // Check if there's a "New Session" or "Start" button
-  const newSessionBtn = page.locator('.preview-chat button, .preview-chat__action').filter({ hasText: /new session|start|reset/i }).first();
-  if (await newSessionBtn.isVisible()) {
-    await newSessionBtn.click();
-    await page.waitForTimeout(2000);
+      // Scroll the form to show all fields
+      const testForm = page.locator('.test-runner__form, .test-runner__content').first();
+      if (await testForm.isVisible()) {
+        for (let i = 0; i < 5; i++) {
+          await testForm.evaluate(el => el.scrollTop += 150);
+          await page.waitForTimeout(400);
+        }
+        await breathe(page, 2000);
+        await testForm.evaluate(el => el.scrollTo({ top: 0, behavior: 'smooth' }));
+        await page.waitForTimeout(800);
+      }
+    }
+
+    // Close test runner
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
   }
 
-  // Wait for AI greeting to appear (first assistant message)
-  await page.waitForSelector('.preview-chat__message--assistant', { timeout: 30_000 });
-  await breathe(page, 4000); // Let the viewer read the context-aware greeting
+  // ── Step 2: Open Preview Chat ──
+  if (await testsGroupBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await testsGroupBtn.click();
+    await page.waitForTimeout(500);
+  }
+  const previewBtn = page.locator('[data-testid="header-preview"]');
+  if (await previewBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await previewBtn.click();
+    await page.waitForTimeout(1500);
+  }
 
-  // ── Step 4: Ask "What's blocking verification?" ──
-  const chatInput = page.locator('.preview-chat__input, .preview-chat textarea, input[placeholder*="message"]').first();
-  await chatInput.click();
-  await page.keyboard.type("What's blocking verification?", { delay: 40 });
-  await breathe(page, 800);
-
-  // Press Enter to send
-  await page.keyboard.press('Enter');
-
-  // Wait for AI response — this involves tool calls (graph traversal)
-  await page.waitForSelector('.preview-chat__message--assistant:nth-child(n+2)', { timeout: 45_000 });
-  await breathe(page, 4000); // Show the traversal + gap identification
-
-  // ── Step 5: AI finds Risk #5 (adhesive dermatitis) and asks about mitigation ──
-  // Type a mitigation answer
-  await chatInput.click();
-  await page.keyboard.type(
-    "Use hypoallergenic medical-grade silicone adhesive (Dow Corning MG 7-9850) with skin barrier primer. Perform 48-hour patch testing per ISO 10993-10.",
-    { delay: 30 }
-  );
-  await breathe(page, 500);
-  await page.keyboard.press('Enter');
-
-  // Wait for AI to process — this triggers nords_update_session_nord + evaluateGoals
-  await page.waitForTimeout(5000);
-
-  // Wait for the goal event system message to appear
-  const goalMsg = page.locator('.preview-chat__message--system').filter({ hasText: /Goal|📊|🎯/ }).first();
-  await goalMsg.waitFor({ state: 'visible', timeout: 45_000 }).catch(() => {
-    // Goal event might not appear if AI doesn't update goal-bound properties
-    console.log('No goal event appeared — continuing');
+  // Wait for the chat panel
+  const chatPanel = page.locator('.preview-chat');
+  await chatPanel.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {
+    console.log('Preview chat panel not found');
   });
-  await breathe(page, 4000); // Show the goal progress update
+  await breathe(page, 1000);
+
+  // ── Step 3: Reset session to get a clean start ──
+  const resetBtn = page.locator('button[title="Reset Session"]').first();
+  if (await resetBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await resetBtn.click();
+    await page.waitForTimeout(1500);
+  }
+
+  // ── Step 4: Type first message — the session starts on first send ──
+  const chatInput = page.locator('.preview-chat textarea, .preview-chat input[type="text"], [placeholder*="message"]').first();
+  if (await chatInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await chatInput.click();
+    await page.keyboard.type("What's blocking verification?", { delay: 40 });
+    await breathe(page, 800);
+    await page.keyboard.press('Enter');
+
+    // Wait for AI response
+    const assistantMsg = page.locator('.preview-chat__message--assistant').first();
+    await assistantMsg.waitFor({ state: 'visible', timeout: 45_000 }).catch(() => {
+      console.log('No assistant message appeared');
+    });
+    await breathe(page, 4000); // Show the traversal + gap identification
+
+    // ── Step 5: Type a mitigation answer ──
+    await chatInput.click();
+    await page.keyboard.type(
+      "Use hypoallergenic medical-grade silicone adhesive with skin barrier primer. Perform 48-hour patch testing per ISO 10993-10.",
+      { delay: 30 }
+    );
+    await breathe(page, 500);
+    await page.keyboard.press('Enter');
+
+    // Wait for second AI response
+    await page.waitForTimeout(5000);
+    const secondResponse = page.locator('.preview-chat__message--assistant').nth(1);
+    await secondResponse.waitFor({ state: 'visible', timeout: 45_000 }).catch(() => {
+      console.log('No second assistant response');
+    });
+    await breathe(page, 4000);
+  }
 
   // ── Step 6: Toggle Dev Mode ON ──
-  const devModeToggle = page.locator('[data-testid="dev-mode-toggle"], .preview-chat__dev-toggle').first();
-  if (await devModeToggle.isVisible()) {
+  const devModeToggle = page.locator('[data-testid="dev-mode-toggle"], button[title*="Dev"], .preview-chat__dev-toggle').first();
+  if (await devModeToggle.isVisible({ timeout: 3000 }).catch(() => false)) {
     await devModeToggle.click();
     await breathe(page, 2000);
   }
 
-  // ── Step 7: Flash the tool calls panel ──
-  const toolsTab = page.locator('.preview-chat__dev-tab').filter({ hasText: /tool/i }).first();
-  if (await toolsTab.isVisible()) {
-    await toolsTab.click();
-    await breathe(page, 3000); // Show tool call timeline
-  }
-
-  // ── Step 8: Flash the system prompt tab ──
-  const promptTab = page.locator('.preview-chat__dev-tab').filter({ hasText: /prompt/i }).first();
-  if (await promptTab.isVisible()) {
-    await promptTab.click();
-    await breathe(page, 3000); // Show the full system prompt with persona weights
-  }
-
-  // ── Step 9: Flash the horizon tab ──
-  const horizonTab = page.locator('.preview-chat__dev-tab').filter({ hasText: /horizon/i }).first();
-  if (await horizonTab.isVisible()) {
-    await horizonTab.click();
+  // ── Step 7: Flash the tool calls / system prompt tabs ──
+  const devTabs = page.locator('.preview-chat__dev-tab, [class*="dev-tab"]');
+  const tabCount = await devTabs.count();
+  for (let i = 0; i < Math.min(tabCount, 3); i++) {
+    await devTabs.nth(i).click();
     await breathe(page, 2000);
   }
 
-  // ── Step 10: Close chat, switch back to canvas ──
-  // Close the chat panel
-  const closeBtn = page.locator('.preview-chat__close, .preview-chat [aria-label="Close"]').first();
-  if (await closeBtn.isVisible()) {
-    await closeBtn.click();
-    await page.waitForTimeout(1000);
-  }
-
-  // The canvas should have auto-refreshed (Fix 1!)
+  // ── Step 8: Close chat, switch back to canvas ──
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(1000);
   await fitToView(page);
-  await breathe(page, 3000); // Show the canvas with updated card positions
-
-  await breathe(page, 2000);
+  await breathe(page, 3000);
 });

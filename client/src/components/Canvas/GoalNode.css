@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* GoalCanvas.css — Goal-canvas-specific styles.
  *
  * Card rendering is handled by NordNode/NordCard.
@@ -139,5 +137,4 @@
 .goal-canvas__layout-btn--active:hover {
   background: rgba(99, 102, 241, 0.18);
   border-color: rgba(99, 102, 241, 0.4);
-}
 }

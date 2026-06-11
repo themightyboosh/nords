@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 .nords-zoom-controls {
   position: absolute;
   bottom: var(--nords-space-lg);
@@ -67,5 +65,4 @@
     bottom: calc(var(--nords-dock-height) + var(--nords-space-xl) + env(safe-area-inset-bottom, 0px));
     right: var(--nords-space-md);
   }
-}
 }

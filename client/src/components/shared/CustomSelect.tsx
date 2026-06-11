@@ -13,7 +13,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import styles from './CustomSelect.module.css';
+import './CustomSelect.css';
 
 export interface CustomSelectOption {
   value: string;

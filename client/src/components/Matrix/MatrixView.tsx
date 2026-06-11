@@ -27,7 +27,7 @@ import { useConnectionMutations, useBoardPositionMutations } from '../../hooks/u
 import { NordCard } from '../shared/NordCard';
 import { ChevronDown, ChevronRight, Unlink } from 'lucide-react';
 import '../Canvas/CanvasEngine.css';
-import styles from './MatrixView.module.css';
+import './MatrixView.css';
 
 interface MatrixViewProps {
   graph: ProjectGraph | null;

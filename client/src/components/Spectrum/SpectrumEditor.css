@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* SpectrumEditor.css — Styles for the interactive stage label point editor */
 
 .spectrum-editor {
@@ -130,5 +128,4 @@
   color: var(--nords-color-text-tertiary, #555);
   text-align: center;
   letter-spacing: 0.01em;
-}
 }

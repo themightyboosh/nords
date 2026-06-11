@@ -20,7 +20,7 @@ import { useAuth } from '../../context/AuthContext';
 import { resolveIcon } from '../../utils/iconRegistry';
 import NordsLogo from '../NordsLogo';
 import ThemeSwitcher from '../ThemeSwitcher/ThemeSwitcher';
-import styles from './ViewportHeader.module.css';
+import './ViewportHeader.css';
 
 type NavGroup = 'design' | 'behavior' | 'test' | 'publish';
 
@@ -142,7 +142,7 @@ export default function ViewportHeader({
   ];
 
   return (
-    <header className="nords-viewport-header nords-glass" data-testid="viewport-header">
+    <header className="nords-viewport-header nords-glass" data-testid="viewport-header" role="banner">
       <div className="nords-viewport-header__row">
 
         {/* ── Left: Logo ── */}
@@ -151,6 +151,7 @@ export default function ViewportHeader({
           data-testid="logo-projects-btn"
           onClick={() => navigate('/projects')}
           title="Back to Projects"
+          aria-label="Back to Projects"
         >
           <NordsLogo size={22} />
         </button>
@@ -177,7 +178,7 @@ export default function ViewportHeader({
 
         {/* ── Nav groups ── */}
         {!isDashboard && (
-          <div className="nords-viewport-header__groups">
+          <nav className="nords-viewport-header__groups" role="navigation" aria-label="Main navigation">
             {groups.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
@@ -185,13 +186,15 @@ export default function ViewportHeader({
                 className={`nords-viewport-header__group-btn ${openGroup === key ? 'is-open' : ''}`}
                 onClick={() => toggleGroup(key)}
                 title={label}
+                aria-label={label}
+                aria-expanded={openGroup === key}
                 data-testid={`header-group-${key}`}
               >
                 <Icon size={15} strokeWidth={1.6} />
                 <span>{label}</span>
               </button>
             ))}
-          </div>
+          </nav>
         )}
 
         {/* ── Right: Theme + User ── */}
@@ -202,17 +205,20 @@ export default function ViewportHeader({
             <button
               className="nords-viewport-header__user-btn"
               title={`${displayName} — Account`}
+              aria-label={`${displayName} — Account menu`}
+              aria-expanded={userDropdownOpen}
+              aria-haspopup="menu"
               onClick={() => { setUserDropdownOpen(!userDropdownOpen); setOpenGroup(null); }}
               data-testid="user-menu-btn"
             >
-              <div className="nords-viewport-header__avatar" style={{ backgroundColor: '#2563eb' }}>{initial}</div>
+              <div className="nords-viewport-header__avatar" style={{ backgroundColor: '#2563eb' }} role="img" aria-label={displayName}>{initial}</div>
               <ChevronDown size={10} />
             </button>
 
             {userDropdownOpen && (
               <>
                 <div className="nords-viewport-header__backdrop" onClick={() => setUserDropdownOpen(false)} />
-                <div className="nords-viewport-header__dropdown" data-testid="user-dropdown">
+                <div className="nords-viewport-header__dropdown" data-testid="user-dropdown" role="menu" aria-label="User menu">
                   <div className="nords-viewport-header__dropdown-header">
                     <div className="nords-viewport-header__dropdown-name">{displayName}</div>
                     <div className="nords-viewport-header__dropdown-email">{user?.email}</div>

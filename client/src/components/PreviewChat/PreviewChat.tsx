@@ -20,7 +20,7 @@ import {
 import { api } from '../../api/client';
 import { ChatMessage } from '../ChatMessage/ChatMessage';
 import type { ToolCall } from '../ChatMessage/ChatMessage';
-import styles from './PreviewChat.module.css';
+import './PreviewChat.css';
 
 // ToolCall type imported from ChatMessage
 

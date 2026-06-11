@@ -9,7 +9,7 @@
  */
 
 import React, { useCallback, useRef, useState } from 'react';
-import styles from './Spectrum.module.css';
+import './Spectrum.css';
 
 export interface Spectrum1DProps {
   value: number;            // 0.0–1.0

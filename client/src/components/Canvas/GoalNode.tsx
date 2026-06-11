@@ -14,7 +14,7 @@ import type { NodeProps, Node } from '@xyflow/react';
 import { Handle, Position } from '@xyflow/react';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { NordCard } from '../shared/NordCard';
-import styles from './GoalNode.module.css';
+import './GoalNode.css';
 
 export interface GoalNodeData {
   goalId: string;

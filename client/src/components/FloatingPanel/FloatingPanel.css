@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* ═══════════════════════════════════════════════════════════
  * FloatingPanel.css — Unified panel/modal wrapper
  *
@@ -165,5 +163,4 @@
     margin: 8px auto 4px;
     flex-shrink: 0;
   }
-}
 }

@@ -22,7 +22,7 @@ import { useBoardSettingsContext } from '../../context/BoardSettingsContext';
 import type { ProjectGraph } from '../../hooks/useProjectGraph';
 import type { Persona } from '../../hooks/usePersonas';
 import type { DirectionKey } from '../../hooks/useBoardSettings';
-import styles from './GlobalDock.module.css';
+import './GlobalDock.css';
 
 interface GlobalDockProps {
   projectId?: string;
@@ -94,14 +94,18 @@ export default function GlobalDock({ graph, personas = [], graphOnly = false }: 
       {openPanel && <div className="nords-flyout-scrim" onClick={() => setOpenPanel(null)} />}
 
       <div className="nords-dock-wrapper">
-        <nav className="nords-global-dock nords-glass" data-testid="global-dock" data-active-lens={lens}>
+        <nav className="nords-global-dock nords-glass" data-testid="global-dock" data-active-lens={lens} aria-label="Workspace dock">
 
           {/* ═══ Lens Toggle ═══ */}
-          <div className="nords-lens-toggle">
+          <div className="nords-lens-toggle" role="radiogroup" aria-label="View mode">
             <button
               className={`nords-lens-toggle__btn ${lens === 'board' ? 'is-active' : ''}`}
               onClick={() => { setLens('board'); setOpenPanel(null); }}
               title="Board — kanban view by connection type"
+              aria-label="Board view"
+              aria-pressed={lens === 'board'}
+              role="radio"
+              aria-checked={lens === 'board'}
               data-testid="lens-board"
             >
               <LayoutGrid size={14} strokeWidth={1.6} />
@@ -111,6 +115,10 @@ export default function GlobalDock({ graph, personas = [], graphOnly = false }: 
               className={`nords-lens-toggle__btn ${lens === 'canvas' ? 'is-active' : ''}`}
               onClick={() => { setLens('canvas'); setOpenPanel(null); }}
               title="Graph — spatial graph view"
+              aria-label="Graph view"
+              aria-pressed={lens === 'canvas'}
+              role="radio"
+              aria-checked={lens === 'canvas'}
               data-testid="lens-canvas"
             >
               <Eye size={14} strokeWidth={1.6} />
@@ -123,12 +131,15 @@ export default function GlobalDock({ graph, personas = [], graphOnly = false }: 
                 setLens('persona');
                 setActiveConnectionTypeId(null);
                 setOpenPanel(null);
-                // Auto-select first persona if none active so the radial view renders immediately
                 if (!activePersonaId && personas.length > 0) {
                   setActivePersonaId(personas[0].id);
                 }
               }}
               title="Persona — weighted graph view through a persona's lens"
+              aria-label="Persona view"
+              aria-pressed={lens === 'persona'}
+              role="radio"
+              aria-checked={lens === 'persona'}
               data-testid="lens-persona"
             >
               <Users size={14} strokeWidth={1.6} />
@@ -144,6 +155,10 @@ export default function GlobalDock({ graph, personas = [], graphOnly = false }: 
                 setOpenPanel(null);
               }}
               title="Goals — interview goal flow canvas"
+              aria-label="Goals view"
+              aria-pressed={lens === 'goals'}
+              role="radio"
+              aria-checked={lens === 'goals'}
               data-testid="lens-goals"
             >
               <Target size={14} strokeWidth={1.6} />

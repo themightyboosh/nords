@@ -22,7 +22,7 @@ import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { HueSlider } from '../shared/HueSlider';
 import { PersonaAvatar } from '../shared/PersonaAvatar';
 import { useUIStrings } from '../../hooks/useUIStrings';
-import styles from './ManagePersonas.module.css';
+import './ManagePersonas.css';
 
 // ── Types ──
 

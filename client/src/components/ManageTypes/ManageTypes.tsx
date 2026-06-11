@@ -36,7 +36,7 @@ import {
   UI_PROPERTY_TYPES, PROPERTY_TYPE_META, getCompatGroup, needsOptions,
   normalizePropertyType, type PropertyType,
 } from '@nords/shared/propertyTypes';
-import styles from './ManageTypes.module.css';
+import './ManageTypes.css';
 
 interface ManageTypesProps {
   projectId: string;

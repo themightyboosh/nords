@@ -16,7 +16,7 @@ import {
   Bot, User, Wrench, Target, Variable as VariableIcon, Navigation, Zap,
   Layers, Database,
 } from 'lucide-react';
-import styles from './SessionExplorer.module.css';
+import './SessionExplorer.css';
 
 interface SessionSummary {
   id: string;

@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { api } from '../../api/client';
-import styles from './TestRunner.module.css';
+import './TestRunner.css';
 
 // ── Types ──
 

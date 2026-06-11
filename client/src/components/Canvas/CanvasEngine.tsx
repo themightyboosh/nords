@@ -329,16 +329,64 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     });
   }, [lensNodes, setNodes, isPersonaMode]);
 
+  // ── Auto-fit on initial graph load ──
+  // When the canvas first mounts with nodes, fit the viewport to center on
+  // the active category's nords INSTANTLY behind a loading screen.
+  // We wait for BOTH nodes AND edges to be present (edges carry category data).
+  const [graphReady, setGraphReady] = React.useState(false);
+
+  // Safety valve: never let the loading screen stay longer than 800ms
+  React.useEffect(() => {
+    if (graphReady) return;
+    const safety = setTimeout(() => {
+      fitView({ padding: 0.15, duration: 0 });
+      setGraphReady(true);
+    }, 800);
+    return () => clearTimeout(safety);
+  }, [graphReady, fitView]);
+
+  React.useEffect(() => {
+    if (isPersonaMode) return; // persona mode has its own fitView effect
+    if (graphReady) return;    // already revealed — don't re-fit
+    if (rfNodes.length === 0) return; // wait for nodes to load
+    if (rfEdges.length === 0) return; // wait for edges (carry category info)
+
+    // Minimal delay for React Flow to measure node dimensions, then snap instantly
+    const timer = setTimeout(() => {
+      const connectedNodeIds = new Set<string>();
+      if (activeConnectionTypeId) {
+        for (const e of rfEdges) {
+          if ((e.data as any)?._typeId === activeConnectionTypeId) {
+            connectedNodeIds.add(e.source);
+            connectedNodeIds.add(e.target);
+          }
+        }
+      }
+      if (connectedNodeIds.size > 0) {
+        fitView({ nodes: Array.from(connectedNodeIds).map(id => ({ id })), padding: 0.25, duration: 0 });
+      } else {
+        fitView({ padding: 0.15, duration: 0 });
+      }
+      // Reveal after a micro-tick so the viewport is set before paint
+      requestAnimationFrame(() => setGraphReady(true));
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [rfNodes.length, rfEdges, activeConnectionTypeId, fitView, isPersonaMode, graphReady]);
+
+  // Reset ready state when entering persona mode
+  // so re-entering graph triggers a new fit
+  React.useEffect(() => {
+    if (isPersonaMode) {
+      setGraphReady(false);
+    }
+  }, [isPersonaMode]);
+
   // ── Auto-focus on connected nords when switching categories ──
   // When the user selects a category, zoom to show only the participating nords
   // so they're not left staring at all-dimmed off-screen nodes.
-  const prevCategoryRef = React.useRef<string | null | undefined>(undefined);
+  const prevCategoryRef = React.useRef<string | null | undefined>(activeConnectionTypeId);
   React.useEffect(() => {
     if (isPersonaMode) return;
-    if (prevCategoryRef.current === undefined) {
-      prevCategoryRef.current = activeConnectionTypeId;
-      return;
-    }
     if (prevCategoryRef.current === activeConnectionTypeId) return;
     prevCategoryRef.current = activeConnectionTypeId;
 
@@ -369,14 +417,15 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     return () => clearTimeout(timer);
   }, [activeConnectionTypeId, rfEdges, fitView, isPersonaMode]);
 
-  // Fit viewport after persona layout positions are applied
+  // Fit viewport after persona layout positions are applied — INSTANT behind loading screen
   const prevPersonaModeRef = React.useRef(isPersonaMode);
   React.useEffect(() => {
     if (isPersonaMode || prevPersonaModeRef.current !== isPersonaMode) {
-      // Delay to let React reconcile new positions + zone circles
+      // Delay to let React reconcile new positions + zone circles, then snap instantly
       const timer = setTimeout(() => {
-        fitView({ padding: 0.08, duration: 500 });
-      }, 200);
+        fitView({ padding: 0.08, duration: 0 });
+        requestAnimationFrame(() => setGraphReady(true));
+      }, 150);
       prevPersonaModeRef.current = isPersonaMode;
       return () => clearTimeout(timer);
     }
@@ -828,7 +877,9 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
     cameraIdleTimer.current = setTimeout(() => setIsCameraMoving(false), 150);
   }, []);
 
-  // Loading state
+  // Loading state — show spinner while graph data hasn't loaded OR while
+  // initial fitView is computing (graphReady === false) for any mode.
+  const showLoading = (!graph && nodes.length === 0) || !graphReady;
   if (!graph && nodes.length === 0) {
     return (
       <div className="nords-canvas-loading">
@@ -851,7 +902,24 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
 
   return (
     <>
-      <div data-interacting={isInteracting ? '' : undefined} style={{ width: '100%', height: '100%' }}>
+      {/* Loading overlay — visible while fitView calculates behind the scenes */}
+      {showLoading && (
+        <div className="nords-canvas-loading" style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
+          <div className="nords-canvas-loading__spinner" />
+          <span>Loading graph…</span>
+        </div>
+      )}
+      <div
+        data-interacting={isInteracting ? '' : undefined}
+        style={{
+          width: '100%',
+          height: '100%',
+          // Hide canvas while fitView is computing; still mounted for measurement
+          visibility: showLoading ? 'hidden' : 'visible',
+          opacity: showLoading ? 0 : 1,
+          transition: 'opacity 0.2s ease-in',
+        }}
+      >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -894,6 +962,8 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={{ type: 'euclidean' }}
         className={canvasClass}
+        aria-label="Graph canvas — drag to pan, scroll to zoom, click nodes to select"
+        role="application"
         onlyRenderVisibleElements
         panOnScroll
         panOnDrag={isTouchDevice ? [1, 2] : true}

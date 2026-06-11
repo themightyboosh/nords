@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* ═══════════════════════════════════════════════ */
 /* GLOBAL DOCK + FLYOUT PANELS                     */
 /* ═══════════════════════════════════════════════ */
@@ -839,5 +837,4 @@
 .nords-flyout__snapshot-action:hover {
   background: var(--nords-color-bg-hover);
   color: var(--nords-color-text-primary);
-}
 }

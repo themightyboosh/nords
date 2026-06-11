@@ -14,7 +14,7 @@ import {
   UI_PROPERTY_TYPES, PROPERTY_TYPE_META,
   normalizePropertyType, type PropertyType,
 } from '@nords/shared/propertyTypes';
-import '../ManageTypes/ManageTypes.module.css';
+import '../ManageTypes/ManageTypes.css';
 
 // ── Types ──
 

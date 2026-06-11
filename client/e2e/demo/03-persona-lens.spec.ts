@@ -1,69 +1,74 @@
 /**
  * Scene 3: PERSONA LENS (1:55–2:20)
  *
- * Script lines to capture:
- *   - Click Persona Lens
- *   - Click Dr. Priya Sharma → risks/regulatory snap to center
- *   - Click Marcus Cole → architecture/subsystems center
- *   - Quick click Sarah Kim → clinical protocols center
+ * NOTE: The sidebar flyout rows can be overlapped by canvas nodes
+ * (z-index issue), so we use { force: true } on all flyout clicks.
+ *
+ * Persona flyout rows are at indices 23-27:
+ *   23: Dr. Maya Rodriguez, 24: Marcus Cole, 25: Sarah Kim,
+ *   26: James Okonkwo, 27: Elena Vasquez
+ * Nord Visibility rows are 8-17.
  */
 
-import { test, expect } from '@playwright/test';
-import { openProject, breathe, fitToView } from './helpers';
+import { test } from '@playwright/test';
+import { openProject, breathe, fitToView, smoothZoom } from './helpers';
 
 test('Scene 3 — Persona Lens', async ({ page }) => {
   await openProject(page);
   await fitToView(page);
   await breathe(page, 1500);
 
-  // ── Open Personas flyout from the dock ──
-  // The dock item for Personas
-  const personaDockItem = page.locator('[data-testid="dock-personas"], .nords-dock__item').filter({ hasText: /persona/i });
-  if (await personaDockItem.isVisible()) {
-    await personaDockItem.click();
-    await page.waitForTimeout(800);
+  // ── Switch to Persona Lens ──
+  await page.locator('[data-testid="lens-persona"]').click();
+  await page.waitForTimeout(2000);
+  await breathe(page, 2000);
+
+  // ── Zoom in for better visibility ──
+  const pane = page.locator('.react-flow__pane');
+  const paneBox = await pane.boundingBox();
+  if (paneBox) {
+    const cx = paneBox.x + paneBox.width / 2;
+    const cy = paneBox.y + paneBox.height / 2;
+    await smoothZoom(page, cx, cy, -1200, 12);
+    await breathe(page, 1500);
   }
 
-  // ── Select Dr. Priya Sharma — Regulatory ──
-  const priya = page.locator('.nords-flyout__row--selectable, [data-testid*="persona"]').filter({
-    hasText: /Priya Sharma|Regulatory/,
-  }).first();
+  // ── Cycle through personas ──
+  // Canvas nodes overlap sidebar rows, so force: true is required
+  const allRows = page.locator('.nords-flyout__row--selectable');
 
-  if (await priya.isVisible()) {
-    await priya.click();
-    await page.waitForTimeout(1500); // Wait for lens layout animation
-    await breathe(page, 3000); // Show the heatmap — risks center, engineering fades
-  }
+  // Marcus Cole (row 24)
+  await allRows.nth(24).click({ force: true });
+  await page.waitForTimeout(1500);
+  await breathe(page, 2500);
 
-  // ── Select Marcus Cole — Engineering ──
-  const marcus = page.locator('.nords-flyout__row--selectable, [data-testid*="persona"]').filter({
-    hasText: /Marcus Cole|Engineer/,
-  }).first();
+  // Sarah Kim (row 25)
+  await allRows.nth(25).click({ force: true });
+  await page.waitForTimeout(1500);
+  await breathe(page, 2000);
 
-  if (await marcus.isVisible()) {
-    await marcus.click();
-    await page.waitForTimeout(1500);
-    await breathe(page, 2500); // Architecture, interfaces, subsystems center
-  }
+  // James Okonkwo (row 26)
+  await allRows.nth(26).click({ force: true });
+  await page.waitForTimeout(1500);
+  await breathe(page, 2000);
 
-  // ── Quick flash: Sarah Kim — Clinical ──
-  const sarah = page.locator('.nords-flyout__row--selectable, [data-testid*="persona"]').filter({
-    hasText: /Sarah Kim|Clinical/,
-  }).first();
+  // Elena Vasquez (row 27)
+  await allRows.nth(27).click({ force: true });
+  await page.waitForTimeout(1500);
+  await breathe(page, 2000);
 
-  if (await sarah.isVisible()) {
-    await sarah.click();
-    await page.waitForTimeout(1500);
-    await breathe(page, 2000); // Clinical protocols, patient data center
-  }
+  // Back to Dr. Maya Rodriguez (row 23)
+  await allRows.nth(23).click({ force: true });
+  await page.waitForTimeout(1500);
+  await breathe(page, 2000);
 
-  // ── Clear persona lens to return to neutral ──
-  // Click the active persona again to deselect, or find the clear button
-  const clearBtn = page.locator('[data-testid="clear-persona"], .nords-flyout__clear').first();
-  if (await clearBtn.isVisible()) {
-    await clearBtn.click();
-    await page.waitForTimeout(1000);
-  }
+  // ── Nord Visibility cycling (show/dim/hide) ──
+  await allRows.nth(8).click({ force: true });
+  await breathe(page, 1000);
+  await allRows.nth(8).click({ force: true });
+  await breathe(page, 1000);
+  await allRows.nth(8).click({ force: true });
+  await breathe(page, 800);
 
   await breathe(page, 1500);
 });

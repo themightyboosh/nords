@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* PersonaLensDrawer.css — Persona detail panel for the Persona Lens view */
 
 .persona-lens-drawer {
@@ -302,5 +300,4 @@
 /* Hide state — row appears very faded */
 .persona-type-filter__row--hide {
   opacity: 0.3;
-}
 }

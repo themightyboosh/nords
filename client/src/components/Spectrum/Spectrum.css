@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* ═══════════════════════════════════════════════════════════
  * Spectrum.css — Styles for Spectrum1D (and future Spectrum2D)
  * ═══════════════════════════════════════════════════════════ */
@@ -106,5 +104,4 @@
 .spectrum-1d--interactive .spectrum-1d__track:hover .spectrum-1d__thumb {
   transform: translate(-50%, -50%) scale(1.1);
   box-shadow: var(--nords-shadow-md);
-}
 }

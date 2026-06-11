@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* ═══════════════════════════════════════════════════════════
  * ProjectSettings.css — Project-level settings panel
  *
@@ -280,5 +278,4 @@
 .nords-form__share-link-create .nords-form__textarea {
   min-height: 48px;
   resize: vertical;
-}
 }

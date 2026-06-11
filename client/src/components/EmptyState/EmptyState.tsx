@@ -5,7 +5,7 @@
  */
 
 import { Plus, Layers, BookOpen, Sparkles } from 'lucide-react';
-import styles from './EmptyState.module.css';
+import './EmptyState.css';
 
 interface EmptyStateProps {
   onAddNord: () => void;

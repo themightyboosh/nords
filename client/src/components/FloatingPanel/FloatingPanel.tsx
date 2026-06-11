@@ -19,7 +19,7 @@
  */
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import styles from './FloatingPanel.module.css';
+import './FloatingPanel.css';
 
 interface FloatingPanelProps {
   /** "panel" = right-edge side panel, "modal" = center overlay with scrim */
@@ -32,6 +32,8 @@ interface FloatingPanelProps {
   position?: 'right' | 'left';
   /** Additional CSS class for the inner container */
   className?: string;
+  /** ARIA label for the dialog */
+  'aria-label'?: string;
   children: React.ReactNode;
 }
 
@@ -42,6 +44,7 @@ export function FloatingPanel({
   width,
   position = 'right',
   className = '',
+  'aria-label': ariaLabel,
   children,
 }: FloatingPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -104,6 +107,7 @@ export function FloatingPanel({
         data-testid={`floating-panel-${variant}`}
         role="dialog"
         aria-modal={variant === 'modal'}
+        aria-label={ariaLabel}
       >
         {children}
       </div>

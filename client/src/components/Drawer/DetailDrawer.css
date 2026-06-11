@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /* client/src/components/Drawer/DetailDrawer.css
  * Content-level styles only — positioning and animation
  * are handled by FloatingPanel.
@@ -928,4 +926,3 @@
   border-color: var(--nords-color-accent);
 }
 
-}

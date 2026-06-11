@@ -12,7 +12,7 @@ import { Page, expect } from '@playwright/test';
  * Check the seed output for the exact ID, or query the DB:
  *   SELECT id FROM projects WHERE name LIKE 'Pulse Sense%' LIMIT 1;
  */
-export const DEMO_PROJECT_ID = process.env.DEMO_PROJECT_ID || '4618e912-6b6a-4d99-a75a-0ef333ae6072';
+export const DEMO_PROJECT_ID = process.env.DEMO_PROJECT_ID || '8b57c4d1-7389-41a8-9ad5-946418abcb33';
 
 /** Navigate to the demo project and wait for canvas to render */
 export async function openProject(page: Page) {

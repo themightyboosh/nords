@@ -33,7 +33,7 @@ import { useSemanticZoom } from '../../hooks/useSemanticZoom';
 import ZoomControls from './ZoomControls';
 import type { Goal, GoalEdge } from '../../hooks/useGoals';
 import type { ProjectVariable } from '../../hooks/useVariables';
-import styles from './GoalNode.module.css';
+import './GoalNode.css';
 import './CanvasEngine.css';
 
 const goalNodeTypes = {

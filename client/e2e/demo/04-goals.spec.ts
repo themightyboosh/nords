@@ -4,6 +4,8 @@
  * Script lines to capture:
  *   - Click Goals view. Show the DAG.
  *   - Point to the DAG — 6 goals, prerequisite edges visible.
+ *   - Click on a few goals to see different details.
+ *   - Click "Requirements Locked" — show its detail.
  *   - Click "Risk Analysis Complete" — show 75% complete.
  *   - Click "Verification Complete" — show BLOCKED.
  */
@@ -14,17 +16,43 @@ import { openProject, breathe } from './helpers';
 test('Scene 4 — Goals DAG', async ({ page }) => {
   await openProject(page);
 
-  // ── Open Goals panel from the dock ──
-  const goalsDockItem = page.locator('[data-testid="dock-goals"], .nords-dock__item').filter({ hasText: /goal/i });
-  if (await goalsDockItem.isVisible()) {
-    await goalsDockItem.click();
-    await page.waitForTimeout(1000);
+  // ── Switch to Goals lens from the dock ──
+  const goalsLensBtn = page.locator('[data-testid="lens-goals"]');
+  if (await goalsLensBtn.isVisible()) {
+    await goalsLensBtn.click();
+    await page.waitForTimeout(1500);
   }
 
   await breathe(page, 2500); // Show the full DAG — 6 goals with prerequisite edges
 
-  // ── Click "Risk Analysis Complete" to show progress ──
-  const riskGoal = page.locator('[data-testid*="goal"], .goal-node, .goals-card').filter({
+  // ── Click the first goal — "Requirements Locked" ──
+  const reqGoal = page.locator('.goal-node, [data-testid*="goal"]').filter({
+    hasText: /Requirements Locked/,
+  }).first();
+
+  if (await reqGoal.isVisible()) {
+    await reqGoal.click();
+    await breathe(page, 3000); // Show requirements goal detail — bindings, description
+  }
+
+  // ── Close and click "510(k) Ready" ──
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(500);
+
+  const fivetenGoal = page.locator('.goal-node, [data-testid*="goal"]').filter({
+    hasText: /510\(k\) Ready/,
+  }).first();
+
+  if (await fivetenGoal.isVisible()) {
+    await fivetenGoal.click();
+    await breathe(page, 2500); // Show 510(k) Ready detail — different bindings/status
+  }
+
+  // ── Close and click "Risk Analysis Complete" — show progress ──
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(500);
+
+  const riskGoal = page.locator('.goal-node, [data-testid*="goal"]').filter({
     hasText: /Risk Analysis/,
   }).first();
 
@@ -33,12 +61,11 @@ test('Scene 4 — Goals DAG', async ({ page }) => {
     await breathe(page, 3000); // Show 75% complete — 2 risk items missing mitigation
   }
 
-  // ── Close the detail drawer ──
+  // ── Close and click "Verification Complete" — show BLOCKED ──
   await page.keyboard.press('Escape');
   await page.waitForTimeout(500);
 
-  // ── Click "Verification Complete" to show BLOCKED status ──
-  const verificationGoal = page.locator('[data-testid*="goal"], .goal-node, .goals-card').filter({
+  const verificationGoal = page.locator('.goal-node, [data-testid*="goal"]').filter({
     hasText: /Verification/,
   }).first();
 

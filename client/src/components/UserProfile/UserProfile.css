@@ -1,5 +1,3 @@
-/* CSS Module — classes are :global until incrementally scoped */
-:global {
 /**
  * UserProfile.css — Styling for the user profile modal.
  *
@@ -136,5 +134,4 @@
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-}
 }

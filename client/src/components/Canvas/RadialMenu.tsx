@@ -13,7 +13,7 @@ import { useReactFlow } from '@xyflow/react';
 import { Search } from 'lucide-react';
 import { useNodeCountLimit } from '../../hooks/useNodeCountLimit';
 import { useTypeVisibility } from '../../hooks/useTypeVisibility';
-import styles from './RadialMenu.module.css';
+import './RadialMenu.css';
 
 const RECENT_KEY = 'nords-recent-nord-types';
 const MAX_RECENT = 5;

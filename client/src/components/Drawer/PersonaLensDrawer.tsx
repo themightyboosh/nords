@@ -15,7 +15,7 @@ import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
 import { PersonaAvatar } from '../shared/PersonaAvatar';
 import { resolveIcon } from '../../utils/iconRegistry';
 import type { Persona } from '../../hooks/usePersonas';
-import styles from './PersonaLensDrawer.module.css';
+import './PersonaLensDrawer.css';
 
 interface ConnectionType {
   id: string;
