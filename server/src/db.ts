@@ -15,19 +15,9 @@ const pool = new Pool({
   connectionTimeoutMillis: 20000,
 });
 
-// Validate connections on checkout — catches stale connections after Cloud SQL proxy restarts
-const originalConnect = pool.connect.bind(pool);
-pool.connect = async function () {
-  const client = await originalConnect();
-  try {
-    await client.query('SELECT 1');
-    return client;
-  } catch (err) {
-    client.release(true); // destroy the bad connection
-    logger.warn('Stale connection detected, retrying', { error: err instanceof Error ? err.message : String(err) });
-    return originalConnect(); // get a fresh one
-  }
-};
+// Note: pg automatically validates connections. We removed the custom
+// pool.connect override that ran SELECT 1 on checkout — it caused
+// connection leaks because pool.query() calls pool.connect() internally.
 
 pool.on('error', (err) => {
   logger.error('Unexpected error on idle client', { error: err.message, stack: err.stack });
