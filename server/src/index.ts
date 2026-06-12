@@ -73,6 +73,10 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'nords-api', timestamp: new Date().toISOString() });
 });
 
+// ── MCP HTTP Endpoint (token-authenticated, not Firebase) ──
+import { mcpHttpRouter } from './mcp-http.js';
+app.use(mcpHttpRouter);
+
 // ── Public API Routes (no auth required) ──
 app.use('/api', registerRouter);
 app.use('/api', shareChatRouter);

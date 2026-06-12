@@ -115,7 +115,7 @@ export default function ViewportHeader({
       ],
     },
     {
-      key: 'behavior', label: 'Behavior', icon: Brain,
+      key: 'behavior', label: 'Direct', icon: Brain,
       items: [
         { label: 'Personas', icon: Users, onClick: onOpenPersonas, testId: 'header-personas' },
         ...(!graphOnly ? [
@@ -125,10 +125,10 @@ export default function ViewportHeader({
       ],
     },
     {
-      key: 'test', label: 'Tests', icon: Microscope,
+      key: 'test', label: 'Test', icon: Microscope,
       items: [
         { label: 'Preview', icon: Eye, onClick: onOpenPreview, testId: 'header-preview' },
-        { label: 'Test', icon: FlaskConical, onClick: onOpenTestRunner, testId: 'header-test-runner' },
+        { label: 'Tests', icon: FlaskConical, onClick: onOpenTestRunner, testId: 'header-test-runner' },
         { label: 'Sessions', icon: Activity, onClick: onOpenSessions, testId: 'header-sessions' },
       ],
     },

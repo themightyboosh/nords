@@ -542,16 +542,8 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
                   <span className="nords-form__mcp-details-title">MCP Connection Details</span>
 
                   <div className="nords-form__mcp-row">
-                    <span className="nords-form__mcp-label">Server (Prod)</span>
-                    <code className="nords-form__mcp-value">https://nords.monumental.ax</code>
-                  </div>
-                  <div className="nords-form__mcp-row">
-                    <span className="nords-form__mcp-label">Server (Stage)</span>
-                    <code className="nords-form__mcp-value">https://nord-stage.monumental.ax</code>
-                  </div>
-                  <div className="nords-form__mcp-row">
-                    <span className="nords-form__mcp-label">Project ID</span>
-                    <code className="nords-form__mcp-value">{projectId}</code>
+                    <span className="nords-form__mcp-label">Endpoint</span>
+                    <code className="nords-form__mcp-value">{`${(import.meta as any).env?.VITE_API_URL || window.location.origin}/mcp`}</code>
                   </div>
                   <div className="nords-form__mcp-row">
                     <span className="nords-form__mcp-label">Access Token</span>
@@ -566,15 +558,14 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
                         style={{ width: '28px', height: '28px' }}
                         title="Copy config"
                         onClick={() => {
+                          const mcpUrl = `${(import.meta as any).env?.VITE_API_URL || window.location.origin}/mcp`;
                           const config = JSON.stringify({
                             mcpServers: {
                               nords: {
-                                command: 'npx',
-                                args: ['tsx', 'path/to/nords/server/src/mcp-server.ts'],
-                                env: {
-                                  DATABASE_URL: 'postgres://...',
-                                  PROJECT_ID: projectId,
-                                  NORDS_ACCESS_TOKEN: newTokenRaw,
+                                type: 'streamable-http',
+                                url: mcpUrl,
+                                headers: {
+                                  Authorization: `Bearer ${newTokenRaw}`,
                                 },
                               },
                             },
@@ -588,12 +579,10 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
                     <pre className="nords-form__mcp-config-code">{`{
   "mcpServers": {
     "nords": {
-      "command": "npx",
-      "args": ["tsx", "path/to/nords/server/src/mcp-server.ts"],
-      "env": {
-        "DATABASE_URL": "postgres://...",
-        "PROJECT_ID": "${projectId}",
-        "NORDS_ACCESS_TOKEN": "${newTokenRaw.slice(0, 16)}…"
+      "type": "streamable-http",
+      "url": "${(import.meta as any).env?.VITE_API_URL || window.location.origin}/mcp",
+      "headers": {
+        "Authorization": "Bearer ${newTokenRaw.slice(0, 16)}…"
       }
     }
   }
