@@ -100,7 +100,7 @@ async function ensureSession(projectId: string): Promise<string> {
   const personaId = process.env.PERSONA_ID || null;
   const startNordId = process.env.START_NORD_ID || null;
 
-  const session = await mcpRepo.createSession(projectId, personaId, startNordId);
+  const session = await mcpRepo.createSession(projectId, personaId, startNordId, null, null, 'api');
   currentSessionId = session.id;
   return session.id;
 }

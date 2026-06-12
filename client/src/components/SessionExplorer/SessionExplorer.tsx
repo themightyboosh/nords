@@ -14,7 +14,7 @@ import {
   X, Download, Play, Filter, MessageSquare, Activity, BarChart3,
   ChevronRight, Clock, ArrowRight, CheckCircle2, XCircle, AlertCircle,
   Bot, User, Wrench, Target, Variable as VariableIcon, Navigation, Zap,
-  Layers, Database, ThumbsUp, ShieldAlert, Shield, Loader2, ChevronDown,
+  Layers, Database, ThumbsUp, ShieldAlert, Shield, Loader2, ChevronDown, Trash2,
 } from 'lucide-react';
 import './SessionExplorer.css';
 
@@ -114,6 +114,7 @@ export function SessionExplorer({ projectId, open, onClose, onReplay }: Props) {
   const [scoring, setScoring] = useState(false);
   const [expandedScorer, setExpandedScorer] = useState<string | null>(null);
   const [expandedVarId, setExpandedVarId] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   // ── Load sessions ──
   const loadSessions = useCallback(async () => {
@@ -259,9 +260,40 @@ export function SessionExplorer({ projectId, open, onClose, onReplay }: Props) {
             <h2 className="nords-panel-title"><Activity size={18} strokeWidth={1.6} />Sessions</h2>
             <span className="session-explorer__count">{sessions.length}</span>
           </div>
-          <button className="session-explorer__close" onClick={onClose} title="Close">
-            <X size={18} />
-          </button>
+          <div className="session-explorer__header-actions">
+            {sessions.length > 0 && (
+              <button
+                className="session-explorer__clear-btn"
+                disabled={clearing}
+                onClick={async () => {
+                  if (!confirm(`Clear ${sourceFilter === 'all' ? 'ALL' : sourceFilter} sessions? This cannot be undone.`)) return;
+                  setClearing(true);
+                  try {
+                    const params = sourceFilter !== 'all' && sourceFilter !== 'tests'
+                      ? `?source=${sourceFilter}`
+                      : sourceFilter === 'tests'
+                        ? '?source=chat,test'
+                        : '';
+                    await api.delete(`/api/projects/${projectId}/sessions${params}`);
+                    setSessions([]);
+                    setSelectedSessionId(null);
+                    setEvents([]);
+                  } catch (err) {
+                    console.error('Failed to clear sessions', err);
+                  } finally {
+                    setClearing(false);
+                  }
+                }}
+                title={`Clear ${sourceFilter === 'all' ? 'all' : sourceFilter} sessions`}
+              >
+                <Trash2 size={14} />
+                {clearing ? 'Clearing…' : 'Clear All'}
+              </button>
+            )}
+            <button className="session-explorer__close" onClick={onClose} title="Close">
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="session-explorer__body">

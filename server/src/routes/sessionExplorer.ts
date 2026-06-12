@@ -217,6 +217,47 @@ sessionExplorerRouter.get('/projects/:id/sessions', async (req: Request, res: Re
     res.status(500).json({ error: err.message });
   }
 });
+// ── Clear all sessions for a project ──
+sessionExplorerRouter.delete('/projects/:id/sessions', async (req: Request, res: Response) => {
+  try {
+    const projectId = req.params.id;
+    const { source } = req.query;
+
+    let sourceCondition = '';
+    const params: unknown[] = [projectId];
+
+    if (source) {
+      const sources = (source as string).split(',').map(s => s.trim());
+      sourceCondition = ' AND source_type = ANY($2)';
+      params.push(sources);
+    }
+
+    const sessionIds = await query<{ id: string }>(`
+      SELECT id FROM mcp_sessions WHERE project_id = $1${sourceCondition}
+    `, params);
+
+    if (sessionIds.length === 0) {
+      return res.json({ deleted: 0 });
+    }
+
+    const ids = sessionIds.map(s => s.id);
+
+    // Cascade delete related data
+    await query('DELETE FROM session_events WHERE session_id = ANY($1)', [ids]);
+    await query('DELETE FROM mcp_session_variables WHERE session_id = ANY($1)', [ids]);
+    await query('DELETE FROM mcp_session_goals WHERE session_id = ANY($1)', [ids]);
+    await query('DELETE FROM mcp_traversals WHERE session_id = ANY($1)', [ids]);
+    await query('DELETE FROM mcp_nord_visits WHERE session_id = ANY($1)', [ids]);
+    await query('DELETE FROM mcp_messages WHERE session_id = ANY($1)', [ids]);
+    await query('UPDATE test_runs SET session_id = NULL WHERE session_id = ANY($1)', [ids]);
+
+    await query(`DELETE FROM mcp_sessions WHERE project_id = $1${sourceCondition}`, params);
+
+    res.json({ deleted: ids.length });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ── Get events for a session ──
 sessionExplorerRouter.get('/sessions/:id/events', async (req: Request, res: Response) => {
