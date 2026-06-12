@@ -39,6 +39,7 @@ export function ShareChat() {
   const [info, setInfo] = useState<ShareInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialSessionId, setInitialSessionId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   // Read URL query params for variable overrides (e.g. ?user_name=Daniel)
@@ -63,6 +64,25 @@ export function ShareChat() {
         }
         const data: ShareInfo = await res.json();
         setInfo(data);
+
+        // Eagerly initialize session on page load
+        try {
+          const initRes = await fetch(`${API_BASE}/api/share/init`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Share-Token': token },
+            credentials: 'include',
+            body: JSON.stringify({
+              ...(urlOverrides ? { url_overrides: urlOverrides } : {}),
+            }),
+          });
+          if (initRes.ok) {
+            const initData = await initRes.json();
+            setInitialSessionId(initData.sessionId);
+          }
+        } catch {
+          // Non-fatal: chat handler will create session as fallback
+        }
+
         setLoading(false);
       } catch {
         setError('Unable to connect. Please try again.');
@@ -111,6 +131,7 @@ export function ShareChat() {
         shareToken={token}
         shareInfo={info}
         urlOverrides={urlOverrides}
+        initialSessionId={initialSessionId}
       />
     );
   }
@@ -126,6 +147,7 @@ export function ShareChat() {
         shareToken={token}
         shareInfo={info}
         urlOverrides={urlOverrides}
+        initialSessionId={initialSessionId}
       />
     </div>
   );

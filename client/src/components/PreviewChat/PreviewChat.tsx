@@ -71,6 +71,8 @@ interface PreviewChatProps {
   shareInfo?: ShareInfo | null;
   /** URL query param overrides for collection variables (e.g. ?user_name=Daniel) */
   urlOverrides?: Record<string, string>;
+  /** Pre-created session ID from /share/init (eager session creation) */
+  initialSessionId?: string | null;
 }
 
 interface DevLogEntry {
@@ -81,16 +83,24 @@ interface DevLogEntry {
   detail?: string;
 }
 
-export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayTranscript, replayLabel, onClearReplay, mode = 'preview', shareToken, shareInfo, urlOverrides }: PreviewChatProps) {
+export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayTranscript, replayLabel, onClearReplay, mode = 'preview', shareToken, shareInfo, urlOverrides, initialSessionId }: PreviewChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null);
   const [devMode, setDevMode] = useState(false);
   const [devLog, setDevLog] = useState<DevLogEntry[]>([]);
   const [expandedLogEntries, setExpandedLogEntries] = useState<Set<string>>(new Set());
 
   const [model, setModel] = useState(() => localStorage.getItem('nords-preview-model') || 'gemini-2.5-flash');
+
+  // Sync initialSessionId from parent when it arrives asynchronously
+  useEffect(() => {
+    if (initialSessionId && !sessionId) {
+      setSessionId(initialSessionId);
+    }
+  }, [initialSessionId]);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const devLogEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);

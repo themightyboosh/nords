@@ -96,6 +96,135 @@ shareChatRouter.get('/share/info', async (req: Request, res: Response) => {
   }
 });
 
+// ── Session Init (eager creation on page load) ──
+
+shareChatRouter.post('/share/init', async (req: Request, res: Response) => {
+  try {
+    const token = (req.headers['x-share-token'] as string) || req.body.token;
+    if (!token) return res.status(401).json({ error: 'Share token required' });
+
+    const link = await shareLinksRepo.findByToken(token);
+    if (!link) return res.status(401).json({ error: 'Invalid or expired share link' });
+
+    const projectId = link.project_id;
+    const { url_overrides } = req.body;
+
+    // Check if client already has a valid session
+    const existingSessionId = req.body.sessionId || req.cookies?.[SESSION_COOKIE_NAME];
+    if (existingSessionId) {
+      const existing = await queryOne<any>('SELECT * FROM mcp_sessions WHERE id = $1', [existingSessionId]);
+      if (existing && existing.status === 'active' && existing.project_id === projectId) {
+        return res.json({ sessionId: existing.id, resumed: true });
+      }
+    }
+
+    // Check max sessions
+    if (link.max_sessions) {
+      const count = await shareLinksRepo.getSessionCount(link.id);
+      if (count >= link.max_sessions) {
+        return res.status(403).json({ error: 'Session limit reached for this share link' });
+      }
+    }
+
+    // Create session
+    const project = await projectsRepo.findById(projectId);
+    const personaId = link.persona_id_override || project?.default_persona_id || null;
+
+    const session = await mcpRepo.createSession(
+      projectId,
+      personaId,
+      project?.default_start_nord_id || null,
+      null,     // userId
+      null,     // tokenId
+      'share'   // sourceType
+    );
+    const sessionId = session.id;
+
+    // Set share_link_id on the session
+    await queryOne(
+      'UPDATE mcp_sessions SET share_link_id = $1 WHERE id = $2',
+      [link.id, sessionId]
+    );
+
+    // Fire session_start event
+    logEvent(sessionId, 'session_start', 'source', {
+      source_type: 'share',
+      share_link_id: link.id,
+      persona_id: personaId,
+      start_nord_id: project?.default_start_nord_id || null,
+    });
+
+    // Initialize session goals
+    await goalsRepo.initializeSessionGoals(sessionId, projectId, 'collect');
+
+    // Seed welcome message
+    const welcomeMsg = link.welcome_message_override || project?.mcp_welcome_message;
+    if (welcomeMsg) {
+      await mcpMessagesRepo.create({
+        session_id: sessionId,
+        role: 'assistant',
+        content: welcomeMsg,
+        tool_calls: null,
+        context: { synthetic: true, source: 'welcome_message', share_link_id: link.id },
+        tokens_in: null,
+        tokens_out: null,
+        model: null,
+        latency_ms: 0,
+      });
+    }
+
+    // Apply collection variable pre-fills
+    if (link.prefills.length > 0) {
+      for (const pf of link.prefills) {
+        if (pf.variable_id && pf.value != null) {
+          await mcpRepo.upsertSessionVariable(
+            sessionId,
+            pf.variable_id,
+            pf.value,
+            null,
+            null
+          );
+        }
+      }
+      logger.info('Applied share link variable prefills', { linkId: link.id, count: link.prefills.length });
+    }
+
+    // Apply URL query param overrides (e.g. ?user_name=Daniel)
+    if (url_overrides && typeof url_overrides === 'object') {
+      const projectVars = await query<{ id: string; name: string }>(
+        'SELECT id, name FROM project_variables WHERE project_id = $1',
+        [projectId]
+      );
+      const varByName = new Map(projectVars.map(v => [v.name.toLowerCase(), v.id]));
+      let overrideCount = 0;
+      for (const [key, val] of Object.entries(url_overrides)) {
+        const varId = varByName.get(key.toLowerCase());
+        if (varId && typeof val === 'string') {
+          await mcpRepo.upsertSessionVariable(sessionId, varId, val, null, null);
+          overrideCount++;
+        }
+      }
+      if (overrideCount > 0) {
+        logger.info('Applied URL variable overrides', { linkId: link.id, count: overrideCount });
+      }
+    }
+
+    // Set session cookie
+    res.cookie(SESSION_COOKIE_NAME, sessionId, {
+      maxAge: SESSION_COOKIE_MAX_AGE,
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/api/share',
+    });
+
+    res.json({ sessionId, resumed: false });
+
+  } catch (err: any) {
+    logger.error('Share init error', { error: err.message, stack: err.stack });
+    res.status(500).json({ error: 'Session initialization failed' });
+  }
+});
+
 // ── Main Share Chat Endpoint ──
 
 shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
@@ -106,31 +235,24 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
     const link = await shareLinksRepo.findByToken(token);
     if (!link) return res.status(401).json({ error: 'Invalid or expired share link' });
 
-    const { message, sessionId: existingSessionId, url_overrides } = req.body;
+    const { message, sessionId: clientSessionId } = req.body;
     if (!message?.trim()) return res.status(400).json({ error: 'Message is required' });
 
     const projectId = link.project_id;
     const model = link.model || 'gemini-2.5-flash';
 
-    // Check max sessions before creating new ones
-    if (link.max_sessions && !existingSessionId) {
-      const count = await shareLinksRepo.getSessionCount(link.id);
-      if (count >= link.max_sessions) {
-        return res.status(403).json({ error: 'Session limit reached for this share link' });
-      }
-    }
-
-    // 1. Resolve or create session
-    let sessionId = existingSessionId || req.cookies?.[SESSION_COOKIE_NAME];
+    // Resolve session — should already exist from /share/init
+    let sessionId = clientSessionId || req.cookies?.[SESSION_COOKIE_NAME];
     let session;
 
     if (sessionId) {
       session = await queryOne<any>('SELECT * FROM mcp_sessions WHERE id = $1', [sessionId]);
       if (!session || session.status !== 'active' || session.project_id !== projectId) {
-        sessionId = null; // Invalid session, create new
+        sessionId = null;
       }
     }
 
+    // Fallback: create session if init was missed (backward compat / race condition)
     if (!sessionId) {
       const project = await projectsRepo.findById(projectId);
       const personaId = link.persona_id_override || project?.default_persona_id || null;
@@ -139,19 +261,15 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
         projectId,
         personaId,
         project?.default_start_nord_id || null,
-        null,     // userId
-        null,     // tokenId
-        'share'   // sourceType — ensures Shared tab filter works
+        null, null, 'share'
       );
       sessionId = session.id;
 
-      // Set share_link_id on the session
       await queryOne(
         'UPDATE mcp_sessions SET share_link_id = $1 WHERE id = $2',
         [link.id, sessionId]
       );
 
-      // Fire session_start event
       logEvent(sessionId, 'session_start', 'source', {
         source_type: 'share',
         share_link_id: link.id,
@@ -159,10 +277,8 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
         start_nord_id: project?.default_start_nord_id || null,
       });
 
-      // Initialize session goals
       await goalsRepo.initializeSessionGoals(sessionId, projectId, 'collect');
 
-      // Seed welcome message
       const welcomeMsg = link.welcome_message_override || project?.mcp_welcome_message;
       if (welcomeMsg) {
         await mcpMessagesRepo.create({
@@ -178,49 +294,13 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
         });
       }
 
-      // Apply collection variable pre-fills
-      if (link.prefills.length > 0) {
-        for (const pf of link.prefills) {
-          if (pf.variable_id && pf.value != null) {
-            await mcpRepo.upsertSessionVariable(
-              sessionId,
-              pf.variable_id,
-              pf.value,
-              null,  // no nord context for prefills
-              null   // no persona context for prefills
-            );
-          }
-        }
-        logger.info('Applied share link variable prefills', { linkId: link.id, count: link.prefills.length });
-      }
-
-      // Apply URL query param overrides (e.g. ?user_name=Daniel)
-      if (url_overrides && typeof url_overrides === 'object') {
-        const projectVars = await query<{ id: string; name: string }>(
-          'SELECT id, name FROM project_variables WHERE project_id = $1',
-          [projectId]
-        );
-        const varByName = new Map(projectVars.map(v => [v.name.toLowerCase(), v.id]));
-        let overrideCount = 0;
-        for (const [key, val] of Object.entries(url_overrides)) {
-          const varId = varByName.get(key.toLowerCase());
-          if (varId && typeof val === 'string') {
-            await mcpRepo.upsertSessionVariable(
-              sessionId,
-              varId,
-              val,
-              null,  // no nord context for URL overrides
-              null   // no persona context for URL overrides
-            );
-            overrideCount++;
-          }
-        }
-        if (overrideCount > 0) {
-          logger.info('Applied URL variable overrides', { linkId: link.id, count: overrideCount });
+      // Apply prefills
+      for (const pf of link.prefills) {
+        if (pf.variable_id && pf.value != null) {
+          await mcpRepo.upsertSessionVariable(sessionId, pf.variable_id, pf.value, null, null);
         }
       }
 
-      // Set session cookie
       res.cookie(SESSION_COOKIE_NAME, sessionId, {
         maxAge: SESSION_COOKIE_MAX_AGE,
         httpOnly: true,
@@ -229,11 +309,10 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
       });
     }
 
-    // 2. Resolve project settings
+    // Execute chat turn
     const project = await projectsRepo.findById(projectId);
     const personaId = session?.persona_id || link.persona_id_override || null;
 
-    // 3. Execute chat turn via shared engine
     const result = await executeChatTurn({
       projectId,
       sessionId,
@@ -254,3 +333,4 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
 });
 
 export default shareChatRouter;
+
