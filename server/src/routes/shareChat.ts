@@ -138,7 +138,10 @@ shareChatRouter.post('/share/chat', async (req: Request, res: Response) => {
       session = await mcpRepo.createSession(
         projectId,
         personaId,
-        project?.default_start_nord_id || null
+        project?.default_start_nord_id || null,
+        null,     // userId
+        null,     // tokenId
+        'share'   // sourceType — ensures Shared tab filter works
       );
       sessionId = session.id;
 
