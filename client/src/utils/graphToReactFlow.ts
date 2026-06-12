@@ -37,12 +37,10 @@ export function graphToNodes(
       value: String(value ?? ''),
     }));
 
-    // Card-face properties: only schema entries with a card_row value,
-    // sorted by card_row then schema order, value resolved from the properties JSONB.
+    // Card-face properties: all non-hidden schema entries in schema order.
     // NordCard caps visible count via maxProperties (default 3).
     const cardProperties = schema
-      .filter((s: any) => s.card_row != null && s.card_row > 0)
-      .sort((a: any, b: any) => (a.card_row || 999) - (b.card_row || 999))
+      .filter((s: any) => s.type !== 'hidden')
       .map((s: any) => ({
         key: s.name,
         value: String((propsObj as any)[s.name] ?? ''),

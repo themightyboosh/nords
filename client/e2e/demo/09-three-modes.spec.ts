@@ -63,19 +63,77 @@ test('Scene 6 — Share + Three Modes + Close', async ({ page }) => {
   // Wait for the share panel to appear
   const sharePanel = page.locator('.share-panel');
   if (await sharePanel.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await breathe(page, 2000); // Show the share panel with links
+    await breathe(page, 2000); // Show the share panel overview
 
-    // Expand the first share link to show its details (URL, model, persona, expiry)
-    const expandBtn = page.locator('.nords-form__share-link-card .nords-form__icon-btn').filter({ hasText: '' }).nth(2); // The chevron button
-    const detailToggle = page.locator('.nords-form__share-link-card button[title="Details"]').first();
-    if (await detailToggle.isVisible()) {
-      await detailToggle.click();
-      await breathe(page, 3000); // Show the expanded details — URL, model, welcome override, expiry
+    // ── Show the share link creation form ──
+    const createSection = page.locator('.nords-form__share-link-create');
+    if (await createSection.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Fill in the label field
+      const labelInput = createSection.locator('input[placeholder*="label"], input').first();
+      if (await labelInput.isVisible().catch(() => false)) {
+        await labelInput.click();
+        await page.keyboard.type('External Reviewers — FDA Panel', { delay: 35 });
+        await breathe(page, 1000);
+      }
+
+      // Scroll down to show model/persona options
+      const panelBody = page.locator('.share-panel__body');
+      if (await panelBody.isVisible()) {
+        await panelBody.evaluate(el => el.scrollTo({ top: el.scrollTop + 200, behavior: 'smooth' }));
+        await page.waitForTimeout(600);
+      }
+      await breathe(page, 1500);
     }
 
-    // Close share panel
+    // ── Show existing share links with full details ──
+    const linkCards = page.locator('.nords-form__share-link-card');
+    const linkCount = await linkCards.count();
+
+    if (linkCount > 0) {
+      // Expand the first link to show all details
+      const detailToggle = linkCards.first().locator('button[title="Details"]').first();
+      if (await detailToggle.isVisible().catch(() => false)) {
+        await detailToggle.click();
+        await breathe(page, 2500); // Show URL, model, welcome override, persona, expiry
+      }
+
+      // Scroll down to show the full link details
+      const panelBody = page.locator('.share-panel__body');
+      if (await panelBody.isVisible()) {
+        await panelBody.evaluate(el => el.scrollTo({ top: el.scrollTop + 250, behavior: 'smooth' }));
+        await page.waitForTimeout(600);
+        await breathe(page, 1500);
+      }
+
+      // ── Copy the link ──
+      const copyBtn = linkCards.first().locator('button[title*="Copy"]').first();
+      if (await copyBtn.isVisible().catch(() => false)) {
+        await copyBtn.click();
+        await breathe(page, 1200); // Show the "Copied!" confirmation
+      }
+
+      // ── Open the preview link — show what the end-user sees ──
+      const shareUrlEl = page.locator('.nords-form__share-link-url').first();
+      if (await shareUrlEl.isVisible({ timeout: 2000 }).catch(() => false)) {
+        const shareUrl = await shareUrlEl.textContent();
+        if (shareUrl && shareUrl.trim().length > 5) {
+          await breathe(page, 1000);
+          // Navigate to the share URL in same tab
+          await page.goto(shareUrl.trim());
+          await page.waitForTimeout(3000);
+          await breathe(page, 4000); // Show the clean branded end-user chat experience
+
+          // Navigate back to the project
+          await page.goto(`/project/${DEMO_PROJECT_ID}`);
+          await page.waitForSelector('.nords-canvas, [data-testid="view-toggle-graph"]', { timeout: 15_000 });
+          await page.waitForTimeout(1500);
+        }
+      }
+    }
+
+    // Close share panel (if we're still on it)
     const closeShareBtn = page.locator('.share-panel .nords-close-btn, .share-panel button[aria-label="Close"]').first();
-    if (await closeShareBtn.isVisible()) {
+    if (await closeShareBtn.isVisible().catch(() => false)) {
       await closeShareBtn.click();
       await page.waitForTimeout(500);
     } else {

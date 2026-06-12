@@ -81,13 +81,14 @@
   padding: 10px 14px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
-  white-space: pre-wrap;
   word-break: break-word;
 }
+/* User messages are plain text — keep pre-wrap for whitespace */
 .chat-msg--user .chat-msg__text {
   background: #6366f1;
   color: white;
   border-radius: 12px 12px 4px 12px;
+  white-space: pre-wrap;
 }
 .chat-msg--assistant .chat-msg__text {
   border-radius: 12px 12px 12px 4px;
@@ -98,6 +99,7 @@
   background: transparent;
   color: #6b7280;
   padding: 6px 12px;
+  white-space: pre-wrap;
 }
 
 /* Formatted text inside bubbles */
@@ -108,6 +110,25 @@
 .chat-msg__text em {
   font-style: italic;
   color: inherit;
+}
+
+/* Markdown prose — tighten spacing for chat context */
+.chat-msg__text p:first-child { margin-top: 0; }
+.chat-msg__text p:last-child { margin-bottom: 0; }
+.chat-msg__text pre {
+  margin: 0.4em 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-x: auto;
+  font-family: var(--nords-font-mono, 'JetBrains Mono', monospace);
+}
+.chat-msg__text hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 0.5em 0;
 }
 
 /* ── Metadata ── */

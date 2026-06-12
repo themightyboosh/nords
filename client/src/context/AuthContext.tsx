@@ -30,11 +30,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isDevBypass) {
       // Create a minimal fake user for dev mode
+      const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
       setUser({ uid: 'dev-user', email: 'dev@nords.local', displayName: 'Dev User', emailVerified: true } as unknown as User);
-      setRole('admin');
+      setRole(demoMode ? 'member' : 'admin');
       setIsTester(true);
       setLoading(false);
-      logger.info('Auth dev bypass: auto-authenticated as dev-user');
+      logger.info('Auth dev bypass: auto-authenticated as dev-user' + (demoMode ? ' (demo mode — admin hidden)' : ''));
       return;
     }
 

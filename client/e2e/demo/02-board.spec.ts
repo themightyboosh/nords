@@ -26,7 +26,7 @@ test('Scene 2 — Board View', async ({ page }) => {
   if (await boardContainer.isVisible()) {
     // Slow scroll down to reveal all the swimlanes and their card counts
     for (let i = 0; i < 6; i++) {
-      await boardContainer.evaluate(el => el.scrollTop += 250);
+      await boardContainer.evaluate(el => el.scrollTo({ top: el.scrollTop + 250, behavior: 'smooth' }));
       await page.waitForTimeout(500);
     }
     await breathe(page, 2000); // Pause at the bottom so viewer absorbs the density

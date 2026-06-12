@@ -28,7 +28,7 @@ const VIDEO_DIR = 'videos/demo';
 // Record at 2560×1440. We inject CSS zoom (1.2) on <html> after page load
 // to make UI elements ~20% larger while keeping the full-resolution recording.
 const VIEWPORT = { width: 2560, height: 1440 };
-const CSS_ZOOM = 1.2;
+const CSS_ZOOM = 1.25;
 
 // ── Helpers ──
 
@@ -1080,5 +1080,152 @@ test.describe('Demo Video Recordings', () => {
     await page.waitForTimeout(3000);
 
     await finalizeVideo(context, page, 'bonus-create-persona');
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // BONUS — Create Category
+  // Full creation flow: open ManageTypes (Categories tab) via
+  // Design header, click New Category, name it, set verb,
+  // direction labels, default direction, spectrum mode.
+  // ═══════════════════════════════════════════════════════════
+
+  test('BONUS — Create Category', async ({ browser }) => {
+    test.setTimeout(120000);
+    const { context, page } = await createRecordingContext(browser);
+    await navigateToProject(page);
+
+    // Open ManageTypes on the Categories tab via Design → Categories
+    await page.locator('[data-testid="header-group-design"]').click();
+    await page.waitForTimeout(400);
+    await page.locator('[data-testid="header-categories"]').click();
+    await page.waitForTimeout(1200);
+
+    const modal = page.locator('[data-testid="manage-types-modal"]');
+    await modal.waitFor({ state: 'visible', timeout: 10000 });
+    await page.waitForTimeout(1500);
+
+    // Click "+ New Category"
+    await modal.locator('.manage-types__new-btn').click();
+    await page.waitForTimeout(1200);
+
+    // Type a name (typewriter style)
+    const nameInput = modal.locator('.manage-types__name-input');
+    await nameInput.click();
+    await nameInput.fill('');
+    await page.waitForTimeout(200);
+    const catName = 'Validates';
+    for (const char of catName) {
+      await nameInput.press(char === ' ' ? 'Space' : char);
+      await page.waitForTimeout(50 + Math.random() * 50);
+    }
+    await page.waitForTimeout(800);
+
+    // Click the icon button to open the IconPicker
+    const iconBtn = modal.locator('.manage-types__icon-btn');
+    await iconBtn.click();
+    await page.waitForTimeout(800);
+
+    // Pick icon 1
+    const iconGridSel = '.icon-picker__grid .icon-picker__item';
+    let iconItems = page.locator(iconGridSel);
+    if (await iconItems.nth(4).isVisible({ timeout: 3000 }).catch(() => false)) {
+      await iconItems.nth(4).click();
+      await page.waitForTimeout(600);
+    }
+
+    // Reopen picker — pick icon 2
+    await iconBtn.click();
+    await page.waitForTimeout(600);
+    iconItems = page.locator(iconGridSel);
+    if (await iconItems.nth(9).isVisible({ timeout: 3000 }).catch(() => false)) {
+      await iconItems.nth(9).click();
+      await page.waitForTimeout(600);
+    }
+
+    // Reopen picker for hue slider
+    await iconBtn.click();
+    await page.waitForTimeout(600);
+
+    // Drag the hue slider
+    const hueSlider = modal.locator('.nords-hue-slider__input, input[type="range"]').first();
+    if (await hueSlider.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await dragSlider(page, hueSlider, 0.25, 0.55, 25);
+      await page.waitForTimeout(500);
+      await dragSlider(page, hueSlider, 0.55, 0.35, 20);
+      await page.waitForTimeout(600);
+    }
+
+    // Close icon picker by clicking editor body
+    await modal.locator('.manage-types__editor').click({ position: { x: 10, y: 10 } });
+    await page.waitForTimeout(500);
+
+    // Fill description (typewriter)
+    const descInput = modal.locator('.manage-types__desc-input');
+    if (await descInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await descInput.click();
+      const desc = 'Formal verification that an output meets its specification.';
+      for (const char of desc) {
+        await descInput.press(char === ' ' ? 'Space' : char);
+        await page.waitForTimeout(15 + Math.random() * 25);
+      }
+      await page.waitForTimeout(600);
+    }
+
+    // Fill the Verb field — it's the first .manage-types__input inside a field labeled "Verb"
+    const verbInput = modal.locator('.manage-types__input').first();
+    if (await verbInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await verbInput.click();
+      const verb = 'validates';
+      for (const char of verb) {
+        await verbInput.press(char === ' ' ? 'Space' : char);
+        await page.waitForTimeout(40 + Math.random() * 40);
+      }
+      await page.waitForTimeout(600);
+    }
+
+    // Fill direction label inputs: Forward="against", Reverse="by", Both="with"
+    const dirInputs = modal.locator('.manage-types__dir-label-input');
+    const dirValues = ['against', 'by', 'with'];
+    for (let i = 0; i < 3; i++) {
+      const input = dirInputs.nth(i);
+      if (await input.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await input.click();
+        await input.fill('');
+        for (const char of dirValues[i]) {
+          await input.press(char === ' ' ? 'Space' : char);
+          await page.waitForTimeout(30 + Math.random() * 30);
+        }
+        await page.waitForTimeout(400);
+      }
+    }
+
+    // Click "→ Forward" default direction button
+    const dirBtns = modal.locator('.manage-types__dir-btn');
+    if (await dirBtns.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+      await dirBtns.first().click(); // "→ Forward" is first
+      await page.waitForTimeout(800);
+    }
+
+    // Scroll down to show the spectrum controls
+    const editor = modal.locator('.manage-types__editor');
+    await editor.evaluate(el => el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }));
+    await page.waitForTimeout(800);
+
+    // Toggle spectrum mode — click "═ Spectrum" (2nd toggle button)
+    const toggleBtns = modal.locator('.manage-types__toggle-btn');
+    const toggleCount = await toggleBtns.count();
+    if (toggleCount > 1) {
+      await toggleBtns.nth(1).click(); // "═ Spectrum" is second
+      await page.waitForTimeout(1500);
+    }
+
+    // Scroll to show the spectrum editor
+    await editor.evaluate(el => el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }));
+    await page.waitForTimeout(2000);
+
+    // Final pause showing the completed category
+    await page.waitForTimeout(3000);
+
+    await finalizeVideo(context, page, 'bonus-create-category');
   });
 });

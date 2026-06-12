@@ -429,98 +429,132 @@ The briefing contains all the instructions you need. Follow the protocol it prov
     let stopReason: string | null = null;
     let lastCompletedRound = 0;
 
-    // ── Agent Welcome (Round 0): Agent goes first to establish context ──
+    // ── Agent Welcome (Round 0): Use project welcome message (real end-user experience) ──
     let welcomeReply = '';
     {
-      const welcomeContents = [
-        { role: 'user', parts: [{ text: 'A new participant has joined the session. Greet them, introduce yourself, and set the conversational context based on the project briefing. Call nords_get_briefing to orient yourself first.' }] },
-      ];
+      if (project.mcp_welcome_message) {
+        // Use the configured welcome message — matches what real end-users see
+        welcomeReply = project.mcp_welcome_message;
 
-      let currentContents = welcomeContents;
+        // Still call nords_get_briefing so the agent has context for subsequent rounds
+        const briefingResult = await dispatchTool('nords_get_briefing', toolCtx, {});
+        logEvent(sessionId, 'tool_call', 'nords_get_briefing', {
+          args: {},
+          success: briefingResult.success !== false,
+          result_summary: 'welcome_briefing',
+          round: 0,
+        });
 
-      for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
-        const response = await retryGenerateContent(genai, {
-          model: scenario.agent_model,
-          contents: currentContents,
-          config: {
-            systemInstruction: agentSystemPrompt,
-            temperature: agentTemperature,
-            tools: [{ functionDeclarations: toolDeclarations }],
-          },
-        }, `welcome-loop-${loop}`);
+        // Build agent history as if the welcome was model output after a briefing
+        agentHistory = [
+          { role: 'user', parts: [{ text: 'Begin the session.' }] },
+          { role: 'model', parts: [{ functionCall: { name: 'nords_get_briefing', args: {} } }] },
+          { role: 'user', parts: [{ functionResponse: { name: 'nords_get_briefing', response: briefingResult } }] },
+          { role: 'model', parts: [{ text: welcomeReply }] },
+        ];
+      } else {
+        // No welcome message configured — generate one via LLM (legacy behavior)
+        const welcomeContents = [
+          { role: 'user', parts: [{ text: 'A new participant has joined the session. Greet them, introduce yourself, and set the conversational context based on the project briefing. Call nords_get_briefing to orient yourself first.' }] },
+        ];
 
-        const candidate = response.candidates?.[0];
-        if (!candidate?.content?.parts) {
-          if (loop < MAX_TOOL_LOOPS - 1) {
-            logger.warn(`[TestRunner] Empty response on welcome loop ${loop}, retrying...`);
-            await new Promise(r => setTimeout(r, 1000 * (loop + 1)));
-            continue;
+        let currentContents = welcomeContents;
+
+        for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
+          const response = await retryGenerateContent(genai, {
+            model: scenario.agent_model,
+            contents: currentContents,
+            config: {
+              systemInstruction: agentSystemPrompt,
+              temperature: agentTemperature,
+              tools: [{ functionDeclarations: toolDeclarations }],
+            },
+          }, `welcome-loop-${loop}`);
+
+          const candidate = response.candidates?.[0];
+          if (!candidate?.content?.parts) {
+            if (loop < MAX_TOOL_LOOPS - 1) {
+              logger.warn(`[TestRunner] Empty response on welcome loop ${loop}, retrying...`);
+              await new Promise(r => setTimeout(r, 1000 * (loop + 1)));
+              continue;
+            }
+            break;
           }
-          break;
-        }
 
-        const functionCalls = candidate.content.parts.filter((p: any) => p.functionCall);
+          const functionCalls = candidate.content.parts.filter((p: any) => p.functionCall);
 
-        if (functionCalls.length === 0) {
-          welcomeReply = candidate.content.parts
-            .filter((p: any) => p.text)
-            .map((p: any) => p.text)
-            .join('');
-          agentHistory = [
+          if (functionCalls.length === 0) {
+            welcomeReply = candidate.content.parts
+              .filter((p: any) => p.text)
+              .map((p: any) => p.text)
+              .join('');
+            agentHistory = [
+              ...currentContents,
+              { role: 'model', parts: candidate.content.parts },
+            ];
+            break;
+          }
+
+          // Process tool calls
+          const toolResponseParts: any[] = [];
+          for (const fc of functionCalls) {
+            const call = fc.functionCall!;
+            const toolStart = Date.now();
+            const toolResult = await dispatchTool(call.name!, toolCtx, call.args || {});
+            const toolLatency = Date.now() - toolStart;
+            toolResponseParts.push({
+              functionResponse: { name: call.name!, response: toolResult },
+            });
+
+            logger.info('test.tool_call', {
+              runId, sessionId, round: 0,
+              tool: call.name!,
+              success: toolResult.success !== false,
+              latency_ms: toolLatency,
+              error: toolResult.error || null,
+            });
+
+            const resultData = toolResult.data
+              ? JSON.stringify(toolResult.data).slice(0, 500)
+              : null;
+            logEvent(sessionId, 'tool_call', call.name!, {
+              args: call.args || {},
+              success: toolResult.success !== false,
+              result_summary: typeof toolResult.data === 'object'
+                ? Object.keys(toolResult.data || {}).join(', ')
+                : String(toolResult.error || 'ok'),
+              result_data: resultData,
+              error: toolResult.error || null,
+              latency_ms: toolLatency,
+              round: 0,
+            });
+          }
+
+          currentContents = [
             ...currentContents,
             { role: 'model', parts: candidate.content.parts },
+            { role: 'user', parts: toolResponseParts },
           ];
-          break;
         }
-
-        // Process tool calls
-        const toolResponseParts: any[] = [];
-        for (const fc of functionCalls) {
-          const call = fc.functionCall!;
-          const toolStart = Date.now();
-          const toolResult = await dispatchTool(call.name!, toolCtx, call.args || {});
-          const toolLatency = Date.now() - toolStart;
-          toolResponseParts.push({
-            functionResponse: { name: call.name!, response: toolResult },
-          });
-
-          // Structured winston log for every tool call
-          logger.info('test.tool_call', {
-            runId, sessionId, round: 0,
-            tool: call.name!,
-            success: toolResult.success !== false,
-            latency_ms: toolLatency,
-            error: toolResult.error || null,
-          });
-
-          // Rich event: full result data (truncated) + error details
-          const resultData = toolResult.data
-            ? JSON.stringify(toolResult.data).slice(0, 500)
-            : null;
-          logEvent(sessionId, 'tool_call', call.name!, {
-            args: call.args || {},
-            success: toolResult.success !== false,
-            result_summary: typeof toolResult.data === 'object'
-              ? Object.keys(toolResult.data || {}).join(', ')
-              : String(toolResult.error || 'ok'),
-            result_data: resultData,
-            error: toolResult.error || null,
-            latency_ms: toolLatency,
-            round: 0,
-          });
-        }
-
-        currentContents = [
-          ...currentContents,
-          { role: 'model', parts: candidate.content.parts },
-          { role: 'user', parts: toolResponseParts },
-        ];
       }
 
       // Log welcome as an assistant_message event
       logEvent(sessionId, 'assistant_message', 'content', {
         text: welcomeReply.slice(0, 2000),
         round: 0,
+      });
+
+      // Persist welcome message to mcp_messages
+      await mcpMessagesRepo.create({
+        session_id: sessionId,
+        role: 'assistant',
+        content: welcomeReply,
+        tool_calls: null,
+        context: { synthetic: true, source: 'welcome_message', round: 0 },
+        tokens_in: null,
+        tokens_out: null,
+        model: null,
+        latency_ms: 0,
       });
 
       onProgress?.({

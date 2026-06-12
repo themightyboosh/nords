@@ -16,6 +16,15 @@ test('Diagnostic — inject logging', async ({ page }) => {
   });
 
   await page.goto(`/project/${DEMO_PROJECT_ID}`);
+
+  // Enter true fullscreen — hides URL bar, tabs, and all browser chrome
+  await page.evaluate(() => {
+    document.documentElement.requestFullscreen().catch(() => {});
+  });
+  await page.waitForTimeout(500);
+
+  // Clear stale chat position so the new centered default kicks in for all scenes
+  await page.evaluate(() => localStorage.removeItem('nords-preview-chat-rect'));
   await page.waitForTimeout(8000);
 
   // Check graph data through React state using __REACT_DEVTOOLS_GLOBAL_HOOK__

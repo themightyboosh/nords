@@ -12,7 +12,7 @@ import { Page, expect } from '@playwright/test';
  * Check the seed output for the exact ID, or query the DB:
  *   SELECT id FROM projects WHERE name LIKE 'Pulse Sense%' LIMIT 1;
  */
-export const DEMO_PROJECT_ID = process.env.DEMO_PROJECT_ID || '8b57c4d1-7389-41a8-9ad5-946418abcb33';
+export const DEMO_PROJECT_ID = process.env.DEMO_PROJECT_ID || '4618e912-6b6a-4d99-a75a-0ef333ae6072';
 
 /** Navigate to the demo project and wait for canvas to render */
 export async function openProject(page: Page) {
@@ -34,6 +34,14 @@ export async function openProject(page: Page) {
 /** Cinematic pause — let the viewer absorb what just happened */
 export async function breathe(page: Page, ms = 2000) {
   await page.waitForTimeout(ms);
+}
+
+/** Smooth scroll an element by a delta — cinematic for recordings */
+export async function smoothScroll(page: Page, selector: string, deltaY: number) {
+  await page.locator(selector).first().evaluate((el, dy) => {
+    el.scrollTo({ top: el.scrollTop + dy, behavior: 'smooth' });
+  }, deltaY);
+  await page.waitForTimeout(600); // let the smooth scroll finish
 }
 
 /** Slow human-like typing into an input */

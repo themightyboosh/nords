@@ -355,20 +355,17 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
     return typeSchemas.get(entity.typeId) || [];
   }, [entity, typeSchemas]);
 
-  // Nord properties — only visible ones (card_row > 0).
-  // Hidden properties (card_row is null/0/undefined) are still sent to the AI
-  // via the MCP horizon but are not shown in the user-facing property editor.
+  // Nord properties — all non-hidden schema fields in schema order.
   const schemaProperties = useMemo(() => {
     if (entity?.kind !== 'nord') return [];
     const propsMap = new Map(entity.properties.map(p => [p.key, p.value]));
     return schema
-      .filter(s => s.card_row != null && s.card_row > 0 && s.type !== 'hidden')
+      .filter(s => s.type !== 'hidden')
       .map(s => ({
         name: s.name,
         type: s.type as any,
         value: propsMap.get(s.name) ?? '',
         options: s.options,
-        cardRow: s.card_row,
         required: s.required,
         config: (s as any).config,
         defaultValue: s.defaultValue,

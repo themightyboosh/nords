@@ -4,14 +4,14 @@
  * Used by both PreviewChat (live chat + replay) and SessionExplorer
  * (session history). Handles:
  *   - Role-based styling (user / assistant / system)
- *   - Markdown-lite formatting: strips raw `***`, `**`, `*` markers
- *     and renders as styled <strong>/<em> spans
+ *   - Full markdown rendering via react-markdown
  *   - Optional tool call display (dev mode)
  *   - Optional metadata footer (model, latency, tokens)
  *   - Compact mode for session history
  */
 
 import React, { useState } from 'react';
+import Markdown from 'react-markdown';
 import {
   Bot, User, Zap, Wrench, ChevronDown, ChevronRight,
 } from 'lucide-react';
@@ -42,52 +42,43 @@ export interface ChatMessageProps {
   agentIcon?: string;
 }
 
-/**
- * Convert raw text with markdown bold/italic markers into React nodes.
- *
- * Handles (in order of priority):
- *   ***text*** → <strong><em>text</em></strong>
- *   **text**   → <strong>text</strong>
- *   *text*     → <em>text</em>
- *
- * Everything else is rendered as plain text.
- */
-function formatContent(text: string): React.ReactNode[] {
-  if (!text) return [text];
-
-  const nodes: React.ReactNode[] = [];
-  // Match ***bold-italic***, **bold**, or *italic* — non-greedy
-  const pattern = /(\*{1,3})((?:(?!\1).)+?)\1/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = pattern.exec(text)) !== null) {
-    // Push plain text before this match
-    if (match.index > lastIndex) {
-      nodes.push(text.slice(lastIndex, match.index));
-    }
-
-    const stars = match[1];
-    const inner = match[2];
-    const key = `fmt-${match.index}`;
-
-    if (stars === '***') {
-      nodes.push(<strong key={key}><em>{inner}</em></strong>);
-    } else if (stars === '**') {
-      nodes.push(<strong key={key}>{inner}</strong>);
-    } else {
-      nodes.push(<em key={key}>{inner}</em>);
-    }
-
-    lastIndex = match.index + match[0].length;
-  }
-
-  // Remaining text
-  if (lastIndex < text.length) {
-    nodes.push(text.slice(lastIndex));
-  }
-
-  return nodes.length > 0 ? nodes : [text];
+/** Render markdown content — used for assistant messages */
+function MarkdownContent({ text }: { text: string }) {
+  if (!text) return null;
+  return (
+    <Markdown
+      components={{
+        // Keep paragraphs tight inside chat bubbles
+        p: ({ children }) => <p style={{ margin: '0.4em 0' }}>{children}</p>,
+        // Constrain lists
+        ul: ({ children }) => <ul style={{ margin: '0.3em 0', paddingLeft: '1.4em' }}>{children}</ul>,
+        ol: ({ children }) => <ol style={{ margin: '0.3em 0', paddingLeft: '1.4em' }}>{children}</ol>,
+        li: ({ children }) => <li style={{ marginBottom: '0.15em' }}>{children}</li>,
+        // Inline code
+        code: ({ children, className }) => {
+          const isBlock = className?.includes('language-');
+          if (isBlock) {
+            return <code className={className}>{children}</code>;
+          }
+          return (
+            <code style={{
+              background: 'rgba(255,255,255,0.08)',
+              padding: '1px 5px',
+              borderRadius: 4,
+              fontSize: '0.9em',
+              fontFamily: 'var(--nords-font-mono, monospace)',
+            }}>{children}</code>
+          );
+        },
+        // Headings — scale down for chat context
+        h1: ({ children }) => <strong style={{ display: 'block', fontSize: '1.1em', margin: '0.5em 0 0.2em' }}>{children}</strong>,
+        h2: ({ children }) => <strong style={{ display: 'block', fontSize: '1.05em', margin: '0.4em 0 0.2em' }}>{children}</strong>,
+        h3: ({ children }) => <strong style={{ display: 'block', margin: '0.3em 0 0.1em' }}>{children}</strong>,
+      }}
+    >
+      {text}
+    </Markdown>
+  );
 }
 
 function ToolCallInline({
@@ -177,7 +168,12 @@ export function ChatMessage({
           <span className="chat-msg__role">{roleLabel}</span>
           {timestamp && <span className="chat-msg__time">{timestamp}</span>}
         </div>
-        <p className="chat-msg__text">{formatContent(content)}</p>
+        <div className="chat-msg__text">
+          {role === 'user'
+            ? <p style={{ margin: 0 }}>{content}</p>
+            : <MarkdownContent text={content} />
+          }
+        </div>
 
         {/* Tool calls (dev mode) */}
         {showToolCalls && role === 'assistant' && toolCalls && toolCalls.length > 0 && (

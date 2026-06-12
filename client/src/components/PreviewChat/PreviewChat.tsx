@@ -351,7 +351,10 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     return null;
   };
 
-  const defaultRect = { x: window.innerWidth - 480, y: 60, w: 440, h: 600 };
+  const defaultRect = (() => {
+    const w = 520, h = 680;
+    return { x: Math.round((window.innerWidth - w) / 2), y: Math.max(40, Math.round((window.innerHeight - h) / 2) - 20), w, h };
+  })();
   const [rect, setRect] = useState(() => getStoredRect() || defaultRect);
   const isDragging = useRef(false);
   const dragOffset = useRef({ dx: 0, dy: 0 });

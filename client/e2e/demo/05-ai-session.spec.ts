@@ -55,7 +55,7 @@ test('Scene 5 — AI Session (Live)', async ({ page }) => {
       const testForm = page.locator('.test-runner__form, .test-runner__content').first();
       if (await testForm.isVisible()) {
         for (let i = 0; i < 5; i++) {
-          await testForm.evaluate(el => el.scrollTop += 150);
+          await testForm.evaluate(el => el.scrollTo({ top: el.scrollTop + 150, behavior: 'smooth' }));
           await page.waitForTimeout(400);
         }
         await breathe(page, 2000);
@@ -69,7 +69,11 @@ test('Scene 5 — AI Session (Live)', async ({ page }) => {
     await page.waitForTimeout(500);
   }
 
-  // ── Step 2: Open Preview Chat ──
+  // ── Step 2: Open Preview Chat — clear stale position so centered default kicks in ──
+  await page.evaluate(() => {
+    localStorage.removeItem('nords-preview-chat-rect');
+  });
+
   if (await testsGroupBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
     await testsGroupBtn.click();
     await page.waitForTimeout(500);
@@ -102,12 +106,12 @@ test('Scene 5 — AI Session (Live)', async ({ page }) => {
     await breathe(page, 800);
     await page.keyboard.press('Enter');
 
-    // Wait for AI response
+    // Wait for AI response (shorter timeout — don't blow the test budget)
     const assistantMsg = page.locator('.preview-chat__message--assistant').first();
-    await assistantMsg.waitFor({ state: 'visible', timeout: 45_000 }).catch(() => {
+    await assistantMsg.waitFor({ state: 'visible', timeout: 25_000 }).catch(() => {
       console.log('No assistant message appeared');
     });
-    await breathe(page, 4000); // Show the traversal + gap identification
+    await breathe(page, 3000);
 
     // ── Step 5: Type a mitigation answer ──
     await chatInput.click();
@@ -119,12 +123,12 @@ test('Scene 5 — AI Session (Live)', async ({ page }) => {
     await page.keyboard.press('Enter');
 
     // Wait for second AI response
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(3000);
     const secondResponse = page.locator('.preview-chat__message--assistant').nth(1);
-    await secondResponse.waitFor({ state: 'visible', timeout: 45_000 }).catch(() => {
+    await secondResponse.waitFor({ state: 'visible', timeout: 25_000 }).catch(() => {
       console.log('No second assistant response');
     });
-    await breathe(page, 4000);
+    await breathe(page, 3000);
   }
 
   // ── Step 6: Toggle Dev Mode ON ──

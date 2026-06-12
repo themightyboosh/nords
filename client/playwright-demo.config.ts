@@ -22,7 +22,8 @@ export default defineConfig({
       args: [
         '--start-maximized',    // fill the screen
         '--disable-infobars',   // hide "controlled by automation" bar
-        '--kiosk',              // true fullscreen — no URL bar, no chrome
+        '--hide-scrollbars',    // cleaner recording
+        '--force-device-scale-factor=1.25',  // 125% browser zoom
       ],
     },
     // No screenshots / traces — we only want video
@@ -39,14 +40,15 @@ export default defineConfig({
     },
   ],
 
-  // Start a dedicated Vite server with auth bypassed on port 5174
+  // Start a dedicated Vite server on port 5174 — never reuse the user's dev server
   webServer: {
-    command: 'VITE_SKIP_AUTH=true npx vite --port 5174',
+    command: 'VITE_SKIP_AUTH=true VITE_DEMO_MODE=true npx vite --port 5174',
     url: 'http://localhost:5174',
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 30_000,
     env: {
       VITE_SKIP_AUTH: 'true',
+      VITE_DEMO_MODE: 'true',
     },
   },
 });
