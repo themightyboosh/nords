@@ -47,7 +47,14 @@ mcpHttpRouter.use('/mcp', cors({
 // ── Helpers ──
 
 function toJson(data: unknown): string {
+  if (data === undefined || data === null) return '{}';
   return JSON.stringify(stripNulls(data), null, 2);
+}
+
+/** Build a safe MCP text content block, handling errors */
+function toolResult(r: { success: boolean; data?: unknown; error?: unknown }) {
+  const text = r.success ? toJson(r.data) : toJson(r.error ?? { error: 'Unknown tool error' });
+  return { content: [{ type: 'text' as const, text }], isError: !r.success };
 }
 
 async function buildProjectContext(projectId: string): Promise<string> {
@@ -125,51 +132,44 @@ function registerTools(server: McpServer, projectId: string, transportId: string
   // ── Tier 1: Read-Only ──
 
   server.tool('nords_get_dictionary',
-    'Get the project dictionary — full ontology of nord types, connection types (verbs, stages), and personas. The horizon already gives you inline schemas, so you may not need this unless you want the full ontology.',
+    'Get the project dictionary — full ontology of nord types, connection types (verbs, stages), and personas.',
     {},
-    async () => { const s = await getSid(); const r = await dispatchTool('nords_get_dictionary', ctx(s), {}); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    async () => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_dictionary', ctx(s), {})); }
   );
 
   server.tool('nords_get_horizon',
-    `Lean horizon — current position, directional neighbors (verb, stage, traversal_direction), suggested_next ranked by goals, completion %. Check context_hint.stale to know if nords_get_context is needed.${projectCtx}`,
+    `Lean horizon — current position, directional neighbors, suggested_next, completion %.${projectCtx}`,
     {},
-    async () => { const s = await getSid(); const r = await dispatchTool('nords_get_horizon', ctx(s), {}); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    async () => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_horizon', ctx(s), {})); }
   );
 
   server.tool('nords_get_context',
-    `Get rich context: remaining variables with descriptions, connection schemas, planning queue, persona details. Call when context_hint.stale is true in the horizon response.${projectCtx}`,
+    `Rich context: remaining variables, connection schemas, planning queue, persona details.${projectCtx}`,
     {},
-    async () => { const s = await getSid(); const r = await dispatchTool('nords_get_context', ctx(s), {}); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    async () => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_context', ctx(s), {})); }
   );
 
   server.tool('nords_list_all',
-    'Lightweight directory of every nord in the project — returns only id, title, and type_name (no properties or connections).',
+    'Lightweight directory of every nord — id, title, type_name only.',
     {},
-    async () => { const s = await getSid(); const r = await dispatchTool('nords_list_all', ctx(s), {}); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    async () => { const s = await getSid(); return toolResult(await dispatchTool('nords_list_all', ctx(s), {})); }
   );
 
   server.tool('nords_get_graph',
-    'Get the project graph. For small projects (<50 nords) returns everything. For larger projects, returns a neighborhood subgraph.',
-    {
-      max_depth: z.number().optional().describe('Max hops from current position (default 3, max 5)'),
-      center_nord_id: z.string().optional().describe('Override center for the subgraph'),
-    },
-    async (args) => { const s = await getSid(); const r = await dispatchTool('nords_get_graph', ctx(s), args); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    'Get the project graph. Small projects return everything; larger ones return a neighborhood subgraph.',
+    { max_depth: z.number().optional().describe('Max hops (default 3, max 5)'), center_nord_id: z.string().optional().describe('Override center') },
+    async (args) => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_graph', ctx(s), args)); }
   );
 
   server.tool('nords_get_nord',
-    'Get a single nord by ID with all its properties. Also updates your position to this nord and returns the horizon from there.',
+    'Get a single nord by ID with all properties. Updates your position.',
     { nord_id: z.string().describe('UUID of the nord') },
-    async (args) => { const s = await getSid(); const r = await dispatchTool('nords_get_nord', ctx(s), args); return { content: [{ type: 'text' as const, text: toJson(r.data ?? r.error) }], isError: !r.success }; }
+    async (args) => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_nord', ctx(s), args)); }
   );
 
   server.tool('nords_query_nords',
     'Search nords by type name and/or title substring.',
-    {
-      type_name: z.string().optional().describe('Filter by nord type name (case-insensitive)'),
-      type_id: z.string().optional().describe('Filter by nord type UUID'),
-      title: z.string().optional().describe('Filter by title substring (case-insensitive)'),
-    },
+    { type_name: z.string().optional(), type_id: z.string().optional(), title: z.string().optional() },
     async (args) => {
       const s = await getSid();
       const resolvedArgs = { ...args };
@@ -178,97 +178,80 @@ function registerTools(server: McpServer, projectId: string, transportId: string
         const match = types.find(t => t.name.toLowerCase() === (args.type_name as string).toLowerCase());
         if (match) resolvedArgs.type_id = match.id;
       }
-      const r = await dispatchTool('nords_query_nords', ctx(s), resolvedArgs);
-      return { content: [{ type: 'text' as const, text: toJson(r.data) }] };
+      return toolResult(await dispatchTool('nords_query_nords', ctx(s), resolvedArgs));
     }
   );
 
   server.tool('nords_get_connections',
-    'All connections to/from a nord with type, verb, direction, distance, and instance properties.',
+    'All connections to/from a nord with type, verb, direction, distance.',
     { nord_id: z.string().describe('UUID of the nord') },
-    async (args) => { const s = await getSid(); const r = await dispatchTool('nords_get_connections', ctx(s), args); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    async (args) => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_connections', ctx(s), args)); }
   );
 
   server.tool('nords_get_session_state',
     'Get full session state: position, session nords, traversals.',
     {},
-    async () => { const s = await getSid(); const r = await dispatchTool('nords_get_session_state', ctx(s), {}); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    async () => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_session_state', ctx(s), {})); }
   );
 
   server.tool('nords_get_incomplete_nords',
     'Get nords with unfilled required properties.',
     {},
-    async () => { const s = await getSid(); const r = await dispatchTool('nords_get_incomplete_nords', ctx(s), {}); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    async () => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_incomplete_nords', ctx(s), {})); }
   );
 
   server.tool('nords_get_goals',
-    'Get all project goals with their property bindings, end_type, and DAG edges.',
+    'Get all project goals with bindings, end_type, and DAG edges.',
     {},
-    async () => { const s = await getSid(); const r = await dispatchTool('nords_get_goals', ctx(s), {}); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    async () => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_goals', ctx(s), {})); }
   );
 
   server.tool('nords_get_briefing',
-    `Cold-start composite — returns dictionary + horizon + goals + protocol in one call. Use this at the very start of a session.${projectCtx}`,
+    `Cold-start composite — dictionary + horizon + goals + protocol in one call.${projectCtx}`,
     {},
-    async () => { const s = await getSid(); const r = await dispatchTool('nords_get_briefing', ctx(s), {}); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    async () => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_briefing', ctx(s), {})); }
   );
 
   server.tool('nords_get_analytics',
-    'Get aggregate analytics: session counts, traversal stats, top-visited nords.',
+    'Aggregate analytics: session counts, traversal stats, top-visited nords.',
     {},
-    async () => { const s = await getSid(); const r = await dispatchTool('nords_get_analytics', ctx(s), {}); return { content: [{ type: 'text' as const, text: toJson(r.data) }] }; }
+    async () => { const s = await getSid(); return toolResult(await dispatchTool('nords_get_analytics', ctx(s), {})); }
   );
 
-  // ── Tier 2: Session Tools (navigate, collect, visit) ──
+  // ── Tier 2: Session Tools ──
 
   server.tool('nords_navigate',
-    `Navigate to a nord by name, type, or ID. Traverses if neighbor, jumps otherwise. Returns destination, fresh horizon, and traversed_via edge metadata.${projectCtx}`,
-    {
-      to: z.string().describe('Nord title, type name, or UUID'),
-      type_name: z.string().optional().describe('Filter by nord type to disambiguate'),
-    },
-    async (args) => { const s = await getSid(); const r = await dispatchTool('nords_navigate', ctx(s), args); return { content: [{ type: 'text' as const, text: toJson(r.data ?? r.error) }], isError: !r.success }; }
+    `Navigate to a nord by name, type, or ID. Returns destination + fresh horizon.${projectCtx}`,
+    { to: z.string().describe('Nord title, type, or UUID'), type_name: z.string().optional() },
+    async (args) => { const s = await getSid(); return toolResult(await dispatchTool('nords_navigate', ctx(s), args)); }
   );
 
   server.tool('nords_update_session_nord',
-    'Save collected properties to a session nord. Validates against schema, computes completion server-side, and returns updated horizon.',
-    {
-      nord_id: z.string().describe('UUID of the nord'),
-      properties: z.record(z.unknown()).describe('Key-value pairs of collected properties'),
-    },
-    async (args) => { const s = await getSid(); const r = await dispatchTool('nords_update_session_nord', ctx(s), args); return { content: [{ type: 'text' as const, text: toJson(r.data ?? r.error) }], isError: !r.success }; }
+    'Save collected properties to a session nord.',
+    { nord_id: z.string(), properties: z.record(z.unknown()) },
+    async (args) => { const s = await getSid(); return toolResult(await dispatchTool('nords_update_session_nord', ctx(s), args)); }
   );
 
   server.tool('nords_update_session_variables',
-    'Save project variable values by variable_id. Evaluates goal completion and returns goal events + updated horizon.',
-    {
-      variables: z.array(z.object({
-        variable_id: z.string().describe('UUID of the project variable'),
-        value: z.unknown().describe('The collected value'),
-      })).describe('Array of variable values to save'),
-    },
-    async (args) => { const s = await getSid(); const r = await dispatchTool('nords_update_session_variables', ctx(s), args); return { content: [{ type: 'text' as const, text: toJson(r.data ?? r.error) }], isError: !r.success }; }
+    'Save project variable values. Evaluates goal completion.',
+    { variables: z.array(z.object({ variable_id: z.string(), value: z.unknown() })) },
+    async (args) => { const s = await getSid(); return toolResult(await dispatchTool('nords_update_session_variables', ctx(s), args)); }
   );
 
   server.tool('nords_visit_nord',
-    'Log a visit event with optional before/after snapshots.',
-    {
-      nord_id: z.string().describe('UUID of the nord'),
-      visit_type: z.enum(['inspect', 'update', 'complete', 'create', 'gate_check']).describe('Type of visit'),
-      properties_before: z.record(z.unknown()).optional().describe('Properties before'),
-      properties_after: z.record(z.unknown()).optional().describe('Properties after'),
-    },
-    async (args) => { const s = await getSid(); const r = await dispatchTool('nords_visit_nord', ctx(s), args); return { content: [{ type: 'text' as const, text: toJson(r.data ?? r.error) }], isError: !r.success }; }
+    'Log a visit event.',
+    { nord_id: z.string(), visit_type: z.enum(['inspect', 'update', 'complete', 'create', 'gate_check']), properties_before: z.record(z.unknown()).optional(), properties_after: z.record(z.unknown()).optional() },
+    async (args) => { const s = await getSid(); return toolResult(await dispatchTool('nords_visit_nord', ctx(s), args)); }
   );
 
   server.tool('nords_switch_persona',
     `Switch the active persona lens. Returns reweighted horizon.${projectCtx}`,
-    { persona_id: z.string().nullable().describe('UUID of the persona, or null to clear') },
-    async (args) => { const s = await getSid(); const r = await dispatchTool('nords_switch_persona', ctx(s), args); return { content: [{ type: 'text' as const, text: toJson(r.data ?? r.error) }], isError: !r.success }; }
+    { persona_id: z.string().nullable() },
+    async (args) => { const s = await getSid(); return toolResult(await dispatchTool('nords_switch_persona', ctx(s), args)); }
   );
 
   server.tool('nords_reset_session',
-    'Reset the current session (abandon it) and start a fresh one.',
+    'Reset the current session and start fresh.',
     {},
     async () => {
       const existing = transportSessions.get(transportId);
@@ -282,8 +265,7 @@ function registerTools(server: McpServer, projectId: string, transportId: string
     }
   );
 
-  // Note: Tier 3 (mutable tools: create/update/delete nords/connections) intentionally omitted.
-  // This is consumer-facing. Mutability is a future roadmap item for project creators.
+  // Note: Tier 3 (mutable tools) intentionally omitted. Consumer-facing only.
 }
 
 // ── Active transport tracking ──
