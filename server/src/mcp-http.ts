@@ -366,19 +366,22 @@ mcpHttpRouter.all('/mcp', async (req: Request, res: Response) => {
 
     await mcpServer.connect(transport);
 
-    // Track the transport
-    if (transport.sessionId) {
-      activeTransports.set(transport.sessionId, { transport, server: mcpServer });
-    }
-
-    logger.info('MCP HTTP session started', {
+    logger.info('MCP HTTP session starting', {
       transportId,
-      mcpSessionId: transport.sessionId,
       projectId: auth.projectId,
       tokenId: auth.tokenId,
     });
 
     await transport.handleRequest(req, res, req.body);
+
+    // Track the transport AFTER handleRequest — that's when sessionId is assigned
+    if (transport.sessionId) {
+      activeTransports.set(transport.sessionId, { transport, server: mcpServer });
+      logger.info('MCP HTTP session registered', {
+        transportId,
+        mcpSessionId: transport.sessionId,
+      });
+    }
 
   } catch (err: any) {
     logger.error('MCP HTTP error', { error: err.message, stack: err.stack });
