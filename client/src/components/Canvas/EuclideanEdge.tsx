@@ -24,6 +24,7 @@ import { useStore } from '@xyflow/react';
 import type { EdgeProps, Edge } from '@xyflow/react';
 import { ConnectionLabel } from './ConnectionLabel';
 import { useTypeRegistryContext } from '../../context/TypeRegistryContext';
+import { useCableSettings } from '../../context/CableSettingsContext';
 import { resolveStageLabel } from '../../utils/stageLabels';
 import type { NordEdgeData } from '../../types/canvas';
 import './CanvasEngine.css';
@@ -266,36 +267,41 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
     ? (targetSplay.index - (targetSplay.degree - 1) / 2) * SPLAY_PX
     : 0;
 
-  // ── Cable Physics: trailing midpoint (Reason-style) ──
-  // The cable midpoint lags behind the endpoints during drag.
-  // CABLE_LAG: lower = more visible trailing. 0.04 = satisfying rubbery pull.
-  // CABLE_AMP: amplifies the visual displacement (Q bezier halves it visually).
-  const CABLE_LAG = 0.04;
-  const CABLE_AMP = 3.0;               // visual amplification of lag
-  const CABLE_SETTLE_THRESHOLD = 0.3;   // px of RAW lag — below this, snap
+  // ── Cable Physics: damped spring midpoint (Reason-style wiggle) ──
+  // Constants from CableSettingsContext (tunable in Project Settings).
+  const { settings: cableSettings } = useCableSettings();
+  const CABLE_STIFFNESS = cableSettings.stiffness;
+  const CABLE_DAMPING = cableSettings.damping;
+  const CABLE_AMP = cableSettings.amplitude;
+  const CABLE_SETTLE_THRESHOLD = 0.3; // px — below this, snap to rest
 
   const trueMidX = (sx + tx) / 2;
   const trueMidY = (sy + ty) / 2;
-  const lagMidRef = useRef({ x: trueMidX, y: trueMidY });
+  const cableRef = useRef({ x: trueMidX, y: trueMidY, vx: 0, vy: 0 });
   const settleRafRef = useRef(0);
   const [, forceSettle] = useReducer((x: number) => x + 1, 0);
 
-  // Lerp the lagged midpoint toward the true midpoint
-  lagMidRef.current.x += (trueMidX - lagMidRef.current.x) * CABLE_LAG;
-  lagMidRef.current.y += (trueMidY - lagMidRef.current.y) * CABLE_LAG;
+  // Damped spring step: acceleration = stiffness * displacement, velocity *= damping
+  const dispX = trueMidX - cableRef.current.x;
+  const dispY = trueMidY - cableRef.current.y;
+  cableRef.current.vx = (cableRef.current.vx + dispX * CABLE_STIFFNESS) * CABLE_DAMPING;
+  cableRef.current.vy = (cableRef.current.vy + dispY * CABLE_STIFFNESS) * CABLE_DAMPING;
+  cableRef.current.x += cableRef.current.vx;
+  cableRef.current.y += cableRef.current.vy;
 
-  const rawLagX = lagMidRef.current.x - trueMidX;
-  const rawLagY = lagMidRef.current.y - trueMidY;
+  const rawLagX = cableRef.current.x - trueMidX;
+  const rawLagY = cableRef.current.y - trueMidY;
   const rawLagDist = Math.sqrt(rawLagX * rawLagX + rawLagY * rawLagY);
-  const isCableLagging = rawLagDist > CABLE_SETTLE_THRESHOLD;
+  const velMag = Math.sqrt(cableRef.current.vx ** 2 + cableRef.current.vy ** 2);
+  const isCableLagging = rawLagDist > CABLE_SETTLE_THRESHOLD || velMag > 0.1;
 
-  // Self-settling: keep re-rendering until cable lag resolves to straight.
+  // Self-settling: keep re-rendering until spring resolves
   useEffect(() => {
     if (isCableLagging) {
       settleRafRef.current = requestAnimationFrame(forceSettle);
       return () => cancelAnimationFrame(settleRafRef.current);
     }
-  }, [isCableLagging, rawLagDist]);
+  }, [isCableLagging, rawLagDist, velMag]);
 
   // ── DIMMED EDGES: lightweight render with arrows ──
   if (isDimmed) {
@@ -322,23 +328,25 @@ const EuclideanEdgeInner = React.memo(function EuclideanEdge({
   }
 
   // ── Compute cable physics path (shared by quiet + highlighted) ──
-  // lagMidRef lives here in EuclideanEdgeInner, persists across highlight transitions.
-  // The control point is the true midpoint PLUS amplified lag offset.
+  // Spring displacement applied to ALL paths — quadratic and cubic.
   const hasSplay = Math.abs(srcSplayOffset) >= 1 || Math.abs(tgtSplayOffset) >= 1;
   const hasOff = Math.abs(offset) >= 1;
   const restSag = Math.min(len * 0.015, 10); // tiny gravity droop at rest
+  const cableOffX = rawLagX * CABLE_AMP;
+  const cableOffY = rawLagY * CABLE_AMP;
 
   let cablePathD: string;
   if (!hasSplay && !hasOff) {
-    // Amplified control point: exaggerate the lag for visible cable pull
-    const ctrlX = trueMidX + rawLagX * CABLE_AMP;
-    const ctrlY = trueMidY + rawLagY * CABLE_AMP + restSag;
+    // Quadratic bezier — single control point at displaced midpoint
+    const ctrlX = trueMidX + cableOffX;
+    const ctrlY = trueMidY + cableOffY + restSag;
     cablePathD = `M ${sx} ${sy} Q ${ctrlX} ${ctrlY}, ${tx} ${ty}`;
   } else {
-    const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset;
-    const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset;
-    const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset;
-    const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset;
+    // Cubic bezier — offset both control points for cable sway
+    const cp1x = sx + dx * 0.08 + perpUnitX * srcSplayOffset + cableOffX * 0.5;
+    const cp1y = sy + dy * 0.08 + perpUnitY * srcSplayOffset + cableOffY * 0.5;
+    const cp4x = sx + dx * 0.92 - perpUnitX * tgtSplayOffset + cableOffX * 0.5;
+    const cp4y = sy + dy * 0.92 - perpUnitY * tgtSplayOffset + cableOffY * 0.5;
     cablePathD = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp4x} ${cp4y}, ${tx} ${ty}`;
   }
 

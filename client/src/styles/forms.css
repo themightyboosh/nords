@@ -354,3 +354,36 @@
   color: var(--nords-color-accent, #6b7aed);
   flex-shrink: 0;
 }
+
+/* ── Range slider ── */
+.nords-form__range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--nords-color-border, #333);
+  outline: none;
+  cursor: pointer;
+}
+.nords-form__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--nords-color-accent, #6b7aed);
+  border: 2px solid var(--nords-color-bg-primary, #1a1b26);
+  cursor: grab;
+  transition: transform 0.15s ease;
+}
+.nords-form__range::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+.nords-form__range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--nords-color-accent, #6b7aed);
+  border: 2px solid var(--nords-color-bg-primary, #1a1b26);
+  cursor: grab;
+}

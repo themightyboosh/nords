@@ -4,6 +4,7 @@ import '@xyflow/react/dist/style.css';
 import { AuthProvider } from './context/AuthContext';
 import { LensProvider } from './context/LensContext';
 import { TypeRegistryProvider } from './context/TypeRegistryContext';
+import { CableSettingsProvider } from './context/CableSettingsContext';
 import { useProjectGraph } from './hooks/useProjectGraph';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import ViewportHeader from './components/Layout/ViewportHeader';
@@ -53,6 +54,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
   const { personas, updateCategoryWeight, refetch: refetchPersonas } = usePersonas(projectId || '');
 
   return (
+    <CableSettingsProvider>
     <LensProvider projectId={projectId || ''}>
       <TypeRegistryProvider
         rawNordTypes={graph?.nord_types || []}
@@ -74,6 +76,7 @@ function WorkspaceShell({ currentTheme, onThemeChange }: { currentTheme: string,
        </BoardSettingsProvider>
       </TypeRegistryProvider>
     </LensProvider>
+    </CableSettingsProvider>
   );
 }
 
@@ -475,7 +478,9 @@ function App() {
               path="/admin"
               element={
                 <ProtectedRoute>
-                  <AdminScreen />
+                  <CableSettingsProvider>
+                    <AdminScreen />
+                  </CableSettingsProvider>
                 </ProtectedRoute>
               }
             />
