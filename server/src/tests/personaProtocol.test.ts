@@ -59,15 +59,15 @@ describe('nords_switch_persona returns full horizon', () => {
     await createTestConnection(pid, connTypeId, nordA, nordB);
 
     personaAlpha = await createTestPersona(pid, 'Dr. Alpha', {
-      primary_motivation: 'Find all dependencies',
-      voice_and_tone: 'Analytical and precise',
+      primaryMotivation: 'Find all dependencies',
+      voiceAndTone: 'Analytical and precise',
     });
     await addTestMentalModel(personaAlpha, 'Dependency Analysis', 'Map all upstream and downstream dependencies before making changes');
     await setPersonaCategoryWeight(personaAlpha, connTypeId, 80);
 
     personaBeta = await createTestPersona(pid, 'Ms. Beta', {
-      primary_motivation: 'Ship fast',
-      voice_and_tone: 'Direct and action-oriented',
+      primaryMotivation: 'Ship fast',
+      voiceAndTone: 'Direct and action-oriented',
     });
     await addTestMentalModel(personaBeta, 'Speed vs Safety', 'Evaluate if the risk of moving fast outweighs the risk of moving slow');
 
@@ -189,7 +189,7 @@ describe('buildProtocol mental model phrasing', () => {
   beforeAll(async () => {
     pid = await createTestProject('MentalModel');
     personaId = await createTestPersona(pid, 'Analyst', {
-      primary_motivation: 'Deep analysis',
+      primaryMotivation: 'Deep analysis',
     });
     await addTestMentalModel(personaId, 'Root Cause Analysis', 'Trace every issue back to its root cause');
     sid = await createTestSession(pid, { personaId });
