@@ -123,6 +123,8 @@ projectsRouter.post('/projects', validate(CreateProjectSchema), async (req: Requ
       default_persona_id: default_persona_id ?? null,
       default_start_nord_id: default_start_nord_id ?? null,
       default_end_nord_id: default_end_nord_id ?? null,
+      agent_name: req.body.agent_name ?? 'Assistant',
+      agent_icon: req.body.agent_icon ?? 'Bot',
       is_demo: false,
       graph_only: req.body.graph_only ?? false,
     });

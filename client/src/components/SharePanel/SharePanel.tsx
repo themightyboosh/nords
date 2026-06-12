@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   X, Plus, Copy, Trash2, Key, Link, ExternalLink,
-  ChevronDown, ChevronUp, Share2,
+  ChevronDown, ChevronUp, Share2, Terminal,
 } from 'lucide-react';
 import { api } from '../../api/client';
 import { FloatingPanel } from '../FloatingPanel/FloatingPanel';
@@ -55,6 +55,7 @@ interface VariableSummary {
   name: string;
   type: string;
   collection_group_id: string | null;
+  options?: string[] | null;
 }
 
 interface CollGroupSummary {
@@ -92,6 +93,7 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
 
   const [shareLinks, setShareLinks] = useState<ShareLinkInfo[]>([]);
   const [showCreateLink, setShowCreateLink] = useState(false);
+  const [activeTab, setActiveTab] = useState<'share' | 'mcp'>('share');
   const [newLink, setNewLink] = useState({
     label: '',
     welcome_message_override: '',
@@ -138,8 +140,8 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
       .then(setVariables)
       .catch(() => setVariables([]));
 
-    api.get<CollGroupSummary[]>(`/api/projects/${projectId}/collection-groups`)
-      .then(setCollGroups)
+    api.get<{ groups: CollGroupSummary[]; ungrouped: any[] }>(`/api/projects/${projectId}/collection-groups`)
+      .then(data => setCollGroups(data?.groups || []))
       .catch(() => setCollGroups([]));
   }, [isOpen, projectId]);
 
@@ -215,7 +217,13 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
   const addPrefill = () => setNewPrefills(prev => [...prev, { variable_id: '', value: '', _groupId: '' }]);
   const updatePrefill = (idx: number, field: string, value: string) => {
     setNewPrefills(prev => prev.map((p, i) =>
-      i === idx ? { ...p, [field]: value, ...(field === '_groupId' ? { variable_id: '' } : {}) } : p
+      i === idx ? {
+        ...p,
+        [field]: value,
+        // Reset downstream fields on cascade
+        ...(field === '_groupId' ? { variable_id: '', value: '' } : {}),
+        ...(field === 'variable_id' ? { value: '' } : {}),
+      } : p
     ));
   };
   const removePrefill = (idx: number) => setNewPrefills(prev => prev.filter((_, i) => i !== idx));
@@ -228,13 +236,29 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
         {/* Header */}
         <div className="share-panel__header">
           <div>
-            <h2 className="share-panel__title nords-panel-title"><Share2 size={18} strokeWidth={1.6} />Share</h2>
-            <p className="share-panel__subtitle">Manage share links and access tokens for this project.</p>
+            <h2 className="share-panel__title nords-panel-title"><Share2 size={18} strokeWidth={1.6} />Share & Connect</h2>
+            <p className="share-panel__subtitle">Manage share links and API access for this project.</p>
           </div>
           <button className="nords-close-btn" onClick={onClose} aria-label="Close"><X size={18} strokeWidth={2} /></button>
         </div>
 
+        <div className="share-panel__tabs">
+          <button
+            className={`share-panel__tab ${activeTab === 'share' ? 'active' : ''}`}
+            onClick={() => setActiveTab('share')}
+          >
+            <Share2 size={13} /> Share Links
+          </button>
+          <button
+            className={`share-panel__tab ${activeTab === 'mcp' ? 'active' : ''}`}
+            onClick={() => setActiveTab('mcp')}
+          >
+            <Terminal size={13} /> MCP Access
+          </button>
+        </div>
+
         <div className="share-panel__body">
+          {activeTab === 'share' && <>
           {/* ── Share Links ── */}
           <div className="nords-form__cascade-group">
             <span className="nords-form__cascade-title">
@@ -439,11 +463,10 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
                             <option key={v.id} value={v.id}>{v.name} ({v.type})</option>
                           ))}
                         </select>
-                        <input
-                          className="nords-form__input"
+                        <PrefillValueInput
+                          variable={pf.variable_id ? filteredVars.find(v => v.id === pf.variable_id) || variables.find(v => v.id === pf.variable_id) : undefined}
                           value={pf.value}
-                          onChange={e => updatePrefill(idx, 'value', e.target.value)}
-                          placeholder="Value"
+                          onChange={v => updatePrefill(idx, 'value', v)}
                           disabled={!pf.variable_id}
                         />
                         <button className="nords-form__icon-btn" onClick={() => removePrefill(idx)} title="Remove">
@@ -484,9 +507,9 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
               </button>
             )}
           </div>
+          </>}
 
-          <div className="nords-form__divider" />
-
+          {activeTab === 'mcp' && <>
           {/* ── Access Tokens ── */}
           <div className="nords-form__cascade-group">
             <span className="nords-form__cascade-title">
@@ -498,18 +521,85 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
             </span>
 
             {newTokenRaw && (
-              <div className="nords-form__token-reveal">
-                <code>{newTokenRaw}</code>
-                <button
-                  className="nords-form__icon-btn"
-                  title="Copy token"
-                  onClick={() => { navigator.clipboard.writeText(newTokenRaw); }}
-                >
-                  <Copy size={14} />
-                </button>
-                <span className="nords-form__hint" style={{ color: 'var(--nords-color-warning, #f5a623)' }}>
+              <div className="nords-form__token-reveal-block">
+                {/* Token + copy button */}
+                <div className="nords-form__token-reveal">
+                  <code>{newTokenRaw}</code>
+                  <button
+                    className="nords-form__icon-btn"
+                    title="Copy token"
+                    onClick={() => { navigator.clipboard.writeText(newTokenRaw); }}
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+                <span className="nords-form__hint" style={{ color: 'var(--nords-color-warning, #f5a623)', marginTop: '4px' }}>
                   ⚠ Copy now — you won't see this again.
                 </span>
+
+                {/* MCP Connection Details */}
+                <div className="nords-form__mcp-details">
+                  <span className="nords-form__mcp-details-title">MCP Connection Details</span>
+
+                  <div className="nords-form__mcp-row">
+                    <span className="nords-form__mcp-label">Server (Prod)</span>
+                    <code className="nords-form__mcp-value">https://nords.monumental.ax</code>
+                  </div>
+                  <div className="nords-form__mcp-row">
+                    <span className="nords-form__mcp-label">Server (Stage)</span>
+                    <code className="nords-form__mcp-value">https://nord-stage.monumental.ax</code>
+                  </div>
+                  <div className="nords-form__mcp-row">
+                    <span className="nords-form__mcp-label">Project ID</span>
+                    <code className="nords-form__mcp-value">{projectId}</code>
+                  </div>
+                  <div className="nords-form__mcp-row">
+                    <span className="nords-form__mcp-label">Access Token</span>
+                    <code className="nords-form__mcp-value">{newTokenRaw.slice(0, 16)}…</code>
+                  </div>
+
+                  <div className="nords-form__mcp-config">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span className="nords-form__mcp-config-label">Client Config</span>
+                      <button
+                        className="nords-form__icon-btn"
+                        style={{ width: '28px', height: '28px' }}
+                        title="Copy config"
+                        onClick={() => {
+                          const config = JSON.stringify({
+                            mcpServers: {
+                              nords: {
+                                command: 'npx',
+                                args: ['tsx', 'path/to/nords/server/src/mcp-server.ts'],
+                                env: {
+                                  DATABASE_URL: 'postgres://...',
+                                  PROJECT_ID: projectId,
+                                  NORDS_ACCESS_TOKEN: newTokenRaw,
+                                },
+                              },
+                            },
+                          }, null, 2);
+                          navigator.clipboard.writeText(config);
+                        }}
+                      >
+                        <Copy size={12} />
+                      </button>
+                    </div>
+                    <pre className="nords-form__mcp-config-code">{`{
+  "mcpServers": {
+    "nords": {
+      "command": "npx",
+      "args": ["tsx", "path/to/nords/server/src/mcp-server.ts"],
+      "env": {
+        "DATABASE_URL": "postgres://...",
+        "PROJECT_ID": "${projectId}",
+        "NORDS_ACCESS_TOKEN": "${newTokenRaw.slice(0, 16)}…"
+      }
+    }
+  }
+}`}</pre>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -541,8 +631,138 @@ export function SharePanel({ isOpen, onClose, projectId }: SharePanelProps) {
               Generate Token
             </button>
           </div>
+          </>}
         </div>
       </div>
     </FloatingPanel>
+  );
+}
+
+// ── Type-Aware Prefill Value Input ──
+
+function PrefillValueInput({ variable, value, onChange, disabled }: {
+  variable?: VariableSummary;
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+}) {
+  if (!variable || disabled) {
+    return (
+      <input
+        className="nords-form__input"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder="Value"
+        disabled
+      />
+    );
+  }
+
+  const type = variable.type;
+
+  // Boolean → Yes / No dropdown
+  if (type === 'boolean') {
+    return (
+      <select
+        className="nords-form__select"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+      >
+        <option value="">— Select —</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    );
+  }
+
+  // Select / Multi-select → options dropdown
+  if ((type === 'select' || type === 'multi_select') && variable.options?.length) {
+    return (
+      <select
+        className="nords-form__select"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+      >
+        <option value="">— Select —</option>
+        {variable.options.map(opt => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+    );
+  }
+
+  // Number / Currency / Percentage → number input
+  if (type === 'number' || type === 'currency' || type === 'percentage') {
+    return (
+      <input
+        className="nords-form__input"
+        type="number"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder="0"
+      />
+    );
+  }
+
+  // Date → date picker
+  if (type === 'date') {
+    return (
+      <input
+        className="nords-form__input"
+        type="date"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+      />
+    );
+  }
+
+  // Tags → text with hint
+  if (type === 'tags') {
+    return (
+      <input
+        className="nords-form__input"
+        type="text"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder="tag1, tag2, …"
+      />
+    );
+  }
+
+  // Email
+  if (type === 'email') {
+    return (
+      <input
+        className="nords-form__input"
+        type="email"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder="user@example.com"
+      />
+    );
+  }
+
+  // URL
+  if (type === 'url') {
+    return (
+      <input
+        className="nords-form__input"
+        type="url"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder="https://…"
+      />
+    );
+  }
+
+  // Default: text input (short_text, long_text, phone, etc.)
+  return (
+    <input
+      className="nords-form__input"
+      type="text"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder="Value"
+    />
   );
 }

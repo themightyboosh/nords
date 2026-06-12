@@ -131,6 +131,9 @@
 import { Router, Request, Response } from 'express';
 import { query, queryOne } from '../db.js';
 import { getSessionEvents, getReplayData, getSessionEventCounts } from '../lib/sessionEvents.js';
+import { getScorerRegistryMetadata, runAllScorers } from '../lib/scorers/registry.js';
+import type { ScorerInput } from '../lib/scorers/types.js';
+import { GoogleGenAI } from '@google/genai';
 
 export const sessionExplorerRouter = Router();
 
@@ -244,32 +247,132 @@ sessionExplorerRouter.get('/sessions/:id/replay', async (req: Request, res: Resp
   }
 });
 
-// ── Get computed metrics ──
+// ── Get computed metrics (scorer plugin results) ──
 sessionExplorerRouter.get('/sessions/:id/metrics', async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.id;
 
-    const [counts, session] = await Promise.all([
-      getSessionEventCounts(sessionId as string),
-      queryOne<any>(`
-        SELECT id, status, started_at, ended_at, metadata, source_type
-        FROM mcp_sessions WHERE id = $1
-      `, [sessionId]),
-    ]);
+    // Get all scorer_result events for this session
+    const scorerResults = await getSessionEvents(sessionId as string, ['scorer_result']);
 
-    // Compute duration
+    // Get session metadata for duration/status
+    const session = await queryOne<any>(`
+      SELECT id, status, started_at, ended_at, metadata, source_type
+      FROM mcp_sessions WHERE id = $1
+    `, [sessionId]);
+
     const durationMs = session?.ended_at && session?.started_at
       ? new Date(session.ended_at).getTime() - new Date(session.started_at).getTime()
       : null;
+
+    // Map scorer results by key
+    const resultsByKey: Record<string, any> = {};
+    for (const evt of scorerResults) {
+      // If multiple scores exist for same key, use the latest one
+      resultsByKey[evt.key] = evt.value;
+    }
+
+    // Get registry metadata for the client
+    const registryMeta = getScorerRegistryMetadata();
 
     res.json({
       session_id: sessionId,
       source_type: session?.source_type,
       status: session?.status,
       duration_ms: durationMs,
-      event_counts: counts,
-      nps: session?.metadata?.synthetic_nps ?? null,
-      sentiment: session?.metadata?.user_sentiment ?? null,
+      has_been_scored: scorerResults.length > 0,
+      scorers: registryMeta.map(s => ({
+        key: s.key,
+        label: s.label,
+        icon: s.icon,
+        description: s.description,
+        requires_llm: s.requiresLlm,
+        result: resultsByKey[s.key] || null,
+      })),
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Score a session on demand (any session type) ──
+sessionExplorerRouter.post('/sessions/:id/score', async (req: Request, res: Response) => {
+  try {
+    const sessionId = req.params.id as string;
+
+    // Get session info
+    const session = await queryOne<any>(
+      'SELECT * FROM mcp_sessions WHERE id = $1', [sessionId]
+    );
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    // Initialize Gemini
+    const gcpProject = 'nords-spatial-1776012153';
+    const gcpLocation = process.env.VERTEX_AI_LOCATION || 'us-central1';
+    process.env.GOOGLE_CLOUD_PROJECT = gcpProject;
+
+    let genai: any = null;
+    if (process.env.GEMINI_API_KEY) {
+      genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    } else if (gcpProject) {
+      genai = new GoogleGenAI({ vertexai: true, project: gcpProject, location: gcpLocation });
+    }
+
+    // Get transcript and events
+    const [transcript, events] = await Promise.all([
+      getReplayData(sessionId),
+      getSessionEvents(sessionId),
+    ]);
+
+    // Check if this is a test session and has a scenario
+    let scenario = null;
+    if (session.source_type === 'test') {
+      const testRun = await queryOne<any>(
+        'SELECT * FROM test_runs WHERE session_id = $1 LIMIT 1', [sessionId]
+      );
+      if (testRun) {
+        const testScenario = await queryOne<any>(
+          'SELECT * FROM test_scenarios WHERE id = $1', [testRun.scenario_id]
+        );
+        if (testScenario) {
+          scenario = {
+            user_profile: testScenario.user_profile,
+            user_objective: testScenario.user_objective,
+            user_context: testScenario.user_context || {},
+            user_profile_custom: testScenario.user_profile_custom,
+            user_model: testScenario.user_model,
+            persona_id: testScenario.persona_id,
+          };
+        }
+      }
+    }
+
+    // Build scorer input
+    const scorerInput: ScorerInput = {
+      sessionId,
+      projectId: session.project_id,
+      events,
+      transcript,
+      projectMode: 'collect', // default for non-test sessions
+      scenario,
+      genai,
+      scoringModel: 'gemini-2.5-flash',
+    };
+
+    // Run all scorers
+    const results = await runAllScorers(scorerInput);
+
+    res.json({
+      session_id: sessionId,
+      scored_at: new Date().toISOString(),
+      results: results.map(r => ({
+        key: r.key,
+        label: r.label,
+        score: r.score,
+        passed: r.passed,
+        details: r.details,
+        metadata: r.metadata,
+      })),
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -355,7 +458,7 @@ sessionExplorerRouter.get('/sessions/:id/export', async (req: Request, res: Resp
   }
 });
 
-// ── Get collected variables for a session, grouped by collection group ──
+// ── Get collected variables for a session, with conversation context ──
 sessionExplorerRouter.get('/sessions/:id/variables', async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.id;
@@ -398,35 +501,40 @@ sessionExplorerRouter.get('/sessions/:id/variables', async (req: Request, res: R
       ORDER BY group_sort, var_sort, sv.collected_at
     `, [sessionId]);
 
-    // Group by collection group
-    const groupMap = new Map<string, {
-      id: string | null;
-      name: string;
-      icon: string | null;
-      color: string | null;
-      variables: Array<{
-        id: string;
-        name: string;
-        description: string;
-        type: string;
-        value: unknown;
-        collected_at: string;
-        collected_at_nord: string | null;
-      }>;
-    }>();
+    // Get user_message + assistant_message events to build conversation context
+    const messageEvents = await getSessionEvents(sessionId as string, ['user_message', 'assistant_message']);
 
-    for (const v of variables) {
-      const groupKey = v.group_id || '__ungrouped__';
-      if (!groupMap.has(groupKey)) {
-        groupMap.set(groupKey, {
-          id: v.group_id,
-          name: v.group_name || 'Ungrouped',
-          icon: v.group_icon,
-          color: v.group_color,
-          variables: [],
+    // Build chronological rounds: each user_message → next assistant_message
+    interface Round { user: string; agent: string; timestamp: Date }
+    const rounds: Round[] = [];
+    for (let i = 0; i < messageEvents.length; i++) {
+      const evt = messageEvents[i];
+      if (evt.action_type === 'user_message') {
+        // Find next assistant_message
+        const nextAssistant = messageEvents.slice(i + 1).find(e => e.action_type === 'assistant_message');
+        rounds.push({
+          user: typeof evt.value === 'string' ? evt.value : (evt.value?.content || evt.value?.text || String(evt.value)),
+          agent: nextAssistant
+            ? (typeof nextAssistant.value === 'string' ? nextAssistant.value : (nextAssistant.value?.content || nextAssistant.value?.text || String(nextAssistant.value)))
+            : '',
+          timestamp: new Date(evt.event_at),
         });
       }
-      groupMap.get(groupKey)!.variables.push({
+    }
+
+    // For each variable, find the conversation round closest to (just before) its collection time
+    const enrichedVars = variables.map(v => {
+      const collectedAt = new Date(v.collected_at);
+      // Find the last round whose timestamp is <= collected_at
+      let matchedRound: Round | null = null;
+      for (let i = rounds.length - 1; i >= 0; i--) {
+        if (rounds[i].timestamp <= collectedAt) {
+          matchedRound = rounds[i];
+          break;
+        }
+      }
+
+      return {
         id: v.variable_id,
         name: v.variable_name,
         description: v.variable_description,
@@ -434,13 +542,19 @@ sessionExplorerRouter.get('/sessions/:id/variables', async (req: Request, res: R
         value: v.value,
         collected_at: v.collected_at,
         collected_at_nord: v.nord_title,
-      });
-    }
+        group_name: v.group_name || 'Ungrouped',
+        group_color: v.group_color,
+        conversation: matchedRound ? {
+          user_message: matchedRound.user,
+          agent_response: matchedRound.agent,
+        } : null,
+      };
+    });
 
     res.json({
       session_id: sessionId,
       total_collected: variables.length,
-      groups: Array.from(groupMap.values()),
+      variables: enrichedVars,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

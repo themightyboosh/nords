@@ -20,6 +20,7 @@ import {
 import { api } from '../../api/client';
 import { ChatMessage } from '../ChatMessage/ChatMessage';
 import type { ToolCall } from '../ChatMessage/ChatMessage';
+import { resolveIcon } from '../../utils/iconRegistry';
 import './PreviewChat.css';
 
 // ToolCall type imported from ChatMessage
@@ -39,6 +40,19 @@ interface Message {
 
 
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+export interface ShareInfo {
+  project_name: string;
+  project_icon: string | null;
+  accent_color: string | null;
+  welcome_message: string | null;
+  agent_name: string;
+  agent_icon: string;
+  model: string;
+  label: string;
+}
+
 interface PreviewChatProps {
   projectId: string;
   isOpen: boolean;
@@ -49,6 +63,14 @@ interface PreviewChatProps {
   replayTranscript?: Array<{ round: number; user_msg: string; agent_msg: string; tool_calls?: any[]; tokens_in?: number; tokens_out?: number; latency_ms?: number; delay_ms?: number }> | null;
   replayLabel?: string | null;
   onClearReplay?: () => void;
+  /** 'preview' = authenticated admin preview, 'share' = public share link */
+  mode?: 'preview' | 'share';
+  /** Share token for public chat (required when mode='share') */
+  shareToken?: string;
+  /** Project info from /api/share/info (required when mode='share') */
+  shareInfo?: ShareInfo | null;
+  /** URL query param overrides for collection variables (e.g. ?user_name=Daniel) */
+  urlOverrides?: Record<string, string>;
 }
 
 interface DevLogEntry {
@@ -59,7 +81,7 @@ interface DevLogEntry {
   detail?: string;
 }
 
-export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayTranscript, replayLabel, onClearReplay }: PreviewChatProps) {
+export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayTranscript, replayLabel, onClearReplay, mode = 'preview', shareToken, shareInfo, urlOverrides }: PreviewChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -74,6 +96,9 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('');
+  const [projectIcon, setProjectIcon] = useState<string>('Folder');
+  const [agentName, setAgentName] = useState<string>('Assistant');
+  const [agentIcon, setAgentIcon] = useState<string>('Bot');
 
   const [lastHorizon, setLastHorizon] = useState<Record<string, unknown> | null>(null);
   const [lastToolCalls, setLastToolCalls] = useState<ToolCall[]>([]);
@@ -82,6 +107,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
 
   // ── Replay mode ──
   const isReplayMode = !!replayTranscript;
+  const isShareMode = mode === 'share';
   const [replaySpeed, setReplaySpeed] = useState(2); // 0=instant, 1=1×, 2=2×, 5=5×
   const [replayIndex, setReplayIndex] = useState(0); // how many rounds have been revealed
   const [replayTyping, setReplayTyping] = useState(false); // show typing indicator between rounds
@@ -384,31 +410,44 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
 
   // Load project welcome message + test scenarios
   useEffect(() => {
-    // Fetch project for welcome message + name
-    api.get<{ mcp_welcome_message?: string | null; name?: string | null }>(`/api/projects/${projectId}`)
+    if (isShareMode && shareInfo) {
+      // Share mode: use pre-fetched info from ShareChat wrapper
+      setProjectName(shareInfo.project_name || 'Chat');
+      setProjectIcon(shareInfo.project_icon || 'Folder');
+      setAgentName(shareInfo.agent_name || 'Assistant');
+      setAgentIcon(shareInfo.agent_icon || 'Bot');
+      const wm = shareInfo.welcome_message || null;
+      setWelcomeMessage(wm);
+      if (wm) {
+        setMessages(prev => {
+          if (prev.length > 0) return prev;
+          return [{ id: 'welcome-msg', role: 'assistant' as const, content: wm, created_at: new Date().toISOString() }];
+        });
+      }
+      return; // No test scenarios in share mode
+    }
+
+    // Preview mode: fetch project info + test scenarios via authenticated API
+    api.get<{ mcp_welcome_message?: string | null; name?: string | null; icon?: string | null; agent_name?: string; agent_icon?: string }>(`/api/projects/${projectId}`)
       .then(p => {
         const wm = p.mcp_welcome_message || null;
         setWelcomeMessage(wm);
         setProjectName(p.name || 'Agent Preview');
-        // Seed the welcome as the first assistant bubble so the user can respond naturally
+        setProjectIcon(p.icon || 'Folder');
+        setAgentName(p.agent_name || 'Assistant');
+        setAgentIcon(p.agent_icon || 'Bot');
         if (wm) {
           setMessages(prev => {
-            if (prev.length > 0) return prev; // don't overwrite existing messages
-            return [{
-              id: 'welcome-msg',
-              role: 'assistant' as const,
-              content: wm,
-              created_at: new Date().toISOString(),
-            }];
+            if (prev.length > 0) return prev;
+            return [{ id: 'welcome-msg', role: 'assistant' as const, content: wm, created_at: new Date().toISOString() }];
           });
         }
       })
       .catch(() => {});
-    // Load test scenarios
     api.get<Array<{ id: string; name: string; user_profile: string }>>(`/api/projects/${projectId}/test-scenarios`)
       .then(setTestScenarios)
       .catch(() => setTestScenarios([]));
-  }, [projectId]);
+  }, [projectId, isShareMode, shareInfo]);
 
 
 
@@ -476,7 +515,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     }]);
 
     try {
-      const data = await api.post<{
+      let data: {
         reply: string;
         sessionId: string;
         message: Message;
@@ -484,11 +523,34 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
         completion: { shouldTransition: boolean; endNordId: string | null; incompleteCount: number };
         systemPrompt?: string;
         horizon?: Record<string, unknown>;
-      }>(`/api/projects/${projectId}/chat`, {
-        message: userMessage,
-        sessionId,
-        model,
-      });
+      };
+
+      if (isShareMode && shareToken) {
+        // Share mode: raw fetch with token header (no Firebase auth)
+        const res = await fetch(`${API_BASE}/api/share/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Share-Token': shareToken },
+          credentials: 'include',
+          body: JSON.stringify({
+            message: userMessage,
+            sessionId,
+            // Send URL overrides only on session creation (first message)
+            ...((!sessionId && urlOverrides) ? { url_overrides: urlOverrides } : {}),
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: 'Chat failed' }));
+          throw new Error(err.error || 'Chat failed');
+        }
+        data = await res.json();
+      } else {
+        // Preview mode: authenticated API
+        data = await api.post(`/api/projects/${projectId}/chat`, {
+          message: userMessage,
+          sessionId,
+          model,
+        });
+      }
 
       setSessionId(data.sessionId);
 
@@ -580,7 +642,7 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     } finally {
       setSending(false);
     }
-  }, [input, sending, projectId, sessionId, model, onDataChanged, appendDevLog]);
+  }, [input, sending, projectId, sessionId, model, onDataChanged, appendDevLog, isShareMode, shareToken]);
 
   // Reset session
   const handleReset = useCallback(async () => {
@@ -604,15 +666,32 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     }
     if (sessionId) {
       try {
-        await api.put(`/api/mcp-sessions/${sessionId}`, { status: 'abandoned' });
+        if (isShareMode && shareToken) {
+          await fetch(`${API_BASE}/api/share/chat/reset`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Share-Token': shareToken },
+          }).catch(() => {});
+        } else {
+          await api.put(`/api/mcp-sessions/${sessionId}`, { status: 'abandoned' });
+        }
       } catch { /* ok */ }
     }
     setSessionId(null);
-    setMessages([]);
+    // Re-inject welcome message as first bubble
+    if (welcomeMessage) {
+      setMessages([{
+        id: `welcome-${Date.now()}`,
+        role: 'assistant' as const,
+        content: welcomeMessage,
+        created_at: new Date().toISOString(),
+      }]);
+    } else {
+      setMessages([]);
+    }
     setLastHorizon(null);
     setLastToolCalls([]);
     setDevLog([]);
-  }, [sessionId, projectId, isReplayMode, replayTranscript, replaySpeed]);
+  }, [sessionId, projectId, isReplayMode, replayTranscript, replaySpeed, welcomeMessage, isShareMode, shareToken]);
 
   // ── Live Test Run ──
   const startLiveTest = useCallback(async (scenarioId: string) => {
@@ -850,9 +929,17 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
   return (
     <div
       ref={chatRef}
-      className="preview-chat"
+      className={`preview-chat${isShareMode ? ' preview-chat--share' : ''}`}
       data-testid="preview-chat"
-      style={{
+      style={isShareMode ? {
+        position: 'fixed',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 1000,
+        overflow: 'hidden',
+        ...(shareInfo?.accent_color ? { '--accent': shareInfo.accent_color } as React.CSSProperties : {}),
+      } : {
         position: 'fixed',
         left: rect.x,
         top: rect.y,
@@ -870,56 +957,68 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
     >
       {/* Header — doubles as drag handle */}
       <div
-        className="preview-chat__header preview-chat__drag-handle"
-        onMouseDown={handleDragStart}
+        className={`preview-chat__header${isShareMode ? '' : ' preview-chat__drag-handle'}`}
+        onMouseDown={isShareMode ? undefined : handleDragStart}
       >
         <div className="preview-chat__header-left">
-          <GripVertical size={14} className="preview-chat__grip-icon" />
-          {!(isReplayMode && replayDemoMode) ? (
+          {!isShareMode && <GripVertical size={14} className="preview-chat__grip-icon" />}
+          {isReplayMode && !(replayDemoMode) ? (
             <>
-              <Eye size={16} className="preview-chat__header-icon" />
-              <span className="preview-chat__title">{isReplayMode ? '🔁 Replay' : 'Agent Preview'}</span>
-              {isReplayMode && replayLabel && (
+              <span className="preview-chat__title">🔁 Replay</span>
+              {replayLabel && (
                 <code className="preview-chat__session-id" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa' }}>{replayLabel}</code>
               )}
-              {!isReplayMode && sessionId && (
+            </>
+          ) : (isReplayMode && replayDemoMode) ? (
+            <span className="preview-chat__title">{projectName || 'Agent Preview'}</span>
+          ) : (
+            <>
+              {(() => {
+                const ProjectIcon = resolveIcon(projectIcon);
+                return <ProjectIcon size={16} className="preview-chat__header-icon" />;
+              })()}
+              <span className="preview-chat__title">{projectName}</span>
+              {!isShareMode && sessionId && (
                 <code className="preview-chat__session-id">{sessionId.slice(0, 8)}…</code>
               )}
             </>
-          ) : (
-            <span className="preview-chat__title">{projectName || 'Agent Preview'}</span>
           )}
         </div>
         <div className="preview-chat__header-actions">
-          <button
-            className={`preview-chat__action-btn ${devMode ? 'is-active' : ''}`}
-            onClick={() => setDevMode(!devMode)}
-            title="Toggle Dev Mode"
-          >
-            <Code2 size={14} />
-          </button>
-          {!(isReplayMode && replayDemoMode) && (
-            <>
-              <select
-                className="preview-chat__model-select"
-                value={model}
-                onChange={e => {
-                  setModel(e.target.value);
-                  localStorage.setItem('nords-preview-model', e.target.value);
-                }}
-                title="Select model"
-              >
-                {MODELS.map(m => (
-                  <option key={m.id} value={m.id}>{m.label}</option>
-                ))}
-              </select>
-            </>
+          {/* Dev panel toggle — preview only */}
+          {!isShareMode && (
+            <button
+              className={`preview-chat__action-btn ${devMode ? 'is-active' : ''}`}
+              onClick={() => setDevMode(!devMode)}
+              title="Toggle Dev Mode"
+            >
+              <Code2 size={14} />
+            </button>
+          )}
+          {/* Model selector — preview only */}
+          {!isShareMode && !(isReplayMode && replayDemoMode) && (
+            <select
+              className="preview-chat__model-select"
+              value={model}
+              onChange={e => {
+                setModel(e.target.value);
+                localStorage.setItem('nords-preview-model', e.target.value);
+              }}
+              title="Select model"
+            >
+              {MODELS.map(m => (
+                <option key={m.id} value={m.id}>{m.label}</option>
+              ))}
+            </select>
           )}
 
+          {/* Reset — always visible */}
           <button className="preview-chat__action-btn" onClick={handleReset} title="Reset Session">
             <RotateCcw size={14} />
           </button>
-          {!(isReplayMode && replayDemoMode) && testScenarios.length > 0 && (
+
+          {/* Test runner — preview only */}
+          {!isShareMode && !(isReplayMode && replayDemoMode) && testScenarios.length > 0 && (
             <div style={{ position: 'relative' }}>
               <button
                 className="preview-chat__action-btn"
@@ -953,7 +1052,9 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
               )}
             </div>
           )}
-          {isReplayMode && (
+
+          {/* Replay demo toggle — preview only */}
+          {!isShareMode && isReplayMode && (
             <button
               className={`preview-chat__action-btn${replayDemoMode ? ' is-active' : ''}`}
               onClick={() => setReplayDemoMode(!replayDemoMode)}
@@ -962,25 +1063,28 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
               {replayDemoMode ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           )}
-          <button className="preview-chat__action-btn" onClick={() => {
-            if (isReplayMode) {
-              // Clean exit from replay mode
-              if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
-              if (replayTypeTimerRef.current) clearTimeout(replayTypeTimerRef.current);
-              onClearReplay?.();
-              setMessages([]);
-              setDevLog([]);
-              setDevMode(false);
-              setReplayIndex(0);
-              setReplayTyping(false);
-              setReplayInputText('');
-              setReplayInputDone(false);
-              setReplayDemoMode(false);
-            }
-            onClose();
-          }} title="Close">
-            <X size={14} />
-          </button>
+
+          {/* Close button — preview only (share mode is full-page, no close) */}
+          {!isShareMode && (
+            <button className="preview-chat__action-btn" onClick={() => {
+              if (isReplayMode) {
+                if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+                if (replayTypeTimerRef.current) clearTimeout(replayTypeTimerRef.current);
+                onClearReplay?.();
+                setMessages([]);
+                setDevLog([]);
+                setDevMode(false);
+                setReplayIndex(0);
+                setReplayTyping(false);
+                setReplayInputText('');
+                setReplayInputDone(false);
+                setReplayDemoMode(false);
+              }
+              onClose();
+            }} title="Close">
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -994,9 +1098,12 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
         <div className="preview-chat__messages">
           {messages.length === 0 && (
             <div className="preview-chat__empty">
-              <Bot size={32} strokeWidth={1} />
+              {(() => {
+                const EmptyIcon = resolveIcon(agentIcon);
+                return <EmptyIcon size={32} strokeWidth={1} />;
+              })()}
               <p>Start a conversation with your project's agent.</p>
-              <p className="preview-chat__hint">Messages are logged and visible in Dev Mode.</p>
+              {!isShareMode && <p className="preview-chat__hint">Messages are logged and visible in Dev Mode.</p>}
             </div>
           )}
           {messages.map(msg => (
@@ -1011,13 +1118,20 @@ export function PreviewChat({ projectId, isOpen, onClose, onDataChanged, replayT
               tokensIn={msg.tokens_in}
               tokensOut={msg.tokens_out}
               showMeta={devMode}
+              agentName={agentName}
+              agentIcon={agentIcon}
             />
           ))}
           {(sending || replayTyping) && (
             <div className="chat-msg chat-msg--assistant">
-              <div className="chat-msg__avatar"><Bot size={14} /></div>
+              <div className="chat-msg__avatar">
+                {(() => {
+                  const TypingIcon = resolveIcon(agentIcon);
+                  return <TypingIcon size={14} />;
+                })()}
+              </div>
               <div className="chat-msg__content">
-                <span className="chat-msg__role">Assistant</span>
+                <span className="chat-msg__role">{agentName}</span>
                 <p className="preview-chat__typing">
                   <span /><span /><span />
                 </p>

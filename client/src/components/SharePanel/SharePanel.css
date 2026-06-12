@@ -40,6 +40,45 @@
   gap: 6px;
 }
 
+/* ── Tabs ── */
+
+.share-panel__tabs {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--nords-color-border);
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.share-panel__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: var(--nords-color-text-tertiary);
+  font-family: var(--nords-font-primary, inherit);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.share-panel__tab:hover {
+  color: var(--nords-color-text-secondary);
+}
+
+.share-panel__tab.active {
+  color: var(--nords-color-accent, hsl(220, 70%, 60%));
+  border-bottom-color: var(--nords-color-accent, hsl(220, 70%, 60%));
+}
+
 /* ── Prefill rows ── */
 
 .share-panel__prefills {

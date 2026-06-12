@@ -53,8 +53,9 @@ const CT = {
   relatesTo:     id(),
 };
 
-// Goals (12 — complex DAG with 4 roots)
+// Goals (13 — complex DAG with 4 roots + 1 independent intake goal)
 const GOAL = {
+  userIntake:        id(),
   reqLocked:         id(),
   riskComplete:      id(),
   bioCompatCleared:  id(),
@@ -95,6 +96,8 @@ const VAR = {
   openCriticalNcs:            id(),
   marketLaunchRegion:         id(),
   reimbursementStrategy:      id(),
+  userName:                   id(),
+  userEmail:                  id(),
 };
 
 // Nord IDs — Requirements
@@ -148,7 +151,7 @@ const ADR = {
 
 // Collection Group IDs
 const CG = {
-  regulatory: id(), risk: id(), clinical: id(), engineering: id(), business: id(),
+  intake: id(), regulatory: id(), risk: id(), clinical: id(), engineering: id(), business: id(),
 };
 
 // Nord IDs — Milestones
@@ -740,6 +743,7 @@ async function run() {
    * ══════════════════════════════════════════════════════════════════════ */
   // ── Collection Groups (5) ──
   const collectionGroups = [
+    { id: CG.intake,     name: 'User Intake',            desc: 'Basic user information collected at the start of a conversation.', icon: 'UserCircle', color: '#6366F1', order: 0 },
     { id: CG.regulatory, name: 'Regulatory & Strategy', desc: 'Regulatory pathway decisions, target population, predicate device, and submission timeline.', icon: 'Scale', color: '#3B82F6', order: 1 },
     { id: CG.risk,       name: 'Risk & Safety',        desc: 'Risk tolerance, highest-risk subsystems, and biocompatibility status per ISO 14971.', icon: 'ShieldAlert', color: '#EF4444', order: 2 },
     { id: CG.clinical,   name: 'Clinical',             desc: 'IRB approval status, primary endpoint results, and clinical enrollment targets.', icon: 'Stethoscope', color: '#0EA5E9', order: 3 },
@@ -754,8 +758,13 @@ async function run() {
   }
   console.log('  ✅ 5 Collection Groups');
 
-  // ── Project Variables (15) — assigned to collection groups ──
+  // ── Project Variables (17) — assigned to collection groups ──
   const variables = [
+    // ── User Intake ──
+    { id: VAR.userName, name: 'user_name', desc: 'The user\'s name — ask casually at the start of the conversation to personalize the experience. Use it naturally throughout the session once known.', type: 'short_text', groupId: CG.intake,
+      options: null, required: false, tags: ['intake'] },
+    { id: VAR.userEmail, name: 'user_email', desc: 'The user\'s email address — offer to save for follow-up but make it clear it\'s completely optional. Never pressure for this.', type: 'email', groupId: CG.intake,
+      options: null, required: false, tags: ['intake'] },
     // ── Regulatory & Strategy ──
     { id: VAR.regulatoryPathway, name: 'regulatory_pathway', desc: 'The FDA regulatory pathway being pursued for this device — determines the entire submission strategy, predicate device requirements, and clinical evidence needed. For a Class II CGM, 510(k) is the most common route via substantial equivalence to a predicate like the Dexcom G7.', type: 'select', groupId: CG.regulatory,
       options: ['510(k)', 'PMA', 'De Novo', 'CE Mark'], required: true, tags: ['regulatory'] },
@@ -800,7 +809,7 @@ async function run() {
     `, [v.id, PROJECT_ID, v.name, v.desc, v.type,
         v.options ? JSON.stringify(v.options) : null, v.required, v.tags, null, i + 1, v.groupId]);
   }
-  console.log('  ✅ 15 Project Variables (in 5 groups)');
+  console.log('  ✅ 17 Project Variables (in 6 groups)');
 
   /* ══════════════════════════════════════════════════════════════════════
    * GOALS (12) — complex prerequisite DAG with 4 roots, AND/OR gates, exclusive forks
@@ -827,63 +836,68 @@ async function run() {
    * ══════════════════════════════════════════════════════════════════════ */
 
   const goals = [
+    // ── Layer -1: Independent intake (no prerequisites, non-blocking) ──
+    { id: GOAL.userIntake, name: 'User Intake', icon: 'UserCircle', color: '#6366F1',
+      desc: 'Collect the user\'s name and optionally their email at the start of the session to personalize the experience.',
+      endType: null, prerequisiteGate: 'all', forkType: 'parallel',
+      achievedPrompt: 'Address the user by name ({{user_name}}) warmly — use it naturally going forward, not excessively. If they shared their email, briefly confirm you\'ve noted it but do NOT make a big deal of it. Transition immediately into the domain conversation by asking what area of the project they\'d like to explore first. Keep the intake acknowledgment to one sentence max — the user wants to get to work, not be welcomed at length. Do NOT recap what you just collected.' },
     // ── Layer 0: 4 roots ──
     { id: GOAL.reqLocked, name: 'Requirements Locked', icon: 'Lock', color: '#3B82F6',
       desc: 'All user needs, design inputs, and design outputs are documented with priority, verification method, and traceability status.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'Confirm that requirements are now locked for the {{regulatory_pathway}} pathway targeting the {{target_population}} population. Mention that traceability to the predicate device is established and this is a solid regulatory foundation.' },
+      achievedPrompt: 'Acknowledge that the requirements foundation is solid — the {{regulatory_pathway}} pathway is defined and the {{target_population}} population is scoped. Express confidence (not congratulations) that traceability to the predicate device gives the team a strong regulatory starting point. Pivot naturally: suggest exploring either the risk analysis or architecture decisions as a next step, framing it as "now that requirements are locked, the team can confidently move into…" Do NOT list out all the things that were collected — the user already knows.' },
     { id: GOAL.riskComplete, name: 'Risk Analysis Complete', icon: 'ShieldCheck', color: '#EF4444',
       desc: 'All identified hazards have severity, probability, mitigation strategy, and residual risk documented per ISO 14971.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'Acknowledge the risk analysis milestone. Note the team chose a {{risk_tolerance}} risk tolerance and that the {{highest_risk_subsystem}} was identified as the highest-risk subsystem. All hazards have been assessed per ISO 14971.' },
+      achievedPrompt: 'Reference the {{risk_tolerance}} risk posture and the {{highest_risk_subsystem}} as a natural talking point — e.g. "With the {{highest_risk_subsystem}} flagged as your highest-risk area, the ISO 14971 analysis gives the team clear mitigation priorities." Show you understand what these choices MEAN for the project, not just that they were recorded. Suggest this positions the team well for verification planning. If the user seems ready to continue, ask whether they want to look at the verification test strategy or the supply chain implications. Do NOT say "All hazards have been assessed" — that\'s generic. Be specific about THEIR risk profile.' },
     { id: GOAL.bioCompatCleared, name: 'Biocompatibility Cleared', icon: 'HeartPulse', color: '#A855F7',
       desc: 'All patient-contacting materials have passed ISO 10993 biocompatibility testing: cytotoxicity, sensitization, irritation, and systemic toxicity.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'Confirm biocompatibility is cleared — {{biocompatibility_confirmed}} that all patient-contacting materials passed ISO 10993 testing. This removes a key regulatory gate for submission.' },
+      achievedPrompt: 'Frame biocompatibility clearance as removing a major regulatory gate — this is a significant de-risking event. Reference that {{biocompatibility_confirmed}} and explain WHY this matters for the submission timeline (it unblocks both the supply chain qualification and the clinical protocol path). Use language like "one of the longer-lead regulatory gates is now behind you." Naturally transition by asking whether the clinical or supply chain path is more top-of-mind. Do NOT say "Congratulations" — frame it as progress, not a celebration. Be matter-of-fact and expert.' },
     { id: GOAL.archDecided, name: 'Architecture Decided', icon: 'Cpu', color: '#F59E0B',
       desc: 'All Architecture Decision Records are in Accepted status. Key technology choices (BLE vs NFC, cloud platform, sensor material) are finalized.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'Acknowledge that architecture decisions are locked. The software is classified as {{software_classification}} per IEC 62304, which sets the development rigor level. The engineering team now has a clear technology direction.' },
+      achievedPrompt: 'Note that the {{software_classification}} classification under IEC 62304 sets a specific development rigor level — briefly explain what this means for their team (more documentation? more testing?). Frame architecture lock as enabling parallel workstreams: the engineering team can now build while regulatory prepares. Ask a forward-looking question: "With the architecture locked, are there any integration risks between subsystems you\'re watching?" This shows domain expertise. Do NOT just confirm what was decided — add insight about what it ENABLES.' },
 
     // ── Layer 1: 3 goals ──
     { id: GOAL.verifComplete, name: 'Verification Complete', icon: 'CheckCircle', color: '#10B981',
       desc: 'All verification test cases have been executed with pass/fail results and actual results documented.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'Celebrate that all verification tests are executed. Confirm there are {{open_critical_ncs}} open critical nonconformances remaining. The evidence package for the {{regulatory_pathway}} submission is taking shape.' },
+      achievedPrompt: 'If {{open_critical_ncs}} is "0" or "none", express that this is excellent — clean verification puts the team in a strong position for design transfer. If there ARE open NCs, acknowledge them directly and suggest they\'re the priority before transfer. Reference the {{regulatory_pathway}} — frame the verification evidence as building the submission package. Suggest exploring the design transfer readiness or the 510(k) preparation next. Ask: "Are there any test results that surprised the team or changed any assumptions?" This shows you understand V&V is more than a checkbox. Do NOT just say "all tests are executed" — add analytical value.' },
     { id: GOAL.supplyChainQual, name: 'Supply Chain Qualified', icon: 'Package', color: '#06B6D4',
       desc: 'All critical suppliers are qualified per ISO 13485. Component specifications locked, incoming inspection protocols established, and backup suppliers identified for single-source components.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'Supply chain qualification is complete. With biocompatibility {{biocompatibility_confirmed}} confirmed and the {{highest_risk_subsystem}} identified as highest-risk, procurement can begin for long-lead items.' },
+      achievedPrompt: 'Connect supply chain qualification to the broader program timeline — with biocompatibility confirmed and suppliers qualified, the team can start procurement for long-lead items. Reference the {{highest_risk_subsystem}} specifically: "Since the {{highest_risk_subsystem}} carries the highest risk, having qualified suppliers for its components is especially important." Ask whether there are any single-source dependencies the team is concerned about. Frame this as operational readiness, not just compliance. Do NOT list out what was collected — focus on what\'s NOW possible.' },
     { id: GOAL.clinApproved, name: 'Clinical Protocol Approved', icon: 'Stethoscope', color: '#0EA5E9',
       desc: 'All clinical study protocols have IRB approval and are actively enrolling.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'Clinical protocols are approved — IRB status is {{irb_status}} and enrollment is targeting {{enrollment_target}} subjects. Strong clinical evidence is being generated for the {{target_population}} population.' },
+      achievedPrompt: 'Reference the {{irb_status}} status and {{enrollment_target}} enrollment target as concrete evidence of clinical momentum. Frame this in terms of the regulatory narrative: "Clinical data from {{enrollment_target}} subjects in the {{target_population}} population gives the {{regulatory_pathway}} submission real clinical weight." Ask about enrollment timeline and any early signals from the data. If the user seems interested, suggest looking at how the clinical evidence connects to the regulatory filing. Show you understand clinical trials are EVIDENCE for the submission, not just a checkbox. Do NOT congratulate — ask smart follow-up questions.' },
 
     // ── Layer 2: 2 goals ──
     { id: GOAL.designTransfer, name: 'Design Transfer Ready', icon: 'ArrowRightLeft', color: '#84CC16',
       desc: 'Design outputs are frozen and transferred to manufacturing. Device Master Record (DMR) is complete, process validation protocols are approved, and pilot production has yielded conforming units.',
       endType: null, prerequisiteGate: 'all', forkType: 'exclusive',
-      achievedPrompt: 'Design transfer is complete — manufacturing has the full DMR and process specs. With {{open_critical_ncs}} open critical NCs resolved, the design is ready for production.' },
+      achievedPrompt: 'This is a major program inflection point — acknowledge that the design is moving from R&D to manufacturing. Reference {{open_critical_ncs}} to frame manufacturing readiness: if NCs are resolved, express confidence; if some remain, note them as a watch item. Ask about the pilot production experience: "How did the pilot builds go? Any yield issues or process adjustments needed?" This shows you understand design transfer isn\'t just document handoff — it\'s about manufacturability. Pivot toward manufacturing validation as the natural next step. Use a tone of informed partnership, not celebration.' },
     { id: GOAL.fivetenReady, name: '510(k) Ready', icon: 'FileCheck', color: '#DC2626',
       desc: 'The 510(k) submission document has a predicate device identified and substantial equivalence argument drafted.',
       endType: null, prerequisiteGate: 'any', forkType: 'parallel',
-      achievedPrompt: 'The 510(k) package is drafted with {{predicate_device}} as the predicate device. The substantial equivalence argument is ready for the {{regulatory_pathway}} pathway, targeting {{submission_quarter}} for submission.' },
+      achievedPrompt: 'Frame the 510(k) draft as a critical regulatory milestone. Reference {{predicate_device}} specifically: "The substantial equivalence argument anchored to {{predicate_device}} is the backbone of the {{regulatory_pathway}} submission." Ask whether there are any areas where the SE argument feels thin or where the predicate comparison might face FDA pushback. Suggest reviewing the performance data alignment between the predicate and the team\'s device. Target {{submission_quarter}} should be mentioned as a timeline anchor. Show you understand 510(k) strategy, not just that a document exists. Do NOT just confirm — probe for weaknesses.' },
 
     // ── Layer 3: 2 goals ──
     { id: GOAL.mfgValidation, name: 'Manufacturing Validation', icon: 'Factory', color: '#78716C',
       desc: 'Process validation (IQ/OQ/PQ) is complete. Three consecutive production lots meet all specifications. Sterilization validation is accepted.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'Manufacturing is validated — production processes consistently yield conforming product. Process validation for the {{highest_risk_subsystem}} and all other subsystems is complete.' },
+      achievedPrompt: 'Frame manufacturing validation as proving the design can be CONSISTENTLY produced — this is about confidence in scale, not just one good batch. Reference the {{highest_risk_subsystem}}: "The validation of the {{highest_risk_subsystem}} process is especially significant given its risk profile." Ask about any yield or process control insights from the three validation lots. Suggest this positions the team for the regulatory filing — the manufacturing evidence is a key piece of the submission. Use a technical, knowledgeable tone. Do NOT be effusive — be precise and forward-looking.' },
     { id: GOAL.regFiling, name: 'Regulatory Filing', icon: 'Stamp', color: '#E11D48',
       desc: 'All regulatory dossier components are assembled: technical summary, performance data, labeling, and risk-benefit analysis. Pre-submission feedback from FDA has been incorporated.',
       endType: null, prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'The regulatory dossier is assembled for {{regulatory_pathway}} submission with {{predicate_device}} as the predicate. Targeting {{submission_quarter}} — all technical documentation is ready.' },
+      achievedPrompt: 'Acknowledge that the regulatory dossier assembly is a culmination of all the work streams. Reference the {{regulatory_pathway}} and {{predicate_device}} as the strategic anchors. Ask about the pre-submission feedback: "How did the pre-sub go? Were there any FDA comments that changed the filing strategy?" This shows you understand the regulatory process has iteration. Reference {{submission_quarter}} as the target. Naturally lead into the final submission step. Use an authoritative but collaborative tone — you\'re a regulatory advisor, not a cheerleader.' },
 
     // ── Layer 4: terminal goal ──
     { id: GOAL.fdaSubmission, name: 'FDA Submission', icon: 'Send', color: '#F97316',
       desc: 'The 510(k) has been submitted to FDA with a tracking number and target date.',
       endType: 'continue', prerequisiteGate: 'all', forkType: 'parallel',
-      achievedPrompt: 'Congratulate the team — the {{regulatory_pathway}} has been submitted to FDA targeting {{submission_quarter}}! The launch plan for {{market_launch_region}} with {{reimbursement_strategy}} reimbursement strategy is the next frontier. A major milestone for the program.' },
+      achievedPrompt: 'This is the culmination of the program — express genuine respect for the work. Reference the full journey: the {{regulatory_pathway}} pathway, the {{predicate_device}} predicate, the {{submission_quarter}} target. Ask what\'s next for the team: "With the filing submitted, what\'s the plan while waiting for FDA response? Is the {{market_launch_region}} launch team already ramping up the {{reimbursement_strategy}} reimbursement strategy?" Frame the conversation as forward-looking even though the session is ending. Close warmly but professionally — express that you enjoyed working through the design control landscape with them. Do NOT be overly celebratory or use exclamation marks excessively — match the tone of a senior advisor wrapping up an engagement.' },
   ];
 
   for (let i = 0; i < goals.length; i++) {
@@ -982,6 +996,9 @@ async function run() {
     { goalId: GOAL.fdaSubmission, varId: VAR.submissionQuarter, required: true },
     { goalId: GOAL.fdaSubmission, varId: VAR.marketLaunchRegion, required: false },
     { goalId: GOAL.fdaSubmission, varId: VAR.reimbursementStrategy, required: false },
+    // User Intake
+    { goalId: GOAL.userIntake, varId: VAR.userName, required: false },
+    { goalId: GOAL.userIntake, varId: VAR.userEmail, required: false },
   ];
   for (const b of goalBindings) {
     await pool.query(`
@@ -1045,7 +1062,7 @@ async function run() {
     `, [id(), grn.goalId, grn.nordId]);
   }
 
-  console.log('  ✅ 12 Goals (with DAG + variable bindings + relevant nords + achieved prompts)');
+  console.log('  ✅ 13 Goals (with DAG + variable bindings + relevant nords + achieved prompts)');
 
   /* ══════════════════════════════════════════════════════════════════════
    * PERSONAS (5) — with mental models + category weights + goal weights
@@ -1338,8 +1355,8 @@ async function run() {
 ║  59 Nords (with intentional data gaps)           ║
 ║  ~85 Connections (with typed properties)         ║
 ║   5 Personas (mental models + weights)           ║
-║  12 Goals (complex DAG + bindings + relevant)    ║
-║  15 Project Variables (5 groups, 3 boolean)      ║
+║  13 Goals (complex DAG + bindings + intake)     ║
+║  17 Project Variables (6 groups, 3 boolean)      ║
 ║   3 Test Scenarios (persona-aligned)             ║
 ║   5 Showcase Projects (dashboard filler)         ║
 ║                                                  ║

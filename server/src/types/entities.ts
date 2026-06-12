@@ -47,6 +47,8 @@ export interface Project {
   default_persona_id: string | null;
   default_start_nord_id: string | null;
   default_end_nord_id: string | null;
+  agent_name: string;
+  agent_icon: string;
   is_demo: boolean;
   graph_only: boolean;
   created_at: Date;

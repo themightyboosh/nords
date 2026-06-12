@@ -125,16 +125,21 @@
 }
 
 /* ── Access Token Styles ── */
+.nords-form__token-reveal-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 10px;
+}
+
 .nords-form__token-reveal {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
   border-radius: var(--nords-radius-md);
   background: var(--nords-color-bg-surface);
   border: 1px solid var(--nords-color-accent);
-  margin-bottom: 10px;
 }
 
 .nords-form__token-reveal code {
@@ -144,6 +149,80 @@
   word-break: break-all;
   flex: 1;
   min-width: 200px;
+}
+
+/* ── MCP Connection Details ── */
+.nords-form__mcp-details {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: var(--nords-radius-md);
+  background: var(--nords-color-bg-base, rgba(0, 0, 0, 0.15));
+  border: 1px solid var(--nords-color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nords-form__mcp-details-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--nords-color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.nords-form__mcp-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.nords-form__mcp-label {
+  flex-shrink: 0;
+  width: 90px;
+  color: var(--nords-color-text-tertiary);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nords-form__mcp-value {
+  font-family: var(--nords-font-mono);
+  font-size: 11px;
+  color: var(--nords-color-text-primary);
+  word-break: break-all;
+}
+
+.nords-form__mcp-config {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--nords-color-border-subtle);
+}
+
+.nords-form__mcp-config-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--nords-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nords-form__mcp-config-code {
+  font-family: var(--nords-font-mono);
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--nords-color-text-secondary);
+  background: var(--nords-color-bg-surface);
+  border: 1px solid var(--nords-color-border-default);
+  border-radius: var(--nords-radius-sm);
+  padding: 10px 12px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 220px;
 }
 
 .nords-form__token-list {

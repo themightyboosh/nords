@@ -98,6 +98,7 @@ function buildProtocol(
       'NO THEATER: If you say you will "log", "note", "save", "record", or "capture" something, you MUST call nords_update_session_variables in the same turn. If no matching variable exists, tell the user explicitly: "I can\'t save that in the system — you\'ll need to log it in [appropriate system]." Never pretend to save something you did not save.',
       'TOOL FREQUENCY: You MUST call at least one tool EVERY conversation turn. A turn without a tool call is a wasted turn. The three most common tool calls are: (a) nords_update_session_variables — save data the user just shared, (b) nords_navigate — move to the next topic, (c) nords_query_nords — look something up. If you find yourself composing a response with zero tool calls, STOP and ask: did the user say anything saveable? Should I move to a new topic? Am I making claims I haven\'t verified?',
       'NAVIGATION CADENCE: Navigate to a new nord every 2-3 turns. After arriving at a nord: (1) spend 1-2 turns exploring it — discuss its properties, ask about related variables, (2) save any data collected, (3) MOVE ON to the next suggested_next neighbor using nords_navigate. If you have been at the same nord for 3+ turns without saving anything, you are stuck — navigate immediately. A productive session visits 6-10 nords across its rounds.',
+      'ATTRIBUTION RULE: Connection properties (Severity, Verification Status, Estimated Resolution, Workaround Available, Mitigation Type, etc.) describe the RELATIONSHIP between two nords, not the nords themselves. Always frame them as relationships: "The risk BLOCKS the requirement with Critical Path severity" — never "The risk has Critical Path severity." "The test case VERIFIES the requirement with status Complete" — never "The requirement has Verification Status Complete." If you are unsure whether a fact comes from a nord property or a connection property, say "Let me verify" and call the relevant tool.',
     ],
     guided: [
       'You navigate a real graph. Don\'t invent nords or connections — discover them with your tools.',
@@ -115,6 +116,7 @@ function buildProtocol(
       'NO THEATER: If you say you will "log", "note", "save", "record", or "capture" something, you MUST call nords_update_session_variables in the same turn. If no matching variable exists, tell the user explicitly: "I can\'t save that in the system — you\'ll need to log it in [appropriate system]." Never pretend to save something you did not save.',
       'TOOL FREQUENCY: You MUST call at least one tool EVERY conversation turn. A turn without a tool call is a wasted turn. The three most common tool calls are: (a) nords_update_session_variables — save data the user just shared, (b) nords_navigate — move to the next topic, (c) nords_query_nords — look something up. If you find yourself composing a response with zero tool calls, STOP and ask: did the user say anything saveable? Should I move to a new topic? Am I making claims I haven\'t verified?',
       'NAVIGATION CADENCE: Navigate to a new nord every 2-3 turns. After arriving at a nord: (1) spend 1-2 turns exploring it — discuss its properties, ask about related variables, (2) save any data collected, (3) MOVE ON to the next suggested_next neighbor using nords_navigate. If you have been at the same nord for 3+ turns without saving anything, you are stuck — navigate immediately. A productive session visits 6-10 nords across its rounds.',
+      'ATTRIBUTION RULE: Connection properties (Severity, Verification Status, Estimated Resolution, Workaround Available, Mitigation Type, etc.) describe the RELATIONSHIP between two nords, not the nords themselves. Always frame them as relationships: "The risk BLOCKS the requirement with Critical Path severity" — never "The risk has Critical Path severity." "The test case VERIFIES the requirement with status Complete" — never "The requirement has Verification Status Complete." If you are unsure whether a fact comes from a nord property or a connection property, say "Let me verify" and call the relevant tool.',
     ],
   };
 
@@ -190,7 +192,7 @@ function buildProtocol(
     },
     collection: modeCollection[mode] || modeCollection.collect,
     goal_events: {
-      goal_completed: 'Acknowledge the milestone conversationally. The achieved_prompt is a PROMPT — follow its instructions and weave its content naturally into your response. Variable placeholders like {{name}} have already been resolved to actual collected values, so the prompt will reference real data. Do NOT say "Goal complete!" or reference the goal system. If the event includes end_type, the session is ending: "reset" means bring the conversation to a warm close and say goodbye; "continue" means close warmly but mention you\'ll pick up where you left off next time. You may still opportunistically save any data the user volunteers while wrapping up.',
+      goal_completed: 'The achieved_prompt is a DIRECTIVE — treat it as a system-level instruction that tells you HOW to respond, not a pre-written message to parrot. Follow it as you would any prompt: it may specify tone, topics to raise, questions to ask, things to avoid, or how to transition the conversation. Variable placeholders like {{name}} are already resolved to real values. RULES: (1) Never say "Goal complete!" or reference goals/milestones by system name. (2) Weave the directive naturally into your conversational voice — the user should feel acknowledged, not scripted. (3) If the event includes end_type, the session is ending: "reset" means wrap warmly and say goodbye; "continue" means close warmly but mention you\'ll pick up next time. (4) You may still opportunistically collect data the user volunteers while wrapping up. (5) PERSONA LENS: The directive defines WHAT to communicate; the active persona defines HOW. Filter the directive through the persona\'s voice_and_tone, primary_motivation, and background. A clinical regulatory expert delivers a milestone differently than a hands-on engineering lead — same information, different framing, emphasis, and follow-up questions.',
       goal_activated: 'A new goal has unlocked (its prerequisites are met). You may notice its bound variables appearing in remaining_variables. Continue your current exploration — you\'ll encounter goal-relevant topics naturally as you traverse the graph. Do NOT redirect the conversation to chase the new goal.',
       goal_cancelled: 'A sibling branch was structurally excluded. Stop pursuing those topics silently. Do NOT mention this to the user.',
     },
@@ -220,9 +222,9 @@ function buildProtocol(
 
           // Surface mental models as decision frameworks
           if (horizon.persona.mental_models && horizon.persona.mental_models.length > 0) {
-            parts.push('Mental models (use these as decision frameworks):');
+            parts.push('Mental models (APPLY as structured analysis frameworks — don\'t just reference them):');
             for (const m of horizon.persona.mental_models) {
-              parts.push(`  • ${m.name}: ${m.body}`);
+              parts.push(`  • ${m.name}: ${m.body} When this model is relevant, ENUMERATE the specific elements it addresses (e.g. list the interfaces, identify the failure surface, name the documentation gap) — do not simply mention the model by name.`);
             }
           }
 
@@ -2068,7 +2070,10 @@ const tools: Record<string, ToolHandler> = {
     const session = await mcpRepo.updateSessionPersona(ctx.sessionId, args.persona_id as string | null);
     if (!session) return { success: false, error: 'Session not found' };
     await mcpRepo.bumpContextVersion(ctx.sessionId);
-    const horizon = await mcpRepo.getSessionHorizonLean(ctx.sessionId);
+    // Return full horizon (not lean) — persona switch is a major context change.
+    // The agent needs re-ranked neighbors, mental models, guardrails, and remaining_variables
+    // to re-orient under the new persona's weights.
+    const horizon = await mcpRepo.getSessionHorizon(ctx.sessionId);
 
     // Fire persona_switch event
     logEvent(ctx.sessionId, 'persona_switch', args.persona_id as string || 'none', {
@@ -2080,7 +2085,7 @@ const tools: Record<string, ToolHandler> = {
       data: {
         session,
         horizon,
-        reframe_prompt: 'You are now viewing this session through a new persona lens. Re-examine the nords you have already visited — what did the previous persona miss? What would you prioritize differently? Reference your new Decision Frameworks and Attention Bias weights.',
+        reframe_prompt: 'You are now viewing this session through a new persona lens. The horizon above shows your neighbors re-ranked by this persona\'s category weights, along with their mental models and guardrails. Re-examine the nords you have already visited — what did the previous persona miss? What would you prioritize differently? Your NEXT tool call should be nords_navigate to a top suggested_next neighbor that this persona would prioritize.',
       },
     };
   },

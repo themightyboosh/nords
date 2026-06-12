@@ -7,12 +7,12 @@
 import { query, queryOne, pool } from '../db.js';
 
 // ── Fixture: Create a throwaway project ──
-export async function createTestProject(name: string = 'Test Project'): Promise<string> {
+export async function createTestProject(name: string = 'Test Project', opts?: { project_mode?: string }): Promise<string> {
   const row = await queryOne<{ id: string }>(`
     INSERT INTO projects (name, description, purpose, mcp_enabled, mcp_capture_data, mcp_mutable, project_mode)
-    VALUES ($1, 'test', 'test', true, true, true, 'guided')
+    VALUES ($1, 'test', 'test', true, true, true, $2)
     RETURNING id
-  `, [name + ' ' + Date.now()]);
+  `, [name + ' ' + Date.now(), opts?.project_mode ?? 'guided']);
   return row!.id;
 }
 

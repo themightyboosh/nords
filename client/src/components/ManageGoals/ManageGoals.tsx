@@ -218,7 +218,7 @@ function GoalEditor({ goal, onUpdate, onDelete }: GoalEditorProps) {
           value={achievedPrompt}
           onChange={e => setAchievedPrompt(e.target.value)}
           onBlur={() => handleBlur('achieved_prompt', achievedPrompt || null)}
-          placeholder="AI instruction when this goal is achieved (e.g., 'Summarize the match and express excitement')"
+          placeholder="Instruction for the AI when this goal completes. Write as a directive: what to say, how to say it, what to suggest next, and what to avoid. Use {{variable_name}} for collected values."
           rows={3}
         />
       </div>

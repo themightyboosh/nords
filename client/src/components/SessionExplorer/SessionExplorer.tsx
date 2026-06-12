@@ -14,7 +14,7 @@ import {
   X, Download, Play, Filter, MessageSquare, Activity, BarChart3,
   ChevronRight, Clock, ArrowRight, CheckCircle2, XCircle, AlertCircle,
   Bot, User, Wrench, Target, Variable as VariableIcon, Navigation, Zap,
-  Layers, Database,
+  Layers, Database, ThumbsUp, ShieldAlert, Shield, Loader2, ChevronDown,
 } from 'lucide-react';
 import './SessionExplorer.css';
 
@@ -109,6 +109,11 @@ export function SessionExplorer({ projectId, open, onClose, onReplay }: Props) {
   const exportRef = useRef<HTMLDivElement>(null);
   const [collectionVars, setCollectionVars] = useState<any>(null);
   const [varsLoading, setVarsLoading] = useState(false);
+  const [metricsData, setMetricsData] = useState<any>(null);
+  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [scoring, setScoring] = useState(false);
+  const [expandedScorer, setExpandedScorer] = useState<string | null>(null);
+  const [expandedVarId, setExpandedVarId] = useState<string | null>(null);
 
   // ── Load sessions ──
   const loadSessions = useCallback(async () => {
@@ -155,6 +160,32 @@ export function SessionExplorer({ projectId, open, onClose, onReplay }: Props) {
       .catch(err => console.error('Failed to load variables', err))
       .finally(() => setVarsLoading(false));
   }, [tab, selectedSessionId, collectionVars]);
+
+  // ── Load scorer metrics when metrics tab is selected ──
+  useEffect(() => {
+    if (tab !== 'metrics' || !selectedSessionId) return;
+    setMetricsLoading(true);
+    api.get<any>(`/api/sessions/${selectedSessionId}/metrics`)
+      .then(data => setMetricsData(data))
+      .catch(err => console.error('Failed to load metrics', err))
+      .finally(() => setMetricsLoading(false));
+  }, [tab, selectedSessionId]);
+
+  // ── Score session on demand ──
+  const handleScoreSession = async () => {
+    if (!selectedSessionId || scoring) return;
+    setScoring(true);
+    try {
+      await api.post<any>(`/api/sessions/${selectedSessionId}/score`, {});
+      // Refresh metrics after scoring
+      const data = await api.get<any>(`/api/sessions/${selectedSessionId}/metrics`);
+      setMetricsData(data);
+    } catch (err) {
+      console.error('Failed to score session', err);
+    } finally {
+      setScoring(false);
+    }
+  };
 
   // ── Replay ──
   const handleReplay = async () => {
@@ -448,79 +479,220 @@ export function SessionExplorer({ projectId, open, onClose, onReplay }: Props) {
                       </div>
                     </div>
                   ) : tab === 'metrics' ? (
-                    /* Metrics tab */
+                    /* Metrics tab — scorer plugin cards */
                     <div className="session-explorer__metrics">
-                      <div className="session-explorer__metrics-grid">
-                        <div className="session-explorer__metric-card">
-                          <span className="session-explorer__metric-label">Source</span>
-                          <span className="session-explorer__metric-value" style={{ color: SOURCE_LABELS[selectedSession?.source_type || 'chat']?.color }}>
-                            {SOURCE_LABELS[selectedSession?.source_type || 'chat']?.label}
-                          </span>
+                      {metricsLoading ? (
+                        <div className="session-explorer__empty">Loading metrics...</div>
+                      ) : !metricsData ? (
+                        <div className="session-explorer__empty">
+                          <BarChart3 size={24} strokeWidth={1} style={{ opacity: 0.3 }} />
+                          <p>Select a session to view metrics</p>
                         </div>
-                        <div className="session-explorer__metric-card">
-                          <span className="session-explorer__metric-label">Messages</span>
-                          <span className="session-explorer__metric-value">{eventTypeCounts['user_message'] || 0}</span>
-                        </div>
-                        <div className="session-explorer__metric-card">
-                          <span className="session-explorer__metric-label">Tool Calls</span>
-                          <span className="session-explorer__metric-value">{eventTypeCounts['tool_call'] || 0}</span>
-                        </div>
-                        <div className="session-explorer__metric-card">
-                          <span className="session-explorer__metric-label">Variables Set</span>
-                          <span className="session-explorer__metric-value">{eventTypeCounts['variable_set'] || 0}</span>
-                        </div>
-                        <div className="session-explorer__metric-card">
-                          <span className="session-explorer__metric-label">Goals Completed</span>
-                          <span className="session-explorer__metric-value">{eventTypeCounts['goal_completed'] || 0}</span>
-                        </div>
-                        <div className="session-explorer__metric-card">
-                          <span className="session-explorer__metric-label">Traversals</span>
-                          <span className="session-explorer__metric-value">{eventTypeCounts['traversal'] || 0}</span>
-                        </div>
-                        <div className="session-explorer__metric-card">
-                          <span className="session-explorer__metric-label">Duration</span>
-                          <span className="session-explorer__metric-value">
-                            {selectedSession ? formatDuration(selectedSession.started_at, selectedSession.ended_at) : '—'}
-                          </span>
-                        </div>
-                        {selectedSession?.nps_score && (
-                          <div className="session-explorer__metric-card">
-                            <span className="session-explorer__metric-label">NPS Score</span>
-                            <span className="session-explorer__metric-value session-explorer__nps-big">
-                              {selectedSession.nps_score}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                      ) : (
+                        <>
+                          {/* Score Session button */}
+                          {!metricsData.has_been_scored && (
+                            <div className="session-explorer__score-cta">
+                              <button
+                                className="session-explorer__score-btn"
+                                onClick={handleScoreSession}
+                                disabled={scoring}
+                              >
+                                {scoring ? (
+                                  <><Loader2 size={14} className="spin" /> Scoring…</>
+                                ) : (
+                                  <><BarChart3 size={14} /> Score This Session</>
+                                )}
+                              </button>
+                              <span className="session-explorer__score-hint">
+                                Runs hallucination, guardrail, and NPS analysis (~30s)
+                              </span>
+                            </div>
+                          )}
 
-                      {/* Event breakdown */}
-                      <h4 className="session-explorer__metrics-section-title">Event Breakdown</h4>
-                      <div className="session-explorer__event-breakdown">
-                        {(() => {
-                          const maxCount = Math.max(...Object.values(eventTypeCounts), 1);
-                          return Object.entries(eventTypeCounts)
-                            .sort((a, b) => b[1] - a[1])
-                            .map(([type, count]) => (
-                              <div key={type} className="session-explorer__breakdown-row">
-                                <span
-                                  className="session-explorer__event-type-dot"
-                                  style={{ backgroundColor: ACTION_COLORS[type] || '#6b7280' }}
-                                />
-                                <span className="session-explorer__breakdown-label">{type.replace(/_/g, ' ')}</span>
-                                <span className="session-explorer__breakdown-count">{count}</span>
-                                <div className="session-explorer__breakdown-track">
-                                  <div className="session-explorer__breakdown-bar" style={{
-                                    width: `${(count / maxCount) * 100}%`,
-                                    backgroundColor: ACTION_COLORS[type] || '#6b7280',
-                                  }} />
+                          {/* Scorer plugin cards */}
+                          <div className="session-explorer__scorer-grid">
+                            {(metricsData.scorers || []).map((scorer: any) => {
+                              const result = scorer.result;
+                              const score = result?.score;
+                              const isExpanded = expandedScorer === scorer.key;
+
+                              // Color coding: green ≥7, yellow 4-6, red ≤3
+                              const scoreColor = score == null ? '#6b7280'
+                                : score >= 7 ? '#10b981'
+                                : score >= 4 ? '#f59e0b'
+                                : '#ef4444';
+
+                              const ScorerIcon = scorer.icon === 'Activity' ? Activity
+                                : scorer.icon === 'Navigation' ? Navigation
+                                : scorer.icon === 'ThumbsUp' ? ThumbsUp
+                                : scorer.icon === 'ShieldAlert' ? ShieldAlert
+                                : scorer.icon === 'Shield' ? Shield
+                                : scorer.icon === 'CheckCircle' ? CheckCircle2
+                                : BarChart3;
+
+                              return (
+                                <div
+                                  key={scorer.key}
+                                  className={`session-explorer__scorer-card ${isExpanded ? 'expanded' : ''} ${!result ? 'unscored' : ''}`}
+                                  onClick={() => setExpandedScorer(isExpanded ? null : scorer.key)}
+                                >
+                                  <div className="session-explorer__scorer-header">
+                                    <div className="session-explorer__scorer-icon" style={{ color: scoreColor }}>
+                                      <ScorerIcon size={16} />
+                                    </div>
+                                    <div className="session-explorer__scorer-info">
+                                      <span className="session-explorer__scorer-label">{scorer.label}</span>
+                                      <span className="session-explorer__scorer-desc">{scorer.description}</span>
+                                    </div>
+                                    <div className="session-explorer__scorer-score" style={{ color: scoreColor }}>
+                                      {score != null ? (
+                                        <span className="session-explorer__score-badge">{score}/10</span>
+                                      ) : (
+                                        <span className="session-explorer__score-na">
+                                          {!result ? '—' : 'N/A'}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {result && (
+                                      <ChevronDown size={14} className={`session-explorer__scorer-chevron ${isExpanded ? 'rotated' : ''}`} />
+                                    )}
+                                  </div>
+
+                                  {/* Expanded details */}
+                                  {isExpanded && result && (
+                                    <div className="session-explorer__scorer-details">
+                                      {result.details && (
+                                        <div className="session-explorer__scorer-detail-text">
+                                          {result.details}
+                                        </div>
+                                      )}
+                                      {result.passed != null && (
+                                        <div className={`session-explorer__scorer-status ${result.passed ? 'pass' : 'fail'}`}>
+                                          {result.passed ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                                          {result.passed ? 'Passed' : 'Issues detected'}
+                                        </div>
+                                      )}
+                                      {/* Engagement metadata: show event counts */}
+                                      {scorer.key === 'engagement' && result.metadata && (
+                                        <div className="session-explorer__engagement-stats">
+                                          <div className="session-explorer__stat-row">
+                                            <span>Messages</span><span>{result.metadata.messages || 0}</span>
+                                          </div>
+                                          <div className="session-explorer__stat-row">
+                                            <span>Tool Calls</span><span>{result.metadata.tool_calls || 0}</span>
+                                          </div>
+                                          <div className="session-explorer__stat-row">
+                                            <span>Variables Set</span><span>{result.metadata.variables_set || 0}</span>
+                                          </div>
+                                          <div className="session-explorer__stat-row">
+                                            <span>Goals Completed</span><span>{result.metadata.goals_completed || 0}</span>
+                                          </div>
+                                          <div className="session-explorer__stat-row">
+                                            <span>Traversals</span><span>{result.metadata.traversals || 0}</span>
+                                          </div>
+                                          <div className="session-explorer__stat-row">
+                                            <span>Rounds</span><span>{result.metadata.rounds || 0}</span>
+                                          </div>
+                                          <div className="session-explorer__stat-row">
+                                            <span>Tokens (in/out)</span>
+                                            <span>{(result.metadata.total_tokens_in || 0).toLocaleString()} / {(result.metadata.total_tokens_out || 0).toLocaleString()}</span>
+                                          </div>
+                                          <div className="session-explorer__stat-row">
+                                            <span>Avg Latency</span><span>{result.metadata.avg_latency_ms || 0}ms</span>
+                                          </div>
+                                        </div>
+                                      )}
+                                      {/* Nav health: show flags */}
+                                      {scorer.key === 'nav_health' && result.metadata?.flags?.length > 0 && (
+                                        <div className="session-explorer__nav-flags">
+                                          {result.metadata.flags.map((flag: string, i: number) => (
+                                            <div key={i} className="session-explorer__nav-flag">
+                                              <AlertCircle size={12} />
+                                              {flag}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                      {/* Completion: goal progress + variable breakdown */}
+                                      {scorer.key === 'completion' && result.metadata && (
+                                        <div className="session-explorer__completion-stats">
+                                          {/* Goal progress */}
+                                          {(result.metadata.goals_total as number) > 0 && (
+                                            <div className="session-explorer__completion-section">
+                                              <div className="session-explorer__completion-section-title">Goals</div>
+                                              <div className="session-explorer__progress-bar-row">
+                                                <span>{result.metadata.goals_completed as number}/{result.metadata.goals_total as number}</span>
+                                                <div className="session-explorer__progress-track">
+                                                  <div className="session-explorer__progress-fill" style={{
+                                                    width: `${result.metadata.goal_pct || 0}%`,
+                                                    background: (result.metadata.goal_pct as number) === 100 ? '#10b981' : '#f59e0b',
+                                                  }} />
+                                                </div>
+                                                <span className="session-explorer__progress-pct">{result.metadata.goal_pct || 0}%</span>
+                                              </div>
+                                              {(result.metadata.goal_names as any[])?.map((g: any, i: number) => (
+                                                <div key={i} className={`session-explorer__goal-item ${g.status}`}>
+                                                  {g.status === 'complete' ? <CheckCircle2 size={11} /> : g.status === 'active' ? <Target size={11} /> : <XCircle size={11} />}
+                                                  <span>{g.name}</span>
+                                                  <span className="session-explorer__goal-status">{g.status}</span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {/* Required vars */}
+                                          {(result.metadata.required_total as number) > 0 && (
+                                            <div className="session-explorer__completion-section">
+                                              <div className="session-explorer__completion-section-title">Required Variables</div>
+                                              <div className="session-explorer__progress-bar-row">
+                                                <span>{result.metadata.required_filled as number}/{result.metadata.required_total as number}</span>
+                                                <div className="session-explorer__progress-track">
+                                                  <div className="session-explorer__progress-fill" style={{
+                                                    width: `${result.metadata.required_pct || 0}%`,
+                                                    background: (result.metadata.required_pct as number) === 100 ? '#10b981' : '#ef4444',
+                                                  }} />
+                                                </div>
+                                                <span className="session-explorer__progress-pct">{result.metadata.required_pct || 0}%</span>
+                                              </div>
+                                              {(result.metadata.missing_required as string[])?.length > 0 && (
+                                                <div className="session-explorer__missing-vars">
+                                                  <span className="session-explorer__missing-label">Missing:</span>
+                                                  {(result.metadata.missing_required as string[]).map((name, i) => (
+                                                    <span key={i} className="session-explorer__missing-pill">{name}</span>
+                                                  ))}
+                                                </div>
+                                              )}
+                                            </div>
+                                          )}
+                                          {/* Optional vars */}
+                                          {(result.metadata.optional_total as number) > 0 && (
+                                            <div className="session-explorer__completion-section">
+                                              <div className="session-explorer__completion-section-title">Optional Variables</div>
+                                              <div className="session-explorer__progress-bar-row">
+                                                <span>{result.metadata.optional_filled as number}/{result.metadata.optional_total as number}</span>
+                                                <div className="session-explorer__progress-track">
+                                                  <div className="session-explorer__progress-fill" style={{
+                                                    width: `${result.metadata.optional_pct || 0}%`,
+                                                    background: '#3b82f6',
+                                                  }} />
+                                                </div>
+                                                <span className="session-explorer__progress-pct">{result.metadata.optional_pct || 0}%</span>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
-                              </div>
-                            ));
-                        })()}
-                      </div>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
                     </div>
                   ) : tab === 'variables' ? (
-                    /* Collection Variables tab */
+                    /* Collection Variables tab — flat list */
                     <div className="session-explorer__variables">
                       {varsLoading ? (
                         <div className="session-explorer__empty">Loading collection data...</div>
@@ -532,43 +704,61 @@ export function SessionExplorer({ projectId, open, onClose, onReplay }: Props) {
                       ) : (
                         <>
                           <div className="session-explorer__vars-summary">
-                            <span>{collectionVars.total_collected} variables collected across {collectionVars.groups.length} group{collectionVars.groups.length !== 1 ? 's' : ''}</span>
+                            <span>{collectionVars.total_collected} variable{collectionVars.total_collected !== 1 ? 's' : ''} collected</span>
                           </div>
-                          {collectionVars.groups.map((group: any) => (
-                            <div key={group.id || 'ungrouped'} className="session-explorer__var-group">
-                              <div className="session-explorer__var-group-header">
-                                <span
-                                  className="session-explorer__var-group-icon"
-                                  style={{ color: group.color || '#a78bfa' }}
+                          <div className="session-explorer__var-flat-list">
+                            {(collectionVars.variables || []).map((v: any) => {
+                              const isExpanded = expandedVarId === v.id;
+                              const displayValue = typeof v.value === 'object' ? JSON.stringify(v.value) : String(v.value);
+                              return (
+                                <div
+                                  key={v.id}
+                                  className={`session-explorer__var-row ${isExpanded ? 'expanded' : ''}`}
+                                  onClick={() => setExpandedVarId(isExpanded ? null : v.id)}
                                 >
-                                  <Layers size={14} />
-                                </span>
-                                <span className="session-explorer__var-group-name">{group.name}</span>
-                                <span className="session-explorer__var-group-count">{group.variables.length}</span>
-                              </div>
-                              <div className="session-explorer__var-list">
-                                {group.variables.map((v: any) => (
-                                  <div key={v.id} className="session-explorer__var-item">
-                                    <div className="session-explorer__var-top">
-                                      <span className="session-explorer__var-name">{v.name}</span>
-                                      <span className="session-explorer__var-value">
-                                        {typeof v.value === 'object' ? JSON.stringify(v.value) : String(v.value)}
-                                      </span>
-                                    </div>
-                                    {v.description && (
-                                      <div className="session-explorer__var-desc">{v.description}</div>
-                                    )}
-                                    <div className="session-explorer__var-meta">
-                                      <span className="session-explorer__var-type">{v.type}</span>
-                                      {v.collected_at_nord && (
-                                        <span className="session-explorer__var-nord">at {v.collected_at_nord}</span>
+                                  {/* Collapsed: Category: Variable = "value" */}
+                                  <div className="session-explorer__var-row-header">
+                                    <span className="session-explorer__var-category" style={{ color: v.group_color || '#a78bfa' }}>
+                                      {v.group_name}:
+                                    </span>
+                                    <span className="session-explorer__var-label">{v.name}</span>
+                                    <span className="session-explorer__var-eq">=</span>
+                                    <span className="session-explorer__var-val">"{displayValue}"</span>
+                                    <ChevronDown size={12} className={`session-explorer__var-chevron ${isExpanded ? 'rotated' : ''}`} />
+                                  </div>
+
+                                  {/* Expanded: description + conversation */}
+                                  {isExpanded && (
+                                    <div className="session-explorer__var-expanded">
+                                      {v.description && (
+                                        <div className="session-explorer__var-description">
+                                          {v.description}
+                                        </div>
+                                      )}
+                                      {v.conversation && (
+                                        <div className="session-explorer__var-convo">
+                                          <div className="session-explorer__var-convo-label">Collection Round</div>
+                                          <div className="session-explorer__var-convo-bubble user">
+                                            <User size={10} />
+                                            <span>{v.conversation.user_message}</span>
+                                          </div>
+                                          <div className="session-explorer__var-convo-bubble agent">
+                                            <Bot size={10} />
+                                            <span>{v.conversation.agent_response}</span>
+                                          </div>
+                                        </div>
+                                      )}
+                                      {!v.description && !v.conversation && (
+                                        <div className="session-explorer__var-no-context">
+                                          No additional context available
+                                        </div>
                                       )}
                                     </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </>
                       )}
                     </div>

@@ -40,6 +40,8 @@ interface ProjectData {
   purpose: string | null;
   icon: string | null;
   accent_color: string | null;
+  agent_name: string;
+  agent_icon: string;
 
   mcp_capture_data: boolean;
   mcp_mutable: boolean;
@@ -86,6 +88,7 @@ export function ProjectSettings({ isOpen, onClose, projectId, mode = 'edit', onP
   const [nordTypes, setNordTypes] = useState<NordTypeSummary[]>([]);
   const [selectedCategoryForNord, setSelectedCategoryForNord] = useState<string>('');
   const [showIconPicker, setShowIconPicker] = useState(false);
+  const [showAgentIconPicker, setShowAgentIconPicker] = useState(false);
 
 
 
@@ -103,6 +106,8 @@ export function ProjectSettings({ isOpen, onClose, projectId, mode = 'edit', onP
           purpose: data.purpose || '',
           icon: data.icon || 'Folder',
           accent_color: data.accent_color || '#6b7aed',
+          agent_name: data.agent_name || 'Assistant',
+          agent_icon: data.agent_icon || 'Bot',
 
           mcp_capture_data: data.mcp_capture_data,
           mcp_mutable: data.mcp_mutable,
@@ -185,6 +190,8 @@ export function ProjectSettings({ isOpen, onClose, projectId, mode = 'edit', onP
           purpose: form.purpose!.trim(),
           icon: form.icon,
           accent_color: form.accent_color,
+          agent_name: form.agent_name || 'Assistant',
+          agent_icon: form.agent_icon || 'Bot',
           project_mode: form.project_mode,
           mcp_mutable: form.mcp_mutable,
           graph_only: form.graph_only,
@@ -376,6 +383,50 @@ export function ProjectSettings({ isOpen, onClose, projectId, mode = 'edit', onP
             )}
           </div>
 
+
+          <div className="nords-form__divider" />
+
+          {/* ── Agent Identity ── */}
+          <div className="nords-form__field">
+            <label className="nords-form__label">Agent Identity</label>
+            <span className="nords-form__hint" style={{ marginBottom: '8px' }}>
+              Customize how the AI assistant appears in chat. This name and icon show in both the preview and shared chat.
+            </span>
+            <div className="nords-form__icon-name-row">
+              {(() => {
+                const AgentIcon = resolveIcon(form.agent_icon || 'Bot');
+                return (
+                  <button
+                    type="button"
+                    className="nords-form__icon-btn"
+                    onClick={() => setShowAgentIconPicker(!showAgentIconPicker)}
+                    title="Change agent icon"
+                    data-testid="agent-icon-btn"
+                  >
+                    <AgentIcon size={20} strokeWidth={1.6} style={{ color: form.accent_color || '#6b7aed' }} />
+                  </button>
+                );
+              })()}
+              <input
+                className="nords-form__input"
+                value={form.agent_name || ''}
+                onChange={e => setForm({ ...form, agent_name: e.target.value })}
+                placeholder="Assistant"
+              />
+            </div>
+            {showAgentIconPicker && (
+              <div style={{ marginTop: '8px' }}>
+                <IconPicker
+                  currentIcon={form.agent_icon || 'Bot'}
+                  accentColor={form.accent_color || '#6b7aed'}
+                  onSelect={(iconName) => {
+                    setForm({ ...form, agent_icon: iconName });
+                    setShowAgentIconPicker(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
 
           <div className="nords-form__divider" />
 

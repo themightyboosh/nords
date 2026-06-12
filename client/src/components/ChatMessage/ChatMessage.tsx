@@ -15,6 +15,7 @@ import React, { useState } from 'react';
 import {
   Bot, User, Zap, Wrench, ChevronDown, ChevronRight,
 } from 'lucide-react';
+import { resolveIcon } from '../../utils/iconRegistry';
 import './ChatMessage.css';
 
 export interface ToolCall {
@@ -35,6 +36,10 @@ export interface ChatMessageProps {
   tokensOut?: number | null;
   showMeta?: boolean;
   compact?: boolean;
+  /** Custom agent display name (defaults to 'Assistant') */
+  agentName?: string;
+  /** Custom agent icon name from Lucide registry (defaults to 'Bot') */
+  agentIcon?: string;
 }
 
 /**
@@ -142,13 +147,24 @@ export function ChatMessage({
   tokensOut,
   showMeta = false,
   compact = false,
+  agentName,
+  agentIcon,
 }: ChatMessageProps) {
+  // Resolve the assistant avatar icon
+  const assistantAvatarIcon = (() => {
+    if (agentIcon) {
+      const Icon = resolveIcon(agentIcon);
+      return <Icon size={compact ? 12 : 14} />;
+    }
+    return <Bot size={compact ? 12 : 14} />;
+  })();
+
   const avatarIcon = role === 'user' ? <User size={compact ? 12 : 14} />
-    : role === 'assistant' ? <Bot size={compact ? 12 : 14} />
+    : role === 'assistant' ? assistantAvatarIcon
     : <Zap size={compact ? 12 : 14} />;
 
   const roleLabel = role === 'user' ? 'User'
-    : role === 'assistant' ? 'Assistant'
+    : role === 'assistant' ? (agentName || 'Assistant')
     : 'System';
 
   return (

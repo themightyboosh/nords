@@ -23,8 +23,10 @@ import * as goalsRepo from '../repositories/goals.js';
 import { dispatchTool, type ToolContext } from './toolDispatch.js';
 import { buildToolDeclarations } from './geminiTools.js';
 import { query, queryOne } from '../db.js';
-import { logEvent, logEvents, getReplayData } from './sessionEvents.js';
+import { logEvent, logEvents, getReplayData, getSessionEvents } from './sessionEvents.js';
 import { mcpMessagesRepo } from '../repositories/mcpMessages.js';
+import type { ScorerInput } from './scorers/types.js';
+import { runAllScorers } from './scorers/registry.js';
 
 // ── Retry helper for transient Gemini API failures ──
 const MAX_API_RETRIES = 3;
@@ -243,6 +245,40 @@ export function computeScore(
   const totalToolCalls = transcript.reduce((sum, r) => sum + r.tool_calls.length, 0);
   const propertiesCount = Object.keys(propertiesCollected).length;
 
+  // ── Navigation health flags ──
+  const navHealthFlags: string[] = [];
+
+  // Shallow navigation: fewer than 4 unique nords visited in 6+ rounds
+  if ((navigationMetrics?.unique_nords_visited ?? 0) < 4 && rounds > 6) {
+    navHealthFlags.push(`shallow_navigation: visited ${navigationMetrics?.unique_nords_visited ?? 0} nords in ${rounds} rounds`);
+  }
+
+  // Freewheeling: consecutive rounds without ANY tool call
+  let maxConsecutiveNoTool = 0;
+  let currentNoTool = 0;
+  for (const r of transcript) {
+    if (r.tool_calls.length === 0) { currentNoTool++; }
+    else { maxConsecutiveNoTool = Math.max(maxConsecutiveNoTool, currentNoTool); currentNoTool = 0; }
+  }
+  maxConsecutiveNoTool = Math.max(maxConsecutiveNoTool, currentNoTool);
+  if (maxConsecutiveNoTool >= 3) {
+    navHealthFlags.push(`freewheeling: ${maxConsecutiveNoTool} consecutive rounds without tool calls`);
+  }
+
+  // Stuck: consecutive rounds without navigation (nords_navigate or nords_traverse_connection)
+  let maxConsecutiveNoNav = 0;
+  let currentNoNav = 0;
+  for (const r of transcript) {
+    const hasNav = r.tool_calls.some((tc: any) =>
+      ['nords_navigate', 'nords_traverse_connection'].includes(tc.name || tc.tool_name));
+    if (!hasNav) { currentNoNav++; }
+    else { maxConsecutiveNoNav = Math.max(maxConsecutiveNoNav, currentNoNav); currentNoNav = 0; }
+  }
+  maxConsecutiveNoNav = Math.max(maxConsecutiveNoNav, currentNoNav);
+  if (maxConsecutiveNoNav >= 4) {
+    navHealthFlags.push(`stuck: ${maxConsecutiveNoNav} consecutive rounds without navigation`);
+  }
+
   return {
     completion_pct: projectMode === 'explore' ? null : completionPct,
     rounds_used: rounds,
@@ -263,6 +299,10 @@ export function computeScore(
     traversal_ratio: navigationMetrics?.traversal_ratio ?? 0,
     search_count: navigationMetrics?.search_count ?? 0,
     peek_count: navigationMetrics?.peek_count ?? 0,
+    // Navigation health
+    max_consecutive_no_tool: maxConsecutiveNoTool,
+    max_consecutive_no_nav: maxConsecutiveNoNav,
+    nav_health_flags: navHealthFlags,
     // Goal metrics
     goals_completed: goalMetrics?.goals_completed ?? 0,
     goals_total: goalMetrics?.goals_total ?? 0,
@@ -824,6 +864,8 @@ export interface ScoreResults {
   userSentiment: string | null;
   hallucinationScore: number | null;
   hallucinationDetails: string | null;
+  guardrailScore: number | null;
+  guardrailViolations: string | null;
   passed: boolean;
   propertiesCollected: Record<string, unknown>;
   coverageGaps: Array<{ variable_id: string; name: string }>;
@@ -898,252 +940,65 @@ export async function scoreTestRun(
     }
   }
 
-  // ── 3. Navigation Metrics ──
-  // Use session_events (navigate + position_change) as the source of truth.
-  // mcp_traversals only captures neighbor-to-neighbor traversals, missing jumps.
-  // session_events captures ALL intentional navigation (traverse + jump).
-  const navEvents = await query<{ key: string; value: { from?: string; previous?: string; method?: string } }>(
-    `SELECT key, value FROM session_events
-     WHERE session_id = $1 AND action_type = 'navigate'
-     ORDER BY event_at`,
-    [sessionId]
-  );
-  // Also count position_change events for unique nords visited
-  const posEvents = await query<{ key: string; value: { previous?: string } }>(
-    `SELECT key, value FROM session_events
-     WHERE session_id = $1 AND action_type = 'position_change'
-     ORDER BY event_at`,
-    [sessionId]
-  );
+  // ── 3. Get all session events for scorer input ──
+  const allEvents = await getSessionEvents(sessionId);
 
-  // Traversal count = number of navigate events (both traversed + jumped)
-  const traversalCount = navEvents.length;
+  // ── 4. Build ScorerInput ──
+  const scorerInput: ScorerInput = {
+    sessionId,
+    projectId,
+    events: allEvents,
+    transcript,
+    projectMode,
+    scenario: {
+      user_profile: scenario.user_profile,
+      user_objective: scenario.user_objective,
+      user_context: scenario.user_context as Record<string, unknown>,
+      user_profile_custom: scenario.user_profile_custom,
+      user_model: scenario.user_model,
+      persona_id: scenario.persona_id,
+    },
+    genai,
+    scoringModel: scenario.user_model,
+  };
 
-  // Unique nords visited = union of all navigate targets + position_change keys
-  const visitedNordIds = new Set<string>();
-  for (const e of navEvents) {
-    visitedNordIds.add(e.key); // target nord
-    if (e.value?.from) visitedNordIds.add(e.value.from);
-  }
-  for (const e of posEvents) {
-    visitedNordIds.add(e.key);
-    if (e.value?.previous) visitedNordIds.add(e.value.previous);
-  }
-  const uniqueNordsVisited = visitedNordIds.size;
+  // ── 5. Run all scorer plugins ──
+  const scorerResults = await runAllScorers(scorerInput);
 
-  // Max chain depth = longest unbroken sequence of connected navigations
-  let maxChainDepth = 0;
-  if (navEvents.length > 0) {
-    let currentChain = 1;
-    for (let i = 1; i < navEvents.length; i++) {
-      // If the source of this navigation is the target of the previous one
-      if (navEvents[i].value?.from === navEvents[i - 1].key) {
-        currentChain++;
-      } else {
-        maxChainDepth = Math.max(maxChainDepth, currentChain);
-        currentChain = 1;
-      }
-    }
-    maxChainDepth = Math.max(maxChainDepth, currentChain);
-  }
+  // ── 6. Map scorer results to legacy score object ──
+  const engagementResult = scorerResults.find(r => r.key === 'engagement');
+  const navResult = scorerResults.find(r => r.key === 'nav_health');
+  const npsResult = scorerResults.find(r => r.key === 'nps');
+  const hallResult = scorerResults.find(r => r.key === 'hallucination');
+  const grResult = scorerResults.find(r => r.key === 'guardrail');
 
-  // Persona switches
-  const personaSwitchResult = await queryOne<{ count: string }>(
-    `SELECT COUNT(*) as count FROM session_events
-     WHERE session_id = $1 AND action_type = 'persona_switch'`,
-    [sessionId]
-  );
-  const personaSwitches = parseInt(personaSwitchResult?.count || '0');
-
-  // Traversal vs Search ratio (core positional metric)
-  // Count nords_navigate (new unified tool) + legacy names for backward compat
-  const navToolCounts = await query<{ key: string; count: string }>(
-    `SELECT key, COUNT(*) as count FROM session_events
-     WHERE session_id = $1
-       AND action_type = 'tool_call'
-       AND key IN ('nords_navigate', 'nords_traverse_connection', 'nords_query_nords', 'nords_get_nord')
-     GROUP BY key`,
-    [sessionId]
-  );
-  const navigateCalls = parseInt(navToolCounts.find(r => r.key === 'nords_navigate')?.count || '0');
-  const traverseCalls = parseInt(navToolCounts.find(r => r.key === 'nords_traverse_connection')?.count || '0');
-  const searchCalls = parseInt(navToolCounts.find(r => r.key === 'nords_query_nords')?.count || '0');
-  const peekCalls = parseInt(navToolCounts.find(r => r.key === 'nords_get_nord')?.count || '0');
-  const totalNavCalls = navigateCalls + traverseCalls + searchCalls + peekCalls;
-  const traversalRatio = totalNavCalls > 0 ? +((navigateCalls + traverseCalls) / totalNavCalls).toFixed(2) : 0;
-
-  // ── 3b. Goal Metrics ──
-  const goalCounts = await queryOne<{ total: string; completed: string }>(
-    `SELECT COUNT(*)::text AS total,
-            COUNT(*) FILTER (WHERE status = 'complete')::text AS completed
-     FROM mcp_session_goals
-     WHERE session_id = $1`,
-    [sessionId]
-  );
-  const goalsTotal = parseInt(goalCounts?.total || '0');
-  const goalsCompleted = parseInt(goalCounts?.completed || '0');
-
-  // ── 4. Compute score from event data ──
+  // Build backward-compatible score object
   const score = computeScore(transcript, completionPct, projectMode, propertiesCollected, coverageGaps, {
-    traversal_count: traversalCount,
-    unique_nords_visited: uniqueNordsVisited,
-    max_chain_depth: maxChainDepth,
-    persona_switches: personaSwitches,
-    traversal_ratio: traversalRatio,
-    search_count: searchCalls,
-    peek_count: peekCalls,
+    traversal_count: (navResult?.metadata?.traversal_count as number) ?? 0,
+    unique_nords_visited: (navResult?.metadata?.unique_nords_visited as number) ?? 0,
+    max_chain_depth: (navResult?.metadata?.max_chain_depth as number) ?? 0,
+    persona_switches: (navResult?.metadata?.persona_switches as number) ?? 0,
+    traversal_ratio: (navResult?.metadata?.traversal_ratio as number) ?? 0,
+    search_count: (navResult?.metadata?.search_count as number) ?? 0,
+    peek_count: (navResult?.metadata?.peek_count as number) ?? 0,
   }, {
-    goals_completed: goalsCompleted,
-    goals_total: goalsTotal,
+    goals_completed: (engagementResult?.metadata?.goals_completed as number) ?? 0,
+    goals_total: 0, // TODO: wire up goal totals from events
   });
 
-  // ── 4. NPS + Sentiment (LLM judge on reconstructed conversation) ──
-  let syntheticNps: number | null = null;
-  let userSentiment: string | null = null;
+  const syntheticNps = npsResult?.score ?? null;
+  const userSentiment = (npsResult?.metadata?.sentiment as string) ?? null;
+  const hallucinationScore = hallResult?.score ?? null;
+  const hallucinationDetails = hallResult?.details ?? null;
+  const guardrailScore = grResult?.score ?? null;
+  const guardrailViolations = grResult?.details ?? null;
 
-  try {
-    const syntheticUserPrompt = buildSyntheticUserPrompt(
-      scenario.user_profile,
-      scenario.user_objective,
-      scenario.user_context as Record<string, unknown>,
-      scenario.user_profile_custom
-    );
-
-    // Reconstruct the conversation for the NPS judge
-    const conversationSummary = transcript
-      .filter(r => r.user_msg || r.agent_msg)
-      .map(r => r.user_msg
-        ? `User: ${r.user_msg}\nAssistant: ${r.agent_msg}`
-        : `Assistant: ${r.agent_msg}`
-      ).join('\n\n');
-
-    const npsResponse = await retryGenerateContent(genai, {
-      model: scenario.user_model,
-      contents: [{
-        role: 'user',
-        parts: [{
-          text: `You just had the following conversation with an AI assistant:
-
-${conversationSummary}
-
-The conversation is now over. Based on your experience:
-1. On a scale of 0-10, how likely would you recommend this assistant to a friend? Respond with just the number.
-2. In exactly 2 sentences, describe how the experience felt from your perspective as a user.
-
-Format your response as:
-NPS: [number]
-SENTIMENT: [2 sentences]`
-        }],
-      }],
-      config: {
-        systemInstruction: syntheticUserPrompt,
-        temperature: 0.5,
-      },
-    }, 'nps-scoring');
-
-    const npsText = npsResponse.candidates?.[0]?.content?.parts
-      ?.filter((p: any) => p.text)
-      .map((p: any) => p.text)
-      .join('') || '';
-
-    const npsMatch = npsText.match(/NPS:\s*(\d+)/i);
-    if (npsMatch) syntheticNps = Math.min(10, Math.max(0, parseInt(npsMatch[1])));
-
-    const sentMatch = npsText.match(/SENTIMENT:\s*(.+)/is);
-    if (sentMatch) userSentiment = sentMatch[1].trim().slice(0, 500);
-  } catch (err) {
-    logger.warn('Failed to generate NPS/sentiment', { error: (err as Error).message });
-  }
-
-  // ── 5. Hallucination Score (LLM judge on transcript vs graph) ──
-  let hallucinationScore: number | null = null;
-  let hallucinationDetails: string | null = null;
-
-  try {
-    const graphNords = await query<{ title: string; type_name: string; properties: Record<string, unknown> }>(`
-      SELECT n.title, nt.name AS type_name, n.properties
-      FROM nords n JOIN nord_types nt ON nt.id = n.type_id
-      WHERE n.project_id = $1 AND n.deleted_at IS NULL
-      ORDER BY nt.name, n.title
-    `, [projectId]);
-
-    const graphConns = await query<{ source_title: string; target_title: string; type_name: string; direction: string }>(`
-      SELECT sn.title AS source_title, tn.title AS target_title, ct.name AS type_name, c.direction
-      FROM connections c
-      JOIN nords sn ON sn.id = c.source_nord_id
-      JOIN nords tn ON tn.id = c.target_nord_id
-      JOIN connection_types ct ON ct.id = c.type_id
-      WHERE c.project_id = $1 AND c.deleted_at IS NULL
-    `, [projectId]);
-
-    const snapshotLines: string[] = ['NORDS:'];
-    for (const n of graphNords) {
-      const propStr = n.properties && typeof n.properties === 'object'
-        ? Object.entries(n.properties).map(([k, v]) => `${k}: ${v}`).join(', ')
-        : '';
-      snapshotLines.push(`- [${n.type_name}] "${n.title}"${propStr ? ` — ${propStr}` : ''}`);
-    }
-    snapshotLines.push('', 'CONNECTIONS:');
-    for (const c of graphConns) {
-      const arrow = c.direction === 'both' ? '<-->' : '-->';
-      snapshotLines.push(`- "${c.source_title}" ${arrow}[${c.type_name}] "${c.target_title}"`);
-    }
-    const graphSnapshot = snapshotLines.join('\n');
-
-    const agentMessages = transcript
-      .map(r => r.agent_msg)
-      .filter(Boolean)
-      .join('\n---\n');
-
-    if (agentMessages.length > 50) {
-      const hallResponse = await retryGenerateContent(genai, {
-        model: scenario.user_model,
-        contents: [{
-          role: 'user',
-          parts: [{
-            text: `You are a grounding auditor. Review the AGENT's responses below and determine whether the factual claims about the project data are supported by the provided graph snapshot.
-
-GRAPH SNAPSHOT:
-${graphSnapshot}
-
-AGENT RESPONSES:
-${agentMessages}
-
-Instructions:
-1. Identify every factual claim the agent made about specific data (names, values, relationships, counts).
-2. Check each claim against the graph snapshot.
-3. A claim is "grounded" if the graph contains supporting data. A claim is "hallucinated" if it cannot be traced to the graph.
-4. Score 0-10 where 10 = every claim is grounded, 0 = every claim is fabricated.
-5. Conversational phrases, suggestions, and questions are NOT claims — ignore them.
-
-Format:
-HALLUCINATION_SCORE: [0-10]
-DETAILS: [Brief list of any hallucinated claims, or "None found" if fully grounded]`
-          }],
-        }],
-        config: { temperature: 0.2 },
-      }, 'hallucination-scoring');
-
-      const hallText = hallResponse.candidates?.[0]?.content?.parts
-        ?.filter((p: any) => p.text).map((p: any) => p.text).join('') || '';
-      const scoreMatch = hallText.match(/HALLUCINATION_SCORE:\s*(\d+)/i);
-      if (scoreMatch) hallucinationScore = Math.min(10, Math.max(0, parseInt(scoreMatch[1])));
-      const detailMatch = hallText.match(/DETAILS:\s*(.+)/is);
-      if (detailMatch) hallucinationDetails = detailMatch[1].trim().slice(0, 1000);
-    }
-  } catch (err) {
-    logger.warn('Failed to generate hallucination score', { error: (err as Error).message });
-  }
-
-  // ── 6. Determine pass/fail ──
-  // Pass if the session ended due to a terminating goal, session_end, or max_rounds.
-  // The key signal is goal_completed — it means the agent successfully navigated
-  // the graph and collected enough data to satisfy a terminating goal's bindings.
+  // ── 7. Determine pass/fail ──
   const passed = run.stop_reason === 'goal_completed'
     || run.stop_reason === 'session_end'
     || run.stop_reason === 'max_rounds';
 
-  // ── 7. Write score events to session_events ──
+  // ── 8. Legacy event writes (kept for backward compat with existing queries) ──
   if (syntheticNps !== null) {
     logEvent(sessionId, 'nps_score', 'synthetic', {
       score: syntheticNps,
@@ -1152,20 +1007,27 @@ DETAILS: [Brief list of any hallucinated claims, or "None found" if fully ground
   }
 
   if (hallucinationScore !== null) {
-    logEvent(sessionId, 'hallucination_score' as any, 'grounding_audit', {
+    logEvent(sessionId, 'hallucination_score', 'grounding_audit', {
       score: hallucinationScore,
       details: hallucinationDetails,
     });
   }
 
+  if (guardrailScore !== null) {
+    logEvent(sessionId, 'guardrail_score', 'compliance_audit', {
+      score: guardrailScore,
+      violations: guardrailViolations,
+    });
+  }
+
   logEvents(sessionId, [
     {
-      actionType: 'test_score' as any,
+      actionType: 'test_score',
       key: 'score',
       value: score,
     },
     {
-      actionType: 'test_result' as any,
+      actionType: 'test_result',
       key: passed ? 'passed' : 'failed',
       value: {
         passed,
@@ -1187,7 +1049,7 @@ DETAILS: [Brief list of any hallucinated claims, or "None found" if fully ground
     }] : []),
   ]);
 
-  // ── 8. Update session metadata ──
+  // ── 9. Update session metadata ──
   await mcpRepo.updateSessionMetadata(sessionId, {
     synthetic_nps: syntheticNps,
     user_sentiment: userSentiment,
@@ -1195,7 +1057,7 @@ DETAILS: [Brief list of any hallucinated claims, or "None found" if fully ground
     scenario_name: scenario.name,
   });
 
-  // ── 9. Write final scores to test_runs ──
+  // ── 10. Write final scores to test_runs ──
   await query(
     `UPDATE test_runs SET
       status = 'completed',
@@ -1218,7 +1080,7 @@ DETAILS: [Brief list of any hallucinated claims, or "None found" if fully ground
 
   logger.info('test.run.scored', {
     runId, sessionId,
-    completionPct, passed, syntheticNps, hallucinationScore,
+    completionPct, passed, syntheticNps, hallucinationScore, guardrailScore,
     rounds: transcript.length,
   });
 
@@ -1229,6 +1091,8 @@ DETAILS: [Brief list of any hallucinated claims, or "None found" if fully ground
     userSentiment,
     hallucinationScore,
     hallucinationDetails,
+    guardrailScore,
+    guardrailViolations,
     passed,
     propertiesCollected,
     coverageGaps,

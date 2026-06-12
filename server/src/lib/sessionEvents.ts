@@ -25,6 +25,7 @@ export type ActionType =
   // Navigation
   | 'traversal'
   | 'visit'
+  | 'navigate'
   | 'position_change'
   // Data collection
   | 'variable_set'
@@ -37,7 +38,16 @@ export type ActionType =
   | 'persona_switch'
   | 'nps_score'
   | 'error'
-  | 'completion_check';
+  | 'completion_check'
+  // Scoring & snapshots
+  | 'horizon_snapshot'
+  | 'scorer_result'
+  | 'hallucination_score'
+  | 'guardrail_score'
+  | 'test_score'
+  | 'test_result'
+  | 'test_properties'
+  | 'test_coverage_gaps';
 
 /**
  * Log a single session event.

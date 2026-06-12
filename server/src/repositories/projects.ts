@@ -16,8 +16,8 @@ export async function findByUser(userId: string): Promise<Project[]> {
 
 export async function create(project: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>): Promise<Project> {
   return queryOne<Project>(`
-    INSERT INTO projects (name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_mutable, goals_enabled, mcp_system_prompt, mcp_welcome_message, project_mode, end_prompt_suggestion, default_persona_id, default_start_nord_id, default_end_nord_id, accent_color, graph_only)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+    INSERT INTO projects (name, description, purpose, icon, created_by, mcp_enabled, mcp_capture_data, mcp_mutable, goals_enabled, mcp_system_prompt, mcp_welcome_message, project_mode, end_prompt_suggestion, default_persona_id, default_start_nord_id, default_end_nord_id, accent_color, graph_only, agent_name, agent_icon)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
     RETURNING *
   `, [
     project.name,
@@ -38,10 +38,12 @@ export async function create(project: Omit<Project, 'id' | 'created_at' | 'updat
     project.default_end_nord_id ?? null,
     project.accent_color ?? '#6b7aed',
     project.graph_only ?? false,
+    project.agent_name ?? 'Assistant',
+    project.agent_icon ?? 'Bot',
   ]) as Promise<Project>;
 }
 
-type UpdatableProjectFields = Pick<Project, 'name' | 'description' | 'purpose' | 'icon' | 'accent_color' | 'mcp_enabled' | 'mcp_capture_data' | 'mcp_mutable' | 'goals_enabled' | 'mcp_system_prompt' | 'mcp_welcome_message' | 'project_mode' | 'end_prompt_suggestion' | 'default_persona_id' | 'default_start_nord_id' | 'default_end_nord_id' | 'is_demo' | 'graph_only'>;
+type UpdatableProjectFields = Pick<Project, 'name' | 'description' | 'purpose' | 'icon' | 'accent_color' | 'mcp_enabled' | 'mcp_capture_data' | 'mcp_mutable' | 'goals_enabled' | 'mcp_system_prompt' | 'mcp_welcome_message' | 'project_mode' | 'end_prompt_suggestion' | 'default_persona_id' | 'default_start_nord_id' | 'default_end_nord_id' | 'is_demo' | 'graph_only' | 'agent_name' | 'agent_icon'>;
 
 export async function update(id: string, updates: Partial<UpdatableProjectFields>): Promise<Project | null> {
   const allowedKeys: (keyof UpdatableProjectFields)[] = [
@@ -49,7 +51,7 @@ export async function update(id: string, updates: Partial<UpdatableProjectFields
     'mcp_enabled', 'mcp_capture_data', 'mcp_mutable', 'goals_enabled', 'mcp_system_prompt', 'mcp_welcome_message',
     'project_mode', 'end_prompt_suggestion',
     'default_persona_id', 'default_start_nord_id', 'default_end_nord_id',
-    'is_demo', 'graph_only',
+    'is_demo', 'graph_only', 'agent_name', 'agent_icon',
   ];
 
   const setClauses: string[] = [];

@@ -240,13 +240,13 @@ export function GoalDetailDrawer({
                   <span>Achieved Prompt</span>
                 </div>
                 <p className="goal-detail-drawer__hint">
-                  Optional message the AI says when this goal completes.
+                  Behavioral directive for the AI when this goal completes. Write as an instruction — what to say, how to transition, what to suggest next. Use {'{'}{'{'}<code>variable_name</code>{'}'}{'}'}  for collected values.
                 </p>
                 <textarea
                   className="goal-detail-drawer__textarea"
                   value={goal.achieved_prompt || ''}
                   onChange={e => onUpdate(goal.id, { achieved_prompt: e.target.value || null })}
-                  placeholder="e.g. 'Great! We've captured everything we need for…'"
+                  placeholder="e.g. 'Warmly acknowledge that X is complete. Reference {{variable}} by name. Pivot the conversation toward Y — ask if they want to explore Z. Do NOT summarize the entire process.'"
                   rows={2}
                 />
               </div>

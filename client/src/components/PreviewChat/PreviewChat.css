@@ -576,3 +576,73 @@
   border-top: none;
 }
 
+/* ── Share Mode — Responsive Layout ── */
+
+/* Desktop: centered floating window on the grid canvas */
+@media (min-width: 641px) {
+  .preview-chat--share {
+    border-radius: var(--nords-radius-xl, 16px);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04);
+    width: 440px !important;
+    height: 85vh !important;
+    max-width: 90vw;
+    max-height: 90vh;
+    min-width: 360px;
+    min-height: 400px;
+    /* Center on the grid canvas */
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%);
+    resize: both;
+  }
+
+  .preview-chat--share .preview-chat__header {
+    border-radius: var(--nords-radius-xl, 16px) var(--nords-radius-xl, 16px) 0 0;
+  }
+}
+
+/* Mobile: full-screen, no chrome */
+@media (max-width: 640px) {
+  .preview-chat--share {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none;
+    max-height: none;
+    inset: 0 !important;
+    transform: none;
+  }
+
+  .preview-chat--share .preview-chat__header {
+    border-radius: 0;
+    padding: 12px 16px;
+  }
+
+  .preview-chat--share .preview-chat__messages {
+    padding: 16px;
+  }
+
+  .preview-chat--share .preview-chat__input-area {
+    padding: 12px 16px;
+  }
+}
+
+/* Shared share-mode styles (all breakpoints) */
+.preview-chat--share .preview-chat__grip-icon { display: none; }
+
+.preview-chat--share .preview-chat__title {
+  font-size: 14px;
+}
+
+.preview-chat--share .preview-chat__empty p {
+  font-size: 14px;
+}
+
+/* Spin animation for loading state */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

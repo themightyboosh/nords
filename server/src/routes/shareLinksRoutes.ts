@@ -63,6 +63,7 @@
 
 import { Router } from 'express';
 import * as shareLinksRepo from '../repositories/shareLinks.js';
+import { resolveUserId } from '../lib/resolveUser.js';
 import logger from '../lib/logger.js';
 
 const router = Router();
@@ -84,7 +85,7 @@ router.post('/projects/:id/share-links', async (req, res) => {
       persona_id_override,
       max_sessions,
       expires_at,
-      created_by: req.user?.uid || null,
+      created_by: await resolveUserId(req.user?.uid, req.user?.email),
       prefills,
     });
 
