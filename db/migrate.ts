@@ -3,8 +3,12 @@ import path from 'node:path';
 import pkg from 'pg';
 const { Pool } = pkg;
 
-// Determine environment - use DATABASE_URL from .env or fallback
-const connectionString = process.env.DATABASE_URL || 'postgres://danielcrowder@127.0.0.1:5432/nords_dev';
+// Require DATABASE_URL — no local PG fallback (we use Cloud SQL via proxy)
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error('✘  DATABASE_URL is not set. Start the Cloud SQL Proxy and source server/.env first.');
+  process.exit(1);
+}
 
 const pool = new Pool({ connectionString });
 
