@@ -40,10 +40,16 @@ async function createRecordingContext(browser: Browser): Promise<{ context: Brow
   });
   const page = await context.newPage();
 
-  // Enter macOS native fullscreen — hides tab bar, address bar, window frame.
-  // Cmd+Ctrl+F is Chrome's "Enter Full Screen" shortcut on macOS.
-  await page.keyboard.press('Meta+Control+f');
-  await page.waitForTimeout(800); // wait for macOS fullscreen animation
+  // Enter macOS native fullscreen via System Events (osascript).
+  // page.keyboard.press sends to the web page, not the browser window,
+  // so we use AppleScript to send ⌃⌘F at the OS level.
+  const { execSync } = await import('child_process');
+  try {
+    execSync(`osascript -e 'delay 0.5' -e 'tell application "System Events" to keystroke "f" using {control down, command down}'`);
+    await page.waitForTimeout(1200); // wait for macOS fullscreen animation
+  } catch {
+    // Non-fatal — may fail in CI
+  }
 
   return { context, page };
 }
