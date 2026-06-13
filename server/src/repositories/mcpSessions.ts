@@ -549,6 +549,24 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       const stage = resolveStageLabel(row.distance_x, stageLabels);
       const dirPreps = safeParseJSON<{ forward: string; reverse: string; both: string } | null>(row.conn_direction_prepositions, null);
 
+      // Resolve verb to a directional string.
+      // Verb can be plain text ("causes") or legacy JSON ('{"forward":"causes","backward":"caused by"}').
+      // Extract the appropriate directional form based on traversal direction.
+      const isOutgoing = row.is_outgoing;
+      let resolvedVerb: string | null = row.conn_verb;
+      if (row.conn_verb) {
+        try {
+          const parsed = JSON.parse(row.conn_verb);
+          if (typeof parsed === 'object' && parsed !== null) {
+            resolvedVerb = isOutgoing ? (parsed.forward || parsed.backward || row.conn_verb) : (parsed.backward || parsed.forward || row.conn_verb);
+          } else if (typeof parsed === 'string') {
+            resolvedVerb = parsed;
+          }
+        } catch {
+          // Not JSON — use as-is (plain text verb)
+        }
+      }
+
       // #2: session progress (now global, not per-neighbor)
       const session_progress = totalVarCount > 0 ? { filled: filledVarCount, required: totalVarCount, complete: filledVarCount >= totalVarCount } : null;
 
@@ -558,9 +576,9 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
           properties: row.neighbor_properties,
         },
         relationship: {
-          connection_id: row.conn_id, type_name: row.conn_type_name, verb: row.conn_verb,
+          connection_id: row.conn_id, type_name: row.conn_type_name, verb: resolvedVerb,
           direction: row.direction,
-          traversal_direction: row.is_outgoing ? 'outgoing' : 'incoming',
+          traversal_direction: isOutgoing ? 'outgoing' : 'incoming',
           direction_prepositions: dirPreps,
           measurement_mode: row.conn_measurement_mode, stage,
           distance_x: row.distance_x, distance_y: row.distance_y,
@@ -621,39 +639,51 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
   // 5b. Remaining variables — uncollected project variables
   // In guided mode, filter out variables exclusively bound to pending/cancelled goals
   // so the AI doesn't try to collect them before prerequisites are met.
-  const activeGoalIds = await query<{ goal_id: string }>(`
-    SELECT goal_id FROM mcp_session_goals
-    WHERE session_id = $1 AND status = 'active'
-  `, [sessionId]);
-  const activeGoalIdSet = new Set(activeGoalIds.map(r => r.goal_id));
-  const hasAnySessionGoals = activeGoalIdSet.size > 0 || (await query<{ id: string }>(
-    'SELECT id FROM mcp_session_goals WHERE session_id = $1 LIMIT 1', [sessionId]
-  )).length > 0;
+  //
+  // Phase 6: Merged 4 goal queries into 2:
+  //   (was: active goals, has-any check, var bindings, goal names → 4 queries)
+  //   (now: all session goals, bindings+names JOIN → 2 queries)
 
-  // Load all variable→goal bindings to know which variables are gated
-  const allVarBindings = hasAnySessionGoals
-    ? await query<{ variable_id: string; goal_id: string }>(`
-        SELECT variable_id, goal_id FROM goal_variable_bindings
-        WHERE goal_id IN (SELECT goal_id FROM mcp_session_goals WHERE session_id = $1)
+  // Query 1: Get ALL session goals (with status) — replaces active-goals + has-any-check
+  const allSessionGoalRows = await query<{ goal_id: string; status: string }>(`
+    SELECT goal_id, status FROM mcp_session_goals WHERE session_id = $1
+  `, [sessionId]);
+  const activeGoalIdSet = new Set(
+    allSessionGoalRows.filter(r => r.status === 'active').map(r => r.goal_id)
+  );
+  const hasAnySessionGoals = allSessionGoalRows.length > 0;
+
+  // Query 2: Get variable→goal bindings WITH goal names in one JOIN
+  //   (was: separate bindings query + separate goal names query)
+  const bindingsWithNames = hasAnySessionGoals
+    ? await query<{ variable_id: string; goal_id: string; goal_name: string }>(`
+        SELECT gvb.variable_id, gvb.goal_id, g.name AS goal_name
+        FROM goal_variable_bindings gvb
+        JOIN goals g ON g.id = gvb.goal_id
+        WHERE gvb.goal_id IN (SELECT goal_id FROM mcp_session_goals WHERE session_id = $1)
       `, [sessionId])
     : [];
   const varToGoals = new Map<string, string[]>();
-  for (const b of allVarBindings) {
+  const goalIdToName = new Map<string, string>();
+  for (const b of bindingsWithNames) {
     const arr = varToGoals.get(b.variable_id) || [];
     arr.push(b.goal_id);
     varToGoals.set(b.variable_id, arr);
+    goalIdToName.set(b.goal_id, b.goal_name);
   }
-
-  // Build goal_id → goal_name map for variable enrichment
-  // (sessionGoals is loaded later at line ~755, so we query goal names here)
-  const goalNameRows = hasAnySessionGoals
-    ? await query<{ id: string; name: string }>(`
-        SELECT g.id, g.name FROM goals g
-        JOIN mcp_session_goals sg ON sg.goal_id = g.id
-        WHERE sg.session_id = $1
-      `, [sessionId])
-    : [];
-  const goalIdToName = new Map(goalNameRows.map(r => [r.id, r.name]));
+  // Also add goal names for goals without variable bindings
+  if (hasAnySessionGoals && goalIdToName.size < allSessionGoalRows.length) {
+    const missingGoalIds = allSessionGoalRows
+      .filter(r => !goalIdToName.has(r.goal_id))
+      .map(r => r.goal_id);
+    if (missingGoalIds.length > 0) {
+      const extraNames = await query<{ id: string; name: string }>(
+        `SELECT id, name FROM goals WHERE id = ANY($1)`,
+        [missingGoalIds]
+      );
+      for (const g of extraNames) goalIdToName.set(g.id, g.name);
+    }
+  }
 
   // 5c. Topical relevance — which goals relate to the current nord position?
   // A variable is "topically relevant" if its goal connects to the current nord (or its type)

@@ -135,7 +135,7 @@ export async function createTestConnectionType(
   `, [
     projectId,
     name,
-    opts?.verb ? JSON.stringify({ forward: opts.verb, backward: opts.verb }) : '{}',
+    opts?.verb ?? null,
     opts?.defaultDirection ?? 'none',
     opts?.measurementMode ?? 'none',
   ]);
