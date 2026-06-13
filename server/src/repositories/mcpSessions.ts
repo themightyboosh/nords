@@ -549,9 +549,10 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       const stage = resolveStageLabel(row.distance_x, stageLabels);
       const dirPreps = safeParseJSON<{ forward: string; reverse: string; both: string } | null>(row.conn_direction_prepositions, null);
 
-      // Two semantic strings describe each connection:
-      //   1. verb_phrase — direction-resolved: "verifies" (outgoing) or "is verified by" (incoming)
-      //   2. stage — spectrum-resolved label from distance_x: "Protocol Ready", "Critical Blocker", etc.
+      // verb_phrase is direction-resolved ("verifies" or "is verified by") — used
+      // internally for the reason string but NOT exposed on the response shape.
+      // Consumers use verb + traversal_direction if they need the directional form.
+      // stage is the spectrum-resolved label ("Protocol Ready", "Critical Blocker").
       const isOutgoing = row.is_outgoing;
       const verbPhrase = row.conn_verb
         ? (isOutgoing ? row.conn_verb : `is ${row.conn_verb} by`)
@@ -566,8 +567,7 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
           properties: row.neighbor_properties,
         },
         relationship: {
-          connection_id: row.conn_id, type_name: row.conn_type_name,
-          verb: row.conn_verb, verb_phrase: verbPhrase,
+          connection_id: row.conn_id, type_name: row.conn_type_name, verb: row.conn_verb,
           direction: row.direction,
           traversal_direction: isOutgoing ? 'outgoing' : 'incoming',
           direction_prepositions: dirPreps,
@@ -840,9 +840,14 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       const personaModifier = 0.7 + (n.persona_bias * 0.6);
       score *= personaModifier;
 
-      // Build reason string from the two semantic strings
+      // Build reason from verb phrase + stage label
       const parts: string[] = [];
-      if (n.relationship.verb_phrase) parts.push(n.relationship.verb_phrase);
+      if (n.relationship.verb) {
+        const vp = n.relationship.traversal_direction === 'outgoing'
+          ? n.relationship.verb
+          : `is ${n.relationship.verb} by`;
+        parts.push(vp);
+      }
       if (n.relationship.stage) parts.push(n.relationship.stage);
       if (hasUrgency) {
         const urgentEntries = Object.entries(props)
@@ -856,11 +861,9 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
         title: n.nord.title,
         type_name: n.nord.type_name,
         verb: n.relationship.verb,
-        verb_phrase: n.relationship.verb_phrase,
         stage: n.relationship.stage,
         direction: n.relationship.direction,
         traversal_direction: n.relationship.traversal_direction,
-        distance_x: n.relationship.distance_x,
         connection_id: n.relationship.connection_id,
         explore_score: Math.round(score * 100) / 100,
         reason: parts.join(' · ') || 'connected neighbor',
