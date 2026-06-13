@@ -32,13 +32,27 @@ const CSS_ZOOM = 1.25;
 
 // ── Helpers ──
 
-/** Create a recording context with video capture */
+/** Create a recording context with video capture + fullscreen (no browser chrome) */
 async function createRecordingContext(browser: Browser): Promise<{ context: BrowserContext; page: Page }> {
   const context = await browser.newContext({
     viewport: VIEWPORT,
     recordVideo: { dir: VIDEO_DIR, size: VIEWPORT },
   });
   const page = await context.newPage();
+
+  // Force fullscreen via CDP — hides tab bar, address bar, all browser chrome.
+  // --kiosk doesn't work on macOS with Playwright's Chromium, so we use this instead.
+  try {
+    const cdp = await context.newCDPSession(page);
+    const { windowId } = await cdp.send('Browser.getWindowForTarget');
+    await cdp.send('Browser.setWindowBounds', {
+      windowId,
+      bounds: { windowState: 'fullscreen' },
+    });
+  } catch {
+    // CDP fullscreen may fail in CI or headless — silently continue
+  }
+
   return { context, page };
 }
 

@@ -19,7 +19,7 @@ export default defineConfig({
       args: [
         '--start-maximized',
         '--disable-infobars',
-        '--kiosk',
+        '--hide-scrollbars',
       ],
     },
   },
