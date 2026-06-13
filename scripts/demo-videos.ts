@@ -25,9 +25,8 @@ import * as path from 'path';
 const BASE_URL = 'http://localhost:5173';
 const VIDEO_DIR = 'videos/demo';
 
-// Record at 2560×1440. We inject CSS zoom (1.2) on <html> after page load
-// to make UI elements ~20% larger while keeping the full-resolution recording.
-const VIEWPORT = { width: 2560, height: 1440 };
+// No fixed viewport — the browser fills the native fullscreen window.
+// CSS zoom (1.25) makes UI elements ~25% larger for readability in recordings.
 const CSS_ZOOM = 1.25;
 
 // ── Helpers ──
@@ -35,21 +34,20 @@ const CSS_ZOOM = 1.25;
 /** Create a recording context with video capture + fullscreen (no browser chrome) */
 async function createRecordingContext(browser: Browser): Promise<{ context: BrowserContext; page: Page }> {
   const context = await browser.newContext({
-    viewport: VIEWPORT,
-    recordVideo: { dir: VIDEO_DIR, size: VIEWPORT },
+    viewport: null,  // fill the native fullscreen window
+    recordVideo: { dir: VIDEO_DIR, size: { width: 1920, height: 1080 } },
   });
   const page = await context.newPage();
 
   // Enter macOS native fullscreen via System Events (osascript).
-  // page.keyboard.press sends to the web page, not the browser window,
-  // so we use AppleScript to send ⌃⌘F at the OS level.
+  // execSync is fine here because the keystroke send is near-instant.
+  // (The previous `delay 0.5` inside osascript was what caused the browser timeout.)
   const { execSync } = await import('child_process');
+  await page.waitForTimeout(500); // let the window settle
   try {
-    execSync(`osascript -e 'delay 0.5' -e 'tell application "System Events" to keystroke "f" using {control down, command down}'`);
-    await page.waitForTimeout(1200); // wait for macOS fullscreen animation
-  } catch {
-    // Non-fatal — may fail in CI
-  }
+    execSync(`osascript -e 'tell application "System Events" to keystroke "f" using {control down, command down}'`);
+  } catch { /* non-fatal in CI */ }
+  await page.waitForTimeout(1200); // wait for macOS fullscreen animation
 
   return { context, page };
 }
