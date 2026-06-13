@@ -397,12 +397,23 @@ export interface SessionHorizon {
  * - Predicted path: 2-hop lookahead for likely route to completion
  */
 export async function getSessionHorizon(sessionId: string): Promise<SessionHorizon> {
-  // 1. Get session
-  const session = await queryOne<McpSession>(
-    'SELECT * FROM mcp_sessions WHERE id = $1',
-    [sessionId]
-  );
-  if (!session) {
+  // 1. Get session + project metadata in one JOIN (was 2-3 queries)
+  const sessionProject = await queryOne<
+    McpSession & {
+      project_mode: string; purpose: string | null;
+      default_end_nord_id: string | null; graph_only: boolean;
+      end_nord_id: string | null; end_nord_title: string | null;
+    }
+  >(`
+    SELECT s.*, p.project_mode, p.purpose, p.default_end_nord_id, p.graph_only,
+           en.id AS end_nord_id, en.title AS end_nord_title
+    FROM mcp_sessions s
+    JOIN projects p ON p.id = s.project_id
+    LEFT JOIN nords en ON en.id = p.default_end_nord_id AND en.deleted_at IS NULL
+    WHERE s.id = $1
+  `, [sessionId]);
+
+  if (!sessionProject) {
     return {
       current_nord: null, persona: null,
       completion: { filled: 0, required: 0, percentage: 0 },
@@ -415,22 +426,12 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     };
   }
 
-  // Fetch project metadata for session_meta
-  const projectRow = await queryOne<{
-    project_mode: string; purpose: string | null;
-    default_end_nord_id: string | null; graph_only: boolean;
-  }>(
-    'SELECT project_mode, purpose, default_end_nord_id, graph_only FROM projects WHERE id = $1',
-    [session.project_id]
-  );
-  let endNord: { id: string; title: string } | null = null;
-  if (projectRow?.default_end_nord_id) {
-    const en = await queryOne<{ id: string; title: string }>(
-      'SELECT id, title FROM nords WHERE id = $1 AND deleted_at IS NULL',
-      [projectRow.default_end_nord_id]
-    );
-    if (en) endNord = { id: en.id, title: en.title };
-  }
+  // Use sessionProject as the session (it has all McpSession fields via s.*)
+  const session = sessionProject;
+  const projectRow = sessionProject;
+  const endNord = sessionProject.end_nord_id
+    ? { id: sessionProject.end_nord_id, title: sessionProject.end_nord_title! }
+    : null;
 
   // Pre-fetch session variables for completion tracking
   const sessionVarRows = await query<{ variable_id: string; value: unknown; name: string }>(
@@ -443,17 +444,28 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
   const totalVarCount = sessionVarRows.length;
   const filledVarCount = sessionVarRows.filter(v => v.value != null && v.value !== '').length;
 
-  // 2. Current nord with properties (read-only context)
+  // Build filledVarIds once — reused by both completion and remaining_variables
+  const filledVarIds = new Set(
+    sessionVarRows
+      .filter(sv => sv.value !== undefined && sv.value !== null && sv.value !== '')
+      .map(sv => sv.variable_id)
+  );
+
+  // 2. Current nord + type in one JOIN (was 2 queries)
   let currentNord: SessionHorizon['current_nord'] = null;
+  let currentNordTypeId: string | null = null;
   if (session.current_nord_id) {
-    const nord = await queryOne<{ id: string; title: string; type_id: string; properties: Record<string, unknown> }>(
-      'SELECT id, title, type_id, properties FROM nords WHERE id = $1 AND deleted_at IS NULL',
+    const nord = await queryOne<{ id: string; title: string; type_id: string; properties: Record<string, unknown>; type_name: string }>(
+      `SELECT n.id, n.title, n.type_id, n.properties, nt.name AS type_name
+       FROM nords n
+       JOIN nord_types nt ON nt.id = n.type_id
+       WHERE n.id = $1 AND n.deleted_at IS NULL`,
       [session.current_nord_id]
     );
     if (nord) {
-      const nordType = await queryOne<{ name: string; properties_schema: string }>('SELECT name, properties_schema::text FROM nord_types WHERE id = $1', [nord.type_id]);
+      currentNordTypeId = nord.type_id;
       currentNord = {
-        id: nord.id, title: nord.title, type_name: nordType?.name || 'Unknown', properties: nord.properties,
+        id: nord.id, title: nord.title, type_name: nord.type_name, properties: nord.properties,
         session_progress: totalVarCount > 0 ? { filled: filledVarCount, required: totalVarCount, complete: filledVarCount >= totalVarCount } : null,
       };
     }
@@ -595,17 +607,10 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
     neighbors.splice(NEIGHBOR_LIMIT);
   }
 
-  // 5. Completion stats — variable-based
+  // 5. Completion stats — variable-based (reuses sessionVarRows and filledVarIds from above)
   const projectVars = await variablesRepo.findByProject(session.project_id);
   const requiredVarCount = projectVars.filter(v => v.required).length;
-  const sessionVars = await query<{ variable_id: string; value: unknown }>(`
-    SELECT variable_id, value FROM mcp_session_variables WHERE session_id = $1
-  `, [sessionId]);
-  const filledVarIds = new Set(
-    sessionVars
-      .filter(sv => sv.value !== undefined && sv.value !== null && sv.value !== '')
-      .map(sv => sv.variable_id)
-  );
+  // filledVarIds already built above — no duplicate query needed
   const filledRequiredCount = projectVars.filter(v => v.required && filledVarIds.has(v.id)).length;
   const completion = {
     filled: filledRequiredCount,
@@ -652,11 +657,9 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
 
   // 5c. Topical relevance — which goals relate to the current nord position?
   // A variable is "topically relevant" if its goal connects to the current nord (or its type)
+  // Uses currentNordTypeId from step 2 — no redundant re-fetch needed
   let topicalGoalIds = new Set<string>();
   if (session.current_nord_id) {
-    const currentNordRow = await queryOne<{ type_id: string }>(
-      'SELECT type_id FROM nords WHERE id = $1', [session.current_nord_id]
-    );
     const topicalGoals = await query<{ goal_id: string }>(`
       SELECT DISTINCT goal_id FROM (
         SELECT grn.goal_id FROM goal_relevant_nords grn
@@ -667,7 +670,7 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
         JOIN mcp_session_goals sg ON sg.goal_id = grnt.goal_id
         WHERE sg.session_id = $1 AND sg.status = 'active' AND grnt.nord_type_id = $3
       ) combined
-    `, [sessionId, session.current_nord_id, currentNordRow?.type_id || '00000000-0000-0000-0000-000000000000']);
+    `, [sessionId, session.current_nord_id, currentNordTypeId || '00000000-0000-0000-0000-000000000000']);
     topicalGoalIds = new Set(topicalGoals.map(r => r.goal_id));
   }
 
