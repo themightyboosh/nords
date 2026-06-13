@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import logger from './lib/logger.js';
+import { pool } from './db.js';
 import { initFirebaseAdmin } from './lib/firebaseAdmin.js';
 import { requireAuth } from './middleware/auth.js';
 import { requestLogger } from './middleware/requestLogger.js';
@@ -117,9 +118,32 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 // ── Start ──
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logger.info(`Nords API listening on port ${PORT}`);
   logger.info(`Swagger UI available at http://localhost:${PORT}/api-docs`);
 });
+
+// ── Graceful Shutdown ──
+function shutdown(signal: string) {
+  logger.info(`${signal} received — shutting down gracefully`);
+  server.close(async () => {
+    logger.info('HTTP server closed');
+    try {
+      await pool.end();
+      logger.info('Database pool drained');
+    } catch (err) {
+      logger.error('Error draining pool', { error: (err as Error).message });
+    }
+    process.exit(0);
+  });
+  // Force exit after 10s if connections don't drain
+  setTimeout(() => {
+    logger.warn('Graceful shutdown timed out — forcing exit');
+    process.exit(1);
+  }, 10_000);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 export default app;

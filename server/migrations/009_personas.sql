@@ -7,7 +7,7 @@
 
 BEGIN;
 
-INSERT INTO schema_migrations (name) VALUES ('009_personas');
+INSERT INTO schema_migrations (version) VALUES ('009_personas');
 
 -- ═══════════════════════════════════════════════════════════
 -- PERSONAS (Project-scoped AI persona definitions)
