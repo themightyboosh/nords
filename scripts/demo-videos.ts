@@ -40,18 +40,10 @@ async function createRecordingContext(browser: Browser): Promise<{ context: Brow
   });
   const page = await context.newPage();
 
-  // Force fullscreen via CDP — hides tab bar, address bar, all browser chrome.
-  // --kiosk doesn't work on macOS with Playwright's Chromium, so we use this instead.
-  try {
-    const cdp = await context.newCDPSession(page);
-    const { windowId } = await cdp.send('Browser.getWindowForTarget');
-    await cdp.send('Browser.setWindowBounds', {
-      windowId,
-      bounds: { windowState: 'fullscreen' },
-    });
-  } catch {
-    // CDP fullscreen may fail in CI or headless — silently continue
-  }
+  // Enter macOS native fullscreen — hides tab bar, address bar, window frame.
+  // Cmd+Ctrl+F is Chrome's "Enter Full Screen" shortcut on macOS.
+  await page.keyboard.press('Meta+Control+f');
+  await page.waitForTimeout(800); // wait for macOS fullscreen animation
 
   return { context, page };
 }

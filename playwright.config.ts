@@ -19,14 +19,14 @@ export default defineConfig({
       args: [
         '--start-maximized',
         '--disable-infobars',
-        '--hide-scrollbars',
+        '--kiosk',
       ],
     },
   },
   projects: [
     {
       name: 'chromium',
-      use: { channel: 'chromium' },
+      use: { channel: 'chrome' },  // system Chrome — honors --kiosk on macOS
     },
   ],
   outputDir: './screenshots/test-results',
