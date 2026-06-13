@@ -549,23 +549,13 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       const stage = resolveStageLabel(row.distance_x, stageLabels);
       const dirPreps = safeParseJSON<{ forward: string; reverse: string; both: string } | null>(row.conn_direction_prepositions, null);
 
-      // Resolve verb to a directional string.
-      // Verb can be plain text ("causes") or legacy JSON ('{"forward":"causes","backward":"caused by"}').
-      // Extract the appropriate directional form based on traversal direction.
+      // Two semantic strings describe each connection:
+      //   1. verb_phrase — direction-resolved: "verifies" (outgoing) or "is verified by" (incoming)
+      //   2. stage — spectrum-resolved label from distance_x: "Protocol Ready", "Critical Blocker", etc.
       const isOutgoing = row.is_outgoing;
-      let resolvedVerb: string | null = row.conn_verb;
-      if (row.conn_verb) {
-        try {
-          const parsed = JSON.parse(row.conn_verb);
-          if (typeof parsed === 'object' && parsed !== null) {
-            resolvedVerb = isOutgoing ? (parsed.forward || parsed.backward || row.conn_verb) : (parsed.backward || parsed.forward || row.conn_verb);
-          } else if (typeof parsed === 'string') {
-            resolvedVerb = parsed;
-          }
-        } catch {
-          // Not JSON — use as-is (plain text verb)
-        }
-      }
+      const verbPhrase = row.conn_verb
+        ? (isOutgoing ? row.conn_verb : `is ${row.conn_verb} by`)
+        : null;
 
       // #2: session progress (now global, not per-neighbor)
       const session_progress = totalVarCount > 0 ? { filled: filledVarCount, required: totalVarCount, complete: filledVarCount >= totalVarCount } : null;
@@ -576,13 +566,14 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
           properties: row.neighbor_properties,
         },
         relationship: {
-          connection_id: row.conn_id, type_name: row.conn_type_name, verb: resolvedVerb,
+          connection_id: row.conn_id, type_name: row.conn_type_name,
+          verb: row.conn_verb, verb_phrase: verbPhrase,
           direction: row.direction,
           traversal_direction: isOutgoing ? 'outgoing' : 'incoming',
           direction_prepositions: dirPreps,
           measurement_mode: row.conn_measurement_mode, stage,
           distance_x: row.distance_x, distance_y: row.distance_y,
-          connection_properties: safeParseJSON(row.conn_properties, {}), // #3
+          connection_properties: safeParseJSON(row.conn_properties, {}),
           connection_schema: safeParseJSON(row.conn_properties_schema, []),
         },
         session_progress,
@@ -849,15 +840,10 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
       const personaModifier = 0.7 + (n.persona_bias * 0.6);
       score *= personaModifier;
 
-      // Build reason string
+      // Build reason string from the two semantic strings
       const parts: string[] = [];
-      if (n.relationship.verb) {
-        const verbPhrase = n.relationship.traversal_direction === 'outgoing'
-          ? `${n.relationship.verb}` // "verifies", "mitigates"
-          : `is ${n.relationship.verb} by`; // "is verified by", "is mitigated by"  (approximate)
-        parts.push(verbPhrase);
-      }
-      if (n.relationship.stage) parts.push(`stage: ${n.relationship.stage}`);
+      if (n.relationship.verb_phrase) parts.push(n.relationship.verb_phrase);
+      if (n.relationship.stage) parts.push(n.relationship.stage);
       if (hasUrgency) {
         const urgentEntries = Object.entries(props)
           .filter(([, v]) => typeof v === 'string' && urgentValues.some(u => (v as string).includes(u)));
@@ -870,9 +856,11 @@ export async function getSessionHorizon(sessionId: string): Promise<SessionHoriz
         title: n.nord.title,
         type_name: n.nord.type_name,
         verb: n.relationship.verb,
+        verb_phrase: n.relationship.verb_phrase,
+        stage: n.relationship.stage,
         direction: n.relationship.direction,
         traversal_direction: n.relationship.traversal_direction,
-        stage: n.relationship.stage,
+        distance_x: n.relationship.distance_x,
         connection_id: n.relationship.connection_id,
         explore_score: Math.round(score * 100) / 100,
         reason: parts.join(' · ') || 'connected neighbor',

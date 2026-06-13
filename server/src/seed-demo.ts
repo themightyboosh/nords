@@ -429,7 +429,7 @@ async function run() {
       INSERT INTO connection_types (id, project_id, name, accent_color, icon, stroke_style, verb, description,
         default_direction, measurement_mode, x_stage_labels, y_stage_labels, properties_schema, sort_order)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-    `, [c.id, PROJECT_ID, c.name, c.color, c.icon, c.style, JSON.stringify(c.verb), c.desc,
+    `, [c.id, PROJECT_ID, c.name, c.color, c.icon, c.style, c.verb, c.desc,
         c.defaultDir, c.measurementMode,
         JSON.stringify(c.xStages), JSON.stringify(c.yStages),
         JSON.stringify(c.propSchema), i + 1]);
