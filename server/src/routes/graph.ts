@@ -84,6 +84,13 @@ graphRouter.get('/projects/:id/nords/query', async (req: Request, res: Response)
       paramIdx++;
     }
 
+    // ── Property name validator (SQL injection prevention) ──
+    // Only alphanumeric, underscores, and spaces allowed. Max 64 chars.
+    const SAFE_PROP_NAME = /^[a-zA-Z_][a-zA-Z0-9_ ]{0,63}$/;
+    function validatePropName(name: string): boolean {
+      return SAFE_PROP_NAME.test(name);
+    }
+
     // Parse property filters
     const operatorRegex = /^(.+?)\s+(=|<|>|<=|>=|contains)\s+(.+)$/;
     for (const f of filters) {
@@ -94,32 +101,48 @@ graphRouter.get('/projects/:id/nords/query', async (req: Request, res: Response)
       const prop = propName.trim();
       const val = rawValue.trim();
 
+      // Reject unsafe property names — prevents SQL injection via JSONB accessor
+      if (!validatePropName(prop)) {
+        res.status(400).json({ error: `Invalid property name: "${prop}". Property names must be alphanumeric/underscores, max 64 chars.` });
+        return;
+      }
+
       if (op === 'contains') {
         // JSONB containment — works for arrays and strings
-        conditions.push(`n.properties->'${prop}' @> $${paramIdx}::jsonb`);
-        params.push(JSON.stringify(val));
-        paramIdx++;
+        conditions.push(`n.properties->$${paramIdx} @> $${paramIdx + 1}::jsonb`);
+        params.push(prop, JSON.stringify(val));
+        paramIdx += 2;
       } else if (op === '=') {
-        conditions.push(`n.properties->>'${prop}' = $${paramIdx}`);
-        params.push(val);
-        paramIdx++;
+        conditions.push(`n.properties->>$${paramIdx} = $${paramIdx + 1}`);
+        params.push(prop, val);
+        paramIdx += 2;
       } else {
         // Numeric comparison: <, >, <=, >=
         const numVal = parseFloat(val);
         if (isNaN(numVal)) continue;
-        conditions.push(`(n.properties->>'${prop}')::numeric ${op} $${paramIdx}`);
-        params.push(numVal);
-        paramIdx++;
+        // Operator is regex-constrained to <|>|<=|>= so it's safe to interpolate
+        conditions.push(`(n.properties->>$${paramIdx})::numeric ${op} $${paramIdx + 1}`);
+        params.push(prop, numVal);
+        paramIdx += 2;
       }
     }
 
-    // Sort
+    // Sort — validate property name before use
     let orderClause = 'ORDER BY n.created_at DESC';
     if (sortParam) {
       const sortMatch = sortParam.match(/^(.+?)\s+(asc|desc)$/i);
       if (sortMatch) {
         const [, sortProp, sortDir] = sortMatch;
-        orderClause = `ORDER BY n.properties->>'${sortProp.trim()}' ${sortDir.toUpperCase()}`;
+        const cleanSortProp = sortProp.trim();
+        if (!validatePropName(cleanSortProp)) {
+          res.status(400).json({ error: `Invalid sort property: "${cleanSortProp}". Property names must be alphanumeric/underscores, max 64 chars.` });
+          return;
+        }
+        // Use parameterized accessor for the property name
+        conditions.push('1=1'); // no-op to get paramIdx
+        orderClause = `ORDER BY n.properties->>$${paramIdx} ${sortDir.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'}`;
+        params.push(cleanSortProp);
+        paramIdx++;
       }
     }
 
