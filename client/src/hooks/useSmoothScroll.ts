@@ -75,10 +75,11 @@ export function useSmoothScroll(containerRef: React.RefObject<HTMLDivElement | n
     };
 
     const onWheel = (e: WheelEvent) => {
-      // Don't intercept pinch-to-zoom (ctrlKey is set for trackpad pinch)
-      if (e.ctrlKey || e.metaKey) {
+      // Zoom modifiers: ctrlKey (trackpad pinch), metaKey (Cmd), altKey (Option)
+      if (e.ctrlKey || e.metaKey || e.altKey) {
         // Accumulate zoom velocity instead of letting RF handle it chunkily
         e.preventDefault();
+        e.stopPropagation();
         // Negative deltaY = zoom in, positive = zoom out
         velZoom.current += -e.deltaY * 0.002;
 
