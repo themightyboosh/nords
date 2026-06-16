@@ -33,6 +33,7 @@ import { useVisibilityCascade } from '../../hooks/useVisibilityCascade';
 import { useSemanticZoom } from '../../hooks/useSemanticZoom';
 import { useSpatialAnimations } from '../../hooks/useSpatialAnimations';
 import { useLensLayout } from '../../hooks/useLensLayout';
+import { useSmoothScroll } from '../../hooks/useSmoothScroll';
 import ZoomControls from './ZoomControls';
 import { computePersonaScores, computeRadialPositions, computeNeutralScore } from '../../utils/computePersonaScores';
 import type { RadialLayoutResult } from '../../utils/computePersonaScores';
@@ -78,6 +79,10 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
   const { activeConnectionTypeId, lens, personaTypeFilter, personaEngagementFilter } = useLens();
   const isPersonaMode = lens === 'persona';
   const { addNodes, screenToFlowPosition, getNodes, fitView, getNode, setCenter, getZoom } = useReactFlow();
+
+  // Smooth scroll interpolation for mouse wheel pan/zoom
+  const smoothScrollRef = React.useRef<HTMLDivElement | null>(null);
+  useSmoothScroll(smoothScrollRef);
 
   // Register center-on-nord callback for parent to use
   useEffect(() => {
@@ -910,6 +915,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         </div>
       )}
       <div
+        ref={smoothScrollRef}
         data-interacting={isInteracting ? '' : undefined}
         style={{
           width: '100%',
