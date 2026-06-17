@@ -17,6 +17,7 @@
 
 /* ── Single row ── */
 .nords-viewport-header__row {
+  position: relative;
   display: flex;
   align-items: center;
   height: 36px;
@@ -59,6 +60,26 @@
   gap: 8px;
   padding: 0 var(--nords-space-md);
   line-height: 1;
+}
+
+/* ── Centered page title (dashboard / admin screens) ── */
+.nords-viewport-header__page-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--nords-font-primary);
+  font-size: 13px;
+  font-weight: var(--nords-font-weight-semibold);
+  color: #ffffff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 1;
+  pointer-events: none;
+}
+
+[data-theme="obsidian-light"] .nords-viewport-header__page-title {
+  color: var(--nords-color-text-primary);
 }
 
 .nords-viewport-header__project-icon {

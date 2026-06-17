@@ -985,6 +985,7 @@ function InteractiveCanvas({ projectId, onNordClick, onEdgeDoubleClick, selected
         edgesReconnectable={!isPersonaMode && !!activeConnectionTypeId}
         connectionRadius={80}
         reconnectRadius={80}
+        proOptions={{ hideAttribution: true }}
         onReconnectStart={onReconnectStart}
         onReconnect={onReconnect}
         onReconnectEnd={onReconnectEnd}

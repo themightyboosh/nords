@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "71bfb5c782974e0b",
+        "id": "a52855840ffae266",
         "type": "tabs",
         "children": [
           {
-            "id": "09a60c5211c6dc2a",
+            "id": "9026692e76a0c2ef",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "New 3/feedback.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "feedback"
+              "title": "New tab"
             }
           }
         ]
@@ -183,8 +179,11 @@
       "bases:Create new base": false
     }
   },
-  "active": "db2f717d1343674a",
+  "active": "9026692e76a0c2ef",
   "lastOpenFiles": [
+    "docs/demo-script.md",
+    "scripts/test-report-2026-06-02-12-33-50.md",
+    "New 3/feedback.md",
     "server/mcp-server.mjs",
     "server/scripts/test_goal_dag.mjs",
     "server/migrations/020_goal_edges.sql",
@@ -198,9 +197,7 @@
     "Pasted image 20260515213516.png",
     "New 3",
     "New 01/Issues..md",
-    "New 3/feedback.md",
     "server/src/routes/mcpSessions.ts",
-    "server/src/repositories/mcpSessions.ts",
     "demo/feature_completeness_trigger.md",
     "demo/generated_proposal_acme.md",
     "demo/system_prompt_v2.md",

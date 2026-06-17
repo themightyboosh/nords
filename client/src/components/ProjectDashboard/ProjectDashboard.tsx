@@ -163,6 +163,7 @@ export default function ProjectDashboard() {
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
         mode="dashboard"
+        pageTitle={adminView === 'users' ? 'Users' : adminView === 'strings' ? 'UI Strings' : 'Projects'}
       />
       <div className="nords-dashboard__body">
       <aside className="nords-dashboard__sidebar">

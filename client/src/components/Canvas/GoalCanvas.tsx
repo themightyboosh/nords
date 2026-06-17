@@ -30,6 +30,7 @@ import { StepBadgeNode } from './StepBadgeNode';
 import { GateNode } from './GateNode';
 import { resolveIcon } from '../../utils/iconRegistry';
 import { useSemanticZoom } from '../../hooks/useSemanticZoom';
+import { useSmoothScroll } from '../../hooks/useSmoothScroll';
 import ZoomControls from './ZoomControls';
 import type { Goal, GoalEdge } from '../../hooks/useGoals';
 import type { ProjectVariable } from '../../hooks/useVariables';
@@ -178,6 +179,10 @@ function GoalCanvasInner({
 
   // Set semantic zoom tier so NordCard CSS renders correctly
   useSemanticZoom();
+
+  // Smooth scroll interpolation for mouse wheel pan/zoom (matches main canvas)
+  const smoothScrollRef = React.useRef<HTMLDivElement | null>(null);
+  useSmoothScroll(smoothScrollRef);
 
   // Build variable name lookup for property bindings
   const varNameMap = useMemo(() => {
@@ -470,12 +475,15 @@ function GoalCanvasInner({
           <span>Loading goals…</span>
         </div>
       )}
-      <div style={{
-        width: '100%', height: '100%',
-        visibility: ready ? 'visible' : 'hidden',
-        opacity: ready ? 1 : 0,
-        transition: 'opacity 0.2s ease-in',
-      }}>
+      <div
+        ref={smoothScrollRef}
+        style={{
+          width: '100%', height: '100%',
+          visibility: ready ? 'visible' : 'hidden',
+          opacity: ready ? 1 : 0,
+          transition: 'opacity 0.2s ease-in',
+        }}
+      >
     <ReactFlow
       nodes={nodes}
       edges={rfEdges}
@@ -486,6 +494,9 @@ function GoalCanvasInner({
       onConnect={handleConnect}
       onEdgeClick={handleEdgeClick}
       nodesDraggable={false}
+      panOnScroll
+      zoomOnPinch
+      zoomOnDoubleClick={false}
       minZoom={0.3}
       maxZoom={2}
       proOptions={{ hideAttribution: true }}

@@ -131,6 +131,23 @@ echo -e "${DIM}   DATABASE_URL → $(echo "$DATABASE_URL" | sed 's|://[^@]*@|://
 echo ""
 
 # ──────────────────────────────────────
+# 0. Verify GCP credentials are valid
+# ──────────────────────────────────────
+echo -e "${CYAN}[0/5]${RESET} Checking GCP credentials"
+
+# Quick check: try to print the ADC access token. If it fails, credentials are expired.
+if ! gcloud auth application-default print-access-token &>/dev/null; then
+  echo -e "${YELLOW}   ⚠  GCP credentials expired or missing — re-authenticating...${RESET}"
+  gcloud auth login --update-adc --project=nords-spatial-1776012153
+  if ! gcloud auth application-default print-access-token &>/dev/null; then
+    echo -e "${RED}✘  Failed to refresh GCP credentials. Run manually:${RESET}"
+    echo -e "${RED}   gcloud auth login --update-adc${RESET}"
+    exit 1
+  fi
+fi
+echo -e "${GREEN}✔  GCP credentials valid${RESET}"
+
+# ──────────────────────────────────────
 # 1. Cloud SQL Proxy
 # ──────────────────────────────────────
 echo -e "${CYAN}[1/5]${RESET} Starting Cloud SQL Proxy → ${DIM}${INSTANCE}${RESET}"

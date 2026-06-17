@@ -43,6 +43,7 @@ interface ViewportHeaderProps {
   projectColor?: string | null;
   graphOnly?: boolean;
   mode?: 'workspace' | 'dashboard';
+  pageTitle?: string;
 }
 
 interface SubItem {
@@ -62,6 +63,7 @@ export default function ViewportHeader({
   projectColor = null,
   graphOnly = false,
   mode = 'workspace',
+  pageTitle,
 }: ViewportHeaderProps) {
   const isDashboard = mode === 'dashboard';
   const { user, logout } = useAuth();
@@ -156,25 +158,30 @@ export default function ViewportHeader({
           <NordsLogo size={22} />
         </button>
 
-        {/* ── Project title ── */}
-        <span className="nords-viewport-header__project-title" data-testid="project-title-display">
-          {isDashboard ? 'Projects' : (
-            <>
-              {(() => {
-                const ProjectIcon = resolveIcon(projectIcon);
-                return (
-                  <span
-                    className="nords-viewport-header__project-icon"
-                    style={{ color: projectColor || 'var(--nords-color-accent)' }}
-                  >
-                    <ProjectIcon size={14} strokeWidth={1.8} />
-                  </span>
-                );
-              })()}
-              <span style={{ color: projectColor || undefined }}>{projectName}</span>
-            </>
-          )}
-        </span>
+        {/* ── Page title (centered in dashboard mode) ── */}
+        {isDashboard && (
+          <span className="nords-viewport-header__page-title" data-testid="page-title-display">
+            {pageTitle || 'Projects'}
+          </span>
+        )}
+
+        {/* ── Project title (workspace mode) ── */}
+        {!isDashboard && (
+          <span className="nords-viewport-header__project-title" data-testid="project-title-display">
+            {(() => {
+              const ProjectIcon = resolveIcon(projectIcon);
+              return (
+                <span
+                  className="nords-viewport-header__project-icon"
+                  style={{ color: projectColor || 'var(--nords-color-accent)' }}
+                >
+                  <ProjectIcon size={14} strokeWidth={1.8} />
+                </span>
+              );
+            })()}
+            <span style={{ color: projectColor || undefined }}>{projectName}</span>
+          </span>
+        )}
 
         {/* ── Nav groups ── */}
         {!isDashboard && (

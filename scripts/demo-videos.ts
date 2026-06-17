@@ -48,6 +48,7 @@ async function createRecordingContext(browser: Browser): Promise<{ context: Brow
     execSync(`osascript -e 'tell application "System Events" to keystroke "f" using {control down, command down}'`);
   } catch { /* non-fatal in CI */ }
   await page.waitForTimeout(1200); // wait for macOS fullscreen animation
+  await page.waitForTimeout(5000); // pause so user can start screen recording
 
   return { context, page };
 }

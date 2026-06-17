@@ -1,7 +1,7 @@
 # Demo Script — Walkthrough
 
-> **Project:** Pulse Sense CGM — Design Control  
-> **Duration:** 3 min (live) · 5 min (recorded with pauses)  
+> **Project:** Pulse Sense CGM — Design Control
+> **Duration:** 5 min (live) · 7 min (recorded with pauses)
 > **Seed command:** `npx tsx --env-file=.env src/seed-demo.ts user@example.com`
 
 ---
@@ -9,162 +9,231 @@
 ## PRE-FLIGHT
 
 - Fresh seed. Browser at `/projects`. Full-screen, dark mode.
-- Have a second browser tab ready (incognito) for the Share link at the end.
+- Have a second browser tab ready (incognito) for the Share link.
+- Verify the **Test → Tests** panel shows 5 pre-seeded scenarios (happy path, tangential, reluctant, adversarial, rushed).
 
 ---
 
-## ACT 1 — THE GRAPH ⏱ 0:00 – 0:45
+## ACT 1 — THE GRAPH ⏱ 0:00 – 0:30
 
 `[Click into Pulse Sense CGM. Full canvas renders. ~64 cards visible.]`
 
-> Nords is a platform for building AI experiences around **deep domain knowledge** — the kind of stuff that's too specialized for a generic chatbot and too complex for a form.
->
-> You're looking at one right now. This is a medical device team building a continuous glucose monitor — heading toward FDA 510(k) clearance. Every card is a typed data object — requirements, risks, test cases, architecture decisions, clinical protocols. Every line between them is a typed relationship with its own properties.
+> Again, Nords is about digitizing and using expertise and making it accessible to any AI.
+> 
+> In our demo, we're buildimg a **regulatory and engineering expert that helps a medtech team navigate the complex, multi-year process of getting a medical device through FDA clearance** — where the knowledge is normally fragmented across five specialists who each understand their silo but nobody holds the complete picture.
 
-`[Zoom in slowly to the "Battery thermal runaway" Risk card. Click it — property sheet opens.]`
+`[Zoom to "Battery thermal runaway" Risk card. Click — property sheet opens.]`
 
-> This risk — "battery thermal runaway" — has a severity of 4, a probability of 1. It mitigates through the Wireless Transmitter subsystem. Mitigation type: Elimination. Residual risk: Acceptable.
->
-> This isn't a CRM record. This is **domain-specific knowledge** — ISO 14971 risk analysis — modeled as a graph.
+> Here's a risk — "battery thermal runaway." You can see how serious it is, what part of the device it affects, how the team plans to deal with it. All structured, all queryable — all visible to the AI.
 
 `[Drag the Risk card closer to the Subsystem it mitigates.]`
 
-> And I just changed the data by dragging a card. The distance went from 0.6 to 0.3. The stage label updated from "Controls" to "Eliminates."
->
-> **Distance is data.** The AI reads these exact values. It knows what's close, what's far, and what that means in context.
+> Now watch — I just dragged this card closer. The relationship changed. The label updated. **Moving things on the canvas actually changes the data.** The AI reads position, distance, proximity — it all means something.
 
 ---
 
-## ACT 2 — THE BOARD ⏱ 0:45 – 1:15
+## ACT 2 — THE BOARD ⏱ 0:30 – 1:00
 
-`[Click the Board icon in the dock (grid icon). Board view renders.]`
+`[Click the Board icon in the dock.]`
 
-> Same project. Board view.
+> Again, our obkective is to make it fast and eas¥ to get expertise into AI and you agents. So here's the Same project, with a different and familiar kanban view.
 
-`[Default dimension: "Design Control Phase" — show the FDA waterfall columns.]`
+`[Default dimension: "Design Control Phase" — FDA waterfall columns visible.]`
 
-> These columns are the FDA design control waterfall — User Need → Design Input → Design Output → Verification → Validation → Transfer. This isn't a Kanban board someone configured. It **emerged from the relationship data**. The graph already knows.
+> These columns are the stages this device has to go through before it can ship. Nobody initally configured this board — it **came from the data**.  
 
-`[Click the dimension dropdown. Switch to "Blocks".]`
+`[Switch dimension to "Blocks".]`
 
-> Switch the dimension — same cards rearrange by what's **blocking** what. NC-001 is blocking the 14-day wear test. NC-005 is blocking applicator force consistency. Both critical path.
+> One click — now we see what's blocking what. Two items stuck. That's your critical path.
 
 `[Switch to "Assigned To".]`
 
-> Switch again — capacity view. Marcus Cole has **seven items**. He's overloaded. One click.
->
-> Every relationship type is already a board dimension. You never configure anything. The domain model **is** the product.
+> One more click — now it's by person. Marcus has **seven things on his plate**. You get a new board for every relationship type in your project. Zero setup.
+
+> And here's the thing — all of this knowledge, every card, every relationship, every business process baked into this board — it's all exposed through **MCP**. Desined so that any AI that speaks the protocol can read this graph, navigate it, ask questions against it. You're not locked into one model or one vendor. You digitize the knowledge once, and it's accessible to **any AI**
 
 ---
 
-## ACT 3 — PERSONAS ⏱ 1:15 – 1:50
+## ACT 3 — EXPERT LENSES ⏱ 1:00 – 1:40
 
-`[Click the Persona lens in the dock (users icon). Default persona: Dr. Priya Sharma loads.]`
+`[Click the Persona lens in the dock. Dr. Priya Sharma loads. Graph reshapes around regulatory concerns.]`
 
-> Here's where it gets interesting. Five people work on this device. A regulatory strategist, a systems engineer, a clinical researcher, a quality manager, a product director. They each need to see — and talk about — completely different things.
+> This is your consultancy in a box. Five experts work on this device — regulatory, engineering, clinical, quality, product. Each one sees the same data, but they care about completely different things.
 
-`[Heatmap activates. Regulatory items and risks snap to center. Architecture fades.]`
+> This is Priya — regulatory strategist. Watch what happened. Risks, submission blockers, traceability gaps snapped to the center. Engineering decisions faded to the edges. The graph **reshaped around her expertise.**
 
-> Dr. Priya Sharma — VP Regulatory Affairs, former FDA reviewer. Risks, submission blockers, traceability gaps snap to center. Architecture decisions fade away. She didn't apply a filter. The graph **reshaped around her expertise.**
+`[Click the persona avatar in the center of the graph. PersonaLensDrawer opens — weight sliders visible.]`
 
-`[Click Marcus Cole in the persona switcher.]`
+> And here's how you tune the bias. Every category has a weight — how much this expert cares about it. Watch the graph as I drag this.
 
-> Marcus Cole. Lead Systems Engineer. 
+`[Drag the "Mitigates" slider from +60 to +100. Graph animates in real time — mitigation relationships pull tighter.]`
 
-`[Graph reshapes. Subsystems, ADRs, and test cases pull to center.]`
+> See that? Risk mitigations just pulled closer together. The graph is **physically responding** to how much this expert values that relationship.
 
-> Completely different map. Subsystems, interfaces, failure surfaces. Same sixty-four cards.
+`[Drag "Informs" slider down to -30. Graph animates — informational connections push outward.]`
 
-`[Quick-click Sarah Kim.]`
+> Drop informational connections — they fade and spread. Priya doesn't care about those. She cares about what mitigates what and what blocks what.
 
-> Sarah Kim — Clinical Affairs. Protocols, enrollment targets, IRB status.
->
-> Three people. Three maps. **No one configured a dashboard.** The personas define what matters — weighted by connection type, weighted by goal — and the graph responds.
->
-> And when AI adopts one of these personas, it doesn't just see differently. It **thinks** differently. It has guardrails — "never recommend skipping a design control milestone." Mental models — "every interface is a failure surface." A voice — "precise, citation-heavy, risk-averse."
->
-> The conversation feels like talking to a **domain expert**, not a chatbot on rails.
+`[Close the drawer. Open the persona flyout in the dock. Click Marcus Cole. Graph completely reshapes.]`
+
+> Now Marcus — the systems engineer. Completely different map. Interfaces, subsystems, architecture decisions front and center. Same cards, totally different expertise.
+
+`[Click Sarah Kim. Graph reshapes again.]`
+
+> Sarah — clinical research. Protocols, patient enrollment, IRB status. 
+> 
+> We're looking at three of the five experts on this project — three completely different maps. **Nobody built a dashboard.** You're looking at what each person actually knows, modeled as weighted relationships.
+
+> And when the AI talks through one of these lenses, it doesn't just see differently — it **thinks** differently. Guardrails, mental models, a voice. It's not a chatbot. It's a **domain expert.**
 
 ---
 
-## ACT 4 — THE GOAL DAG ⏱ 1:50 – 2:20
+## ACT 4 — THE GOAL  ⏱ 1:40 – 2:05
 
-`[Click the Goals lens in the dock (target icon). GoalCanvas renders — 12 goals in a DAG.]`
+`[Click the Goals lens. GoalCanvas renders — 12 goals in a DAG.]`
 
-> Goals. But not the kind you check off in a standup. These are a **dependency graph** — bound to actual data in the graph.
+> These are the things the team needs to accomplish — but they're not a flat checklist. They're connected. Some things have to happen before other things can start.
 
-`[Point to the DAG structure — 4 roots on the left, flowing right through gate nodes to FDA Submission.]`
+`[Point to the DAG — 4 roots flowing right through gate nodes to FDA Submission.]`
 
-> Four roots: Requirements Locked, Risk Analysis Complete, Biocompatibility Cleared, Architecture Decided. They flow through **gate nodes** — AND gates, OR gates. You can't verify until requirements are locked AND risk analysis is done. But 510(k) readiness is an OR gate — verification OR clinical approval can unblock it.
->
-> This is how regulated workflows actually work. Not a linear checklist — a **dependency web** where different paths converge.
+> See the flow? Lock down requirements, finish risk analysis, clear biocompatibility, decide the architecture — then and only then can you start verification. Some gates need **everything** done. Some just need **one path** to clear. That's how real work actually flows.
 
 `[Click "Risk Analysis Complete" — GoalDetailDrawer opens.]`
 
-> Click a goal — it shows what needs to happen. Variables to collect: risk tolerance, highest-risk subsystem. Relevant nords to visit: the 8 risk items. The AI doesn't march through a script. It **navigates the graph organically** and collects what it needs along the way.
->
-> The user never feels railed. They're having a conversation. The system is solving a dependency graph.
+> Click a goal and you see what the AI needs to get done — questions to ask, data to collect, cards to visit. But here's what matters: **the user never sees this.** They just have a conversation. The AI has a destination, but the user picks the road. It's direction without feeling like you're on rails — no "step 1 of 12," no forced order. The AI weaves its questions into wherever the conversation naturally goes.
 
 ---
 
-## ACT 5 — COLLECTIONS ⏱ 2:20 – 2:40
+## ACT 5 — TESTS ⏱ 2:05 – 2:30
 
-`[Open the Collections panel from the header.]`
+`[Click Test in the header bar → Tests. TestRunner opens with 5 pre-seeded scenarios.]`
 
-> Collections are the questions the AI is trained to ask — fifteen variables across five groups. Regulatory strategy, risk posture, clinical status, engineering readiness, business planning.
+> Before you ship, you test. Five fake users — one who cooperates, one who rambles, one who gives one-word answers, one who argues, one who's in a rush.
 
-`[Expand "Regulatory & Strategy" group.]`
+`[Click "Tangential User". Point to the behavior profile and objective.]`
 
-> "What's your regulatory pathway?" "Who's the predicate device?" These aren't form fields. They're **conversation goals** woven into natural dialogue. The AI asks them when they're contextually relevant — not in order, not on a schedule.
+> This one wanders off-topic and buries answers in stories. The test: can the AI still figure out the regulatory strategy? We pick the models, set a round limit, and tell it when to stop.
 
-`[Point to a variable description.]`
+`[Click "Run Test" (or point to latest_run results).]`
 
-> Every variable has a rich description — enough context for the AI to ask an intelligent question. "The FDA regulatory pathway determines the submission strategy, predicate device requirements, and clinical evidence needed." The AI uses this to frame the question **like someone who actually understands the domain.**
+> Hit run — two AIs have a full conversation. One plays the user, one plays the agent. Did the agent stay on track? Did it get the answers it needed? These oppositional tests not only check for goal completion but also hallucinations and synthentic NPS scores.
 
-> And when a goal fires, its achieved prompt resolves `{{predicate_device}}` to whatever the user said. The AI congratulates the team with **their own words** baked in.
 
 ---
 
-## ACT 6 — SHARE & CHAT ⏱ 2:40 – 3:10
+## ACT 6 — SHARE & CHAT ⏱ 2:30 – 3:00
 
-`[Open the Share panel. Click "Create Share Link".]`
+`[Click Publish in the header bar → Share. Click "Create Share Link".]`
 
-> Ship it. One click — share link generated.
+> One click — you get a link.
 
-`[Copy the link. Open in a second browser tab (incognito). The ShareChat page loads.]`
+`[Copy and open in incognito. ShareChat loads with a welcome message.]`
 
-> This is what your stakeholder sees. Clean chat interface. No canvas, no admin UI. Just a conversation with an AI that knows the entire graph.
+> This is what your end user sees - either integrated via MCP into your agents or shared from Nords.  Just a conversation with an AI that knows everything about the project.  
 
 `[Type: "I'm the VP of Regulatory. Walk me through our 510(k) readiness."]`
 
-> Watch. The AI adopts the regulatory persona. It navigates the graph — references specific test results, risk mitigations, requirement traceability. It asks about the predicate device, submission quarter — but **only when it's natural to ask.**
->
-> The user isn't filling out a form. They're having a conversation with someone who understands FDA 510(k) submissions. The goals fire in the background. The variables get collected. The workflow completes.
+> Watch. The AI picks up the right persona. It talks about specific test results, specific risks — not generic advice. It asks smart follow-up questions, but **only when they fit naturally.**
 
-`[Let the AI respond. Point to the variable being collected.]`
+> Remember that goal DAG? It's working right now. The AI just collected a variable. A goal just fired. But the user didn't feel a single rail. They think they're having a conversation. They are — the AI just happens to know where it's going.
 
-> That's the difference. A generic chatbot would ask these fifteen questions in a list. Nords embeds them in a conversation that **feels like expertise.**
+> **The AI has a destination, but the user picks the road.** That's the difference.
+
+---
+
+## ACT 7 — CREATE A PERSONA ⏱ 3:00 – 3:30
+
+`[Click Direct in the header bar → Personas. ManagePersonas modal opens.]`
+
+> Every expert on this project started right here. Let's create a new one live.
+
+`[Click "+ New Persona". New persona appears in the sidebar. Type name: "Dr. Maya Rodriguez".]`
+
+> We name her, pick an avatar, set a color — but that's just the surface. Watch.
+
+`[Click the avatar to open the picker. Browse a few seeds, drag the hue slider. Fill Background: "Former FDA reviewer with 12 years in medical device regulatory affairs."]`
+
+> Background — who she is and what she's done. This isn't cosmetic. When the AI speaks through this persona, this context shapes every answer.
+
+`[Fill Primary Motivation: "Ensure patient safety through rigorous design verification." Fill Voice & Tone: "Precise and methodical. References FDA guidance documents."]`
+
+> Motivation drives what the AI pushes for. Voice & tone controls how it speaks. Same data, completely different delivery.
+
+`[Scroll down. Click "Add a mental model". Name: "Risk-Benefit Analysis Framework". Body: "Weighs clinical benefit against residual risk using ISO 14971 methodology."]`
+
+> Mental models are the secret weapon. They're thinking frameworks the AI applies before answering — not just what it says, but **how it reasons.**
+
+`[Drag category relevance sliders — pull Mitigates up, push Informs down.]`
+
+> And finally — relevance. How much does this expert care about each type of relationship? Drag these sliders, and the entire persona lens reshapes around her priorities.
+
+> Each persona isn't just a name — it's a full behavioral profile. **When the AI speaks through this lens, it doesn't just see differently — it thinks differently.**
+
+---
+
+## ACT 8 — CREATE A TYPE ⏱ 3:30 – 3:55
+
+`[Click Design in the header bar → Types. ManageTypes modal opens showing existing types.]`
+
+> Types are the building blocks of your knowledge graph. Every card on the canvas is an instance of a type. Let's make a new one.
+
+`[Click "+ New Type". Rename to "Verification Activity". Click the icon button — browse icons, pick one. Drag the hue slider to set a color.]`
+
+> Name, icon, color — so it's instantly recognizable on the graph.
+
+`[Fill description: "Testing or inspection activity that confirms design outputs meet requirements."]`
+
+> The description tells the AI what this type represents. Not for humans to read — for the AI to understand.
+
+`[Click "+ Add Property". Name: "Protocol ID", type: short_text. Add "Status" (type: select). Add "Due Date" (type: date).]`
+
+> Properties are the schema. Every card of this type will carry these fields. Protocol ID, status, due date — structured data the AI can query, filter, and reason about.
+
+> **Define the schema once, and every card inherits it.** That's types.
+
+---
+
+## ACT 9 — CREATE A CATEGORY ⏱ 3:55 – 4:25
+
+`[Click Design in the header bar → Categories. ManageTypes modal opens on the Categories tab.]`
+
+> Categories define **how cards connect.** Every line on the graph is an instance of a category. Let's create one.
+
+`[Click "+ New Category". Rename to "Validates". Pick an icon and color.]`
+
+> This category represents a verification relationship — "this test **validates** that requirement."
+
+`[Fill description: "Formal verification that an output meets its specification." Type verb: "validates". Set direction labels — forward: "against", reverse: "by", both: "with".]`
+
+> Every category has a verb and direction labels. "Test A **validates against** Requirement B" — or reading it the other way, "Requirement B **is validated by** Test A." The verb and prepositions make the graph readable in both directions.
+
+`[Click "→ Forward" as the default direction. Toggle "═ Spectrum" mode.]`
+
+> Default direction — most validations flow forward. And we've turned on spectrum mode, which gives this category an intensity axis. That means connections of this type can carry a measurement — and the board view generates columns from it automatically.
+
+> **Categories are the relationships. Types are the nodes. Together, they define the entire knowledge graph.**
 
 ---
 
 ## CLOSING
 
-> That's Nords. Take any domain — medical devices, legal compliance, financial audits, clinical trials, security assessments — model the knowledge as a graph, define the personas who live in it, set the goals that matter, and ship an AI conversation that feels like **talking to a domain expert.**
+> Nords unlocks the power of graph — visually. A better way to get expertise into AI, and a better way to get it back out. Medical devices, legal strategy, FINANCAL SERVICES, sales enablement, GAME DESIGN, engineering onboarding — WHILE ALLOWING YOU TO think visually, AND build pragmatically.
 >
-> Not a chatbot. Not a form. A **knowledge experience.**
->
-> The graph is the product.
+1. **Nords gives AI the one thing it's missing — everything that's specific to _you_. Your processes, your expertise, your way of working.**
 
 ---
 
 ## EMERGENCY FALLBACK BEATS
 
-If something breaks mid-demo, pivot to these standalone moments:
-
 | Beat | Action | Line |
-|------|--------|------|
-| **Data drag** | Drag any card. Distance changes. | "Distance is data." |
-| **Board flip** | Switch dimension dropdown | "Every relationship is already a board." |
-| **Persona swap** | Click any persona | "Same project, different map — no dashboards." |
-| **Goal DAG** | Show the goal canvas | "A dependency web, not a checklist." |
-| **Share link** | Open any share URL | "Domain expertise in one link." |
+|---|---|---|
+| **Data drag** | Drag any card. Distance changes. | "Moving cards changes the data." |
+| **Board flip** | Switch dimension dropdown | "New board for every relationship. Zero setup." |
+| **Expert lens** | Click persona, open drawer, drag weight slider | "Consultancy in a box — the graph reshapes around their expertise." |
+| **Bias slider** | Drag any weight slider in PersonaLensDrawer | "The graph physically responds to how much this expert values that relationship." |
+| **Goal DAG** | Show the goal canvas | "Real work isn't a checklist. It's a dependency web." |
+| **Test Runner** | Click Test → Tests in header | "Ship when all five go green." |
+| **Share link** | Click Publish → Share in header | "Expertise in one link." |
+| **Create persona** | Click Direct → Personas in header | "Each persona is a full behavioral profile — not just a name." |
+| **Create type** | Click Design → Types in header | "Define the schema once, every card inherits it." |
+| **Create category** | Click Design → Categories in header | "Categories define how cards connect." |

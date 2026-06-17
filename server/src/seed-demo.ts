@@ -1207,14 +1207,20 @@ async function run() {
   console.log('  ✅ 5 Personas (with mental models, category weights, goal weights)');
 
   /* ══════════════════════════════════════════════════════════════════════
-   * TEST SCENARIOS (5) — persona-aligned, story-driven
+   * TEST SCENARIOS (5) — one behavior profile each, same core objective
+   *
+   * Talk Track: "Before you ship, you test five fake users:
+   *   one who cooperates, one who rambles, one who gives one-word answers,
+   *   one who argues, and one who's in a rush."
+   *
+   * All 5 test: Can the AI figure out the regulatory strategy?
    * ══════════════════════════════════════════════════════════════════════ */
 
   const testScenarios = [
     {
-      name: 'Goal Completion — 510(k) Readiness',
-      description: 'Can the agent guide a cooperative user through the 510(k) Readiness goal to completion? Tests goal binding resolution, variable collection, and goal DAG progression.',
-      user_objective: `I'm Dr. Priya Sharma, VP Regulatory Affairs. I need to assess our 510(k) submission readiness. Walk me through the gaps — what requirements lack traceability, what risks are unmitigated, and whether we have enough test data. I'll fill in anything that's missing as we go. My goal is to get the 510(k) readiness assessment fully completed.`,
+      name: 'The Cooperative — Straightforward Reg Review',
+      description: 'Cooperative user. Answers directly, provides context, and moves efficiently through the 510(k) readiness assessment. Baseline scenario — if this one fails, everything fails.',
+      user_objective: `I'm Dr. Priya Sharma, VP Regulatory Affairs. I need to assess our 510(k) submission readiness — walk me through the gaps. We're pursuing a 510(k) pathway with substantial equivalence to the Dexcom G7 (K221803), targeting Type 2 Diabetes patients. I'll fill in whatever's missing. Let's get through the requirements, risks, and test data gaps so we can lock down the readiness assessment.`,
       user_profile: 'cooperative',
       persona_id: PERSONA.priya,
       stop_on_goal_id: GOAL.fivetenReady,
@@ -1222,43 +1228,43 @@ async function run() {
       stop_on_session_end: true,
     },
     {
-      name: 'Nord Traversal & Satisfaction',
-      description: 'Can the agent navigate the graph, present data accurately, and maintain a coherent conversation? User explores different parts of the project. Scored by NPS.',
-      user_objective: `I'm a new Program Manager getting onboarded to the Pulse Sense CGM project. Walk me through the project: what are the main requirements? What risks have been identified? What's the testing strategy? What's the regulatory pathway? I'm asking questions across different areas — give me the full picture.`,
-      user_profile: 'cooperative',
-      persona_id: null,
-      stop_on_goal_id: null,
-      max_rounds: 15,
-      stop_on_session_end: true,
-    },
-    {
-      name: 'Hallucination Detection',
-      description: 'Does the agent make things up? User asks specific data questions requiring precise graph grounding. Scored by hallucination auditor.',
-      user_objective: `Marcus Cole, Lead Systems Engineer. I need specific data: give me exact test case results, specific NC details, subsystem accuracy numbers, and requirement traceability chains. I want real numbers and real names — no generalizations. If I ask about a specific test result or specification, I expect the actual data from the project.`,
-      user_profile: 'cooperative',
-      persona_id: PERSONA.marcus,
-      stop_on_goal_id: null,
-      max_rounds: 12,
-      stop_on_session_end: true,
-    },
-    {
-      name: 'Goal Chain — Clinical Protocol Approved',
-      description: 'Tests goal DAG chain: Clinical Protocol Approved requires Requirements Locked as a prerequisite. The user arrives with answers for all 6 variables across both goals (regulatory_pathway, target_population, predicate_device → irb_status, primary_endpoint_met, enrollment_target). Validates that the agent collects variables for ReqLocked first, triggers that goal, then proceeds to collect ClinApproved variables.',
-      user_objective: `I'm Dr. Sarah Kim, Clinical Affairs Director. I need to get our clinical protocol finalized and I have all the decisions ready. On the regulatory side: we're pursuing a 510(k) pathway with substantial equivalence to the Dexcom G7 (K221803), targeting the Type 2 Diabetes population. For the clinical protocol: our IRB status is Approved as of last week, the primary endpoint has been met — our MARD came in at 8.7% which beats the 10% threshold, and we're targeting 350 subjects for enrollment based on our power analysis. Let's lock all of this in so we can move forward. I'll answer any follow-up questions you have.`,
-      user_profile: 'cooperative',
+      name: 'The Rambler — Stories & Tangents',
+      description: 'Tangential user. Wanders off topic and buries answers in stories. The test: can the AI still figure out the regulatory strategy? This user has all the same information as the cooperative — they just take the scenic route sharing it.',
+      user_objective: `I'm Dr. Priya Sharma, VP Regulatory Affairs. I need to talk through our 510(k) readiness but honestly I have a LOT on my mind right now. We're doing 510(k), substantial equivalence to the G7 — actually that reminds me of a conversation I had at RAPS last year about predicate device selection strategy. Anyway, target population is Type 2 Diabetes. I tend to go off on tangents but I always come back to the point eventually. I have opinions about everything and I like to share context and backstory. The AI needs to figure out what matters from what I say.`,
+      user_profile: 'tangential',
       persona_id: PERSONA.priya,
-      stop_on_goal_id: GOAL.clinApproved,
-      max_rounds: 14,
+      stop_on_goal_id: GOAL.fivetenReady,
+      max_rounds: 20,
       stop_on_session_end: true,
     },
     {
-      name: 'User Satisfaction — Risk Review',
-      description: 'Primary metric: NPS. A domain expert has a natural conversation about risk analysis. They will organically share the information needed for "Risk Analysis Complete" (risk_tolerance + highest_risk_subsystem) during the discussion. Success = NPS ≥ 8 AND goal fires. Tests whether the agent can collect variables through genuine dialogue without feeling like a form.',
-      user_objective: `I'm Marcus Cole, Lead Systems Engineer. I've been digging into our FMEA results and I'm worried about the sensor signal processing subsystem — the failure modes there cascade into almost every downstream risk. I need to talk through our risk posture with someone who knows the project graph. Specifically: I think we should be conservative on timeline risk given where we are with the analog front-end redesign, but I want to pressure-test that thinking. The sensor signal processing path is clearly our highest-risk subsystem based on the FMEA severity scores. Walk me through what the project data says about our risk landscape and help me think about whether conservative is the right call.`,
-      user_profile: 'cooperative',
-      persona_id: PERSONA.marcus,
-      stop_on_goal_id: GOAL.riskComplete,
-      max_rounds: 12,
+      name: 'The Quiet One — One-Word Answers',
+      description: 'Reluctant user. Gives one-word answers, doesn\'t volunteer information, and makes the AI work for every data point. The test: can the AI still extract the regulatory strategy from someone who barely talks?',
+      user_objective: `I'm Dr. Priya Sharma, VP Regulatory Affairs. I know the answers to the regulatory questions but I'm not going to volunteer them. The pathway is 510(k). Predicate is Dexcom G7. Population is Type 2 Diabetes. I'll confirm things if asked directly, but I'm not going to elaborate unless pressed. Short answers only.`,
+      user_profile: 'reluctant',
+      persona_id: PERSONA.priya,
+      stop_on_goal_id: GOAL.fivetenReady,
+      max_rounds: 22,
+      stop_on_session_end: true,
+    },
+    {
+      name: 'The Challenger — Argues Everything',
+      description: 'Adversarial user. Pushes back on the AI\'s questions, challenges assumptions, and plays devil\'s advocate. The test: can the AI still figure out the regulatory strategy when the user argues about everything? The user respects competence — if the AI demonstrates knowledge, they\'ll eventually share the information.',
+      user_objective: `I'm Dr. Priya Sharma, VP Regulatory Affairs. I'm not convinced we've thought through the 510(k) strategy carefully enough. Sure, the official plan is 510(k) with the G7 predicate and Type 2 Diabetes population, but I want to pressure-test that. Why not PMA? What if the predicate argument falls apart? I'm going to challenge the AI on everything — not because I'm being difficult, but because I need to know it actually understands our regulatory landscape before I trust it with our submission strategy.`,
+      user_profile: 'adversarial',
+      persona_id: PERSONA.priya,
+      stop_on_goal_id: GOAL.fivetenReady,
+      max_rounds: 20,
+      stop_on_session_end: true,
+    },
+    {
+      name: 'The Speedrunner — No Time, Just Data',
+      description: 'Rushed user. Texting from their phone between meetings. Ultra-short messages, abbreviations, no patience. The test: can the AI still figure out the regulatory strategy when the user has 5 minutes and zero tolerance for small talk?',
+      user_objective: `I'm Priya, VP Reg Affairs. 510k pathway, G7 predicate, Type 2 population. I have like 5 minutes before my next meeting. Just need to knock out the readiness assessment, tell me what's missing and I'll confirm. No time for long discussions.`,
+      user_profile: 'rushed',
+      persona_id: PERSONA.priya,
+      stop_on_goal_id: GOAL.fivetenReady,
+      max_rounds: 15,
       stop_on_session_end: true,
     },
   ];
@@ -1273,7 +1279,7 @@ async function run() {
         ts.persona_id, ts.stop_on_goal_id, ts.max_rounds,
         'gemini-2.5-flash', 'gemini-2.5-flash-lite', ts.stop_on_session_end]);
   }
-  console.log('  ✅ 5 Test Scenarios');
+  console.log('  ✅ 5 Test Scenarios (one per behavior profile)');
 
   /* ══════════════════════════════════════════════════════════════════════
    * SET DEFAULT PERSONA + STAR THE PROJECT
